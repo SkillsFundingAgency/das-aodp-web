@@ -3,11 +3,12 @@ using SFA.DAS.ADPO.Web.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var configuration = builder.Configuration.LoadConfiguration(builder.Services);
+var configuration = builder.Configuration.LoadConfiguration(builder.Services, builder.Environment.IsDevelopment());
 
 builder.Services
+    .AddServiceRegistrations(configuration)
     .AddLogging()
-    .AddDataProtection(configuration, builder.Environment.IsDevelopment())
+    .AddDataProtectionKeys("das-adpo-web", configuration, builder.Environment.IsDevelopment())
     .AddHttpContextAccessor()
     .AddHealthChecks();
 
