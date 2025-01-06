@@ -6,7 +6,6 @@
   {
     "outputFileName": "wwwroot/js/site.min.js",
     "inputFiles": [
-      "wwwroot/js/govuk-frontend-2.13.0.min.js",
       "wwwroot/lib/jquery/dist/jquery.min.js",
       "wwwroot/js/site.js"
     ],

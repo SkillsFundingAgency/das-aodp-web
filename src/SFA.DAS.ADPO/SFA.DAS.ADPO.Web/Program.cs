@@ -1,3 +1,4 @@
+using GovUk.Frontend.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.ADPO.Infrastructure.ApiClients;
 using SFA.DAS.ADPO.Web.Extensions;
@@ -9,6 +10,7 @@ var configuration = builder.Configuration.LoadConfiguration(builder.Services, bu
 builder.Services
     .AddServiceRegistrations(configuration)
     .AddAdpoApiClient(configuration, builder.Environment.IsDevelopment())
+    .AddGovUkFrontend()
     .AddLogging()
     .AddDataProtectionKeys("das-adpo-web", configuration, builder.Environment.IsDevelopment())
     .AddHttpContextAccessor()
