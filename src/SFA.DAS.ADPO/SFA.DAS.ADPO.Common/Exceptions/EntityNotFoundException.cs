@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SFA.DAS.ADPO.Common.Exceptions
+﻿namespace SFA.DAS.ADPO.Common.Exceptions
 {
     public class EntityNotFoundException : ApplicationException
     {

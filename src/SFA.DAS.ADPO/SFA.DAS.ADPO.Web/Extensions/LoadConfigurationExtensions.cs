@@ -16,7 +16,7 @@ namespace SFA.DAS.ADPO.Web.Extensions
 #if DEBUG
             configBuilder
                 .AddJsonFile("appsettings.json", true)
-                .AddJsonFile("appsettings.Development.json", true);
+                .AddJsonFile("appsettings.local.json", true);
 #endif
 
             if (!isDevelopment)

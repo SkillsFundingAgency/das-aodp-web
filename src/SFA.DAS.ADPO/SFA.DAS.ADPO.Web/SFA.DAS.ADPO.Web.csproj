@@ -16,6 +16,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\SFA.DAS.ADPO.Common\SFA.DAS.ADPO.Common.csproj" />
+		<ProjectReference Include="..\SFA.DAS.ADPO.Infrastructure\SFA.DAS.ADPO.Infrastructure.csproj" />
 	</ItemGroup>
 
 </Project>
