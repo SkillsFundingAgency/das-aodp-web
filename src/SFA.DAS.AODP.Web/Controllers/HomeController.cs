@@ -18,6 +18,11 @@ namespace SFA.DAS.AODP.Web.Controllers
             return View();
         }
 
+        public IActionResult FormBuilder()
+        {
+            return View();
+        }
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
