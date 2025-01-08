@@ -7,6 +7,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 var configuration = builder.Configuration.LoadConfiguration(builder.Services, builder.Environment.IsDevelopment());
 
+builder.Services.AddControllers();
+
 builder.Services
     .AddServiceRegistrations(configuration)
     .AddAodpApiClient(configuration, builder.Environment.IsDevelopment())
@@ -15,6 +17,7 @@ builder.Services
     .AddDataProtectionKeys("das-aodp-web", configuration, builder.Environment.IsDevelopment())
     .AddHttpContextAccessor()
     .AddHealthChecks();
+
 
 
 builder.Services.AddSession(options =>
@@ -60,5 +63,7 @@ app
             "default",
             "{controller=Home}/{action=Index}/{id?}");
     });
+
+app.MapControllers();
 
 app.Run();

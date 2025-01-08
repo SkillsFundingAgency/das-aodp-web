@@ -1,0 +1,80 @@
+﻿<div id="formBuilder"></div>
+
+@section Scripts {
+    <link href="~/lib/fujitsuFormBuilder/css/style.css" rel="stylesheet" />
+    <script src="~/lib/fujitsuFormBuilder/js/fujitsuFormBuilder.js"></script>
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            const formBuilderContainer = document.getElementById('formBuilder');
+
+            // Initialize form builder in update mode
+            window.formBuilderInstance = new window.fujitsuFormBuilder(formBuilderContainer, {
+                dataSource: {
+                    endpoints: {
+                        //insert: '/api/submit',
+                        update: '/api/form/submit',
+                        //read: '/api/load'
+                    },
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    events: {
+                        onBeforeSend: function(instance) {
+                            console.log('Custom onBeforeSend', instance);
+                        },
+                        onSending: function(instance) {
+                            console.log('Custom onSending', instance);
+                        },
+                        onSent: function(response, instance) {
+                            console.log('Custom onSent', response, instance);
+                        },
+                        onError: function(error, instance) {
+                            console.error('Custom onError', error, instance);
+                        },
+                        onBeforeLoad: function(instance) {
+                            console.log('Custom onBeforeLoad', instance);
+                        },
+                        onLoading: function(instance) {
+                            console.log('Custom onLoading', instance);
+                        },
+                        onLoad: function(response, instance) {
+                            console.log('Custom onLoad', response, instance);
+                            instance.loadFormData(response);
+                        },
+                        onLoadError: function(error, instance) {
+                            console.error('Custom onLoadError', error, instance);
+                        }
+                    }
+                },
+                editing: {
+                    enabled: true,
+                    //mode: 'create', // 'create' or 'update'
+                    saveButton: {
+                        title: 'Submit Form',
+                        cssClass: 'govuk-button',
+                        events: {
+                            onSave: function(instance, button) {
+                                console.log('Custom onSave', instance, button);
+                            },
+                            onSaving: function(instance, button) {
+                                console.log('Custom onSaving', instance, button);
+                            },
+                            onSaveSuccess: function(response, instance, button) {
+                                console.log('Custom onSaveSuccess', response, instance, button);
+                            },
+                            onSaveError: function(error, instance, button) {
+                                console.error('Custom onSaveError', error, instance, button);
+                            }
+                        }
+                    }
+                },
+                previewEnabled: true,
+                previewOptions: {
+                    showPreviewTab: true,
+                    showJSONSourceTab: true,
+                },
+            });
+        });
+    </script>
+}
