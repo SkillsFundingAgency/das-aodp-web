@@ -1,6 +1,8 @@
 using GovUk.Frontend.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SFA.DAS.AODP.Infrastructure.ApiClients;
+using SFA.DAS.AODP.Infrastructure.Context;
 using SFA.DAS.AODP.Web.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,7 +33,12 @@ builder.Services
      {
          options.Filters.Add<AutoValidateAntiforgeryTokenAttribute>();
      });
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+    options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+});
 
+builder.Services.AddScoped<IApplicationDbContext, ApplicationDbContext>();
 
 var app = builder.Build();
 
@@ -60,5 +67,6 @@ app
             "default",
             "{controller=Home}/{action=Index}/{id?}");
     });
+
 
 app.Run();

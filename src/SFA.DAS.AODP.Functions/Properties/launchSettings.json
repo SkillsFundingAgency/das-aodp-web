@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "SFA.DAS.AODP.Functions": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7276",
+      "launchBrowser": false
+    }
+  }
+}

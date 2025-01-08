@@ -4,11 +4,16 @@
 		<TargetFramework>net8.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
+		<UserSecretsId>8ec1fcf7-f730-4fc7-bf16-981f4bc8d0d3</UserSecretsId>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="GovUk.Frontend.AspNetCore" Version="2.7.1" />
 		<PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="9.0.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
 		<PackageReference Include="System.Formats.Asn1" Version="9.0.0" />
 		<PackageReference Include="System.Text.Json" Version="9.0.0" />
@@ -17,6 +22,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\SFA.DAS.AODP.Common\SFA.DAS.AODP.Common.csproj" />
+		<ProjectReference Include="..\SFA.DAS.AODP.Functions\SFA.DAS.AODP.Functions.csproj" />
 		<ProjectReference Include="..\SFA.DAS.AODP.Infrastructure\SFA.DAS.AODP.Infrastructure.csproj" />
 	</ItemGroup>
 
