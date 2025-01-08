@@ -10,4 +10,8 @@
 		<NoWarn>CS8618</NoWarn>
 	</PropertyGroup>
 
+	<ItemGroup>
+	  <PackageReference Include="CsvHelper" Version="33.0.1" />
+	</ItemGroup>
+
 </Project>
