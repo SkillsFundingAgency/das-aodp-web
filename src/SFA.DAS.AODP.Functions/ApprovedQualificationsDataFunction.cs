@@ -28,6 +28,7 @@ namespace SFA.DAS.AODP.Functions
                 csv.Context.RegisterClassMap<ModelClassMap>();
 
                 var approvedQualifications = csv.GetRecords<ApprovedQualification>().ToList();
+                Console.WriteLine($"Total Records Read: {approvedQualifications.Count}");
 
                 // Add records to DB
                 _applicationDbContext.ApprovedQualifications.AddRange(approvedQualifications);
