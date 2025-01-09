@@ -1,8 +1,8 @@
 ﻿<div id="formBuilder"></div>
 
 @section Scripts {
-    <link href="~/lib/fujitsuformbuilder/css/style.css" rel="stylesheet" />
-    <script src="~/lib/fujitsuformbuilder/js/fujitsuformbuilder.js"></script>
+    <link href="~/lib/fujitsuFormBuilder/css/style.css" rel="stylesheet" />
+    <script src="~/lib/fujitsuFormBuilder/js/fujitsuFormBuilder.js"></script>
     <script type="text/javascript">
         document.addEventListener('DOMContentLoaded', function() {
             const formBuilderContainer = document.getElementById('formBuilder');
@@ -11,8 +11,8 @@
             window.formBuilderInstance = new window.fujitsuFormBuilder(formBuilderContainer, {
                 dataSource: {
                     endpoints: {
-                        insert: '/api/submit',
-                        //update: '/api/update',
+                        //insert: '/api/submit',
+                        update: '/api/form/submit',
                         //read: '/api/load'
                     },
                     method: 'POST',

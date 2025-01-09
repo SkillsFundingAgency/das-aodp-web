@@ -159,52 +159,110 @@
             }
         });
 
-        // AJAX function to send data
+        //// AJAX function to send data
+        //function sendData(data, button, endpoint) {
+        //    dataSource.events.onBeforeSend(this);
+        //    const xhr = new XMLHttpRequest();
+        //    xhr.open(dataSource.method, endpoint, true);
+        //    for (const header in dataSource.headers) {
+        //        xhr.setRequestHeader(header, dataSource.headers[header]);
+        //    }
+        //    xhr.onreadystatechange = function () {
+        //        if (xhr.readyState === 4) {
+        //            if (xhr.status >= 200 && xhr.status < 300) {
+        //                const response = JSON.parse(xhr.responseText);
+        //                dataSource.events.onSent(response, this);
+        //                editing.saveButton.events.onSaveSuccess(response, this, button);
+        //                mergeFormData(response);
+        //            } else {
+        //                dataSource.events.onError(xhr.statusText, this);
+        //                editing.saveButton.events.onSaveError(xhr.statusText, this, button);
+        //            }
+        //        }
+        //    }.bind(this);
+        //    xhr.send(JSON.stringify(data));
+        //    dataSource.events.onSending(this);
+        //}
+
+        //// AJAX function to load data
+        //function loadData() {
+        //    dataSource.events.onBeforeLoad(this);
+        //    const xhr = new XMLHttpRequest();
+        //    xhr.open('GET', dataSource.endpoints.read, true);
+        //    for (const header in dataSource.headers) {
+        //        xhr.setRequestHeader(header, dataSource.headers[header]);
+        //    }
+        //    xhr.onreadystatechange = function () {
+        //        if (xhr.readyState === 4) {
+        //            if (xhr.status >= 200 && xhr.status < 300) {
+        //                const response = JSON.parse(xhr.responseText);
+        //                dataSource.events.onLoad(response, this);
+        //            } else {
+        //                dataSource.events.onLoadError(xhr.statusText, this);
+        //            }
+        //        }
+        //    }.bind(this);
+        //    xhr.send();
+        //    dataSource.events.onLoading(this);
+        //}
+
         function sendData(data, button, endpoint) {
             dataSource.events.onBeforeSend(this);
-            const xhr = new XMLHttpRequest();
-            xhr.open(dataSource.method, endpoint, true);
-            for (const header in dataSource.headers) {
-                xhr.setRequestHeader(header, dataSource.headers[header]);
-            }
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4) {
-                    if (xhr.status >= 200 && xhr.status < 300) {
-                        const response = JSON.parse(xhr.responseText);
-                        dataSource.events.onSent(response, this);
-                        editing.saveButton.events.onSaveSuccess(response, this, button);
-                        mergeFormData(response);
-                    } else {
-                        dataSource.events.onError(xhr.statusText, this);
-                        editing.saveButton.events.onSaveError(xhr.statusText, this, button);
+
+            fetch(endpoint, {
+                method: dataSource.method,
+                headers: dataSource.headers,
+                body: JSON.stringify(data)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        //response.body.text().then(v => console.log(v));
+                        return response.text().then(errorText => {
+                            throw new Error(`Error: ${response.status} - ${errorText}`);
+                        });
                     }
-                }
-            }.bind(this);
-            xhr.send(JSON.stringify(data));
-            dataSource.events.onSending(this);
+                    return response.json();
+                })
+                .then(responseData => {
+                    dataSource.events.onSent(responseData, this);
+                    editing.saveButton.events.onSaveSuccess(responseData, this, button);
+                    mergeFormData(responseData);
+                })
+                .catch(error => {
+                    dataSource.events.onError(error.message, this);
+                    editing.saveButton.events.onSaveError(error.message, this, button);
+                })
+                .finally(() => {
+                    dataSource.events.onSending(this);
+                });
         }
 
-        // AJAX function to load data
         function loadData() {
             dataSource.events.onBeforeLoad(this);
-            const xhr = new XMLHttpRequest();
-            xhr.open('GET', dataSource.endpoints.read, true);
-            for (const header in dataSource.headers) {
-                xhr.setRequestHeader(header, dataSource.headers[header]);
-            }
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4) {
-                    if (xhr.status >= 200 && xhr.status < 300) {
-                        const response = JSON.parse(xhr.responseText);
-                        dataSource.events.onLoad(response, this);
-                    } else {
-                        dataSource.events.onLoadError(xhr.statusText, this);
+
+            fetch(dataSource.endpoints.read, {
+                method: 'GET',
+                headers: dataSource.headers
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(errorText => {
+                            throw new Error(`Error: ${response.status} - ${errorText}`);
+                        });
                     }
-                }
-            }.bind(this);
-            xhr.send();
-            dataSource.events.onLoading(this);
+                    return response.json();
+                })
+                .then(responseData => {
+                    dataSource.events.onLoad(responseData, this);
+                })
+                .catch(error => {
+                    dataSource.events.onLoadError(error.message, this);
+                })
+                .finally(() => {
+                    dataSource.events.onLoading(this);
+                });
         }
+
 
         // Merge response data with formData
         function mergeFormData(response) {
