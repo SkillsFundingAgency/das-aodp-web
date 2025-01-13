@@ -1,0 +1,13 @@
+﻿@model Form
+
+<h1 class="govuk-heading-l">Delete Form?</h1>
+
+<form asp-action="Delete" method="post">
+    <input type="hidden" id="Id" name="Id" value="@Model.Id" />
+    <govuk-warning-text icon-fallback-text="Warning">
+        Are you sure you want to delete the form "@Model.Name"?
+    </govuk-warning-text>
+
+    <govuk-button type="submit">Delete</govuk-button>
+    <a class="govuk-button govuk-button--secondary" href="@Url.Action("Index")">Cancel</a>
+</form>

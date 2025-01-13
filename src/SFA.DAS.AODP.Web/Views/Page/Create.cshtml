@@ -1,0 +1,34 @@
+﻿@model Page
+
+<h1 class="govuk-heading-l">Create Page</h1>
+
+<form asp-action="Create" method="post">
+    <input type="hidden" name="SectionId" value="@Model.SectionId" />
+    <div>
+        <govuk-input name="Title" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" spellcheck="false" value="@Model.Title">
+            <govuk-input-label is-page-heading="false" class="govuk-label--s">Title</govuk-input-label>
+        </govuk-input>
+    </div>
+    <div>
+        <govuk-input name="Description" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" spellcheck="false" value="@Model.Description">
+            <govuk-input-label is-page-heading="false" class="govuk-label--s">Description</govuk-input-label>
+        </govuk-input>
+    </div>
+    <div>
+        <govuk-input name="Order" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" spellcheck="false" value="@Model.Order">
+            <govuk-input-label is-page-heading="false" class="govuk-label--s">Order</govuk-input-label>
+        </govuk-input>
+    </div>
+    <div>
+        <govuk-select name="NextPageId">
+            <govuk-select-label>Next Page</govuk-select-label>
+            @foreach (var item in (List<Page>)ViewData["Pages"])
+            {
+                <govuk-select-item value="@item.Id">@item.Title</govuk-select-item>
+            }
+        </govuk-select>
+    </div>
+
+    <govuk-button type="submit">Save</govuk-button>
+    <a class="govuk-button govuk-button--secondary" href="@Url.Action("Edit", "Section", new { id = Model.SectionId })">Cancel</a>
+</form>

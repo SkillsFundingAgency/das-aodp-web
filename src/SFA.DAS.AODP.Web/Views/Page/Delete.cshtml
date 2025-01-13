@@ -1,0 +1,13 @@
+﻿@model Page
+
+<h1 class="govuk-heading-l">Delete Page?</h1>
+
+<form asp-action="Delete" method="post">
+    <input type="hidden" id="Id" name="Id" value="@Model.Id" />
+    <govuk-warning-text icon-fallback-text="Warning">
+        Are you sure you want to delete the page "@Model.Title"?
+    </govuk-warning-text>
+
+    <govuk-button class="govuk-button--warning" type="submit">Delete</govuk-button>
+    <a class="govuk-button govuk-button--secondary" href="@Url.Action("Edit", "Section", new { id = Model.SectionId })">Cancel</a>
+</form>

@@ -3,14 +3,17 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SFA.DAS.AODP.Infrastructure.MemoryCache;
 using SFA.DAS.AODP.Models.Forms.DTO;
 
 namespace SFA.DAS.AODP.Web.Controllers.api;
 
 [Route("api/[controller]")]
 [ApiController]
-public class FormController : ControllerBase
+public class FormController : BaseApiController
 {
+    public FormController(ICacheManager cacheManager) : base(cacheManager) { }
+
     [AllowAnonymous]
     [HttpPost("ping")]
     [IgnoreAntiforgeryToken]
@@ -30,8 +33,8 @@ public class FormController : ControllerBase
             var data = await requestReader.ReadToEndAsync();
             var parsed = JsonConvert.DeserializeObject<Form>(data);
         }
-        catch (Exception ex) 
-        { 
+        catch (Exception ex)
+        {
             return BadRequest(ex.Message);
         }
 

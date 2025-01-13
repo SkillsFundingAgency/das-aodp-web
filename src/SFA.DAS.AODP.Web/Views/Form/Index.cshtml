@@ -1,0 +1,28 @@
+﻿@model List<Form>
+
+<h1 class="govuk-heading-l">View Forms</h1>
+
+<a class="govuk-button" href="@Url.Action("Create")">Create New Form</a>
+<table class="govuk-table">
+    <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">Name</th>
+            <th scope="col" class="govuk-table__header">Version</th>
+            <th scope="col" class="govuk-table__header">Options</th>
+        </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+        @foreach (var item in Model)
+        {
+            <tr class="govuk-table__row">
+                <td>@item.Name</td>
+                <td>@item.Version</td>
+                <td>
+                    @* <a class="govuk-button govuk-button--secondary" href="@Url.Action("Details", new { id = item.Id })">Details</a>&nbsp; *@
+                    <a class="govuk-button" href="@Url.Action("Edit", new { id = item.Id })">Edit</a>&nbsp;
+                    <a class="govuk-button govuk-button--warning" href="@Url.Action("Delete", new { id = item.Id })">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

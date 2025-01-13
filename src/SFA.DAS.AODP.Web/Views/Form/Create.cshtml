@@ -1,0 +1,31 @@
+﻿@model Form
+
+<h1 class="govuk-heading-l">Create New Form</h1>
+
+<form asp-action="Create" method="post">
+    <div>
+        <govuk-input name="Name" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" spellcheck="false" value="@Model.Name">
+            <govuk-input-label is-page-heading="false" class="govuk-label--s">Form Name</govuk-input-label>
+        </govuk-input>
+    </div>
+    <div>
+        <govuk-input name="Version" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" spellcheck="false" value="@Model.Version">
+            <govuk-input-label is-page-heading="false" class="govuk-label--s">Version</govuk-input-label>
+        </govuk-input>
+    </div>
+    <div>
+        <<govuk-checkboxes name="Published">
+            <govuk-checkboxes-item value="yes">
+                Publish
+            </govuk-checkboxes-item>
+        </govuk-checkboxes>
+    </div>
+    <div>
+        <govuk-input name="Key" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" spellcheck="false" value="@Model.Key">
+            <govuk-input-label is-page-heading="false" class="govuk-label--s">Key</govuk-input-label>
+        </govuk-input>
+    </div>
+
+    <govuk-button type="submit">Save</govuk-button>
+    <a class="govuk-button govuk-button--secondary" href="@Url.Action("Index", "Form")">Cancel</a>
+</form>
