@@ -1,4 +1,4 @@
-﻿namespace SFA.DAS.AODP.Models.Configuration
+﻿namespace SFA.DAS.AODP.Models.Settings
 {
     public class RedisConnectionSettings
     {

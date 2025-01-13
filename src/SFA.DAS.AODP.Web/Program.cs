@@ -1,6 +1,6 @@
 using GovUk.Frontend.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
-using SFA.DAS.AODP.Infrastructure.ApiClients;
+using SFA.DAS.AODP.Api.Extensions;
 using SFA.DAS.AODP.Web.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,7 +9,6 @@ var configuration = builder.Configuration.LoadConfiguration(builder.Services, bu
 
 builder.Services
     .AddServiceRegistrations(configuration)
-    .AddAodpApiClient(configuration, builder.Environment.IsDevelopment())
     .AddGovUkFrontend()
     .AddLogging()
     .AddDataProtectionKeys("das-aodp-web", configuration, builder.Environment.IsDevelopment())

@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SFA.DAS.AODP.Infrastructure.ApiClients;
 
 namespace SFA.DAS.AODP.Web.Controllers
 {

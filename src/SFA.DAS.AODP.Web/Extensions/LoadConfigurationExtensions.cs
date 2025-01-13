@@ -1,32 +1,39 @@
-﻿using SFA.DAS.AODP.Common.Extensions;
+﻿using SFA.DAS.Configuration.AzureTableStorage;
 using System.Diagnostics.CodeAnalysis;
-
 namespace SFA.DAS.AODP.Web.Extensions
 {
+
     [ExcludeFromCodeCoverage]
     public static class LoadConfigurationExtensions
     {
-        public static IConfigurationRoot LoadConfiguration(this IConfiguration config, IServiceCollection services, bool isDevelopment)
+        public static IConfigurationRoot LoadConfiguration(this IConfiguration configuration, IServiceCollection services, bool isDevelopment)
         {
             var configBuilder = new ConfigurationBuilder()
-                .AddConfiguration(config)
+                .AddConfiguration(configuration)
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddEnvironmentVariables();
 
 #if DEBUG
             configBuilder
                 .AddJsonFile("appsettings.json", true)
-                .AddJsonFile("appsettings.local.json", true);
+                .AddJsonFile("appsettings.Development.json", true);
 #endif
 
             if (!isDevelopment)
             {
-                configBuilder.LoadAzureTableStorage(config);
+
+                configBuilder.AddAzureTableStorage(options =>
+                {
+                    options.ConfigurationKeys = configuration["ConfigNames"].Split(",");
+                    options.StorageConnectionString = configuration["ConfigurationStorageConnectionString"];
+                    options.EnvironmentName = configuration["Environment"];
+                    options.PreFixConfigurationKeys = false;
+                }
+                   );
             }
 
-            var configuration = configBuilder.Build();
+            return configBuilder.Build();
 
-            return configuration;
         }
     }
 }
