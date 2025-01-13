@@ -12,10 +12,10 @@ public class DateValidator : IQuestionValidator
     public DateTime? EqualTo { get; set; }
     public DateTime? NotEqualTo { get; set; }
 
-    public TimeSpan? GreaterThanTimeInFuture { get; set; }
-    public TimeSpan? LessThanTimeInFuture { get; set; }
-    public TimeSpan? GreaterThanTimeInPast{ get; set; }
-    public TimeSpan? LessThanTimeInPast { get; set; }
+    public DateSpan? GreaterThanTimeInFuture { get; set; }
+    public DateSpan? LessThanTimeInFuture { get; set; }
+    public DateSpan? GreaterThanTimeInPast{ get; set; }
+    public DateSpan? LessThanTimeInPast { get; set; }
 
     public void Validate(QuestionSchema schema, AnsweredQuestion answeredQuestion)
     {
@@ -41,30 +41,42 @@ public class DateValidator : IQuestionValidator
     {
         if (GreaterThanTimeInFuture is not null)
         {
-            var future = DateTime.Now.Date + GreaterThanTimeInFuture.Value;
-            if (answeredQuestion.DateValue is null || answeredQuestion.DateValue > future.Date)
+            var future = GreaterThanTimeInFuture.Add(DateTime.Now.Date);
+            if (answeredQuestion.DateValue is null || answeredQuestion.DateValue < future.Date)
                 throw new QuestionValidationFailed(schema.Id, schema.Title, $"{schema.Title} must be greater than {future}. ");
         }
 
         if (LessThanTimeInFuture is not null)
         {
-            var future = DateTime.Now.Date + LessThanTimeInFuture.Value;
-            if (answeredQuestion.DateValue is not null && answeredQuestion.DateValue < future.Date)
+            var future = LessThanTimeInFuture.Add(DateTime.Now.Date);
+            if (answeredQuestion.DateValue is not null && answeredQuestion.DateValue > future.Date)
                 throw new QuestionValidationFailed(schema.Id, schema.Title, $"{schema.Title} must be greater than {future}. ");
         }
 
         if (GreaterThanTimeInPast is not null)
         {
-            var future = DateTime.Now.Date - GreaterThanTimeInPast.Value;
-            if (answeredQuestion.DateValue is null || answeredQuestion.DateValue > future.Date)
-                throw new QuestionValidationFailed(schema.Id, schema.Title, $"{schema.Title} must be greater than {future}. ");
+            var past = GreaterThanTimeInPast.Subtract(DateTime.Now.Date);
+            if (answeredQuestion.DateValue is null || answeredQuestion.DateValue < past.Date)
+                throw new QuestionValidationFailed(schema.Id, schema.Title, $"{schema.Title} must be greater than {past}. ");
         }
 
         if (LessThanTimeInPast is not null)
         {
-            var future = DateTime.Now.Date - LessThanTimeInPast.Value;
-            if (answeredQuestion.DateValue is not null && answeredQuestion.DateValue < future.Date)
-                throw new QuestionValidationFailed(schema.Id, schema.Title, $"{schema.Title} must be greater than {future}. ");
+            var past = LessThanTimeInPast.Subtract(DateTime.Now.Date);
+            if (answeredQuestion.DateValue is not null && answeredQuestion.DateValue > past.Date)
+                throw new QuestionValidationFailed(schema.Id, schema.Title, $"{schema.Title} must be greater than {past}. ");
         }
     }
+}
+
+public record DateSpan(int Years, int Months, int Days)
+{
+    public DateTime Subtract(DateTime date) =>
+        date.AddYears(0 - Years)
+            .AddMonths(0 - Months)
+            .AddDays(0 - Days);
+    public DateTime Add(DateTime date) =>
+        date.AddYears(Years)
+            .AddMonths(Months)
+            .AddDays(Days);
 }

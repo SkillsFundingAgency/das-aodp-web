@@ -12,14 +12,6 @@ namespace SFA.DAS.AODP.Web.Controllers.api;
 public class FormController : ControllerBase
 {
     [AllowAnonymous]
-    [HttpPost("ping")]
-    [IgnoreAntiforgeryToken]
-    public IActionResult Ping()
-    {
-        return Ok("pong");
-    }
-
-    [AllowAnonymous]
     [HttpPost("Submit")]
     [IgnoreAntiforgeryToken]
     public async Task<IActionResult> Submit()

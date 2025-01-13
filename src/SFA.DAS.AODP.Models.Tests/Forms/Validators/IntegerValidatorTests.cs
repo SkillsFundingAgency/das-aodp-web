@@ -48,6 +48,7 @@ public class IntegerValidatorTests
         Assert.DoesNotThrow(() => validator.Validate(_questionSchema.Object, _answeredQuestion.Object));
     }
 
+    [Test]
     public void Test_GreaterThan()
     {
         var validator = new IntegerValidator()
@@ -71,6 +72,7 @@ public class IntegerValidatorTests
         );
     }
 
+    [Test]
     public void Test_LessThan()
     {
         var validator = new IntegerValidator()
@@ -91,6 +93,7 @@ public class IntegerValidatorTests
         );
     }
 
+    [Test]
     public void Test_EqualTo()
     {
         var validator = new IntegerValidator()
@@ -114,6 +117,7 @@ public class IntegerValidatorTests
         );
     }
 
+    [Test]
     public void Test_NotEqualTo()
     {
         var validator = new IntegerValidator()

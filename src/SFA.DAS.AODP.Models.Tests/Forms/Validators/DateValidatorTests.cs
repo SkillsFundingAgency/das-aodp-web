@@ -136,4 +136,94 @@ public class DateValidatorTests
             $"{_questionSchema.Object.Title} must not be equal to {validator.EqualTo}. "
         );
     }
+
+    [Test]
+    public void Test_GreaterThanTimeInFuture()
+    {
+        var validator = new DateValidator()
+        {
+            GreaterThanTimeInFuture = new DateSpan(1, 1, 1),
+        };
+
+        _answeredQuestion.Object.DateValue = DateTime.Now.AddYears(1).AddMonths(1).AddDays(2);
+        Assert.DoesNotThrow(() => validator.Validate(_questionSchema.Object, _answeredQuestion.Object));
+
+        _answeredQuestion.Object.DateValue = DateTime.Now.AddYears(1).AddMonths(1);
+        Assert.Throws<QuestionValidationFailed>(
+            () => validator.Validate(_questionSchema.Object, _answeredQuestion.Object),
+            $"{_questionSchema.Object.Title} must be greater than {validator.GreaterThan}. "
+        );
+
+        _answeredQuestion.Object.DateValue = null;
+        Assert.Throws<QuestionValidationFailed>(
+            () => validator.Validate(_questionSchema.Object, _answeredQuestion.Object),
+            $"{_questionSchema.Object.Title} must be greater than {validator.GreaterThan}. "
+        );
+    }
+
+    [Test]
+    public void Test_LessThanTimeInFuture()
+    {
+        var validator = new DateValidator()
+        {
+            LessThanTimeInFuture = new DateSpan(1, 1, 1),
+        };
+
+        _answeredQuestion.Object.DateValue = DateTime.Now.AddYears(1).AddMonths(1);
+        Assert.DoesNotThrow(() => validator.Validate(_questionSchema.Object, _answeredQuestion.Object));
+
+        _answeredQuestion.Object.DateValue = null;
+        Assert.DoesNotThrow(() => validator.Validate(_questionSchema.Object, _answeredQuestion.Object));
+
+        _answeredQuestion.Object.DateValue = DateTime.Now.AddYears(1).AddMonths(1).AddDays(2);
+        Assert.Throws<QuestionValidationFailed>(
+            () => validator.Validate(_questionSchema.Object, _answeredQuestion.Object),
+            $"{_questionSchema.Object.Title} must be less than {validator.LessThan}. "
+        );
+    }
+
+    [Test]
+    public void Test_GreaterThanTimeInPast()
+    {
+        var validator = new DateValidator()
+        {
+            GreaterThanTimeInPast = new DateSpan(1, 1, 1),
+        };
+
+        _answeredQuestion.Object.DateValue = DateTime.Now.AddYears(-1).AddMonths(-1);
+        Assert.DoesNotThrow(() => validator.Validate(_questionSchema.Object, _answeredQuestion.Object));
+
+        _answeredQuestion.Object.DateValue = DateTime.Now.AddYears(-1).AddMonths(-1).AddDays(-2);
+        Assert.Throws<QuestionValidationFailed>(
+            () => validator.Validate(_questionSchema.Object, _answeredQuestion.Object),
+            $"{_questionSchema.Object.Title} must be greater than {validator.GreaterThan}. "
+        );
+
+        _answeredQuestion.Object.DateValue = null;
+        Assert.Throws<QuestionValidationFailed>(
+            () => validator.Validate(_questionSchema.Object, _answeredQuestion.Object),
+            $"{_questionSchema.Object.Title} must be greater than {validator.GreaterThan}. "
+        );
+    }
+
+    [Test]
+    public void Test_LessThanTimeInPast()
+    {
+        var validator = new DateValidator()
+        {
+            LessThanTimeInPast = new DateSpan(1, 1, 1),
+        };
+
+        _answeredQuestion.Object.DateValue = DateTime.Now.AddYears(-1).AddMonths(-1).AddDays(-2);
+        Assert.DoesNotThrow(() => validator.Validate(_questionSchema.Object, _answeredQuestion.Object));
+
+        _answeredQuestion.Object.DateValue = null;
+        Assert.DoesNotThrow(() => validator.Validate(_questionSchema.Object, _answeredQuestion.Object));
+
+        _answeredQuestion.Object.DateValue = DateTime.Now.AddYears(-1).AddMonths(-1);
+        Assert.Throws<QuestionValidationFailed>(
+            () => validator.Validate(_questionSchema.Object, _answeredQuestion.Object),
+            $"{_questionSchema.Object.Title} must be less than {validator.LessThan}. "
+        );
+    }
 }

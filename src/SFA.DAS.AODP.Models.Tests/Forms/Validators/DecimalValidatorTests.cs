@@ -48,6 +48,7 @@ public class DecimalValidatorTests
         Assert.DoesNotThrow(() => validator.Validate(_questionSchema.Object, _answeredQuestion.Object));
     }
 
+    [Test]
     public void Test_GreaterThan()
     {
         var validator = new DecimalValidator()
@@ -71,6 +72,7 @@ public class DecimalValidatorTests
         );
     }
 
+    [Test]
     public void Test_LessThan()
     {
         var validator = new DecimalValidator()
@@ -91,6 +93,7 @@ public class DecimalValidatorTests
         );
     }
 
+    [Test]
     public void Test_EqualTo()
     {
         var validator = new DecimalValidator()
@@ -114,6 +117,7 @@ public class DecimalValidatorTests
         );
     }
 
+    [Test]
     public void Test_NotEqualTo()
     {
         var validator = new DecimalValidator()
