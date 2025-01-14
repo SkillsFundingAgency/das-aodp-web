@@ -10,9 +10,9 @@ namespace SFA.DAS.AODP.Web.Controllers.api;
 
 [Route("api/[controller]")]
 [ApiController]
-public class FormController : BaseApiController
+public class FormController : ControllerBase
 {
-    public FormController(ICacheManager cacheManager) : base(cacheManager) { }
+    public FormController() { }
 
     [AllowAnonymous]
     [HttpPost("ping")]

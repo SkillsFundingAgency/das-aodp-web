@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Api.Extensions;
 using SFA.DAS.AODP.Infrastructure.ExampleData;
 using SFA.DAS.AODP.Infrastructure.MemoryCache;
+using SFA.DAS.AODP.Infrastructure.Repository;
 using SFA.DAS.AODP.Web.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -40,6 +41,7 @@ builder.Services.AddMemoryCache(options =>
 });
 
 builder.Services.AddScoped<ICacheManager, CacheManager>();
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(CachedGenericRepository<>));
 
 
 var app = builder.Build();

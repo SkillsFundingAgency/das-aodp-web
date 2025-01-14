@@ -1,60 +1,60 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Infrastructure.MemoryCache;
+using SFA.DAS.AODP.Infrastructure.Repository;
 using SFA.DAS.AODP.Models.Forms.FormBuilder;
 
 namespace SFA.DAS.AODP.Web.Controllers;
 
-public class SectionController : BaseController
+public class SectionController : Controller
 {
-    public SectionController(ICacheManager cacheManager) : base(cacheManager) { }
+    private readonly IGenericRepository<Section> _sectionRepository;
+    private readonly IGenericRepository<Page> _pageRepository;
+
+    public SectionController(IGenericRepository<Section> sectionRepository, IGenericRepository<Page> pageRepository)
+    {
+        _sectionRepository = sectionRepository;
+        _pageRepository = pageRepository;
+    }
 
     #region Create
     public IActionResult Create(Guid formId)
     {
-        var section = new Section { FormId = formId };
-        ViewData["Sections"] = GetFromCache<List<Section>>("Sections")?.Where(s => s.FormId == section.FormId).ToList() ?? new List<Section>();
-        return View(section);
+        ViewData["Sections"] = _sectionRepository.GetAll().Where(p => p.FormId == formId).ToList();
+        return View(new Section { FormId = formId });
     }
 
     [HttpPost]
     public IActionResult Create(Section section)
     {
-        var sections = GetFromCache<List<Section>>("Sections") ?? new List<Section>();
-        section.Id = Guid.NewGuid();//sections.Count + 1;
-        sections.Add(section);
-        SetToCache("Sections", sections);
-        return RedirectToAction(nameof(Edit), "Form", new { id = section.FormId });
+        _sectionRepository.Add(section);
+        return RedirectToAction("Edit", "Form", new { id = section.FormId });
     }
     #endregion
 
     #region Edit
-    public async Task<ActionResult> Edit(Guid id)
+    public IActionResult Edit(Guid id)
     {
-        var section = GetFromCache<List<Section>>("Sections")?.FirstOrDefault(s => s.Id == id);
-        ViewData["Sections"] = GetFromCache<List<Section>>("Sections")?.Where(s => s.FormId == section.FormId).ToList() ?? new List<Section>();
-        ViewData["Pages"] = GetFromCache<List<Page>>("Pages")?.Where(s => s.SectionId == id).ToList() ?? new List<Page>();
-
+        var section = _sectionRepository.GetById(id);
         if (section == null) return NotFound();
+
+        ViewData["Sections"] = _sectionRepository.GetAll().Where(p => p.FormId == section.FormId).ToList();
+        ViewData["Pages"] = _pageRepository.GetAll().Where(p => p.SectionId == section.Id).ToList();
+
         return View(section);
     }
 
     [HttpPost]
     public IActionResult Edit(Section section)
     {
-        var sections = GetFromCache<List<Section>>("Sections") ?? new List<Section>();
-        var index = sections.FindIndex(s => s.Id == section.Id);
-        if (index == -1) return NotFound();
-
-        sections[index] = section;
-        SetToCache("Sections", sections);
-        return RedirectToAction(nameof(Edit), "Form", new { id = section.FormId });
+        _sectionRepository.Update(section);
+        return RedirectToAction("Edit", "Form", new { id = section.FormId });
     }
     #endregion
 
     #region Delete
     public IActionResult Delete(Guid id)
     {
-        var section = GetFromCache<List<Section>>("Sections")?.FirstOrDefault(s => s.Id == id);
+        var section = _sectionRepository.GetById(id);
         if (section == null) return NotFound();
         return View(section);
     }
@@ -62,13 +62,11 @@ public class SectionController : BaseController
     [HttpPost, ActionName("Delete")]
     public IActionResult DeleteConfirmed(Guid id)
     {
-        var sections = GetFromCache<List<Section>>("Sections") ?? new List<Section>();
-        var section = sections.FirstOrDefault(s => s.Id == id);
+        var section = _sectionRepository.GetById(id);
         if (section != null)
         {
-            sections.Remove(section);
-            SetToCache("Sections", sections);
-            return RedirectToAction(nameof(Edit), "Form", new { id = section.FormId });
+            _sectionRepository.Delete(id);
+            return RedirectToAction("Edit", "Form", new { id = section.FormId });
         }
         return NotFound();
     }

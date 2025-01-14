@@ -4,15 +4,20 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SFA.DAS.AODP.Infrastructure.MemoryCache;
+using SFA.DAS.AODP.Infrastructure.Repository;
 using SFA.DAS.AODP.Models.Forms.FormBuilder;
 
 namespace SFA.DAS.AODP.Web.Controllers.api;
 
 [Route("api/[controller]")]
 [ApiController]
-public class SectionController : BaseApiController
+public class SectionController : ControllerBase
 {
-    public SectionController(ICacheManager cacheManager) : base(cacheManager) { }
+    private readonly IGenericRepository<Section> _sectionRepository;
+
+    public SectionController(IGenericRepository<Section> sectionRepository) {
+        _sectionRepository = sectionRepository;
+    }
 
     [HttpGet]
     [Route("GetSections", Name = "GetSections")]
@@ -22,7 +27,7 @@ public class SectionController : BaseApiController
     {
         try
         {
-            var sections = GetFromCache<List<Section>>("Sections")?.Where(s => s.FormId == formId).ToList() ?? new List<Section>();
+            var sections = _sectionRepository.GetAll().Where(s => s.FormId == formId).ToList();
             return Ok(sections);
         }
         catch (Exception ex)

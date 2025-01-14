@@ -1,18 +1,24 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SFA.DAS.AODP.Infrastructure.MemoryCache;
+using SFA.DAS.AODP.Infrastructure.Repository;
 using SFA.DAS.AODP.Models.Forms.FormBuilder;
 
 namespace SFA.DAS.AODP.Web.Controllers;
 
-public class FormController : BaseController
+public class FormController : Controller
 {
-    public FormController(ICacheManager cacheManager) : base(cacheManager) { }
+    private readonly IGenericRepository<Form> _formRepository;
+    private readonly IGenericRepository<Section> _sectionRepository;
+
+    public FormController(IGenericRepository<Form> formRepository, IGenericRepository<Section> sectionRepository) {
+        _formRepository = formRepository;
+        _sectionRepository = sectionRepository;
+    }
 
     #region Main
     public IActionResult Index()
     {
-        var forms = GetFromCache<List<Form>>("Forms") ?? new List<Form>();
-        if (forms.Count() == 0) return RedirectToAction(nameof(Create));
+        var forms = _formRepository.GetAll().ToList();
+        if (!forms.Any()) return RedirectToAction(nameof(Create));
         return View(forms);
     }
     #endregion
@@ -20,17 +26,13 @@ public class FormController : BaseController
     #region Create
     public IActionResult Create()
     {
-        var form = new Form();
-        return View(form);
+        return View(new Form());
     }
 
     [HttpPost]
     public IActionResult Create(Form form)
     {
-        var forms = GetFromCache<List<Form>>("Forms") ?? new List<Form>();
-        form.Id = Guid.NewGuid();//forms.Count + 1;
-        forms.Add(form);
-        SetToCache("Forms", forms);
+        _formRepository.Add(form);
         return RedirectToAction(nameof(Index));
     }
     #endregion
@@ -38,21 +40,18 @@ public class FormController : BaseController
     #region Edit
     public IActionResult Edit(Guid id)
     {
-        var form = GetFromCache<List<Form>>("Forms")?.FirstOrDefault(f => f.Id == id);
-        ViewData["Sections"] = GetFromCache<List<Section>>("Sections")?.Where(s => s.FormId == id).ToList() ?? new List<Section>();
+        var form = _formRepository.GetById(id);
         if (form == null) return NotFound();
+
+        ViewData["Sections"] = _sectionRepository.GetAll().Where(s => s.FormId == form.Id).ToList();
+
         return View(form);
     }
 
     [HttpPost]
     public IActionResult Edit(Form form)
     {
-        var forms = GetFromCache<List<Form>>("Forms") ?? new List<Form>();
-        var index = forms.FindIndex(f => f.Id == form.Id);
-        if (index == -1) return NotFound();
-
-        forms[index] = form;
-        SetToCache("Forms", forms);
+        _formRepository.Update(form);
         return RedirectToAction(nameof(Index));
     }
     #endregion
@@ -60,7 +59,7 @@ public class FormController : BaseController
     #region Delete
     public IActionResult Delete(Guid id)
     {
-        var form = GetFromCache<List<Form>>("Forms")?.FirstOrDefault(f => f.Id == id);
+        var form = _formRepository.GetById(id);
         if (form == null) return NotFound();
         return View(form);
     }
@@ -68,13 +67,8 @@ public class FormController : BaseController
     [HttpPost, ActionName("Delete")]
     public IActionResult DeleteConfirmed(Guid id)
     {
-        var forms = GetFromCache<List<Form>>("Forms") ?? new List<Form>();
-        forms.RemoveAll(f => f.Id == id);
-        SetToCache("Forms", forms);
-
-        if (forms.Count() == 0) return RedirectToAction(nameof(Create));
-
-        return RedirectToAction("Index", "Form", null);
+        _formRepository.Delete(id);
+        return RedirectToAction(nameof(Index));
     }
     #endregion
 }

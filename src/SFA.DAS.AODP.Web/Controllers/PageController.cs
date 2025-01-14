@@ -1,58 +1,58 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Infrastructure.MemoryCache;
+using SFA.DAS.AODP.Infrastructure.Repository;
 using SFA.DAS.AODP.Models.Forms.FormBuilder;
 
 namespace SFA.DAS.AODP.Web.Controllers;
 
-public class PageController : BaseController
+public class PageController : Controller
 {
-    public PageController(ICacheManager cacheManager) : base(cacheManager) { }
+    private readonly IGenericRepository<Page> _pageRepository;
+
+    public PageController(IGenericRepository<Page> pageRepository)
+    {
+        _pageRepository = pageRepository;
+    }
 
     #region Create
     public IActionResult Create(Guid sectionId)
     {
-        var page = new Page { SectionId = sectionId };
-        ViewData["Pages"] = GetFromCache<List<Page>>("Pages")?.Where(s => s.SectionId == page.SectionId).ToList() ?? new List<Page>();
-        return View(page);
+        ViewData["Pages"] = _pageRepository.GetAll().Where(p => p.SectionId == sectionId).ToList();
+        return View(new Page { SectionId = sectionId });
     }
 
     [HttpPost]
     public IActionResult Create(Page page)
     {
-        var pages = GetFromCache<List<Page>>("Pages") ?? new List<Page>();
-        page.Id = Guid.NewGuid();//pages.Count + 1;
-        pages.Add(page);
-        SetToCache("Pages", pages);
-        return RedirectToAction(nameof(Edit), new { sectionId = page.SectionId });
+        //page.Id = Guid.NewGuid();
+        _pageRepository.Add(page);
+        return RedirectToAction("Edit", "Section", new { id = page.SectionId });
     }
     #endregion
 
     #region Edit
     public IActionResult Edit(Guid id)
     {
-        var page = GetFromCache<List<Page>>("Pages")?.FirstOrDefault(p => p.Id == id);
-        ViewData["Pages"] = GetFromCache<List<Page>>("Pages")?.Where(s => s.SectionId == page.SectionId).ToList() ?? new List<Page>();
+        var page = _pageRepository.GetById(id);
         if (page == null) return NotFound();
+
+        ViewData["Pages"] = _pageRepository.GetAll().Where(p => p.SectionId == page.SectionId).ToList();
+
         return View(page);
     }
 
     [HttpPost]
     public IActionResult Edit(Page page)
     {
-        var pages = GetFromCache<List<Page>>("Pages") ?? new List<Page>();
-        var index = pages.FindIndex(p => p.Id == page.Id);
-        if (index == -1) return NotFound();
-
-        pages[index] = page;
-        SetToCache("Pages", pages);
-        return RedirectToAction(nameof(Index), new { sectionId = page.SectionId });
+        _pageRepository.Update(page);
+        return RedirectToAction("Edit", "Section", new { id = page.SectionId });
     }
     #endregion
 
     #region Delete
     public IActionResult Delete(Guid id)
     {
-        var page = GetFromCache<List<Page>>("Pages")?.FirstOrDefault(p => p.Id == id);
+        var page = _pageRepository.GetById(id);
         if (page == null) return NotFound();
         return View(page);
     }
@@ -60,13 +60,11 @@ public class PageController : BaseController
     [HttpPost, ActionName("Delete")]
     public IActionResult DeleteConfirmed(Guid id)
     {
-        var pages = GetFromCache<List<Page>>("Pages") ?? new List<Page>();
-        var page = pages.FirstOrDefault(p => p.Id == id);
+        var page = _pageRepository.GetById(id);
         if (page != null)
         {
-            pages.Remove(page);
-            SetToCache("Pages", pages);
-            return RedirectToAction(nameof(Edit), "Section", new { id = page.SectionId });
+            _pageRepository.Delete(id);
+            return RedirectToAction("Edit", "Section", new { id = page.SectionId });
         }
         return NotFound();
     }
