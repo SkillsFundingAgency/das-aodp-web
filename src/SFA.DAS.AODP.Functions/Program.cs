@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using SFA.DAS.AODP.Data;
 using SFA.DAS.AODP.Infrastructure.Context;
 
 var host = new HostBuilder()
@@ -13,7 +14,10 @@ var host = new HostBuilder()
         // Log connection string for debugging (optional, but useful during local development)
         Console.WriteLine($"Connection String: {connectionString}");
 
-        services.AddDbContext<ApplicationDbContext>(options =>
+        //services.AddDbContext<ApplicationDbContext>(options =>
+        //    options.UseSqlServer(connectionString));
+
+        services.AddDbContext<AodpDbContext>(options =>
             options.UseSqlServer(connectionString));
 
         // Register IApplicationDbContext

@@ -13,6 +13,7 @@
     <Content Include="Data\approved.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="local.settings.json" />
   </ItemGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
@@ -34,8 +35,10 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="RestEase" Version="1.6.4" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\SFA.DAS.AODP.Data\SFA.DAS.AODP.Data.csproj" />
     <ProjectReference Include="..\SFA.DAS.AODP.Infrastructure\SFA.DAS.AODP.Infrastructure.csproj" />
     <ProjectReference Include="..\SFA.DAS.AODP.Models\SFA.DAS.AODP.Models.csproj" />
   </ItemGroup>
@@ -50,5 +53,8 @@
   </ItemGroup>
   <ItemGroup>
     <Using Include="System.Threading.ExecutionContext" Alias="ExecutionContext" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Functiond\" />
   </ItemGroup>
 </Project>
