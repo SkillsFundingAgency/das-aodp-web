@@ -12,6 +12,8 @@ namespace SFA.DAS.AODP.Infrastructure.Context
     {
         DbSet<ApprovedQualification> ApprovedQualifications { get; set; }
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+        Task BulkInsertAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class;
+
 
     }
 }

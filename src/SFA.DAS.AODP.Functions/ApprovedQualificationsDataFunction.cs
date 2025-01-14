@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Globalization;
 using CsvHelper;
 using Microsoft.Azure.Functions.Worker;
@@ -30,9 +31,15 @@ namespace SFA.DAS.AODP.Functions
                 var approvedQualifications = csv.GetRecords<ApprovedQualification>().ToList();
                 Console.WriteLine($"Total Records Read: {approvedQualifications.Count}");
 
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
                 // Add records to DB
-                _applicationDbContext.ApprovedQualifications.AddRange(approvedQualifications);
-                await _applicationDbContext.SaveChangesAsync();
+                //_applicationDbContext.ApprovedQualifications.AddRange(approvedQualifications);
+                //await _applicationDbContext.SaveChangesAsync();
+
+                 _applicationDbContext.BulkInsertAsync(approvedQualifications);
+                stopwatch.Stop();
+                Console.WriteLine($"Total Time Taken: {stopwatch.ElapsedMilliseconds} ms");
             }
             else
             {
