@@ -140,64 +140,58 @@ public partial class AodpDbContext : DbContext
             entity.HasKey(e => e.Id).HasName("PK_ProcessedRegisteredQualification");
 
             entity.Property(e => e.ApprenticeshipStandardReferenceNumber)
-                .HasMaxLength(30)
+                .HasMaxLength(50)
                 .IsUnicode(false);
             entity.Property(e => e.ApprenticeshipStandardTitle)
-                .HasMaxLength(30)
+                .HasMaxLength(150)
                 .IsUnicode(false);
             entity.Property(e => e.ApprovedForDelfundedProgramme)
-                .HasMaxLength(30)
+                .HasMaxLength(150)
                 .IsUnicode(false)
                 .HasColumnName("ApprovedForDELFundedProgramme");
-            entity.Property(e => e.AssessmentMethods)
-                .HasMaxLength(250)
-                .IsUnicode(false);
+            entity.Property(e => e.AssessmentMethods).IsUnicode(false);
             entity.Property(e => e.CertificationEndDate).HasColumnType("datetime");
             entity.Property(e => e.EntitlementFrameworkDesignation)
-                .HasMaxLength(30)
+                .HasMaxLength(50)
                 .IsUnicode(false);
             entity.Property(e => e.EqfLevel)
-                .HasMaxLength(25)
+                .HasMaxLength(50)
                 .IsUnicode(false);
             entity.Property(e => e.GceSizeEquivalence)
-                .HasMaxLength(30)
+                .HasMaxLength(50)
                 .IsUnicode(false);
             entity.Property(e => e.GcseSizeEquivalence)
-                .HasMaxLength(30)
+                .HasMaxLength(50)
                 .IsUnicode(false);
             entity.Property(e => e.GradingScale)
-                .HasMaxLength(30)
+                .HasMaxLength(250)
                 .IsUnicode(false);
             entity.Property(e => e.GradingType)
-                .HasMaxLength(30)
+                .HasMaxLength(50)
                 .IsUnicode(false);
             entity.Property(e => e.InsertedDate).HasColumnType("datetime");
             entity.Property(e => e.LastUpdatedDate).HasColumnType("datetime");
             entity.Property(e => e.Level)
-                .HasMaxLength(25)
+                .HasMaxLength(50)
                 .IsUnicode(false);
-            entity.Property(e => e.LinkToSpecification)
-                .HasMaxLength(250)
-                .IsUnicode(false);
+            entity.Property(e => e.LinkToSpecification).IsUnicode(false);
             entity.Property(e => e.MaximumGlh).HasColumnName("MaximumGLH");
             entity.Property(e => e.MinimumGlh).HasColumnName("MinimumGLH");
             entity.Property(e => e.NiDiscountCode)
-                .HasMaxLength(30)
+                .HasMaxLength(150)
                 .IsUnicode(false);
             entity.Property(e => e.OperationalEndDate).HasColumnType("datetime");
             entity.Property(e => e.OperationalStartDate).HasColumnType("datetime");
             entity.Property(e => e.OrganisationAcronym)
-                .HasMaxLength(25)
+                .HasMaxLength(50)
                 .IsUnicode(false);
             entity.Property(e => e.OrganisationName)
                 .HasMaxLength(250)
                 .IsUnicode(false);
             entity.Property(e => e.OrganisationRecognitionNumber)
-                .HasMaxLength(6)
+                .HasMaxLength(10)
                 .IsUnicode(false);
-            entity.Property(e => e.Pathways)
-                .HasMaxLength(30)
-                .IsUnicode(false);
+            entity.Property(e => e.Pathways).IsUnicode(false);
             entity.Property(e => e.QualificationNumber)
                 .HasMaxLength(10)
                 .IsUnicode(false);
@@ -206,23 +200,21 @@ public partial class AodpDbContext : DbContext
                 .IsUnicode(false);
             entity.Property(e => e.RegulationStartDate).HasColumnType("datetime");
             entity.Property(e => e.ReviewDate).HasColumnType("datetime");
-            entity.Property(e => e.Specialism)
-                .HasMaxLength(30)
-                .IsUnicode(false);
+            entity.Property(e => e.Specialism).IsUnicode(false);
             entity.Property(e => e.Ssa)
                 .HasMaxLength(150)
                 .IsUnicode(false);
             entity.Property(e => e.Status)
-                .HasMaxLength(17)
+                .HasMaxLength(100)
                 .IsUnicode(false);
             entity.Property(e => e.SubLevel)
-                .HasMaxLength(4)
+                .HasMaxLength(50)
                 .IsUnicode(false);
             entity.Property(e => e.Title)
                 .HasMaxLength(250)
                 .IsUnicode(false);
             entity.Property(e => e.Type)
-                .HasMaxLength(41)
+                .HasMaxLength(50)
                 .IsUnicode(false);
             entity.Property(e => e.UiLastUpdatedDate).HasColumnType("datetime");
         });
@@ -234,36 +226,35 @@ public partial class AodpDbContext : DbContext
             entity.ToTable("RegisteredQualificationsImport");
 
             entity.Property(e => e.ApprenticeshipStandardReferenceNumber)
-                .HasMaxLength(30)
+                .HasMaxLength(50)
                 .IsUnicode(false);
             entity.Property(e => e.ApprenticeshipStandardTitle)
-                .HasMaxLength(30)
+                .HasMaxLength(150)
                 .IsUnicode(false);
             entity.Property(e => e.ApprovedForDelfundedProgramme)
-                .HasMaxLength(30)
+                .HasMaxLength(150)
                 .IsUnicode(false)
                 .HasColumnName("ApprovedForDELFundedProgramme");
-            entity.Property(e => e.AssessmentMethods)
-                .HasMaxLength(250)
-                .IsUnicode(false);
+            entity.Property(e => e.AssessmentMethods).IsUnicode(false);
             entity.Property(e => e.CertificationEndDate).HasColumnType("datetime");
+            entity.Property(e => e.ChangedFields).IsUnicode(false);
             entity.Property(e => e.EntitlementFrameworkDesignation)
-                .HasMaxLength(30)
+                .HasMaxLength(50)
                 .IsUnicode(false);
             entity.Property(e => e.EqfLevel)
-                .HasMaxLength(25)
+                .HasMaxLength(50)
                 .IsUnicode(false);
             entity.Property(e => e.GceSizeEquivalence)
-                .HasMaxLength(30)
+                .HasMaxLength(50)
                 .IsUnicode(false);
             entity.Property(e => e.GcseSizeEquivalence)
-                .HasMaxLength(30)
+                .HasMaxLength(50)
                 .IsUnicode(false);
             entity.Property(e => e.GradingScale)
-                .HasMaxLength(30)
+                .HasMaxLength(250)
                 .IsUnicode(false);
             entity.Property(e => e.GradingType)
-                .HasMaxLength(30)
+                .HasMaxLength(50)
                 .IsUnicode(false);
             entity.Property(e => e.ImportStatus)
                 .HasMaxLength(50)
@@ -272,30 +263,26 @@ public partial class AodpDbContext : DbContext
             entity.Property(e => e.InsertedDate).HasColumnType("datetime");
             entity.Property(e => e.LastUpdatedDate).HasColumnType("datetime");
             entity.Property(e => e.Level)
-                .HasMaxLength(25)
+                .HasMaxLength(50)
                 .IsUnicode(false);
-            entity.Property(e => e.LinkToSpecification)
-                .HasMaxLength(250)
-                .IsUnicode(false);
+            entity.Property(e => e.LinkToSpecification).IsUnicode(false);
             entity.Property(e => e.MaximumGlh).HasColumnName("MaximumGLH");
             entity.Property(e => e.MinimumGlh).HasColumnName("MinimumGLH");
             entity.Property(e => e.NiDiscountCode)
-                .HasMaxLength(30)
+                .HasMaxLength(150)
                 .IsUnicode(false);
             entity.Property(e => e.OperationalEndDate).HasColumnType("datetime");
             entity.Property(e => e.OperationalStartDate).HasColumnType("datetime");
             entity.Property(e => e.OrganisationAcronym)
-                .HasMaxLength(25)
+                .HasMaxLength(50)
                 .IsUnicode(false);
             entity.Property(e => e.OrganisationName)
                 .HasMaxLength(250)
                 .IsUnicode(false);
             entity.Property(e => e.OrganisationRecognitionNumber)
-                .HasMaxLength(6)
+                .HasMaxLength(10)
                 .IsUnicode(false);
-            entity.Property(e => e.Pathways)
-                .HasMaxLength(30)
-                .IsUnicode(false);
+            entity.Property(e => e.Pathways).IsUnicode(false);
             entity.Property(e => e.QualificationNumber)
                 .HasMaxLength(10)
                 .IsUnicode(false);
@@ -304,23 +291,21 @@ public partial class AodpDbContext : DbContext
                 .IsUnicode(false);
             entity.Property(e => e.RegulationStartDate).HasColumnType("datetime");
             entity.Property(e => e.ReviewDate).HasColumnType("datetime");
-            entity.Property(e => e.Specialism)
-                .HasMaxLength(30)
-                .IsUnicode(false);
+            entity.Property(e => e.Specialism).IsUnicode(false);
             entity.Property(e => e.Ssa)
                 .HasMaxLength(150)
                 .IsUnicode(false);
             entity.Property(e => e.Status)
-                .HasMaxLength(17)
+                .HasMaxLength(100)
                 .IsUnicode(false);
             entity.Property(e => e.SubLevel)
-                .HasMaxLength(4)
+                .HasMaxLength(50)
                 .IsUnicode(false);
             entity.Property(e => e.Title)
                 .HasMaxLength(250)
                 .IsUnicode(false);
             entity.Property(e => e.Type)
-                .HasMaxLength(41)
+                .HasMaxLength(50)
                 .IsUnicode(false);
             entity.Property(e => e.UiLastUpdatedDate).HasColumnType("datetime");
         });

@@ -32,25 +32,25 @@ public partial class RegisteredQualificationsImport
 
     public string? GradingScale { get; set; }
 
-    public int TotalCredits { get; set; }
+    public int? TotalCredits { get; set; }
 
     public int? Tqt { get; set; }
 
     public int? Glh { get; set; }
 
-    public int MinimumGlh { get; set; }
+    public int? MinimumGlh { get; set; }
 
-    public int MaximumGlh { get; set; }
+    public int? MaximumGlh { get; set; }
 
     public DateTime RegulationStartDate { get; set; }
 
     public DateTime OperationalStartDate { get; set; }
 
-    public DateTime OperationalEndDate { get; set; }
+    public DateTime? OperationalEndDate { get; set; }
 
-    public DateTime CertificationEndDate { get; set; }
+    public DateTime? CertificationEndDate { get; set; }
 
-    public DateTime ReviewDate { get; set; }
+    public DateTime? ReviewDate { get; set; }
 
     public bool OfferedInEngland { get; set; }
 
@@ -113,4 +113,6 @@ public partial class RegisteredQualificationsImport
     public bool? NineteenPlus { get; set; }
 
     public string? ImportStatus { get; set; }
+
+    public string? ChangedFields { get; set; }
 }

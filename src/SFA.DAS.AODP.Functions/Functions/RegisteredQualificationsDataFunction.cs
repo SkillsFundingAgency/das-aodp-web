@@ -29,7 +29,7 @@ namespace SFA.DAS.AODP.Functions.Functions
             try
             {
                 int page = 1;
-                int limit = 50;
+                int limit = 1000;
                 int totalProcessed = 0;
 
                 var config = LoadConfiguration();
