@@ -1,11 +1,9 @@
 ﻿using Microsoft.AspNetCore.DataProtection;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using SFA.DAS.AODP.Models.Configuration;
+using SFA.DAS.AODP.Models.Settings;
 using StackExchange.Redis;
 using System.Diagnostics.CodeAnalysis;
 
-namespace SFA.DAS.AODP.Web.Extensions;
+namespace SFA.DAS.AODP.Api.Extensions;
 
 [ExcludeFromCodeCoverage]
 public static class AddDataProtectionExtensions

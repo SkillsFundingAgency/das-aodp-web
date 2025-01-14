@@ -16,6 +16,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\SFA.DAS.AODP.Common\SFA.DAS.AODP.Common.csproj" />
+		<ProjectReference Include="..\SFA.DAS.AODP.Domain\SFA.DAS.AODP.Domain.csproj" />
 	</ItemGroup>
 
 </Project>
