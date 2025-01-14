@@ -6,12 +6,7 @@ namespace SFA.DAS.AODP.Web.Controllers;
 
 public class SectionController : BaseController
 {
-    //Example httpClient
-    private readonly HttpClient _httpClient;
-
-    public SectionController(ICacheManager cacheManager, HttpClient httpClient) : base(cacheManager) {
-        _httpClient = httpClient;
-    }
+    public SectionController(ICacheManager cacheManager) : base(cacheManager) { }
 
     #region Create
     public IActionResult Create(Guid formId)

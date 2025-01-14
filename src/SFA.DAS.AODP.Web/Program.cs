@@ -1,7 +1,6 @@
 using GovUk.Frontend.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
-using SFA.DAS.AODP.Infrastructure.ApiClients;
+using SFA.DAS.AODP.Api.Extensions;
 using SFA.DAS.AODP.Infrastructure.ExampleData;
 using SFA.DAS.AODP.Infrastructure.MemoryCache;
 using SFA.DAS.AODP.Web.Extensions;
@@ -10,42 +9,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 var configuration = builder.Configuration.LoadConfiguration(builder.Services, builder.Environment.IsDevelopment());
 
-builder.Services.AddSession(options =>
-{
-    options.IdleTimeout = TimeSpan.FromMinutes(30); // Session timeout
-    options.Cookie.HttpOnly = true; // Ensure session cookie is not accessible via JavaScript
-    options.Cookie.IsEssential = true; // Required for non-essential cookies
-});
-
-builder.Services.AddMemoryCache(options =>
-{
-    options.SizeLimit = 1024 * 1024 * 100; // Limit memory to 100 MB
-    options.ExpirationScanFrequency = TimeSpan.FromMinutes(5); // Frequency to scan expired items
-});
-
-var aodpAPIEndpoint = builder.Configuration.GetSection("AodpApiClientConfiguration:ApiBaseUrl").Value;
-if (aodpAPIEndpoint != null)
-{
-    builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(aodpAPIEndpoint) });
-}
-else
-{
-    throw new Exception("Unable to set 'Telepurchase API Endpoint'");
-}
-
-builder.Services.AddSingleton<ICacheManager, CacheManager>();
-
-builder.Services.AddControllers();
-
 builder.Services
     .AddServiceRegistrations(configuration)
-    .AddAodpApiClient(configuration, builder.Environment.IsDevelopment())
     .AddGovUkFrontend()
     .AddLogging()
     .AddDataProtectionKeys("das-aodp-web", configuration, builder.Environment.IsDevelopment())
     .AddHttpContextAccessor()
     .AddHealthChecks();
-
 
 
 builder.Services.AddSession(options =>
@@ -62,6 +32,14 @@ builder.Services
      {
          options.Filters.Add<AutoValidateAntiforgeryTokenAttribute>();
      });
+
+builder.Services.AddMemoryCache(options =>
+{
+    options.SizeLimit = 1024 * 1024 * 100; // Limit memory to 100 MB
+    options.ExpirationScanFrequency = TimeSpan.FromMinutes(5); // Frequency to scan expired items
+});
+
+builder.Services.AddScoped<ICacheManager, CacheManager>();
 
 
 var app = builder.Build();
@@ -91,14 +69,12 @@ app
     .UseStaticFiles()
     .UseCookiePolicy()
     .UseRouting()
-    .UseSession() // Enable session
+    .UseSession()
     .UseEndpoints(endpoints =>
     {
         endpoints.MapControllerRoute(
             "default",
             "{controller=Home}/{action=Index}/{id?}");
     });
-
-app.MapControllers();
 
 app.Run();
