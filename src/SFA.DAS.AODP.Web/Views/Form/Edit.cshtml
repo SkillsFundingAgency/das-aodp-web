@@ -30,36 +30,28 @@
     <a class="govuk-button govuk-button--secondary" href="@Url.Action("Index")">Cancel</a>
 </form>
 
-<details class="govuk-details">
-    <summary class="govuk-details__summary">
-        <span class="govuk-details__summary-text">
-            Sections
-        </span>
-    </summary>
-    <div class="govuk-details__text">
-        <a class="govuk-button" asp-action="Create" asp-controller="Section" asp-route-formId="@Model.Id">Create New Section</a>
-        <table class="govuk-table">
-            <thead class="govuk-table__head">
-                <tr class="govuk-table__row">
-                    <th scope="col" class="govuk-table__header">Name</th>
-                    <th scope="col" class="govuk-table__header">Version</th>
-                    <th scope="col" class="govuk-table__header">Options</th>
-                </tr>
-            </thead>
-            <tbody class="govuk-table__body">
-                @foreach (var item in (List<Section>)ViewData["Sections"])
-                {
-                    <tr class="govuk-table__row">
-                        <td>@item.Title</td>
-                        <td>@item.Description</td>
-                        <td>
-                            @* <a class="govuk-button govuk-button--secondary" href="@Url.Action("Details", new { id = item.Id })">Details</a>&nbsp; *@
-                            <a class="govuk-button" href="@Url.Action("Edit", "Section", new { id = item.Id })">Edit</a>&nbsp;
-                            <a class="govuk-button govuk-button--warning" href="@Url.Action("Delete", "Section", new { id = item.Id })">Delete</a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-</details>
+<hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+
+<a class="govuk-button" asp-action="Create" asp-controller="Section" asp-route-formId="@Model.Id">Create New Section</a>
+<table class="govuk-table">
+    <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">Name</th>
+            <th scope="col" class="govuk-table__header">Version</th>
+            <th scope="col" class="govuk-table__header">Options</th>
+        </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+        @foreach (var item in (List<Section>)ViewData["Sections"])
+        {
+            <tr class="govuk-table__row">
+                <td>@item.Title</td>
+                <td>@item.Description</td>
+                <td>
+                    <a class="govuk-button" href="@Url.Action("Edit", "Section", new { id = item.Id })">Edit</a>&nbsp;
+                    <a class="govuk-button govuk-button--warning" href="@Url.Action("Delete", "Section", new { id = item.Id })">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
