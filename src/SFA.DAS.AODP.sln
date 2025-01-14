@@ -31,7 +31,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SFA.DAS.AODP.Functions.UnitTests", "SFA.DAS.AODP.Functions.UnitTests\SFA.DAS.AODP.Functions.UnitTests.csproj", "{D5C18526-1F70-4D13-BC75-AEAD21290C7A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SFA.DAS.AODP.Data", "SFA.DAS.AODP.Data\SFA.DAS.AODP.Data.csproj", "{0A54F907-193F-41D8-A0C4-76ED5CD5056B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SFA.DAS.AODP.Data", "SFA.DAS.AODP.Data\SFA.DAS.AODP.Data.csproj", "{0A54F907-193F-41D8-A0C4-76ED5CD5056B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

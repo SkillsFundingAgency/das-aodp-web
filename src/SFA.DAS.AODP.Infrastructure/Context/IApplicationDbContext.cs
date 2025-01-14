@@ -1,17 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using SFA.DAS.AODP.Models.Qualification;
+﻿using Microsoft.EntityFrameworkCore;
+using SFA.DAS.AODP.Data.Entities;
 
 namespace SFA.DAS.AODP.Infrastructure.Context
 {
     public interface IApplicationDbContext
     {
-        DbSet<ApprovedQualification> ApprovedQualifications { get; set; }
+        DbSet<ApprovedQualificationsImport> ApprovedQualificationsImports { get; set; }
+        DbSet<ProcessedRegisteredQualification> ProcessedRegisteredQualifications { get; set; }
+        DbSet<RegisteredQualificationsImport> RegisteredQualificationsImports { get; set; }
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+        Task BulkInsertAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class;
+
 
     }
 }
