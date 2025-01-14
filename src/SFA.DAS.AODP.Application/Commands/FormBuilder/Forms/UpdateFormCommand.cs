@@ -1,6 +1,9 @@
-﻿namespace SFA.DAS.AODP.Models.Forms.FormBuilder;
+﻿using MediatR;
+using SFA.DAS.AODP.Application.MediatR.Base;
 
-public class Form
+namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
+
+public class UpdateFormCommand : IRequest<BaseResponse<bool>>
 {
     public Guid Id { get; set; }
     public string Name { get; set; }
@@ -10,10 +13,4 @@ public class Form
     public string ApplicationTrackingTemplate { get; set; }
     public string Description { get; set; }
     public int Order { get; set; }
-    public List<Section> Sections { get; set; }
-
-    public Form()
-    {
-        Sections = new List<Section>();
-    }
 }

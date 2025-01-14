@@ -1,7 +1,7 @@
-﻿using SFA.DAS.AODP.Infrastructure.MemoryCache;
+﻿using SFA.DAS.AODP.Application.MemoryCache;
 using SFA.DAS.AODP.Models.Forms.FormBuilder;
 
-namespace SFA.DAS.AODP.Infrastructure.ExampleData;
+namespace SFA.DAS.AODP.Application.ExampleData;
 
 public static class DataSeeder
 {
@@ -50,6 +50,8 @@ public static class DataSeeder
                     Published = i % 2 == 0,
                     Key = $"SampleKey{i}",
                     ApplicationTrackingTemplate = $"Template{i}",
+                    Order = i,
+                    Description = $"Form {i} description.",
                     Sections = formSections
                 };
 

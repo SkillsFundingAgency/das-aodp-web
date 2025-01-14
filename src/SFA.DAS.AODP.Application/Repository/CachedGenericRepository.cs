@@ -1,6 +1,6 @@
-﻿using SFA.DAS.AODP.Infrastructure.MemoryCache;
+﻿using SFA.DAS.AODP.Application.MemoryCache;
 
-namespace SFA.DAS.AODP.Infrastructure.Repository;
+namespace SFA.DAS.AODP.Application.Repository;
 
 /// <summary>
 /// A generic cache based repository implementation that handles CRUD operations for any type of entity.
@@ -73,7 +73,7 @@ public class CachedGenericRepository<T> : IGenericRepository<T> where T : class
     /// Updates an existing entity in the cache. The entity is identified by its unique identifier, which is assumed to be of type <see cref="Guid"/>.
     /// </summary>
     /// <param name="entity">The updated entity.</param>
-    public void Update(T entity)
+    public bool Update(T entity)
     {
         // Retrieve the list of entities from the cache.
         var entities = GetAll().ToList();
@@ -84,15 +84,23 @@ public class CachedGenericRepository<T> : IGenericRepository<T> where T : class
             // Replace the entity at the found index with the updated entity.
             entities[index] = entity;
             _cacheManager.Set(_cacheKey, entities); // Store the updated list back in the cache.
+
+            return true;
         }
+
+        //Unable to update
+        return false;
     }
 
     /// <summary>
     /// Deletes an entity from the cache by its unique identifier.
     /// </summary>
     /// <param name="id">The unique identifier (Guid) of the entity to be deleted.</param>
-    public void Delete(Guid id)
+    public bool Delete(Guid id)
     {
+        //Assume failure
+        var status = false;
+
         // Retrieve the list of entities from the cache.
         var entities = GetAll().ToList();
         // Find the entity to be deleted based on its "Id" property.
@@ -100,8 +108,10 @@ public class CachedGenericRepository<T> : IGenericRepository<T> where T : class
         if (entity != null)
         {
             // Remove the found entity from the list.
-            entities.Remove(entity);
+            status = entities.Remove(entity);
             _cacheManager.Set(_cacheKey, entities); // Store the updated list back in the cache.
         }
+
+        return status;
     }
 }

@@ -1,70 +1,95 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using SFA.DAS.AODP.Infrastructure.MemoryCache;
-using SFA.DAS.AODP.Infrastructure.Repository;
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
+using SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
+using SFA.DAS.AODP.Application.Queries.FormBuilder.Pages;
+using SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
+using SFA.DAS.AODP.Application.Repository;
 using SFA.DAS.AODP.Models.Forms.FormBuilder;
 
 namespace SFA.DAS.AODP.Web.Controllers;
 
 public class PageController : Controller
 {
-    private readonly IGenericRepository<Page> _pageRepository;
+    private readonly IMediator _mediator;
 
-    public PageController(IGenericRepository<Page> pageRepository)
+    public PageController(IMediator mediator)
     {
-        _pageRepository = pageRepository;
+        _mediator = mediator;
     }
 
     #region Create
-    public IActionResult Create(Guid sectionId)
+    public async Task<IActionResult> Create(Guid sectionId)
     {
-        ViewData["Pages"] = _pageRepository.GetAll().Where(p => p.SectionId == sectionId).ToList();
+        var pagesQuery = await _mediator.Send(new GetAllPagesQuery { SectionId = sectionId });
+        ViewData["Pages"] = pagesQuery.Data;
         return View(new Page { SectionId = sectionId });
     }
 
     [HttpPost]
-    public IActionResult Create(Page page)
+    public async Task<IActionResult> Create(Page page)
     {
-        //page.Id = Guid.NewGuid();
-        _pageRepository.Add(page);
-        return RedirectToAction("Edit", "Section", new { id = page.SectionId });
+        var command = new CreatePageCommand
+        {
+            SectionId = page.SectionId,
+            Title = page.Title,
+            Description = page.Description,
+            Order = page.Order,
+            NextPageId = page.NextPageId,
+        };
+
+        var createPageResponse = await _mediator.Send(command);
+        return RedirectToAction("Edit", "Section", new { id = createPageResponse.Data!.SectionId });
     }
     #endregion
 
     #region Edit
-    public IActionResult Edit(Guid id)
+    public async Task<IActionResult> Edit(Guid id)
     {
-        var page = _pageRepository.GetById(id);
-        if (page == null) return NotFound();
+        var pageQuery = await _mediator.Send(new GetPageByIdQuery { Id = id });
+        if (pageQuery.Data == null) return NotFound();
 
-        ViewData["Pages"] = _pageRepository.GetAll().Where(p => p.SectionId == page.SectionId).ToList();
+        var pagesQuery = await _mediator.Send(new GetAllPagesQuery { SectionId = pageQuery.Data.SectionId });
+        ViewData["Pages"] = pagesQuery.Data;
 
-        return View(page);
+        return View(pageQuery.Data);
     }
 
     [HttpPost]
-    public IActionResult Edit(Page page)
+    public async Task<IActionResult> Edit(Page page)
     {
-        _pageRepository.Update(page);
+        var command = new UpdatePageCommand
+        {
+            Id = page.Id,
+            SectionId = page.SectionId,
+            Title = page.Title,
+            Description = page.Description,
+            Order = page.Order,
+            NextPageId = page.NextPageId,
+        };
+
+        var updatePageResponse = await _mediator.Send(command);
         return RedirectToAction("Edit", "Section", new { id = page.SectionId });
     }
     #endregion
 
     #region Delete
-    public IActionResult Delete(Guid id)
+    public async Task<IActionResult> Delete(Guid id)
     {
-        var page = _pageRepository.GetById(id);
-        if (page == null) return NotFound();
-        return View(page);
+        var pageQuery = await _mediator.Send(new GetPageByIdQuery { Id = id });
+        if (pageQuery.Data == null) return NotFound();
+        return View(pageQuery.Data);
     }
 
     [HttpPost, ActionName("Delete")]
-    public IActionResult DeleteConfirmed(Guid id)
+    public async Task<IActionResult> DeleteConfirmed(Guid id)
     {
-        var page = _pageRepository.GetById(id);
-        if (page != null)
+        var pageQuery = await _mediator.Send(new GetPageByIdQuery { Id = id });
+        if (pageQuery.Data != null)
         {
-            _pageRepository.Delete(id);
-            return RedirectToAction("Edit", "Section", new { id = page.SectionId });
+            var command = new DeletePageCommand { Id = pageQuery.Data.Id };
+            var deletePageResponse = await _mediator.Send(command);
+            return RedirectToAction("Edit", "Section", new { id = pageQuery.Data.SectionId });
         }
         return NotFound();
     }

@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using SFA.DAS.AODP.Infrastructure.MemoryCache;
 using SFA.DAS.AODP.Models.Forms.DTO;
 
 namespace SFA.DAS.AODP.Web.Controllers.api;

@@ -1,25 +1,27 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using SFA.DAS.AODP.Infrastructure.Repository;
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
+using SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
+using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
+using SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
 using SFA.DAS.AODP.Models.Forms.FormBuilder;
 
 namespace SFA.DAS.AODP.Web.Controllers;
 
 public class FormController : Controller
 {
-    private readonly IGenericRepository<Form> _formRepository;
-    private readonly IGenericRepository<Section> _sectionRepository;
+    private readonly IMediator _mediator;
 
-    public FormController(IGenericRepository<Form> formRepository, IGenericRepository<Section> sectionRepository) {
-        _formRepository = formRepository;
-        _sectionRepository = sectionRepository;
+    public FormController(IMediator mediator) {
+        _mediator = mediator;
     }
 
     #region Main
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
-        var forms = _formRepository.GetAll().ToList();
-        if (!forms.Any()) return RedirectToAction(nameof(Create));
-        return View(forms);
+        var formsQuery = await _mediator.Send(new GetAllFormsQuery());
+        if (formsQuery.Data!.Count == 0) return RedirectToAction(nameof(Create));
+        return View(formsQuery.Data);
     }
     #endregion
 
@@ -30,45 +32,71 @@ public class FormController : Controller
     }
 
     [HttpPost]
-    public IActionResult Create(Form form)
+    public async Task<IActionResult> Create(Form form)
     {
-        _formRepository.Add(form);
+        var command = new CreateFormCommand
+        {
+            Name = form.Name,
+            Version = form.Version,
+            Published = form.Published,
+            Key = form.Key,
+            ApplicationTrackingTemplate = form.ApplicationTrackingTemplate
+        };
+
+        var createFormResponse = await _mediator.Send(command);
         return RedirectToAction(nameof(Index));
     }
     #endregion
 
     #region Edit
-    public IActionResult Edit(Guid id)
+    public async Task<IActionResult> Edit(Guid id)
     {
-        var form = _formRepository.GetById(id);
-        if (form == null) return NotFound();
+        var formQuery = await _mediator.Send(new GetFormByIdQuery { Id = id });
+        if (formQuery.Data == null) return NotFound();
 
-        ViewData["Sections"] = _sectionRepository.GetAll().Where(s => s.FormId == form.Id).ToList();
-
-        return View(form);
+        var sectionQuery = await _mediator.Send(new GetAllSectionsQuery { FormId = formQuery.Data.Id });
+        ViewData["Sections"] = sectionQuery.Data;
+        return View(formQuery.Data);
     }
 
     [HttpPost]
-    public IActionResult Edit(Form form)
+    public async Task<IActionResult> Edit(Form form)
     {
-        _formRepository.Update(form);
+        var command = new UpdateFormCommand
+        {
+            Id = form.Id,
+            Name = form.Name,
+            Version = form.Version,
+            Published = form.Published,
+            Key = form.Key,
+            ApplicationTrackingTemplate = form.ApplicationTrackingTemplate
+        };
+
+        var updateFormResponse = await _mediator.Send(command);
         return RedirectToAction(nameof(Index));
     }
     #endregion
 
     #region Delete
-    public IActionResult Delete(Guid id)
+    public async Task<IActionResult> Delete(Guid id)
     {
-        var form = _formRepository.GetById(id);
-        if (form == null) return NotFound();
-        return View(form);
+        var formQuery = await _mediator.Send(new GetFormByIdQuery { Id = id });
+        if (formQuery.Data == null) return NotFound();
+        return View(formQuery.Data);
     }
 
     [HttpPost, ActionName("Delete")]
-    public IActionResult DeleteConfirmed(Guid id)
+    public async Task<IActionResult> DeleteConfirmed(Guid id)
     {
-        _formRepository.Delete(id);
-        return RedirectToAction(nameof(Index));
+        var formQuery = await _mediator.Send(new GetFormByIdQuery { Id = id });
+        if (formQuery.Data != null)
+        {
+            var command = new DeleteFormCommand { Id = formQuery.Data.Id };
+            var deleteFormResponse = await _mediator.Send(command);
+            return RedirectToAction(nameof(Index));
+        }
+        return NotFound();
+
     }
     #endregion
 }

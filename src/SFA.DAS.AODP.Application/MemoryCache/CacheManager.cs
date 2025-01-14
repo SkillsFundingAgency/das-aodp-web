@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 
-namespace SFA.DAS.AODP.Infrastructure.MemoryCache;
+namespace SFA.DAS.AODP.Application.MemoryCache;
 
 public class CacheManager : ICacheManager
 {

@@ -1,5 +1,4 @@
-﻿
-namespace SFA.DAS.AODP.Infrastructure.MemoryCache
+﻿namespace SFA.DAS.AODP.Application.MemoryCache
 {
     public interface ICacheManager
     {

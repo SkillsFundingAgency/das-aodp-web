@@ -1,10 +1,12 @@
 using GovUk.Frontend.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using SFA.DAS.AODP.Api.Extensions;
-using SFA.DAS.AODP.Infrastructure.ExampleData;
-using SFA.DAS.AODP.Infrastructure.MemoryCache;
-using SFA.DAS.AODP.Infrastructure.Repository;
+using SFA.DAS.AODP.Application.ExampleData;
+using SFA.DAS.AODP.Application.MemoryCache;
+using SFA.DAS.AODP.Application.Repository;
 using SFA.DAS.AODP.Web.Extensions;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,6 +45,10 @@ builder.Services.AddMemoryCache(options =>
 builder.Services.AddScoped<ICacheManager, CacheManager>();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(CachedGenericRepository<>));
 
+builder.Services.AddMediatR(config =>
+{
+    config.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
+});
 
 var app = builder.Build();
 

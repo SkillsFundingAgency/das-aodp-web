@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SFA.DAS.AODP.Infrastructure.Repository;
+namespace SFA.DAS.AODP.Application.Repository;
 /// <summary>
 /// Defines the contract for a generic repository that provides CRUD operations for entities of any type.
 /// This interface allows working with entities stored in-memory (via caching in the implementation).
@@ -51,7 +51,7 @@ public interface IGenericRepository<T> where T : class
     /// This method updates an existing entity in the repository based on its "Id".
     /// If the entity exists, it will be replaced with the updated data.
     /// </remarks>
-    void Update(T entity);
+    bool Update(T entity);
 
     /// <summary>
     /// Deletes an entity from the repository by its unique identifier.
@@ -61,6 +61,6 @@ public interface IGenericRepository<T> where T : class
     /// This method removes the entity from the repository (cache) based on its "Id".
     /// If the entity is found, it will be deleted, and the repository will be updated.
     /// </remarks>
-    void Delete(Guid id);
+    bool Delete(Guid id);
 }
 

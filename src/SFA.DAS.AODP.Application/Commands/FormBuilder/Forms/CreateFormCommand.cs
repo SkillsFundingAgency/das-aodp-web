@@ -1,8 +1,11 @@
-﻿namespace SFA.DAS.AODP.Models.Forms.FormBuilder;
+﻿using MediatR;
+using SFA.DAS.AODP.Application.MediatR.Base;
+using SFA.DAS.AODP.Models.Forms.FormBuilder;
 
-public class Form
+namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
+
+public class CreateFormCommand : IRequest<BaseResponse<Form>>
 {
-    public Guid Id { get; set; }
     public string Name { get; set; }
     public string Version { get; set; }
     public bool Published { get; set; }
@@ -10,10 +13,4 @@ public class Form
     public string ApplicationTrackingTemplate { get; set; }
     public string Description { get; set; }
     public int Order { get; set; }
-    public List<Section> Sections { get; set; }
-
-    public Form()
-    {
-        Sections = new List<Section>();
-    }
 }
