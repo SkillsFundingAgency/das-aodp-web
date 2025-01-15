@@ -2,10 +2,21 @@
     ViewData["Title"] = "Home Page";
 }
 
-<govuk-notification-banner type="Success" class="govuk-!-margin-1">
-    <p class="govuk-notification-banner__heading">
-        You have launched the app
-    </p>
-</govuk-notification-banner>
-
-<a class="govuk-button" asp-action="Index" asp-controller="Form">Form Management</a>
+<div class="govuk-width-container">
+    <main class="govuk-main-wrapper">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <h2 class="govuk-heading-m">Dashboard</h2>
+                <govuk-notification-banner type="Success" class="govuk-!-margin-1">
+                    <p class="govuk-notification-banner__heading">
+                        You have launched the app
+                    </p>
+                </govuk-notification-banner>
+            </div>
+            <div class="govuk-grid-column-one-third">
+                <h2 class="govuk-heading-m">Options</h2>
+                <a class="govuk-button" asp-action="Index" asp-controller="Form">Form Management</a>
+            </div>
+        </div>
+    </main>
+</div>

@@ -8,6 +8,7 @@
         <tr class="govuk-table__row">
             <th scope="col" class="govuk-table__header">Name</th>
             <th scope="col" class="govuk-table__header">Version</th>
+            <th scope="col" class="govuk-table__header">Published</th>
             <th scope="col" class="govuk-table__header">Options</th>
         </tr>
     </thead>
@@ -17,6 +18,7 @@
             <tr class="govuk-table__row">
                 <td>@item.Name</td>
                 <td>@item.Version</td>
+                <td>@item.Published</td>
                 <td>
                     @* <a class="govuk-button govuk-button--secondary" href="@Url.Action("Details", new { id = item.Id })">Details</a>&nbsp; *@
                     <a class="govuk-button" href="@Url.Action("Edit", new { id = item.Id })">Edit</a>&nbsp;
