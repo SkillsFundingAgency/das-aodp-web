@@ -40,7 +40,9 @@ public class FormController : Controller
             Version = form.Version,
             Published = form.Published,
             Key = form.Key,
-            ApplicationTrackingTemplate = form.ApplicationTrackingTemplate
+            ApplicationTrackingTemplate = form.ApplicationTrackingTemplate,
+            Order = form.Order,
+            Description = form.Description,
         };
 
         var createFormResponse = await _mediator.Send(command);
@@ -69,7 +71,9 @@ public class FormController : Controller
             Version = form.Version,
             Published = form.Published,
             Key = form.Key,
-            ApplicationTrackingTemplate = form.ApplicationTrackingTemplate
+            ApplicationTrackingTemplate = form.ApplicationTrackingTemplate,
+            Order = form.Order,
+            Description = form.Description,
         };
 
         var updateFormResponse = await _mediator.Send(command);
