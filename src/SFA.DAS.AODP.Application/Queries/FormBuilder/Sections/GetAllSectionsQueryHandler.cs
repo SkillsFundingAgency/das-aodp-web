@@ -5,7 +5,7 @@ using SFA.DAS.AODP.Models.Forms.FormBuilder;
 
 namespace SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
 
-public class GetAllSectionsQueryHandler : IRequestHandler<GetAllSectionsQuery, BaseResponse<List<Section>>>
+public class GetAllSectionsQueryHandler : IRequestHandler<GetAllSectionsQuery, GetAllSectionsQueryResponse>
 {
     private readonly IGenericRepository<Section> _sectionRepository;
 
@@ -14,9 +14,9 @@ public class GetAllSectionsQueryHandler : IRequestHandler<GetAllSectionsQuery, B
         _sectionRepository = sectionRepository;
     }
 
-    public async Task<BaseResponse<List<Section>>> Handle(GetAllSectionsQuery request, CancellationToken cancellationToken)
+    public async Task<GetAllSectionsQueryResponse> Handle(GetAllSectionsQuery request, CancellationToken cancellationToken)
     {
-        var response = new BaseResponse<List<Section>>();
+        var response = new GetAllSectionsQueryResponse();
         response.Success = false;
         try
         {
@@ -25,7 +25,7 @@ public class GetAllSectionsQueryHandler : IRequestHandler<GetAllSectionsQuery, B
         }
         catch (Exception ex)
         {
-            response.Message = ex.Message;
+            response.ErrorMessage = ex.Message;
         }
 
         return response;

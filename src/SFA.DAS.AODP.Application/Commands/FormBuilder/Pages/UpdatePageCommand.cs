@@ -3,7 +3,7 @@ using SFA.DAS.AODP.Application.MediatR.Base;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 
-public class UpdatePageCommand : IRequest<BaseResponse<bool>>
+public class UpdatePageCommand : IRequest<UpdatePageCommandResponse>
 {
     public Guid Id { get; set; }
     public Guid SectionId { get; set; }
@@ -12,3 +12,5 @@ public class UpdatePageCommand : IRequest<BaseResponse<bool>>
     public int Order { get; set; }
     public int? NextPageId { get; set; }
 }
+
+public class UpdatePageCommandResponse : BaseResponse { }

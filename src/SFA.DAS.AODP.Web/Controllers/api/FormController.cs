@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using SFA.DAS.AODP.Models.Forms.DTO;
+using SFA.DAS.AODP.Application.Repository;
+using SFA.DAS.AODP.Domain.Forms.GetAllForms;
+using SFA.DAS.AODP.Models.Forms.FormBuilder;
 
 namespace SFA.DAS.AODP.Web.Controllers.api;
 
@@ -11,14 +13,34 @@ namespace SFA.DAS.AODP.Web.Controllers.api;
 [ApiController]
 public class FormController : ControllerBase
 {
-    public FormController() { }
+    private readonly IGenericRepository<Form> formRepository;
 
-    [AllowAnonymous]
-    [HttpPost("ping")]
-    [IgnoreAntiforgeryToken]
-    public IActionResult Ping()
+    public FormController(IGenericRepository<Form> f)
     {
-        return Ok("pong");
+        formRepository = f;
+    }
+
+    [HttpGet]
+    [Route("")]
+    [ProducesResponseType(typeof(List<Form>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    public IActionResult GetForms()
+    {
+        try
+        {
+            var forms = formRepository.GetAll().ToList();
+
+            var response = new GetAllFormsResponse()
+            {
+                Forms = forms
+            };
+
+            return Ok(response);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 
     [AllowAnonymous]

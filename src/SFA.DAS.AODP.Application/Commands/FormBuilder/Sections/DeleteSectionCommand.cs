@@ -3,7 +3,9 @@ using SFA.DAS.AODP.Application.MediatR.Base;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 
-public class DeleteSectionCommand : IRequest<BaseResponse<bool>>
+public class DeleteSectionCommand : IRequest<DeleteSectionCommandResponse>
 {
     public Guid Id { get; set; }
 }
+
+public class DeleteSectionCommandResponse : BaseResponse { }

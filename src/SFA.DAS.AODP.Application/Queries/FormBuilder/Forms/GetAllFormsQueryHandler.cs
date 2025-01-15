@@ -1,33 +1,36 @@
 ﻿using MediatR;
-using SFA.DAS.AODP.Application.MediatR.Base;
-using SFA.DAS.AODP.Application.Repository;
-using SFA.DAS.AODP.Models.Forms.FormBuilder;
+using SFA.DAS.AODP.Domain.Forms.GetAllForms;
+using SFA.DAS.FAA.Domain.Interfaces;
 
 namespace SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 
-public class GetAllFormsQueryHandler : IRequestHandler<GetAllFormsQuery, BaseResponse<List<Form>>>
+public class GetAllFormsQueryHandler : IRequestHandler<GetAllFormsQuery, GetAllFormsQueryResponse>
 {
-    private readonly IGenericRepository<Form> _formRepository;
+    private readonly IApiClient _apiClient;
 
-    public GetAllFormsQueryHandler(IGenericRepository<Form> formRepository)
+    public GetAllFormsQueryHandler(IApiClient client)
     {
-        _formRepository = formRepository;
+        _apiClient = client;
     }
 
-    public async Task<BaseResponse<List<Form>>> Handle(GetAllFormsQuery request, CancellationToken cancellationToken)
+    public async Task<GetAllFormsQueryResponse> Handle(GetAllFormsQuery request, CancellationToken cancellationToken)
     {
-        var response = new BaseResponse<List<Form>>();
-        response.Success = false;
+        var queryResponse = new GetAllFormsQueryResponse
+        {
+            Success = false
+        };
         try
         {
-            response.Data = _formRepository.GetAll().ToList();
-            response.Success = true;
+            var apiResponse = await _apiClient.Get<GetAllFormsResponse>(new GetAllFormsRequest());
+
+            queryResponse.Data = apiResponse.Forms;
+            queryResponse.Success = true;
         }
         catch (Exception ex)
         {
-            response.Message = ex.Message;
+            queryResponse.ErrorMessage = ex.Message;
         }
 
-        return response;
+        return queryResponse;
     }
 }

@@ -5,7 +5,7 @@ using SFA.DAS.AODP.Models.Forms.FormBuilder;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 
-public class DeleteSectionCommandHandler : IRequestHandler<DeleteSectionCommand, BaseResponse<bool>>
+public class DeleteSectionCommandHandler : IRequestHandler<DeleteSectionCommand, DeleteSectionCommandResponse>
 {
     private readonly IGenericRepository<Section> _sectionRepository;
 
@@ -14,29 +14,28 @@ public class DeleteSectionCommandHandler : IRequestHandler<DeleteSectionCommand,
         _sectionRepository = sectionRepository;
     }
 
-    public async Task<BaseResponse<bool>> Handle(DeleteSectionCommand request, CancellationToken cancellationToken)
+    public async Task<DeleteSectionCommandResponse> Handle(DeleteSectionCommand request, CancellationToken cancellationToken)
     {
-        var response = new BaseResponse<bool>();
+        var response = new DeleteSectionCommandResponse();
 
         try
         {
             var section = _sectionRepository.GetById(request.Id);
             if (section == null)
             {
-                response.Data = false;
                 response.Success = false;
-                response.Message = $"Section with id '{section!.Id}' could not be found.";
+                response.ErrorMessage = $"Section with id '{section!.Id}' could not be found.";
 
                 return response;
             }
 
-            response.Data = _sectionRepository.Delete(request.Id);
+            _sectionRepository.Delete(request.Id);
             response.Success = true;
         }
         catch (Exception ex)
         {
             response.Success = false;
-            response.Message = ex.Message;
+            response.ErrorMessage = ex.Message;
         }
 
         return response;

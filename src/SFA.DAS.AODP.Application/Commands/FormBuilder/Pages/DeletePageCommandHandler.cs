@@ -5,7 +5,7 @@ using SFA.DAS.AODP.Models.Forms.FormBuilder;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 
-public class DeletePageCommandHandler : IRequestHandler<DeletePageCommand, BaseResponse<bool>>
+public class DeletePageCommandHandler : IRequestHandler<DeletePageCommand, DeletePageCommandResponse>
 {
     private readonly IGenericRepository<Page> _pageRepository;
 
@@ -14,29 +14,28 @@ public class DeletePageCommandHandler : IRequestHandler<DeletePageCommand, BaseR
         _pageRepository = pageRepository;
     }
 
-    public async Task<BaseResponse<bool>> Handle(DeletePageCommand request, CancellationToken cancellationToken)
+    public async Task<DeletePageCommandResponse> Handle(DeletePageCommand request, CancellationToken cancellationToken)
     {
-        var response = new BaseResponse<bool>();
+        var response = new DeletePageCommandResponse();
 
         try
         {
             var page = _pageRepository.GetById(request.Id);
             if (page == null)
             {
-                response.Data = false;
                 response.Success = false;
-                response.Message = $"Page with id '{page!.Id}' could not be found.";
+                response.ErrorMessage = $"Page with id '{page!.Id}' could not be found.";
 
                 return response;
             }
 
-            response.Data = _pageRepository.Delete(request.Id);
+            _pageRepository.Delete(request.Id);
             response.Success = true;
         }
         catch (Exception ex)
         {
             response.Success = false;
-            response.Message = ex.Message;
+            response.ErrorMessage = ex.Message;
         }
 
         return response;

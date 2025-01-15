@@ -10,6 +10,8 @@ public class Form
     public string ApplicationTrackingTemplate { get; set; }
     public string Description { get; set; }
     public int Order { get; set; }
+
+
     public List<Section> Sections { get; set; }
 
     public Form()

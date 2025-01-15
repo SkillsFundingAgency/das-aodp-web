@@ -5,7 +5,7 @@ using SFA.DAS.AODP.Models.Forms.FormBuilder;
 
 namespace SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 
-public class GetFormByIdQueryHandler : IRequestHandler<GetFormByIdQuery, BaseResponse<Form>>
+public class GetFormByIdQueryHandler : IRequestHandler<GetFormByIdQuery, GetFormByIdQueryResponse>
 {
     private readonly IGenericRepository<Form> _formRepository;
 
@@ -14,9 +14,9 @@ public class GetFormByIdQueryHandler : IRequestHandler<GetFormByIdQuery, BaseRes
         _formRepository = formRepository;
     }
 
-    public async Task<BaseResponse<Form>> Handle(GetFormByIdQuery request, CancellationToken cancellationToken)
+    public async Task<GetFormByIdQueryResponse> Handle(GetFormByIdQuery request, CancellationToken cancellationToken)
     {
-        var response = new BaseResponse<Form?>();
+        var response = new GetFormByIdQueryResponse();
         response.Success = false;
         try
         {
@@ -25,7 +25,7 @@ public class GetFormByIdQueryHandler : IRequestHandler<GetFormByIdQuery, BaseRes
         }
         catch (Exception ex)
         {
-            response.Message = ex.Message;
+            response.ErrorMessage = ex.Message;
         }
 
         return response;

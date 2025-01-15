@@ -5,7 +5,7 @@ using SFA.DAS.AODP.Models.Forms.FormBuilder;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
 
-public class DeleteFormCommandHandler : IRequestHandler<DeleteFormCommand, BaseResponse<bool>>
+public class DeleteFormCommandHandler : IRequestHandler<DeleteFormCommand, DeleteFormCommandResponse>
 {
     private readonly IGenericRepository<Form> _formRepository;
 
@@ -14,29 +14,27 @@ public class DeleteFormCommandHandler : IRequestHandler<DeleteFormCommand, BaseR
         _formRepository = formRepository;
     }
 
-    public async Task<BaseResponse<bool>> Handle(DeleteFormCommand request, CancellationToken cancellationToken)
+    public async Task<DeleteFormCommandResponse> Handle(DeleteFormCommand request, CancellationToken cancellationToken)
     {
-        var response = new BaseResponse<bool>();
-
+        var response = new DeleteFormCommandResponse();
         try
         {
             var form = _formRepository.GetById(request.Id);
             if (form == null)
             {
-                response.Data = false;
                 response.Success = false;
-                response.Message = $"Form with id '{form!.Id}' could not be found.";
+                response.ErrorMessage = $"Form with id '{form!.Id}' could not be found.";
 
                 return response;
             }
 
-            response.Data = _formRepository.Delete(request.Id);
+            _formRepository.Delete(request.Id);
             response.Success = true;
         }
         catch (Exception ex)
         {
             response.Success = false;
-            response.Message = ex.Message;
+            response.ErrorMessage = ex.Message;
         }
 
         return response;

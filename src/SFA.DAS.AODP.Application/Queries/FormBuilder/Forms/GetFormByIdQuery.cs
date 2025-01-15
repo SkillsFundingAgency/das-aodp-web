@@ -4,7 +4,12 @@ using SFA.DAS.AODP.Models.Forms.FormBuilder;
 
 namespace SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 
-public class GetFormByIdQuery : IRequest<BaseResponse<Form>>
+public class GetFormByIdQuery : IRequest<GetFormByIdQueryResponse>
 {
     public Guid Id { get; set; }
+}
+
+public class GetFormByIdQueryResponse : BaseResponse
+{
+    public Form Data { get; set; }
 }

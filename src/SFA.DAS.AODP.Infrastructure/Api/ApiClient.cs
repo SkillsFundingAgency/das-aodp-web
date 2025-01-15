@@ -13,11 +13,11 @@ public class ApiClient : IApiClient
     private readonly HttpClient _httpClient;
     private readonly AodpOuterApiSettings _config;
 
-    public ApiClient(HttpClient httpClient, IOptions<AodpOuterApiSettings> config)
+    public ApiClient(HttpClient httpClient, AodpOuterApiSettings config)
     {
         _httpClient = httpClient;
-        _config = config.Value;
-        _httpClient.BaseAddress = new Uri(config.Value.BaseUrl);
+        _config = config;
+        _httpClient.BaseAddress = new Uri(config.BaseUrl);
     }
 
     public async Task<TResponse> Get<TResponse>(IGetApiRequest request)

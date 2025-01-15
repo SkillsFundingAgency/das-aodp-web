@@ -6,7 +6,7 @@ using SFA.DAS.AODP.Models.Forms.FormBuilder;
 
 namespace SFA.DAS.AODP.Application.Handlers.FormBuilder.Pages;
 
-public class GetAllPagesQueryHandler : IRequestHandler<GetAllPagesQuery, BaseResponse<List<Page>>>
+public class GetAllPagesQueryHandler : IRequestHandler<GetAllPagesQuery, GetAllPagesQueryResponse>
 {
     private readonly IGenericRepository<Page> _pageRepository;
 
@@ -15,9 +15,9 @@ public class GetAllPagesQueryHandler : IRequestHandler<GetAllPagesQuery, BaseRes
         _pageRepository = pageRepository;
     }
 
-    public async Task<BaseResponse<List<Page>>> Handle(GetAllPagesQuery request, CancellationToken cancellationToken)
+    public async Task<GetAllPagesQueryResponse> Handle(GetAllPagesQuery request, CancellationToken cancellationToken)
     {
-        var response = new BaseResponse<List<Page>>();
+        var response = new GetAllPagesQueryResponse();
         response.Success = false;
         try
         {
@@ -26,7 +26,7 @@ public class GetAllPagesQueryHandler : IRequestHandler<GetAllPagesQuery, BaseRes
         }
         catch (Exception ex)
         {
-            response.Message = ex.Message;
+            response.ErrorMessage = ex.Message;
         }
 
         return response;

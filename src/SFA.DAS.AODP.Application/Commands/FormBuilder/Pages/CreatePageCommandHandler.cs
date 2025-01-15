@@ -1,11 +1,10 @@
 ﻿using MediatR;
-using SFA.DAS.AODP.Application.MediatR.Base;
 using SFA.DAS.AODP.Application.Repository;
 using SFA.DAS.AODP.Models.Forms.FormBuilder;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 
-public class CreatePageCommandHandler : IRequestHandler<CreatePageCommand, BaseResponse<Page>>
+public class CreatePageCommandHandler : IRequestHandler<CreatePageCommand, CreatePageCommandResponse>
 {
     private readonly IGenericRepository<Page> _pageRepository;
 
@@ -14,9 +13,9 @@ public class CreatePageCommandHandler : IRequestHandler<CreatePageCommand, BaseR
         _pageRepository = pageRepository;
     }
 
-    public async Task<BaseResponse<Page>> Handle(CreatePageCommand request, CancellationToken cancellationToken)
+    public async Task<CreatePageCommandResponse> Handle(CreatePageCommand request, CancellationToken cancellationToken)
     {
-        var response = new BaseResponse<Page>();
+        var response = new CreatePageCommandResponse();
         try
         {
             var page = new Page
@@ -30,14 +29,12 @@ public class CreatePageCommandHandler : IRequestHandler<CreatePageCommand, BaseR
 
             _pageRepository.Add(page);
 
-            response.Data = page;
             response.Success = true;
-            response.Message = "Page added.";
         }
         catch (Exception ex)
         {
             response.Success = false;
-            response.Message = ex.Message;
+            response.ErrorMessage = ex.Message;
         }
 
         return response;

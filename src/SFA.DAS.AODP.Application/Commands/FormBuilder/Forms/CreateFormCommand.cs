@@ -1,10 +1,9 @@
 ﻿using MediatR;
 using SFA.DAS.AODP.Application.MediatR.Base;
-using SFA.DAS.AODP.Models.Forms.FormBuilder;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
 
-public class CreateFormCommand : IRequest<BaseResponse<Form>>
+public class CreateFormCommand : IRequest<CreateFormCommandResponse>
 {
     public string Name { get; set; }
     public string Version { get; set; }
@@ -14,3 +13,6 @@ public class CreateFormCommand : IRequest<BaseResponse<Form>>
     public string Description { get; set; }
     public int Order { get; set; }
 }
+
+public class CreateFormCommandResponse : BaseResponse { }
+

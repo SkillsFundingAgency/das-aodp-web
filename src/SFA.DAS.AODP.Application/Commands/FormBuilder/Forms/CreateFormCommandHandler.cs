@@ -1,11 +1,10 @@
 ﻿using MediatR;
-using SFA.DAS.AODP.Application.MediatR.Base;
 using SFA.DAS.AODP.Application.Repository;
 using SFA.DAS.AODP.Models.Forms.FormBuilder;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
 
-public class CreateFormCommandHandler : IRequestHandler<CreateFormCommand, BaseResponse<Form>>
+public class CreateFormCommandHandler : IRequestHandler<CreateFormCommand, CreateFormCommandResponse>
 {
     private readonly IGenericRepository<Form> _formRepository;
 
@@ -14,9 +13,13 @@ public class CreateFormCommandHandler : IRequestHandler<CreateFormCommand, BaseR
         _formRepository = formRepository;
     }
 
-    public async Task<BaseResponse<Form>> Handle(CreateFormCommand request, CancellationToken cancellationToken)
+    public async Task<CreateFormCommandResponse> Handle(CreateFormCommand request, CancellationToken cancellationToken)
     {
-        var response = new BaseResponse<Form>();
+        var response = new CreateFormCommandResponse
+        {
+            Success = false
+        };
+
         try
         {
             var form = new Form
@@ -32,14 +35,12 @@ public class CreateFormCommandHandler : IRequestHandler<CreateFormCommand, BaseR
 
             _formRepository.Add(form);
 
-            response.Data = form;
-            response.Success = true;
-            response.Message = "Form added.";
+
         }
         catch (Exception ex)
         {
             response.Success = false;
-            response.Message = ex.Message;
+            response.ErrorMessage = ex.Message;
         }
 
         return response;

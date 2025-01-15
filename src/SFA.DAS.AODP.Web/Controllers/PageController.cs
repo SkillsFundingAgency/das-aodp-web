@@ -39,7 +39,7 @@ public class PageController : Controller
         };
 
         var createPageResponse = await _mediator.Send(command);
-        return RedirectToAction("Edit", "Section", new { id = createPageResponse.Data!.SectionId });
+        return RedirectToAction("Edit", "Section", new { id = page.SectionId });
     }
     #endregion
 

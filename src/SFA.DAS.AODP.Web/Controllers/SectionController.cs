@@ -37,7 +37,7 @@ public class SectionController : Controller
         };
 
         var createSectionResponse = await _mediator.Send(command);
-        return RedirectToAction("Edit", "Form", new { id = createSectionResponse.Data!.FormId });
+        return RedirectToAction("Edit", "Form", new { id = section.FormId });
     }
     #endregion
 

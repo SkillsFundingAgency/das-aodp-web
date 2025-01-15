@@ -3,7 +3,7 @@ using SFA.DAS.AODP.Application.MediatR.Base;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 
-public class UpdateSectionCommand : IRequest<BaseResponse<bool>>
+public class UpdateSectionCommand : IRequest<UpdateSectionCommandResponse>
 {
     public Guid Id { get; set; }
     public Guid FormId { get; set; }
@@ -12,3 +12,5 @@ public class UpdateSectionCommand : IRequest<BaseResponse<bool>>
     public string Description { get; set; }
     public int? NextSectionId { get; set; }
 }
+
+public class UpdateSectionCommandResponse: BaseResponse { }

@@ -5,7 +5,7 @@ using SFA.DAS.AODP.Models.Forms.FormBuilder;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 
-public class UpdateSectionCommandHandler : IRequestHandler<UpdateSectionCommand, BaseResponse<bool>>
+public class UpdateSectionCommandHandler : IRequestHandler<UpdateSectionCommand, UpdateSectionCommandResponse>
 {
     private readonly IGenericRepository<Section> _sectionRepository;
 
@@ -14,9 +14,9 @@ public class UpdateSectionCommandHandler : IRequestHandler<UpdateSectionCommand,
         _sectionRepository = sectionRepository;
     }
 
-    public async Task<BaseResponse<bool>> Handle(UpdateSectionCommand request, CancellationToken cancellationToken)
+    public async Task<UpdateSectionCommandResponse> Handle(UpdateSectionCommand request, CancellationToken cancellationToken)
     {
-        var response = new BaseResponse<bool>();
+        var response = new UpdateSectionCommandResponse();
         response.Success = false;
 
         try
@@ -26,7 +26,7 @@ public class UpdateSectionCommandHandler : IRequestHandler<UpdateSectionCommand,
             if (section == null)
             {
                 response.Success = false;
-                response.Message = $"Section with id '{section!.Id}' could not be found.";
+                response.ErrorMessage = $"Section with id '{section!.Id}' could not be found.";
                 return response;
             }
 
@@ -35,12 +35,12 @@ public class UpdateSectionCommandHandler : IRequestHandler<UpdateSectionCommand,
             section.Description = request.Description;
             section.NextSectionId = request.NextSectionId;
 
-            response.Data = _sectionRepository.Update(section);
+            _sectionRepository.Update(section);
             response.Success = true;
         }
         catch (Exception ex)
         {
-            response.Message = ex.Message;
+            response.ErrorMessage = ex.Message;
         }
 
         return response;

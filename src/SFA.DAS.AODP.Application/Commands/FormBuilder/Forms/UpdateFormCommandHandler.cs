@@ -5,7 +5,7 @@ using SFA.DAS.AODP.Models.Forms.FormBuilder;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
 
-public class UpdateFormCommandHandler : IRequestHandler<UpdateFormCommand, BaseResponse<bool>>
+public class UpdateFormCommandHandler : IRequestHandler<UpdateFormCommand, UpdateFormCommandResponse>
 {
     private readonly IGenericRepository<Form> _formRepository;
 
@@ -14,9 +14,9 @@ public class UpdateFormCommandHandler : IRequestHandler<UpdateFormCommand, BaseR
         _formRepository = formRepository;
     }
 
-    public async Task<BaseResponse<bool>> Handle(UpdateFormCommand request, CancellationToken cancellationToken)
+    public async Task<UpdateFormCommandResponse> Handle(UpdateFormCommand request, CancellationToken cancellationToken)
     {
-        var response = new BaseResponse<bool>();
+        var response = new UpdateFormCommandResponse();
         response.Success = false;
 
         try
@@ -26,7 +26,7 @@ public class UpdateFormCommandHandler : IRequestHandler<UpdateFormCommand, BaseR
             if (form == null)
             {
                 response.Success = false;
-                response.Message = $"Form with id '{form!.Id}' could not be found.";
+                response.ErrorMessage = $"Form with id '{form!.Id}' could not be found.";
                 return response;
             }
 
@@ -38,12 +38,12 @@ public class UpdateFormCommandHandler : IRequestHandler<UpdateFormCommand, BaseR
             form.Order = request.Order;
             form.Description = request.Description;
 
-            response.Data = _formRepository.Update(form);
+            _formRepository.Update(form);
             response.Success = true;
         }
         catch (Exception ex)
         {
-            response.Message = ex.Message;
+            response.ErrorMessage = ex.Message;
         }
 
         return response;

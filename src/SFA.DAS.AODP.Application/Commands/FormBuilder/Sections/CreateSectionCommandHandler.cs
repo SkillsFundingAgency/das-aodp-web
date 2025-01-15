@@ -5,7 +5,7 @@ using SFA.DAS.AODP.Models.Forms.FormBuilder;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 
-public class CreateSectionCommandHandler : IRequestHandler<CreateSectionCommand, BaseResponse<Section>>
+public class CreateSectionCommandHandler : IRequestHandler<CreateSectionCommand, CreateSectionCommandResponse>
 {
     private readonly IGenericRepository<Section> _sectionRepository;
 
@@ -14,9 +14,9 @@ public class CreateSectionCommandHandler : IRequestHandler<CreateSectionCommand,
         _sectionRepository = sectionRepository;
     }
 
-    public async Task<BaseResponse<Section>> Handle(CreateSectionCommand request, CancellationToken cancellationToken)
+    public async Task<CreateSectionCommandResponse> Handle(CreateSectionCommand request, CancellationToken cancellationToken)
     {
-        var response = new BaseResponse<Section>();
+        var response = new CreateSectionCommandResponse();
         try
         {
             var section = new Section
@@ -30,14 +30,12 @@ public class CreateSectionCommandHandler : IRequestHandler<CreateSectionCommand,
 
             _sectionRepository.Add(section);
 
-            response.Data = section;
             response.Success = true;
-            response.Message = "Section added.";
         }
         catch (Exception ex)
         {
             response.Success = false;
-            response.Message = ex.Message;
+            response.ErrorMessage = ex.Message;
         }
 
         return response;

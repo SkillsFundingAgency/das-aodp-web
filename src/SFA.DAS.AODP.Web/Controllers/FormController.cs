@@ -12,7 +12,8 @@ public class FormController : Controller
 {
     private readonly IMediator _mediator;
 
-    public FormController(IMediator mediator) {
+    public FormController(IMediator mediator)
+    {
         _mediator = mediator;
     }
 

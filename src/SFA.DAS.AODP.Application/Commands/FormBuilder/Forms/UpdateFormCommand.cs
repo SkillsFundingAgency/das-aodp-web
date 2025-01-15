@@ -3,7 +3,7 @@ using SFA.DAS.AODP.Application.MediatR.Base;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
 
-public class UpdateFormCommand : IRequest<BaseResponse<bool>>
+public class UpdateFormCommand : IRequest<UpdateFormCommandResponse>
 {
     public Guid Id { get; set; }
     public string Name { get; set; }
@@ -14,3 +14,5 @@ public class UpdateFormCommand : IRequest<BaseResponse<bool>>
     public string Description { get; set; }
     public int Order { get; set; }
 }
+
+public class UpdateFormCommandResponse : BaseResponse { }

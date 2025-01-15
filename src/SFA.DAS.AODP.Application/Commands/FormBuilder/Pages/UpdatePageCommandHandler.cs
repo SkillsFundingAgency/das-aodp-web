@@ -5,7 +5,7 @@ using SFA.DAS.AODP.Models.Forms.FormBuilder;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 
-public class UpdatePageCommandHandler : IRequestHandler<UpdatePageCommand, BaseResponse<bool>>
+public class UpdatePageCommandHandler : IRequestHandler<UpdatePageCommand, UpdatePageCommandResponse>
 {
     private readonly IGenericRepository<Page> _pageRepository;
 
@@ -14,9 +14,9 @@ public class UpdatePageCommandHandler : IRequestHandler<UpdatePageCommand, BaseR
         _pageRepository = pageRepository;
     }
 
-    public async Task<BaseResponse<bool>> Handle(UpdatePageCommand request, CancellationToken cancellationToken)
+    public async Task<UpdatePageCommandResponse> Handle(UpdatePageCommand request, CancellationToken cancellationToken)
     {
-        var response = new BaseResponse<bool>();
+        var response = new UpdatePageCommandResponse();
         response.Success = false;
 
         try
@@ -26,7 +26,7 @@ public class UpdatePageCommandHandler : IRequestHandler<UpdatePageCommand, BaseR
             if (page == null)
             {
                 response.Success = false;
-                response.Message = $"Page with id '{page!.Id}' could not be found.";
+                response.ErrorMessage = $"Page with id '{page!.Id}' could not be found.";
                 return response;
             }
 
@@ -35,12 +35,12 @@ public class UpdatePageCommandHandler : IRequestHandler<UpdatePageCommand, BaseR
             page.Order = request.Order;
             page.NextPageId = request.NextPageId;
 
-            response.Data = _pageRepository.Update(page);
+            _pageRepository.Update(page);
             response.Success = true;
         }
         catch (Exception ex)
         {
-            response.Message = ex.Message;
+            response.ErrorMessage = ex.Message;
         }
 
         return response;
