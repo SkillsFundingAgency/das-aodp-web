@@ -7,9 +7,10 @@ namespace SFA.DAS.AODP.Models.Forms.FormSchema;
 public class QuestionSchema
 {
     public int Id { get; set; }
-    public int PageId { get; set; }
-    public int SectionId { get; set; }
+    public int PageKey { get; set; }
+    public int SectionKey { get; set; }
     public int FormId { get; set; }
+    public int FormVersionId { get; set; }
     public int Index { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Hint { get; set; } = string.Empty;
@@ -40,7 +41,9 @@ public class QuestionSchema
 
         switch (Type)
         {
-            case QuestionType.Text: TextValidator?.Validate(this, answeredQuestion); break;
+            case QuestionType.Text: 
+            case QuestionType.TextArea: 
+                TextValidator?.Validate(this, answeredQuestion); break;
             case QuestionType.Integer: IntegerValidator?.Validate(this, answeredQuestion); break;
             case QuestionType.Decimal: DecimalValidator?.Validate(this, answeredQuestion); break;
             case QuestionType.Date: DateValidator?.Validate(this, answeredQuestion); break;
@@ -52,7 +55,8 @@ public class QuestionSchema
 
 public enum QuestionType
 {
-    Text,        // Not null, length min, length max 
+    Text,        // Not null, length min, length max,
+    TextArea,        // Not null, length min, length max
     Integer,     // Not null, greater than, less than, equal/not equal to 
     Decimal,     // Not null, greater than, less than, equal/not equal to 
     Date,        // Not null, greater than, less than, equal/not equal to 

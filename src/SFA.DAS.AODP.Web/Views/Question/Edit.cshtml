@@ -1,0 +1,26 @@
+﻿@using SFA.DAS.AODP.Models.Forms.FormSchema
+@using SFA.DAS.AODP.Web.Models.Question
+@model EditQuestionViewModel
+
+
+<form asp-controller="Question" asp-action="Edit" method="post">
+    @Html.HiddenFor(m => m.PageKey)
+    @Html.HiddenFor(m => m.SectionKey)
+    @Html.HiddenFor(m => m.FormVersionId)
+
+    @Html.AntiForgeryToken()
+
+    <div class="govuk-form-group">
+        <govuk-input asp-for="Title" input-class="govuk-input--width-50" inputmode="text">
+            <govuk-input-label is-page-heading="false" class="govuk-label--s">Title</govuk-input-label>
+            @Html.RenderPartialAsync("Validation/_TextInputValidationPartial", nameof(Model.Title))
+        </govuk-input>
+    </div>
+
+    Add hint field etc. that are shared between all types
+
+    Then add partial depending on type:
+    - the partial should contain validation specific info, but share the same EditQuestion model
+    <govuk-button type="submit">Save</govuk-button>
+
+</form>

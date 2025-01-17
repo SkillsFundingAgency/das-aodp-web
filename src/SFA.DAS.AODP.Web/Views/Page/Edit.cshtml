@@ -5,19 +5,14 @@
 <form asp-action="Edit" method="post">
     <input type="hidden" name="SectionId" value="@Model.SectionId" />
     <div>
-        <govuk-input name="Title" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" spellcheck="false" value="@Model.Title">
+        <govuk-input name="Title" input-class="govuk-input--width-50" inputmode="text" pattern="[0-9]*" spellcheck="false" value="@Model.Title">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Title</govuk-input-label>
         </govuk-input>
     </div>
     <div>
-        <govuk-input name="Description" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" spellcheck="false" value="@Model.Description">
-            <govuk-input-label is-page-heading="false" class="govuk-label--s">Description</govuk-input-label>
-        </govuk-input>
-    </div>
-    <div>
-        <govuk-input name="Order" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" spellcheck="false" value="@Model.Order">
-            <govuk-input-label is-page-heading="false" class="govuk-label--s">Order</govuk-input-label>
-        </govuk-input>
+        <govuk-textarea name="Description" input-class="govuk-input--width-50" inputmode="text" pattern="[0-9]*" spellcheck="false" value="@Model.Description">
+            <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Description</govuk-textarea-label>
+        </govuk-textarea>
     </div>
     <div>
         <govuk-select name="NextPageId">
@@ -32,3 +27,30 @@
     <govuk-button type="submit">Save</govuk-button>
     <a class="govuk-button govuk-button--secondary" href="@Url.Action("Edit", "Section", new { id = Model.SectionId })">Cancel</a>
 </form>
+
+<hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+
+<a class="govuk-button" asp-action="Create" asp-controller="Question"
+   asp-route-pageKey="@Model.Key"
+   asp-route-sectionKey="@Model.SectionKey"
+   asp-route-formVersionId="@Model.FormVersionId">Create New Question</a>
+<table class="govuk-table">
+    <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">Question</th>
+            <th scope="col" class="govuk-table__header">Options</th>
+        </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+        @foreach (var item in (List<Page>)ViewData["Pages"])
+        {
+            <tr class="govuk-table__row">
+                <td>@item.Title</td>
+                <td>
+                    <a class="govuk-button" href="@Url.Action("Edit", "Page", new { id = item.Id })">Edit</a>&nbsp;
+                    <a class="govuk-button govuk-button--warning" href="@Url.Action("Delete", "Page", new { id = item.Id })">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

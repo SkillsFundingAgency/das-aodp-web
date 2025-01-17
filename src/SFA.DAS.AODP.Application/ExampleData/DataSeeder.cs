@@ -12,10 +12,76 @@ public static class DataSeeder
         try
         {
             Console.WriteLine("Starting seeding process...");
-
             var forms = new List<Form>();
+
+            forms.Add(new Models.Forms.FormBuilder.Form
+            {
+                Id = Guid.Parse("ea947185-06bb-4245-a23d-1e7d376213fb"),
+                Name = $"Sample Form ",
+                Version = $"0",
+                Published = true,
+                Key = $"SampleKey",
+                ApplicationTrackingTemplate = $"Template",
+                Order = 1,
+                Description = $"Form description.",
+                Sections = new()
+                {
+                    new Models.Forms.FormBuilder.Section
+                    {
+                            Id = Guid.Parse("ea947185-06bb-4245-a23d-1e7d376213fb"),
+                            FormId = Guid.Parse("ea947185-06bb-4245-a23d-1e7d376213fb"),
+                            Title = $"Sample Section ",
+                            Description = $"Section description.",
+                            Order = 1,
+                            Pages = new()
+                            {
+                                new Page
+                                {
+                                    Id = Guid.Parse("ea947185-06bb-4245-a23d-1e7d376213fb"),
+                                    SectionId = Guid.Parse("ea947185-06bb-4245-a23d-1e7d376213fb"),
+                                    Title = $"Sample Page ",
+                                    Description = $"Page description.",
+                                    Order = 1
+                            }
+                    }
+                }
+            }
+
+            });
+
             var sections = new List<Section>();
+
+            sections.Add(new Models.Forms.FormBuilder.Section
+            {
+                Id = Guid.Parse("ea947185-06bb-4245-a23d-1e7d376213fb"),
+                FormId = Guid.Parse("ea947185-06bb-4245-a23d-1e7d376213fb"),
+                Title = $"Sample Section ",
+                Description = $"Section description.",
+                Order = 1,
+                Pages = new()
+                {
+                    new Page
+                    {
+                        Id = Guid.Parse("ea947185-06bb-4245-a23d-1e7d376213fb"),
+                        SectionId = Guid.Parse("ea947185-06bb-4245-a23d-1e7d376213fb"),
+                        Title = $"Sample Page ",
+                        Description = $"Page description.",
+                        Order = 1
+                    }
+                }
+            });
+
+
             var pages = new List<Page>();
+
+            pages.Add(new Page
+            {
+                Id = Guid.Parse("ea947185-06bb-4245-a23d-1e7d376213fb"),
+                SectionId = Guid.Parse("ea947185-06bb-4245-a23d-1e7d376213fb"),
+                Title = $"Sample Page ",
+                Description = $"Page description.",
+                Order = 1
+            });
             var questions = new List<Question>();
             var validationRules = new List<ValidationRule>();
             var options = new List<Option>();

@@ -21,7 +21,7 @@ public class FormController : ControllerBase
     }
 
     [HttpGet]
-    [Route("")]
+    [Route("/api/forms")]
     [ProducesResponseType(typeof(List<Form>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
     public IActionResult GetForms()
