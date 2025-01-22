@@ -21,6 +21,8 @@ namespace SFA.DAS.AODP.Web.Models.Question
 
         public bool Required { get; set; }
 
+        public bool AddAnotherRadioOption { get; set; }
+
         public Dictionary<string, RoutingPoint> RoutingPoints { get; set; } = new Dictionary<string, RoutingPoint>();
         public TextInputOptions TextInput { get; set; } = new();
         public RadioOptions RadioButton { get; set; } = new();
@@ -37,7 +39,17 @@ namespace SFA.DAS.AODP.Web.Models.Question
         {
             public Dictionary<Guid, string> MultiChoice { get; set; } = new();
             public Guid Remove { get; set; }
+            public AdditionalActions AdditionalFormActions { get; set; } = new();
+
+            public class AdditionalActions
+            {
+                public Guid? RemoveOption { get; set; }
+                public bool AddOption { get; set; }
+
+            }
 
         }
+
+
     }
 }

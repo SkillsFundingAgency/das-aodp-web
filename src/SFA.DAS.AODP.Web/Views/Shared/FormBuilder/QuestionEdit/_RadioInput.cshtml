@@ -6,6 +6,9 @@
 <govuk-fieldset>
     <govuk-fieldset-legend>Add options</govuk-fieldset-legend>
     <ul class="govuk-list">
+        @for(int i =0;i<Model.MultiChoice.Count; i++){
+
+        }
         @foreach (var option in Model.MultiChoice)
         {
             <li class="app-select-options__list-item" style="display: flex; align-items: flex-end;">
@@ -31,7 +34,7 @@
         }
     </ul>
 
-    <button type="submit" formnovalidate="formnovalidate" class="govuk-button govuk-button--secondary" data-module="govuk-button" data-prevent-double-click="true" name="add_another" data-govuk-button-init="">Add another option</button>
+    <button type="submit" formnovalidate="formnovalidate" class="govuk-button govuk-button--secondary" data-module="govuk-button" data-prevent-double-click="true" name="AddAnotherOption" value="true" data-govuk-button-init="">Add another option</button>
 </govuk-fieldset>
 
 
