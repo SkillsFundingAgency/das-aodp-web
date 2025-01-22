@@ -61,5 +61,6 @@ public enum QuestionType
     Decimal,     // Not null, greater than, less than, equal/not equal to 
     Date,        // Not null, greater than, less than, equal/not equal to 
     MultiChoice, // Not null
+    Radio,
     Boolean      // Not null
 }

@@ -1,0 +1,42 @@
+﻿@using static SFA.DAS.AODP.Web.Models.Question.EditQuestionViewModel
+@model RadioOptions
+
+<h2 class="govuk-heading-m">Options</h2>
+
+<govuk-fieldset>
+    <govuk-fieldset-legend>Add options</govuk-fieldset-legend>
+    <ul class="govuk-list">
+        @foreach (var option in Model.MultiChoice)
+        {
+            <li class="app-select-options__list-item" style="display: flex; align-items: flex-end;">
+                <div class="govuk-form-group" classes="app-select-options__form-group">
+                    <label for="forms-selections-settings-form-selection-options-name-field-0" class="govuk-label">Option 1</label>
+                    <input type="hidden" name="RadioButtonValidationDetails[MultiChoice][0][Key]" value="@option.Key" />
+                    <input name="RadioButtonValidationDetails[MultiChoice][0][Value]"
+                           class="govuk-input govuk-input--width-20"
+                           type="text" />
+
+                </div>
+
+                <button type="submit" formnovalidate="formnovalidate" class="govuk-button govuk-button--warning app-select-options__button"
+                        data-module="govuk-button" data-prevent-double-click="true"  name="Remove" value="@option.Key" data-govuk-button-init="">
+                    Remove <span class="govuk-visually-hidden">option 1</span>
+                </button>
+
+
+
+                <govuk-button>Submit</govuk-button>
+
+            </li>
+        }
+    </ul>
+
+    <button type="submit" formnovalidate="formnovalidate" class="govuk-button govuk-button--secondary" data-module="govuk-button" data-prevent-double-click="true" name="add_another" data-govuk-button-init="">Add another option</button>
+</govuk-fieldset>
+
+
+<style>
+    #pages-question-input-is-optional-true-hint {
+        padding: 0 !important;
+    }
+</style>

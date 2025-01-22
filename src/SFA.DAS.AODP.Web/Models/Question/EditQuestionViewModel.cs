@@ -18,16 +18,26 @@ namespace SFA.DAS.AODP.Web.Models.Question
 
         public string Hint { get; set; } = string.Empty;
         public QuestionType Type { get; set; }
-        public List<string> MultiChoice { get; set; } = new List<string>();
+
+        public bool Required { get; set; }
+
         public Dictionary<string, RoutingPoint> RoutingPoints { get; set; } = new Dictionary<string, RoutingPoint>();
-        public TextValidation TextValidationDetails { get; set; } = new();
+        public TextInputOptions TextInput { get; set; } = new();
+        public RadioOptions RadioButton { get; set; } = new();
 
 
-        public class TextValidation
+        public class TextInputOptions
         {
-            public bool Required { get; set; }
             public int? MinLength { get; set; }
             public int? MaxLength { get; set; }
+
+        }
+
+        public class RadioOptions
+        {
+            public Dictionary<Guid, string> MultiChoice { get; set; } = new();
+            public Guid Remove { get; set; }
+
         }
     }
 }

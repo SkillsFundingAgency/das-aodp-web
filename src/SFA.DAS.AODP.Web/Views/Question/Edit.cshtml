@@ -2,25 +2,84 @@
 @using SFA.DAS.AODP.Web.Models.Question
 @model EditQuestionViewModel
 
+<h1 class="govuk-heading-l">Edit Question</h1>
 
 <form asp-controller="Question" asp-action="Edit" method="post">
     @Html.HiddenFor(m => m.PageKey)
     @Html.HiddenFor(m => m.SectionKey)
     @Html.HiddenFor(m => m.FormVersionId)
+    @Html.HiddenFor(m => m.Id)
+    @Html.HiddenFor(m => m.Type)
 
     @Html.AntiForgeryToken()
 
     <div class="govuk-form-group">
         <govuk-input asp-for="Title" input-class="govuk-input--width-50" inputmode="text">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Title</govuk-input-label>
-            @Html.RenderPartialAsync("Validation/_TextInputValidationPartial", nameof(Model.Title))
+            @{
+                await Html.RenderPartialAsync("Validation/_TextInputValidationPartial", nameof(Model.Title));
+            }
         </govuk-input>
     </div>
 
-    Add hint field etc. that are shared between all types
+    <div class="govuk-form-group">
+        <govuk-input asp-for="Hint" input-class="govuk-input--width-50" inputmode="text">
+            <govuk-input-label is-page-heading="false" class="govuk-label--s">Hint</govuk-input-label>
 
-    Then add partial depending on type:
-    - the partial should contain validation specific info, but share the same EditQuestion model
-    <govuk-button type="submit">Save</govuk-button>
+        </govuk-input>
+    </div>
 
+    <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+
+    <h2 class="govuk-heading-m">Required</h2>
+
+    <div class="govuk-form-group">
+        <govuk-radios asp-for="Required">
+            <govuk-radios-fieldset>
+                <govuk-radios-fieldset-legend is-page-heading="false" class="govuk-fieldset__legend--s">
+                    Should this question be mandatory or optional?
+                </govuk-radios-fieldset-legend>
+
+                <govuk-radios-hint>
+                    Select one option.
+                </govuk-radios-hint>
+
+                @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.Required))
+
+                <govuk-radios-item value="true">Mandatory</govuk-radios-item>
+                <govuk-radios-item value="false">
+                    Optional
+                    <govuk-radios-hint class="govuk-hint govuk-radios__hint" id="pages-question-input-is-optional-true-hint">
+                        We’ll add ‘(optional)’ to the end of the question text.
+                    </govuk-radios-hint>
+                </govuk-radios-item>
+            </govuk-radios-fieldset>
+        </govuk-radios>
+    </div>
+    <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+
+
+    @if (Model.Type == QuestionType.Text)
+    {
+        await Html.RenderPartialAsync("FormBuilder/QuestionEdit/_TextInput", Model.TextInput);
+
+    }
+    else if (Model.Type == QuestionType.Radio)
+    {
+        await Html.RenderPartialAsync("FormBuilder/QuestionEdit/_RadioInput", Model.RadioButton);
+
+    }
+    <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+
+    <ul class="govuk-list govuk-list--spaced">
+        <li>
+            <button type="submit" formnovalidate="formnovalidate" class="govuk-button govuk-!-margin-bottom-3" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init="">Save question</button>
+        </li>
+        <li>
+            <a class="govuk-button govuk-button--warning" data-module="govuk-button" href="/forms/5711/pages/19692/delete" data-govuk-button-init="">Delete question</a>
+        </li>
+        <li>
+            <a class="govuk-link" href="/forms/5711/pages">Back to your questions</a>
+        </li>
+    </ul>
 </form>

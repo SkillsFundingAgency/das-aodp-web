@@ -2,5 +2,5 @@
 
 @if (ViewContext.ModelState.ContainsKey(Model))
 {
-    <govuk-input-error-message>@ViewContext.ModelState[Model]?.Errors.FirstOrDefault()?.ErrorMessage</govuk-input-error-message>
+    <govuk-textarea-error-message>@ViewContext.ModelState[Model]?.Errors.FirstOrDefault()?.ErrorMessage</govuk-textarea-error-message>
 }

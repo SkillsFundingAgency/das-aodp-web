@@ -16,5 +16,7 @@ namespace SFA.DAS.AODP.Web.Models.Question
         [Required]
         [Display(Name = "Question Type")]
         public QuestionType? QuestionType { get; set; }
+
+        public bool Required { get; set; }
     }
 }
