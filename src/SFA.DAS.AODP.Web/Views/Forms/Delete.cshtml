@@ -8,6 +8,7 @@
         Are you sure you want to delete the form "@Model.Name"?
     </govuk-warning-text>
 
-    <govuk-button class="govuk-button--warning" type="submit">Delete</govuk-button>
-    <a class="govuk-button govuk-button--secondary" href="@Url.Action("Index")">Cancel</a>
+    <button class="govuk-button govuk-button--warning" type="submit">Delete</button>
+
+    <a class="govuk-button govuk-button--secondary" asp-action="Index" asp-controller="Forms">Cancel</a>
 </form>

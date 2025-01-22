@@ -52,8 +52,8 @@
                 <td>@item.Order</td>
                 <td>@item.Description</td>
                 <td>
-                    <a class="govuk-button" href="@Url.Action("Edit", "Page", new { pageId = item.Id, sectionId = item.SectionId })">Edit</a>&nbsp;
-                    <a class="govuk-button govuk-button--warning" href="@Url.Action("Delete", "Page", new { pageId = item.Id, sectionId = item.SectionId })">Delete</a>
+                    <a class="govuk-button" href="@Url.Action("Edit", "Page", new { pageId = item.Id, sectionId = item.SectionId, formVersionId = Model.FormVersionId })">Edit</a>&nbsp;
+                    <a class="govuk-button govuk-button--warning" href="@Url.Action("Delete", "Page", new { pageId = item.Id, sectionId = item.SectionId, formVersionId = Model.FormVersionId })">Delete</a>
                 </td>
             </tr>
         }

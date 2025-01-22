@@ -1,9 +1,9 @@
-﻿@model GetPageByIdQueryResponse.Page
+﻿@model GetAllSectionsQueryResponse.Section
 
-<h1 class="govuk-heading-l">Edit Page</h1>
+<h1 class="govuk-heading-l">Create Section</h1>
 
-<form asp-action="Edit" method="post">
-    <input type="hidden" name="SectionId" value="@Model.SectionId" />
+<form asp-action="Create" method="post">
+    <input type="hidden" name="FormVersionId" value="@Model.FormVersionId" />
     <div>
         <govuk-input name="Title" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" spellcheck="false" value="@Model.Title">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Title</govuk-input-label>
@@ -20,9 +20,9 @@
         </govuk-input>
     </div>
     <div>
-        <govuk-select name="NextPageId">
-            <govuk-select-label>Next Page</govuk-select-label>
-            @foreach (var item in (List<GetAllPagesQueryResponse.Page>)ViewData["Pages"])
+        <govuk-select name="NextSectionId">
+            <govuk-select-label>Next Section</govuk-select-label>
+            @foreach (var item in (List<GetAllSectionsQueryResponse.Section>)ViewData["Sections"])
             {
                 <govuk-select-item value="@item.Id">@item.Title</govuk-select-item>
             }
@@ -30,5 +30,6 @@
     </div>
 
     <govuk-button type="submit">Save</govuk-button>
-@*     <a class="govuk-button govuk-button--secondary" href="@Url.Action("Edit", "Section", new { sectionId = Model.SectionId, formVersionId = Model })">Cancel</a> *@
+    <a class="govuk-button govuk-button--secondary" asp-action="Edit" asp-controller="Forms" asp-route-formVersionId="@Model.Id">Cancel</a>
+@*     <a class="govuk-button govuk-button--secondary" href="@Url.Action("Edit", "Form", new { formVersionId = Model.FormVersionId })">Cancel</a> *@
 </form>

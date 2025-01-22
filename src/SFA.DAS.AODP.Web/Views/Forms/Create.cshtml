@@ -1,11 +1,11 @@
-﻿@model GetFormVersionByIdQueryResponse.FormVersion
+﻿@model CreateFormVersionCommand.FormVersion
 
-<h1 class="govuk-heading-l">Edit Form</h1>
+<h1 class="govuk-heading-l">Create New Form</h1>
 
-<form asp-action="Edit" method="post">
+<form asp-action="Create" method="post">
     <div>
         <govuk-input name="Name" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" spellcheck="false" value="@Model.Name">
-            <govuk-input-label is-page-heading="false" class="govuk-label--s">Name</govuk-input-label>
+            <govuk-input-label is-page-heading="false" class="govuk-label--s">Form Name</govuk-input-label>
         </govuk-input>
     </div>
     <div>
@@ -19,8 +19,8 @@
                 Publish
             </govuk-checkboxes-item>
         </govuk-checkboxes>
-    </div>
-    <div>
+    </div> *@
+@*     <div>
         <govuk-input name="Key" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" spellcheck="false" value="@Model.Key">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Key</govuk-input-label>
         </govuk-input>
@@ -35,40 +35,13 @@
         <label class="govuk-label govuk-label--s" for="descriptionEditor">
             Description
         </label>
-        <div id="descriptionEditor">
-            @Html.Raw(@Model.Description.Trim('"'))
-        </div>
+        <div id="descriptionEditor"></div>
     </div>
 
-    <govuk-button type="submit">Save</govuk-button>
-    <a class="govuk-button govuk-button--secondary" href="@Url.Action("Index")">Cancel</a>
+    <button class="govuk-button" type="submit">Save</button>
+    &nbsp;
+    <a class="govuk-button govuk-button--secondary" asp-action="Index" asp-controller="Forms">Cancel</a>
 </form>
-
-<hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
-
-<a class="govuk-button" asp-action="Create" asp-controller="Section" asp-route-formId="@Model.Id">Create New Section</a>
-<table class="govuk-table">
-    <thead class="govuk-table__head">
-        <tr class="govuk-table__row">
-            <th scope="col" class="govuk-table__header">Name</th>
-            <th scope="col" class="govuk-table__header">Version</th>
-            <th scope="col" class="govuk-table__header">Options</th>
-        </tr>
-    </thead>
-    <tbody class="govuk-table__body">
-        @foreach (var item in (List<GetAllSectionsQueryResponse.Section>)ViewData["Sections"])
-        {
-            <tr class="govuk-table__row">
-                <td>@item.Title</td>
-                <td>@item.Description</td>
-                <td>
-                    <a class="govuk-button" href="@Url.Action("Edit", "Section", new { id = item.Id })">Edit</a>&nbsp;
-                    <a class="govuk-button govuk-button--warning" href="@Url.Action("Delete", "Section", new { id = item.Id })">Delete</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
 
 @section Scripts {
     <script type="text/javascript">

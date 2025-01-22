@@ -6,16 +6,17 @@ using SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
 
 namespace SFA.DAS.AODP.Web.Controllers;
 
-public class SectionController : Controller
+public class SectionsController : Controller
 {
     public IMediator _mediator { get; }
 
-    public SectionController(IMediator mediator)
+    public SectionsController(IMediator mediator)
     {
         _mediator = mediator;
     }
 
     #region Create
+    [Route("sections/create/forms/{formVersionId}")]
     public async Task<IActionResult> Create(Guid formVersionId)
     {
         var query = new GetAllSectionsQuery(formVersionId);
@@ -35,6 +36,7 @@ public class SectionController : Controller
     #endregion
 
     #region Edit
+    [Route("sections/edit/{sectionId}/forms/{formVersionId}")]
     public async Task<IActionResult> Edit(Guid sectionId, Guid formVersionId)
     {
         var sectionQuery = new GetSectionByIdQuery(sectionId, formVersionId);
@@ -62,6 +64,7 @@ public class SectionController : Controller
     #endregion
 
     #region Delete
+    [Route("sections/delete/{sectionId}/forms/{formVersionId}")]
     public async Task<IActionResult> Delete(Guid sectionId, Guid formVerisonId)
     {
         var query = new GetSectionByIdQuery(sectionId, formVerisonId);

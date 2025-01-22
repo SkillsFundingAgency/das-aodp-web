@@ -6,17 +6,18 @@ using SFA.DAS.AODP.Models.Forms.FormBuilder;
 
 namespace SFA.DAS.AODP.Web.Controllers;
 
-public class PageController : Controller
+public class PagesController : Controller
 {
     private readonly IMediator _mediator;
 
-    public PageController(IMediator mediator)
+    public PagesController(IMediator mediator)
     {
         _mediator = mediator;
     }
 
     #region Create
-    public async Task<IActionResult> Create(Guid sectionId)
+    [Route("pages/create/sections/{sectionId}/forms/{formVersionId}")]
+    public async Task<IActionResult> Create(Guid sectionId, Guid formVersionId)
     {
         var query = new GetAllPagesQuery(sectionId);
         var response = await _mediator.Send(query);
@@ -35,7 +36,8 @@ public class PageController : Controller
     #endregion
 
     #region Edit
-    public async Task<IActionResult> Edit(Guid pageId, Guid sectionId)
+    [Route("pages/edit/{pageId}/sections/{sectionId}/forms/{formVersionId}")]
+    public async Task<IActionResult> Edit(Guid pageId, Guid sectionId, Guid formVersionId)
     {
         var query = new GetPageByIdQuery(pageId, sectionId);
         var response = await _mediator.Send(query);
@@ -59,7 +61,8 @@ public class PageController : Controller
     #endregion
 
     #region Delete
-    public async Task<IActionResult> Delete(Guid pageId, Guid sectionId)
+    [Route("pages/delete/{pageId}/sections/{sectionId}/forms/{formVersionId}")]
+    public async Task<IActionResult> Delete(Guid pageId, Guid sectionId, Guid formVersionId)
     {
         var query = new GetPageByIdQuery(pageId, sectionId);
         var response = await _mediator.Send(query);
