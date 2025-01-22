@@ -37,13 +37,13 @@ namespace SFA.DAS.AODP.Web.Models.Question
 
         public class RadioOptions
         {
-            public Dictionary<Guid, string> MultiChoice { get; set; } = new();
+            public List<string> MultiChoice { get; set; } = new();
             public Guid Remove { get; set; }
             public AdditionalActions AdditionalFormActions { get; set; } = new();
 
             public class AdditionalActions
             {
-                public Guid? RemoveOption { get; set; }
+                public int? RemoveOption { get; set; }
                 public bool AddOption { get; set; }
 
             }

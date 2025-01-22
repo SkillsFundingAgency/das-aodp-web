@@ -58,7 +58,11 @@ public class QuestionController : Controller
             FormVersionId = formVersionId,
             SectionKey = sectionKey,
             Id = questionId,
-            Type = AODP.Models.Forms.FormSchema.QuestionType.Radio
+            Type = AODP.Models.Forms.FormSchema.QuestionType.Radio,
+            RadioButton = new()
+            {
+                MultiChoice = new() { "Test" }
+            }
         });
     }
 
@@ -66,7 +70,7 @@ public class QuestionController : Controller
     [Route("form/{formVersionId}/section/{sectionKey}/page/{pageKey}/question/{questionId}")]
     public async Task<IActionResult> Edit(EditQuestionViewModel editQuestionViewModel)
     {
-        editQuestionViewModel.RadioButton.MultiChoice.Add(Guid.NewGuid(), "test");
+        editQuestionViewModel.RadioButton.MultiChoice.Add("test");
         return View(editQuestionViewModel);
     }
 
