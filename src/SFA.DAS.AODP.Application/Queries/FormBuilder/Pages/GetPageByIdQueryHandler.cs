@@ -1,18 +1,21 @@
-﻿using MediatR;
-using SFA.DAS.AODP.Application.MediatR.Base;
-using SFA.DAS.AODP.Application.Queries.FormBuilder.Pages;
-using SFA.DAS.AODP.Application.Repository;
-using SFA.DAS.AODP.Models.Forms.FormBuilder;
+﻿using AutoMapper;
+using MediatR;
+using SFA.DAS.AODP.Domain.FormBuilder.Requests.Pages;
+using SFA.DAS.AODP.Domain.FormBuilder.Responses.Pages;
+using SFA.DAS.AODP.Domain.Interfaces;
+using SFA.DAS.AODP.Domain.Models;
 
-namespace SFA.DAS.AODP.Application.Handlers.FormBuilder.Pages;
+namespace SFA.DAS.AODP.Application.Queries.FormBuilder.Pages;
 
 public class GetPageByIdQueryHandler : IRequestHandler<GetPageByIdQuery, GetPageByIdQueryResponse>
 {
-    private readonly IGenericRepository<Page> _pageRepository;
+    private readonly IAodpApiClient<AodpApiConfiguration> _apiClient;
+    private readonly IMapper _mapper;
 
-    public GetPageByIdQueryHandler(IGenericRepository<Page> pageRepository)
+    public GetPageByIdQueryHandler(IAodpApiClient<AodpApiConfiguration> apiClient, IMapper mapper)
     {
-        _pageRepository = pageRepository;
+        _apiClient = apiClient;
+        _mapper = mapper;
     }
 
     public async Task<GetPageByIdQueryResponse> Handle(GetPageByIdQuery request, CancellationToken cancellationToken)
@@ -21,7 +24,8 @@ public class GetPageByIdQueryHandler : IRequestHandler<GetPageByIdQuery, GetPage
         response.Success = false;
         try
         {
-            response.Data = _pageRepository.GetById(request.Id);
+            var result = await _apiClient.Get<GetPageByIdApiResponse>(new GetPageByIdApiRequest(request.PageId, request.SectionId));
+            response.Data = _mapper.Map<GetPageByIdQueryResponse.Page>(result.Data);
             response.Success = true;
         }
         catch (Exception ex)

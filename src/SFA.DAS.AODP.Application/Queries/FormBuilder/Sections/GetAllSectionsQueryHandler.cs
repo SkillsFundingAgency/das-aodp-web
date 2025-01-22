@@ -1,17 +1,21 @@
-﻿using MediatR;
-using SFA.DAS.AODP.Application.MediatR.Base;
-using SFA.DAS.AODP.Application.Repository;
-using SFA.DAS.AODP.Models.Forms.FormBuilder;
+﻿using AutoMapper;
+using MediatR;
+using SFA.DAS.AODP.Domain.FormBuilder.Requests.Sections;
+using SFA.DAS.AODP.Domain.FormBuilder.Responses.Sections;
+using SFA.DAS.AODP.Domain.Interfaces;
+using SFA.DAS.AODP.Domain.Models;
 
 namespace SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
 
 public class GetAllSectionsQueryHandler : IRequestHandler<GetAllSectionsQuery, GetAllSectionsQueryResponse>
 {
-    private readonly IGenericRepository<Section> _sectionRepository;
+    private readonly IAodpApiClient<AodpApiConfiguration> _apiClient;
+    private readonly IMapper _mapper;
 
-    public GetAllSectionsQueryHandler(IGenericRepository<Section> sectionRepository)
+    public GetAllSectionsQueryHandler(IAodpApiClient<AodpApiConfiguration> apiClient, IMapper mapper)
     {
-        _sectionRepository = sectionRepository;
+        _apiClient = apiClient;
+        _mapper = mapper;
     }
 
     public async Task<GetAllSectionsQueryResponse> Handle(GetAllSectionsQuery request, CancellationToken cancellationToken)
@@ -20,7 +24,8 @@ public class GetAllSectionsQueryHandler : IRequestHandler<GetAllSectionsQuery, G
         response.Success = false;
         try
         {
-            response.Data = _sectionRepository.GetAll().Where(s => s.FormId == request.FormId).ToList();
+            var result = await _apiClient.Get<GetAllSectionsApiResponse>(new GetAllSectionsApiRequest(request.FormVersionId));
+            response.Data = _mapper.Map<List<GetAllSectionsQueryResponse.Section>>(result.Data);
             response.Success = true;
         }
         catch (Exception ex)

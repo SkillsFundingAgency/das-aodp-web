@@ -1,4 +1,4 @@
-﻿@model Form
+﻿@model CreateFormVersionCommand.FormVersion
 
 <h1 class="govuk-heading-l">Create New Form</h1>
 
@@ -13,18 +13,18 @@
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Version</govuk-input-label>
         </govuk-input>
     </div>
-    <div>
+@*     <div>
         <govuk-checkboxes name="Published">
             <govuk-checkboxes-item value="yes">
                 Publish
             </govuk-checkboxes-item>
         </govuk-checkboxes>
-    </div>
-    <div>
+    </div> *@
+@*     <div>
         <govuk-input name="Key" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" spellcheck="false" value="@Model.Key">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Key</govuk-input-label>
         </govuk-input>
-    </div>
+    </div> *@
     <div>
         <govuk-input name="Order" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" spellcheck="false" value="@Model.Order">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Order</govuk-input-label>

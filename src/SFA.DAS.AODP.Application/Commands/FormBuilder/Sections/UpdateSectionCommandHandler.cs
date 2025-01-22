@@ -1,41 +1,36 @@
-﻿using MediatR;
-using SFA.DAS.AODP.Application.MediatR.Base;
-using SFA.DAS.AODP.Application.Repository;
-using SFA.DAS.AODP.Models.Forms.FormBuilder;
+﻿using AutoMapper;
+using MediatR;
+using SFA.DAS.AODP.Domain.FormBuilder.Requests.Sections;
+using SFA.DAS.AODP.Domain.FormBuilder.Responses.Sections;
+using SFA.DAS.AODP.Domain.Interfaces;
+using SFA.DAS.AODP.Domain.Models;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 
 public class UpdateSectionCommandHandler : IRequestHandler<UpdateSectionCommand, UpdateSectionCommandResponse>
 {
-    private readonly IGenericRepository<Section> _sectionRepository;
+    private readonly IAodpApiClient<AodpApiConfiguration> _apiClient;
+    private readonly IMapper _mapper;
 
-    public UpdateSectionCommandHandler(IGenericRepository<Section> sectionRepository)
+    public UpdateSectionCommandHandler(IAodpApiClient<AodpApiConfiguration> apiClient, IMapper mapper)
     {
-        _sectionRepository = sectionRepository;
+        _apiClient = apiClient;
+        _mapper = mapper;
     }
 
     public async Task<UpdateSectionCommandResponse> Handle(UpdateSectionCommand request, CancellationToken cancellationToken)
     {
-        var response = new UpdateSectionCommandResponse();
-        response.Success = false;
+        var response = new UpdateSectionCommandResponse()
+        {
+            Success = false
+        };
 
         try
         {
-            var section = _sectionRepository.GetById(request.Id);
-
-            if (section == null)
-            {
-                response.Success = false;
-                response.ErrorMessage = $"Section with id '{section!.Id}' could not be found.";
-                return response;
-            }
-
-            section.Order = request.Order;
-            section.Title = request.Title;
-            section.Description = request.Description;
-            section.NextSectionId = request.NextSectionId;
-
-            _sectionRepository.Update(section);
+            var apiRequestData = _mapper.Map<UpdateSectionApiRequest.Section>(request.Data);
+            var apiRequest = new UpdateSectionApiRequest(request.FormVersionId, apiRequestData);
+            var result = await _apiClient.PutWithResponseCode<UpdateSectionApiResponse>(apiRequest);
+            response.Data = _mapper.Map<UpdateSectionCommandResponse.Section>(result.Body.Data);
             response.Success = true;
         }
         catch (Exception ex)

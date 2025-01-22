@@ -1,35 +1,35 @@
-﻿using MediatR;
-using SFA.DAS.AODP.Application.MediatR.Base;
-using SFA.DAS.AODP.Application.Repository;
-using SFA.DAS.AODP.Models.Forms.FormBuilder;
+﻿using AutoMapper;
+using MediatR;
+using SFA.DAS.AODP.Domain.FormBuilder.Requests.Sections;
+using SFA.DAS.AODP.Domain.FormBuilder.Responses.Sections;
+using SFA.DAS.AODP.Domain.Interfaces;
+using SFA.DAS.AODP.Domain.Models;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 
 public class CreateSectionCommandHandler : IRequestHandler<CreateSectionCommand, CreateSectionCommandResponse>
 {
-    private readonly IGenericRepository<Section> _sectionRepository;
+    private readonly IAodpApiClient<AodpApiConfiguration> _apiClient;
+    private readonly IMapper _mapper;
 
-    public CreateSectionCommandHandler(IGenericRepository<Section> sectionRepository)
+    public CreateSectionCommandHandler(IAodpApiClient<AodpApiConfiguration> apiClient, IMapper mapper)
     {
-        _sectionRepository = sectionRepository;
+        _apiClient = apiClient;
+        _mapper = mapper;
     }
 
     public async Task<CreateSectionCommandResponse> Handle(CreateSectionCommand request, CancellationToken cancellationToken)
     {
-        var response = new CreateSectionCommandResponse();
+        var response = new CreateSectionCommandResponse()
+        {
+            Success = false
+        };
+
         try
         {
-            var section = new Section
-            {
-                FormId = request.FormId,
-                Order = request.Order,
-                Title = request.Title,
-                Description = request.Description,
-                NextSectionId = request.NextSectionId,
-            };
-
-            _sectionRepository.Add(section);
-
+            var apiRequestData = _mapper.Map<CreateSectionApiRequest.Section>(request.Data);
+            var result = await _apiClient.PostWithResponseCode<CreateSectionApiResponse>(new CreateSectionApiRequest(apiRequestData));
+            response.Data = _mapper.Map<CreateSectionCommandResponse.Section>(result.Body.Data);
             response.Success = true;
         }
         catch (Exception ex)

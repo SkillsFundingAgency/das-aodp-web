@@ -1,16 +1,24 @@
 ﻿using MediatR;
-using SFA.DAS.AODP.Application.MediatR.Base;
-using SFA.DAS.AODP.Models.Forms.FormBuilder;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 
 public class CreateSectionCommand : IRequest<CreateSectionCommandResponse>
 {
-    public Guid FormId { get; set; }
-    public int Order { get; set; }
-    public string Title { get; set; }
-    public string Description { get; set; }
-    public int? NextSectionId { get; set; }
-}
+    public readonly Section Data;
 
-public class CreateSectionCommandResponse : BaseResponse { }
+    public CreateSectionCommand(Section data)
+    {
+        Data = data;
+    }
+
+    public class Section
+    {
+        public Guid Id { get; set; }
+        public Guid FormVersionId { get; set; }
+        public Guid Key { get; set; }
+        public int Order { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public int? NextSectionId { get; set; }
+    }
+}

@@ -1,11 +1,13 @@
 ﻿using MediatR;
-using SFA.DAS.AODP.Application.MediatR.Base;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 
 public class DeleteSectionCommand : IRequest<DeleteSectionCommandResponse>
 {
-    public Guid Id { get; set; }
-}
+    public readonly Guid SectionId;
 
-public class DeleteSectionCommandResponse : BaseResponse { }
+    public DeleteSectionCommand(Guid sectionId)
+    {
+        SectionId = sectionId;
+    }
+}

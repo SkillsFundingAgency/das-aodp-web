@@ -1,4 +1,4 @@
-﻿@model Page
+﻿@model GetAllPagesQueryResponse.Page
 
 <h1 class="govuk-heading-l">Create Page</h1>
 
@@ -22,7 +22,7 @@
     <div>
         <govuk-select name="NextPageId">
             <govuk-select-label>Next Page</govuk-select-label>
-            @foreach (var item in (List<Page>)ViewData["Pages"])
+            @foreach (var item in (List<GetAllPagesQueryResponse.Page>)ViewData["Pages"])
             {
                 <govuk-select-item value="@item.Id">@item.Title</govuk-select-item>
             }
@@ -30,5 +30,5 @@
     </div>
 
     <govuk-button type="submit">Save</govuk-button>
-    <a class="govuk-button govuk-button--secondary" href="@Url.Action("Edit", "Section", new { id = Model.SectionId })">Cancel</a>
+@*     <a class="govuk-button govuk-button--secondary" href="@Url.Action("Edit", "Section", new { sectionId = Model.SectionId, formVersionId = Model })">Cancel</a> *@
 </form>

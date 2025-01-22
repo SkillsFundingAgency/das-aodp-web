@@ -1,10 +1,14 @@
-﻿using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
-namespace SFA.DAS.FAA.Domain.Interfaces;
+namespace SFA.DAS.AODP.Domain.Interfaces;
 
-public interface IPostApiRequest
+public interface IPostApiRequest : IPostApiRequest<object>
+{
+}
+
+public interface IPostApiRequest<TData> : IBaseApiRequest
 {
     [JsonIgnore]
     string PostUrl { get; }
-    object Data { get; set; }
+    TData Data { get; set; }
 }

@@ -1,16 +1,26 @@
 ﻿using MediatR;
-using SFA.DAS.AODP.Application.MediatR.Base;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 
 public class UpdateSectionCommand : IRequest<UpdateSectionCommandResponse>
 {
-    public Guid Id { get; set; }
-    public Guid FormId { get; set; }
-    public int Order { get; set; }
-    public string Title { get; set; }
-    public string Description { get; set; }
-    public int? NextSectionId { get; set; }
-}
+    public readonly Guid FormVersionId;
+    public Section Data;
 
-public class UpdateSectionCommandResponse: BaseResponse { }
+    public UpdateSectionCommand(Guid formVersionId, Section data)
+    {
+        FormVersionId = formVersionId;
+        Data = data;
+    }
+
+    public class Section
+    {
+        public Guid Id { get; set; }
+        public Guid FormVersionId { get; set; }
+        public Guid Key { get; set; }
+        public int Order { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public int? NextSectionId { get; set; }
+    }
+}

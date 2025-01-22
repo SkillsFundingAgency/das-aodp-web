@@ -36,14 +36,14 @@ builder.Services
          options.Filters.Add<AutoValidateAntiforgeryTokenAttribute>();
      });
 
-builder.Services.AddMemoryCache(options =>
-{
-    options.SizeLimit = 1024 * 1024 * 100; // Limit memory to 100 MB
-    options.ExpirationScanFrequency = TimeSpan.FromMinutes(5); // Frequency to scan expired items
-});
+//builder.Services.AddMemoryCache(options =>
+//{
+//    options.SizeLimit = 1024 * 1024 * 100; // Limit memory to 100 MB
+//    options.ExpirationScanFrequency = TimeSpan.FromMinutes(5); // Frequency to scan expired items
+//});
 
-builder.Services.AddScoped<ICacheManager, CacheManager>();
-builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(CachedGenericRepository<>));
+//builder.Services.AddScoped<ICacheManager, CacheManager>();
+//builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(CachedGenericRepository<>));
 
 builder.Services.AddMediatR(config =>
 {
@@ -52,12 +52,12 @@ builder.Services.AddMediatR(config =>
 
 var app = builder.Build();
 
-// Seed the data
-using (var scope = app.Services.CreateScope())
-{
-    var cacheManager = scope.ServiceProvider.GetRequiredService<ICacheManager>();
-    DataSeeder.Seed(cacheManager);
-}
+//// Seed the data
+//using (var scope = app.Services.CreateScope())
+//{
+//    var cacheManager = scope.ServiceProvider.GetRequiredService<ICacheManager>();
+//    DataSeeder.Seed(cacheManager);
+//}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

@@ -1,46 +1,42 @@
-﻿using MediatR;
-using SFA.DAS.AODP.Application.MediatR.Base;
-using SFA.DAS.AODP.Application.Repository;
-using SFA.DAS.AODP.Models.Forms.FormBuilder;
+﻿using AutoMapper;
+using MediatR;
+using SFA.DAS.AODP.Domain.FormBuilder.Requests.Pages;
+using SFA.DAS.AODP.Domain.FormBuilder.Responses.Pages;
+using SFA.DAS.AODP.Domain.Interfaces;
+using SFA.DAS.AODP.Domain.Models;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 
 public class UpdatePageCommandHandler : IRequestHandler<UpdatePageCommand, UpdatePageCommandResponse>
 {
-    private readonly IGenericRepository<Page> _pageRepository;
+    private readonly IAodpApiClient<AodpApiConfiguration> _apiClient;
+    private readonly IMapper _mapper;
 
-    public UpdatePageCommandHandler(IGenericRepository<Page> pageRepository)
+    public UpdatePageCommandHandler(IAodpApiClient<AodpApiConfiguration> apiClient, IMapper mapper)
     {
-        _pageRepository = pageRepository;
+        _apiClient = apiClient;
+        _mapper = mapper;
     }
 
     public async Task<UpdatePageCommandResponse> Handle(UpdatePageCommand request, CancellationToken cancellationToken)
     {
-        var response = new UpdatePageCommandResponse();
-        response.Success = false;
+        var response = new UpdatePageCommandResponse()
+        {
+            Success = false
+        };
 
         try
         {
-            var page = _pageRepository.GetById(request.Id);
-
-            if (page == null)
-            {
-                response.Success = false;
-                response.ErrorMessage = $"Page with id '{page!.Id}' could not be found.";
-                return response;
-            }
-
-            page.Title = request.Title;
-            page.Description = request.Description;
-            page.Order = request.Order;
-            page.NextPageId = request.NextPageId;
-
-            _pageRepository.Update(page);
+            var apiRequestData = _mapper.Map<UpdatePageApiRequest.Page>(request.Data);
+            var apiRequest = new UpdatePageApiRequest(request.PageId, apiRequestData);
+            var result = await _apiClient.PutWithResponseCode<UpdatePageApiResponse>(apiRequest);
+            response.Data = _mapper.Map<UpdatePageCommandResponse.Page>(result.Body.Data);
             response.Success = true;
         }
         catch (Exception ex)
         {
             response.ErrorMessage = ex.Message;
+            response.Success = false;
         }
 
         return response;

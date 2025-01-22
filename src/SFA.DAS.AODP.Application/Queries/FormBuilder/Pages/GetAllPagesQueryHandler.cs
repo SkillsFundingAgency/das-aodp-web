@@ -1,18 +1,21 @@
-﻿using MediatR;
-using SFA.DAS.AODP.Application.MediatR.Base;
-using SFA.DAS.AODP.Application.Queries.FormBuilder.Pages;
-using SFA.DAS.AODP.Application.Repository;
-using SFA.DAS.AODP.Models.Forms.FormBuilder;
+﻿using AutoMapper;
+using MediatR;
+using SFA.DAS.AODP.Domain.FormBuilder.Requests.Pages;
+using SFA.DAS.AODP.Domain.FormBuilder.Responses.Pages;
+using SFA.DAS.AODP.Domain.Interfaces;
+using SFA.DAS.AODP.Domain.Models;
 
-namespace SFA.DAS.AODP.Application.Handlers.FormBuilder.Pages;
+namespace SFA.DAS.AODP.Application.Queries.FormBuilder.Pages;
 
 public class GetAllPagesQueryHandler : IRequestHandler<GetAllPagesQuery, GetAllPagesQueryResponse>
 {
-    private readonly IGenericRepository<Page> _pageRepository;
+    private readonly IAodpApiClient<AodpApiConfiguration> _apiClient;
+    private readonly IMapper _mapper;
 
-    public GetAllPagesQueryHandler(IGenericRepository<Page> pageRepository)
+    public GetAllPagesQueryHandler(IAodpApiClient<AodpApiConfiguration> apiClient, IMapper mapper)
     {
-        _pageRepository = pageRepository;
+        _apiClient = apiClient;
+        _mapper = mapper;
     }
 
     public async Task<GetAllPagesQueryResponse> Handle(GetAllPagesQuery request, CancellationToken cancellationToken)
@@ -21,7 +24,8 @@ public class GetAllPagesQueryHandler : IRequestHandler<GetAllPagesQuery, GetAllP
         response.Success = false;
         try
         {
-            response.Data = _pageRepository.GetAll().Where(p => p.SectionId == request.SectionId).ToList();
+            var result = await _apiClient.Get<GetAllPagesApiResponse>(new GetAllPagesApiRequest(request.SectionId));
+            response.Data = _mapper.Map<List<GetAllPagesQueryResponse.Page>>(result.Data);
             response.Success = true;
         }
         catch (Exception ex)

@@ -1,9 +1,17 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-namespace SFA.DAS.FAA.Domain.Interfaces;
-public interface IPutApiRequest
+namespace SFA.DAS.AODP.Domain.Interfaces;
+
+public interface IPutApiRequest : IBaseApiRequest
 {
     [JsonIgnore]
     string PutUrl { get; }
     object Data { get; set; }
+}
+
+public interface IPutApiRequest<TData> : IBaseApiRequest
+{
+    [JsonIgnore]
+    string PutUrl { get; }
+    TData Data { get; set; }
 }

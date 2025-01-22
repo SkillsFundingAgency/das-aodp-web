@@ -1,9 +1,9 @@
-﻿@model Form
+﻿@model GetFormVersionByIdQueryResponse.FormVersion
 
 <h1 class="govuk-heading-l">Delete Form?</h1>
 
 <form asp-action="Delete" method="post">
-    <input type="hidden" id="Id" name="Id" value="@Model.Id" />
+    <input type="hidden" id="formVersionId" name="formVersionId" value="@Model.Id" />
     <govuk-warning-text icon-fallback-text="Warning">
         Are you sure you want to delete the form "@Model.Name"?
     </govuk-warning-text>

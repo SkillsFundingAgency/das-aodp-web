@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Pages;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
-using SFA.DAS.AODP.Models.Forms.FormBuilder;
 
 namespace SFA.DAS.AODP.Web.Controllers;
 
@@ -17,79 +16,70 @@ public class SectionController : Controller
     }
 
     #region Create
-    public async Task<IActionResult> Create(Guid formId)
+    public async Task<IActionResult> Create(Guid formVersionId)
     {
-        var sectionsQuery = await _mediator.Send(new GetAllSectionsQuery { FormId = formId });
-        ViewData["Sections"] = sectionsQuery.Data;
-        return View(new Section { FormId = formId });
+        var query = new GetAllSectionsQuery(formVersionId);
+        var response = await _mediator.Send(query);
+        ViewData["Sections"] = response.Data;
+        return View(new GetAllSectionsQueryResponse.Section { FormVersionId = formVersionId });
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(Section section)
+    public async Task<IActionResult> Create(CreateSectionCommand.Section section)
     {
-        var command = new CreateSectionCommand
-        {
-            FormId = section.FormId,
-            Order = section.Order,
-            Title = section.Title,
-            Description = section.Description,
-            NextSectionId = section.NextSectionId,
-        };
+        var command = new CreateSectionCommand(section);
 
-        var createSectionResponse = await _mediator.Send(command);
-        return RedirectToAction("Edit", "Form", new { id = section.FormId });
+        var response = await _mediator.Send(command);
+        return RedirectToAction("Edit", "Form", new { id = response.Data.FormVersionId });
     }
     #endregion
 
     #region Edit
-    public async Task<IActionResult> Edit(Guid id)
+    public async Task<IActionResult> Edit(Guid sectionId, Guid formVersionId)
     {
-        var sectionQuery = await _mediator.Send(new GetSectionByIdQuery { Id = id });
-        if (sectionQuery.Data == null) return NotFound();
+        var sectionQuery = new GetSectionByIdQuery(sectionId, formVersionId);
+        var response = await _mediator.Send(sectionQuery);
+        if (response.Data == null) return NotFound();
 
-        var sectionsQuery = await _mediator.Send(new GetAllSectionsQuery { FormId = sectionQuery.Data.FormId });
-        var pagesQuery = await _mediator.Send(new GetAllPagesQuery { SectionId = sectionQuery.Data.Id });
-        ViewData["Sections"] = sectionsQuery.Data;
-        ViewData["Pages"] = pagesQuery.Data;
+        var sectionsQuery = new GetAllSectionsQuery(response.Data.FormVersionId);
+        var sectionsResponse = await _mediator.Send(sectionsQuery);
+        var pagesQuery = new GetAllPagesQuery(response.Data.Id);
+        var pagesResponse = await _mediator.Send(pagesQuery);
+        ViewData["Sections"] = sectionsResponse.Data;
+        ViewData["Pages"] = pagesResponse.Data;
 
-        return View(sectionQuery.Data);
+        return View(response.Data);
     }
 
     [HttpPost]
-    public async Task<IActionResult> Edit(Section section)
+    public async Task<IActionResult> Edit(UpdateSectionCommand.Section section)
     {
-        var command = new UpdateSectionCommand
-        {
-            Id = section.Id,
-            FormId = section.FormId,
-            Order = section.Order,
-            Title = section.Title,
-            Description = section.Description,
-            NextSectionId = section.NextSectionId
-        };
+        var command = new UpdateSectionCommand(section.FormVersionId, section);
 
-        var updateSectionResponse = await _mediator.Send(command);
-        return RedirectToAction("Edit", "Form", new { id = section.FormId });
+        var response = await _mediator.Send(command);
+        return RedirectToAction("Edit", "Form", new { id = response.Data.FormVersionId });
     }
     #endregion
 
     #region Delete
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(Guid sectionId, Guid formVerisonId)
     {
-        var sectionQuery = await _mediator.Send(new GetSectionByIdQuery { Id = id });
-        if (sectionQuery.Data == null) return NotFound();
-        return View(sectionQuery.Data);
+        var query = new GetSectionByIdQuery(sectionId, formVerisonId);
+        var response = await _mediator.Send(query);
+        if (response.Data == null) return NotFound();
+        return View(response.Data);
     }
 
     [HttpPost, ActionName("Delete")]
-    public async Task<IActionResult> DeleteConfirmed(Guid id)
+    public async Task<IActionResult> DeleteConfirmed(Guid sectionId, Guid formVerisonId)
     {
-        var sectionQuery = await _mediator.Send(new GetSectionByIdQuery { Id = id });
-        if (sectionQuery.Data != null)
+        var query = new GetSectionByIdQuery(sectionId, formVerisonId);
+        var response = await _mediator.Send(query);
+        if (response.Data != null)
         {
-            var command = new DeleteSectionCommand { Id = sectionQuery.Data.Id };
-            var deleteSectionResponse = await _mediator.Send(command);
-            return RedirectToAction("Edit", "Form", new { id = sectionQuery.Data.FormId });
+            var command = new DeleteSectionCommand(response.Data.Id);
+            var deleteResponse = await _mediator.Send(command);
+            return RedirectToAction("Edit", "Form", new { id = response.Data.FormVersionId });
         }
         return NotFound();
     }

@@ -1,4 +1,4 @@
-﻿@model Section
+﻿@model GetSectionByIdQueryResponse.Section
 
 <h1 class="govuk-heading-l">Edit Section</h1>
 
@@ -21,7 +21,7 @@
     <div>
         <govuk-select name="NextSectionId">
             <govuk-select-label>Next Section</govuk-select-label>
-            @foreach (var item in (List<Section>)ViewData["Sections"])
+            @foreach (var item in (List<GetAllSectionsQueryResponse.Section>)ViewData["Sections"])
             {
                 <govuk-select-item value="@item.Id">@item.Title</govuk-select-item>
             }
@@ -29,7 +29,7 @@
     </div>
 
     <govuk-button type="submit">Save</govuk-button>
-    <a class="govuk-button govuk-button--secondary" href="@Url.Action("Edit", "Form", new { id = Model.FormId })">Cancel</a>
+    <a class="govuk-button govuk-button--secondary" href="@Url.Action("Edit", "Form", new { id = Model.FormVersionId })">Cancel</a>
 </form>
 
 <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
@@ -45,15 +45,15 @@
         </tr>
     </thead>
     <tbody class="govuk-table__body">
-        @foreach (var item in (List<Page>)ViewData["Pages"])
+        @foreach (var item in (List<GetAllPagesQueryResponse.Page>)ViewData["Pages"])
         {
             <tr class="govuk-table__row">
                 <td>@item.Title</td>
                 <td>@item.Order</td>
                 <td>@item.Description</td>
                 <td>
-                    <a class="govuk-button" href="@Url.Action("Edit", "Page", new { id = item.Id })">Edit</a>&nbsp;
-                    <a class="govuk-button govuk-button--warning" href="@Url.Action("Delete", "Page", new { id = item.Id })">Delete</a>
+                    <a class="govuk-button" href="@Url.Action("Edit", "Page", new { pageId = item.Id, sectionId = item.SectionId })">Edit</a>&nbsp;
+                    <a class="govuk-button govuk-button--warning" href="@Url.Action("Delete", "Page", new { pageId = item.Id, sectionId = item.SectionId })">Delete</a>
                 </td>
             </tr>
         }
