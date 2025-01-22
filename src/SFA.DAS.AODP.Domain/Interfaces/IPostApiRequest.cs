@@ -2,13 +2,9 @@ using System.Text.Json.Serialization;
 
 namespace SFA.DAS.AODP.Domain.Interfaces;
 
-public interface IPostApiRequest : IPostApiRequest<object>
-{
-}
-
-public interface IPostApiRequest<TData> : IBaseApiRequest
+public interface IPostApiRequest
 {
     [JsonIgnore]
     string PostUrl { get; }
-    TData Data { get; set; }
+    object Data { get; set; }
 }

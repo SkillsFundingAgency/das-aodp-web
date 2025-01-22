@@ -8,9 +8,9 @@ namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
 
 public class UnpublishFormVersionCommandHandler : IRequestHandler<UnpublishFormVersionCommand, UnpublishFormVersionCommandResponse>
 {
-    private readonly IAodpApiClient<AodpApiConfiguration> _apiClient;
+    private readonly IApiClient _apiClient;
 
-    public UnpublishFormVersionCommandHandler(IAodpApiClient<AodpApiConfiguration> apiClient)
+    public UnpublishFormVersionCommandHandler(IApiClient apiClient)
     {
         _apiClient = apiClient;
     }

@@ -2,7 +2,7 @@
 
 namespace SFA.DAS.AODP.Domain.Interfaces;
 
-public interface IGetApiRequest : IBaseApiRequest
+public interface IGetApiRequest 
 {
     [JsonIgnore]
     string GetUrl { get; }

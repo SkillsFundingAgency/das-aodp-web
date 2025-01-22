@@ -9,10 +9,10 @@ namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
 
 public class CreateFormVersionCommandHandler : IRequestHandler<CreateFormVersionCommand, CreateFormVersionCommandResponse>
 {
-    private readonly IAodpApiClient<AodpApiConfiguration> _apiClient;
+    private readonly IApiClient _apiClient;
     private readonly IMapper _mapper;
 
-    public CreateFormVersionCommandHandler(IAodpApiClient<AodpApiConfiguration> _apiClient, IMapper mapper)
+    public CreateFormVersionCommandHandler(IApiClient _apiClient, IMapper mapper)
     {
         _apiClient = _apiClient;
         _mapper = mapper;
@@ -29,7 +29,7 @@ public class CreateFormVersionCommandHandler : IRequestHandler<CreateFormVersion
         {
             var apiRequestData = _mapper.Map<CreateFormVersionApiRequest.FormVersion>(request.Data);
             var result = await _apiClient.PostWithResponseCode<CreateFormVersionApiResponse>(new CreateFormVersionApiRequest(apiRequestData));
-            response.Data = _mapper.Map<CreateFormVersionCommandResponse.FormVersion>(result.Body.Data);
+            response.Data = _mapper.Map<CreateFormVersionCommandResponse.FormVersion>(result.Data);
             response.Success = true;
         }
         catch (Exception ex)

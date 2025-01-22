@@ -9,10 +9,10 @@ namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 
 public class CreateSectionCommandHandler : IRequestHandler<CreateSectionCommand, CreateSectionCommandResponse>
 {
-    private readonly IAodpApiClient<AodpApiConfiguration> _apiClient;
+    private readonly IApiClient _apiClient;
     private readonly IMapper _mapper;
 
-    public CreateSectionCommandHandler(IAodpApiClient<AodpApiConfiguration> apiClient, IMapper mapper)
+    public CreateSectionCommandHandler(IApiClient apiClient, IMapper mapper)
     {
         _apiClient = apiClient;
         _mapper = mapper;
@@ -29,7 +29,7 @@ public class CreateSectionCommandHandler : IRequestHandler<CreateSectionCommand,
         {
             var apiRequestData = _mapper.Map<CreateSectionApiRequest.Section>(request.Data);
             var result = await _apiClient.PostWithResponseCode<CreateSectionApiResponse>(new CreateSectionApiRequest(apiRequestData));
-            response.Data = _mapper.Map<CreateSectionCommandResponse.Section>(result.Body.Data);
+            response.Data = _mapper.Map<CreateSectionCommandResponse.Section>(result.Data);
             response.Success = true;
         }
         catch (Exception ex)

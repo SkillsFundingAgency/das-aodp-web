@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace SFA.DAS.AODP.Domain.Interfaces;
 
-public interface IPatchApiRequest<TData> : IBaseApiRequest
+public interface IPatchApiRequest<TData> 
 {
     [JsonIgnore]
     string PatchUrl { get; }

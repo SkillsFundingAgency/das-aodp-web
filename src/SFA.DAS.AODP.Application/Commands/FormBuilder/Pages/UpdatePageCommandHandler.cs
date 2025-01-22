@@ -9,10 +9,10 @@ namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 
 public class UpdatePageCommandHandler : IRequestHandler<UpdatePageCommand, UpdatePageCommandResponse>
 {
-    private readonly IAodpApiClient<AodpApiConfiguration> _apiClient;
+    private readonly IApiClient _apiClient;
     private readonly IMapper _mapper;
 
-    public UpdatePageCommandHandler(IAodpApiClient<AodpApiConfiguration> apiClient, IMapper mapper)
+    public UpdatePageCommandHandler(IApiClient apiClient, IMapper mapper)
     {
         _apiClient = apiClient;
         _mapper = mapper;

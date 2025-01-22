@@ -9,10 +9,10 @@ namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 
 public class UpdateSectionCommandHandler : IRequestHandler<UpdateSectionCommand, UpdateSectionCommandResponse>
 {
-    private readonly IAodpApiClient<AodpApiConfiguration> _apiClient;
+    private readonly IApiClient _apiClient;
     private readonly IMapper _mapper;
 
-    public UpdateSectionCommandHandler(IAodpApiClient<AodpApiConfiguration> apiClient, IMapper mapper)
+    public UpdateSectionCommandHandler(IApiClient apiClient, IMapper mapper)
     {
         _apiClient = apiClient;
         _mapper = mapper;

@@ -7,9 +7,9 @@ namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 
 public class DeletePageCommandHandler : IRequestHandler<DeletePageCommand, DeletePageCommandResponse>
 {
-    private readonly IAodpApiClient<AodpApiConfiguration> _apiClient;
+    private readonly IApiClient _apiClient;
 
-    public DeletePageCommandHandler(IAodpApiClient<AodpApiConfiguration> apiClient)
+    public DeletePageCommandHandler(IApiClient apiClient)
     {
         _apiClient = apiClient;
     }

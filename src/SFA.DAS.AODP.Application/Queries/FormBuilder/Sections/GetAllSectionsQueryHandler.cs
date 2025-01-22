@@ -9,10 +9,10 @@ namespace SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
 
 public class GetAllSectionsQueryHandler : IRequestHandler<GetAllSectionsQuery, GetAllSectionsQueryResponse>
 {
-    private readonly IAodpApiClient<AodpApiConfiguration> _apiClient;
+    private readonly IApiClient _apiClient;
     private readonly IMapper _mapper;
 
-    public GetAllSectionsQueryHandler(IAodpApiClient<AodpApiConfiguration> apiClient, IMapper mapper)
+    public GetAllSectionsQueryHandler(IApiClient apiClient, IMapper mapper)
     {
         _apiClient = apiClient;
         _mapper = mapper;

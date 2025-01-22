@@ -9,10 +9,10 @@ namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
 
 public class UpdateFormVersionCommandHandler : IRequestHandler<UpdateFormVersionCommand, UpdateFormVersionCommandResponse>
 {
-    private readonly IAodpApiClient<AodpApiConfiguration> _apiClient;
+    private readonly IApiClient _apiClient;
     private readonly IMapper _mapper;
 
-    public UpdateFormVersionCommandHandler(IAodpApiClient<AodpApiConfiguration> apiClient, IMapper mapper)
+    public UpdateFormVersionCommandHandler(IApiClient apiClient, IMapper mapper)
     {
         _apiClient = apiClient;
         _mapper = mapper;

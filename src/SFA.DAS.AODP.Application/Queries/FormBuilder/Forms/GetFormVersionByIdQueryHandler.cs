@@ -9,10 +9,10 @@ namespace SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 
 public class GetFormVersionByIdQueryHandler : IRequestHandler<GetFormVersionByIdQuery, GetFormVersionByIdQueryResponse>
 {
-    private readonly IAodpApiClient<AodpApiConfiguration> _apiClient;
+    private readonly IApiClient _apiClient;
     private readonly IMapper _mapper;
 
-    public GetFormVersionByIdQueryHandler(IAodpApiClient<AodpApiConfiguration> apiClient, IMapper mapper)
+    public GetFormVersionByIdQueryHandler(IApiClient apiClient, IMapper mapper)
     {
         _apiClient = apiClient;
         _mapper = mapper;

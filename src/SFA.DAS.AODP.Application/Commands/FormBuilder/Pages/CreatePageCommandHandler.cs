@@ -9,10 +9,10 @@ namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 
 public class CreatePageCommandHandler : IRequestHandler<CreatePageCommand, CreatePageCommandResponse>
 {
-    private readonly IAodpApiClient<AodpApiConfiguration> _apiClient;
+    private readonly IApiClient _apiClient;
     private readonly IMapper _mapper;
 
-    public CreatePageCommandHandler(IAodpApiClient<AodpApiConfiguration> apiClient, IMapper mapper)
+    public CreatePageCommandHandler(IApiClient apiClient, IMapper mapper)
     {
         _apiClient = apiClient;
         _mapper = mapper;
@@ -25,7 +25,7 @@ public class CreatePageCommandHandler : IRequestHandler<CreatePageCommand, Creat
         {
             var apiRequestData = _mapper.Map<CreatePageApiRequest.Page>(request.Data);
             var result = await _apiClient.PostWithResponseCode<CreatePageApiResponse>(new CreatePageApiRequest(apiRequestData));
-            response.Data = _mapper.Map<CreatePageCommandResponse.Page>(result.Body.Data);
+            response.Data = _mapper.Map<CreatePageCommandResponse.Page>(result.Data);
             response.Success = true;
         }
         catch (Exception ex)

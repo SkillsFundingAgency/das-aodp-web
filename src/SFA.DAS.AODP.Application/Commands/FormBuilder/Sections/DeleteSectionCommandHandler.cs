@@ -7,9 +7,9 @@ namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 
 public class DeleteSectionCommandHandler : IRequestHandler<DeleteSectionCommand, DeleteSectionCommandResponse>
 {
-    private readonly IAodpApiClient<AodpApiConfiguration> _apiClient;
+    private readonly IApiClient _apiClient;
 
-    public DeleteSectionCommandHandler(IAodpApiClient<AodpApiConfiguration> apiClient)
+    public DeleteSectionCommandHandler(IApiClient apiClient)
     {
         _apiClient = apiClient;
     }

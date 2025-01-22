@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
-using SFA.DAS.AODP.Common.Configuration;
-using SFA.DAS.AODP.Domain.Models;
+using SFA.DAS.AODP.Models.Settings;
 
 namespace SFA.DAS.AODP.Web.Extensions;
 
@@ -9,10 +8,8 @@ public static class AddConfigurationOptionsExtension
     public static void AddConfigurationOptions(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddOptions();
-        services.Configure<AzureActiveDirectoryConfiguration>(configuration.GetSection("AzureAd"));
-        services.AddSingleton(cfg => cfg.GetRequiredService<IOptions<AzureActiveDirectoryConfiguration>>().Value);
 
-        services.Configure<AodpApiConfiguration>(configuration.GetSection("AodpInnerApiConfiguration"));
-        services.AddSingleton(cfg => cfg.GetRequiredService<IOptions<AodpApiConfiguration>>().Value);
+        services.Configure<AodpOuterApiSettings>(configuration.GetSection("AodpOuterApiSettings"));
+        services.AddSingleton(cfg => cfg.GetRequiredService<IOptions<AodpOuterApiSettings>>().Value);
     }
 }

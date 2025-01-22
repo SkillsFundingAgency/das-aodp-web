@@ -7,9 +7,9 @@ namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
 
 public class DeleteFormVersionCommandHandler : IRequestHandler<DeleteFormVersionCommand, DeleteFormVersionCommandResponse>
 {
-    private readonly IAodpApiClient<AodpApiConfiguration> _apiClient;
+    private readonly IApiClient _apiClient;
 
-    public DeleteFormVersionCommandHandler(IAodpApiClient<AodpApiConfiguration> apiClient)
+    public DeleteFormVersionCommandHandler(IApiClient apiClient)
     {
         _apiClient = apiClient;
     }
