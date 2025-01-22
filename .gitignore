@@ -348,3 +348,4 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+/src/SFA.DAS.AODP.Web/wwwroot/js/site.min.js
