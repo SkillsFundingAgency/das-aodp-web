@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
+using SFA.DAS.AODP.Web.Models.Forms;
 
 namespace SFA.DAS.AODP.Web.Controllers;
 
@@ -21,7 +22,25 @@ public class FormsController : Controller
         var query = new GetAllFormVersionsQuery();
         var response = await _mediator.Send(query);
         if (response.Data!.Count == 0) return RedirectToAction(nameof(Create));
-        return View(response.Data);
+
+        var viewModel = new FormVersionList();
+
+        foreach(var item in response.Data)
+        {
+            var dataItem = new FormVersionList.FormVersion();
+
+            dataItem.Id = item.Id;
+            dataItem.Name = item.Name;
+            dataItem.Description = item.Description;
+            dataItem.Version = item.Version;
+            dataItem.Status = item.Status.ToString();
+            dataItem.Order = item.Order;
+            dataItem.DateCreated = item.DateCreated;
+
+            viewModel.FormVersions.Add(dataItem);
+        }
+
+        return View(viewModel);
     }
     #endregion
 
@@ -29,13 +48,25 @@ public class FormsController : Controller
     [Route("forms/create")]
     public IActionResult Create()
     {
-        return View(new CreateFormVersionCommand.FormVersion());
+        var viewModel = new CreateFormVersion();
+        return View(viewModel);
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(CreateFormVersionCommand.FormVersion formVersion)
+    public async Task<IActionResult> Create(CreateFormVersion viewModel)
     {
-        var command = new CreateFormVersionCommand(formVersion);
+        #region Command Model Binding (CreateFormVersion -> CreateFormVersionCommand.FormVersion)
+        var commandModel = new CreateFormVersionCommand.FormVersion();
+        commandModel.Id = Guid.NewGuid();
+        commandModel.Name = viewModel.Name;
+        commandModel.Description = viewModel.Description;
+        commandModel.Version = viewModel.Version;
+        //commandModel.Status = viewModel.SelectedStatus;
+        commandModel.Order = viewModel.Order;
+        commandModel.DateCreated = viewModel.DateCreated;
+        #endregion
+
+        var command = new CreateFormVersionCommand(commandModel);
 
         var response = await _mediator.Send(command);
         return RedirectToAction(nameof(Index));
@@ -52,8 +83,31 @@ public class FormsController : Controller
 
         var sectionsQuery = new GetAllSectionsQuery(response.Data.Id);
         var sectionsResponse = await _mediator.Send(sectionsQuery);
-        ViewData["Sections"] = sectionsResponse.Data;
-        return View(response.Data);
+
+        var viewModel = new EditFormVersion();
+        #region Query Model Binding (GetAllSectionsQuery.FormVersion -> EditFormVersion)
+        viewModel.Id = response.Data.Id;
+        viewModel.Name = response.Data.Name;
+        viewModel.Description = response.Data.Description;
+        viewModel.Version = response.Data.Version;
+        //viewModel.Status = response.Data.SelectedStatus;
+        viewModel.Order = response.Data.Order;
+        viewModel.DateCreated = response.Data.DateCreated;
+        foreach (var section in sectionsResponse.Data)
+        {
+            //Link sections to formVersionId
+            var sectionItem = new EditFormVersion.Section(response.Data.Id);
+
+            sectionItem.Id = section.Id;
+            sectionItem.Order = section.Order;
+            sectionItem.Title = section.Title;
+            sectionItem.Description = section.Description;
+
+            viewModel.Sections.Add(sectionItem);
+        }
+        #endregion
+
+        return View(viewModel);
     }
 
     [HttpPost]

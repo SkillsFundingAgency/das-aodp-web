@@ -23,4 +23,10 @@
 		<ProjectReference Include="..\SFA.DAS.AODP.Infrastructure\SFA.DAS.AODP.Infrastructure.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Models\Helpers\" />
+	  <Folder Include="Models\Pages\" />
+	  <Folder Include="Models\Sections\" />
+	</ItemGroup>
+
 </Project>
