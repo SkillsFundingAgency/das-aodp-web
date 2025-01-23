@@ -9,7 +9,7 @@
     @Html.HiddenFor(v => v.SectionKey)
 
     <div class="govuk-form-group">
-        <govuk-radios asp-for="ChosenPageId">
+        <govuk-radios asp-for="ChosenPageKey">
             <govuk-radios-fieldset>
                 <govuk-radios-fieldset-legend is-page-heading="true">
                     <h1 class="govuk-heading-l">Choose page</h1>
@@ -19,7 +19,7 @@
                     Select one option. Only pages with questions requiring user to select a option are shown.
                 </govuk-radios-hint>
 
-                @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.ChosenPageId))
+                @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.ChosenPageKey))
 
                 @foreach (var pageInformation in Model.Pages.OrderBy(o => o.Order))
                 {

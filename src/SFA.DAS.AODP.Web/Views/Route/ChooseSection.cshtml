@@ -8,7 +8,7 @@
     @Html.HiddenFor(v => v.FormVersionId)
 
     <div class="govuk-form-group">
-        <govuk-radios asp-for="ChosenSectionId">
+        <govuk-radios asp-for="ChosenSectionKey">
             <govuk-radios-fieldset>
                 <govuk-radios-fieldset-legend is-page-heading="true">
                     <h1 class="govuk-heading-l">Choose section</h1>
@@ -18,7 +18,7 @@
                     Select one option. Only sections with questions requiring user to select a option are shown.
                 </govuk-radios-hint>
 
-                @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.ChosenSectionId))
+                @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.ChosenSectionKey))
 
                 @foreach (var sectionInformation in Model.Sections.OrderBy(o => o.Order))
                 {
