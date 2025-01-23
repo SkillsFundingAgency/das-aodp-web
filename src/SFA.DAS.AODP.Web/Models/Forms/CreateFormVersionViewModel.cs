@@ -2,7 +2,7 @@
 
 namespace SFA.DAS.AODP.Web.Models.Forms;
 
-public class CreateFormVersion
+public class CreateFormVersionViewModel
 {
     //public Guid Id { get; set; }
     public string Name { get; set; }

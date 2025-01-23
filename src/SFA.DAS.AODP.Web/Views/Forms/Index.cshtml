@@ -1,4 +1,4 @@
-﻿@model FormVersionList
+﻿@model FormVersionListViewModel
 
 <h1 class="govuk-heading-l">View Forms</h1>
 
@@ -7,22 +7,28 @@
     <thead class="govuk-table__head">
         <tr class="govuk-table__row">
             <th scope="col" class="govuk-table__header">Name</th>
-            <th scope="col" class="govuk-table__header">Version</th>
             <th scope="col" class="govuk-table__header">Status</th>
             <th scope="col" class="govuk-table__header">Options</th>
         </tr>
     </thead>
     <tbody class="govuk-table__body">
-        @foreach (var item in Model.FormVersions)
+        @foreach (var item in Model.FormVersions.OrderBy(o => o.Order))
         {
             <tr class="govuk-table__row">
                 <td>@item.Name</td>
-                <td>@item.Version</td>
                 <td>@item.Status</td>
                 <td>
-                    <a class="govuk-button" asp-action="Edit" asp-controller="Forms" asp-route-formVersionId="@item.Id">Edit</a>
-                    &nbsp;
-                    <a class="govuk-button govuk-button--warning" asp-action="Delete" asp-controller="Forms" asp-route-formVersionId="@item.Id">Delete</a>
+                    @if (item.PublishedVersionId.HasValue)
+                    {
+                        <a class="govuk-button" asp-action="Edit" asp-controller="Forms" asp-route-formVersionId="@item.PublishedVersionId">View Published Version</a>
+
+                    }
+
+                    @if (item.DraftVersionId.HasValue)
+                    {
+
+                        <a class="govuk-button" asp-action="Edit" asp-controller="Forms" asp-route-formVersionId="@item.DraftVersionId">View Draft Version</a>
+                    }
                 </td>
             </tr>
         }

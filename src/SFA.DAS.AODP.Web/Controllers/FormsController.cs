@@ -21,24 +21,8 @@ public class FormsController : Controller
     {
         var query = new GetAllFormVersionsQuery();
         var response = await _mediator.Send(query);
-        if (response.Data!.Count == 0) return RedirectToAction(nameof(Create));
 
-        var viewModel = new FormVersionList();
-
-        foreach(var item in response.Data)
-        {
-            var dataItem = new FormVersionList.FormVersion();
-
-            dataItem.Id = item.Id;
-            dataItem.Name = item.Name;
-            dataItem.Description = item.Description;
-            dataItem.Version = item.Version;
-            dataItem.Status = item.Status.ToString();
-            dataItem.Order = item.Order;
-            dataItem.DateCreated = item.DateCreated;
-
-            viewModel.FormVersions.Add(dataItem);
-        }
+        var viewModel = FormVersionListViewModel.Map(response);
 
         return View(viewModel);
     }
@@ -48,12 +32,12 @@ public class FormsController : Controller
     [Route("forms/create")]
     public IActionResult Create()
     {
-        var viewModel = new CreateFormVersion();
+        var viewModel = new CreateFormVersionViewModel();
         return View(viewModel);
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(CreateFormVersion viewModel)
+    public async Task<IActionResult> Create(CreateFormVersionViewModel viewModel)
     {
         #region Command Model Binding (CreateFormVersion -> CreateFormVersionCommand.FormVersion)
         var commandModel = new CreateFormVersionCommand.FormVersion();
@@ -81,31 +65,8 @@ public class FormsController : Controller
         var response = await _mediator.Send(formVersionQuery);
         if (response.Data == null) return NotFound();
 
-        var sectionsQuery = new GetAllSectionsQuery(response.Data.Id);
-        var sectionsResponse = await _mediator.Send(sectionsQuery);
+        var viewModel = EditFormVersionViewModel.Map(response);
 
-        var viewModel = new EditFormVersion();
-        #region Query Model Binding (GetAllSectionsQuery.FormVersion -> EditFormVersion)
-        viewModel.Id = response.Data.Id;
-        viewModel.Name = response.Data.Name;
-        viewModel.Description = response.Data.Description;
-        viewModel.Version = response.Data.Version;
-        //viewModel.Status = response.Data.SelectedStatus;
-        viewModel.Order = response.Data.Order;
-        viewModel.DateCreated = response.Data.DateCreated;
-        foreach (var section in sectionsResponse.Data)
-        {
-            //Link sections to formVersionId
-            var sectionItem = new EditFormVersion.Section(response.Data.Id);
-
-            sectionItem.Id = section.Id;
-            sectionItem.Order = section.Order;
-            sectionItem.Title = section.Title;
-            sectionItem.Description = section.Description;
-
-            viewModel.Sections.Add(sectionItem);
-        }
-        #endregion
 
         return View(viewModel);
     }
