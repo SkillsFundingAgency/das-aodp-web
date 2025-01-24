@@ -1,0 +1,32 @@
+{
+  "version": "3.0",
+  "defaultProvider": "unpkg",
+  "libraries": [
+    {
+      "library": "sortablejs@1.15.6",
+      "destination": "wwwroot/lib/sortablejs/",
+      "files": [
+        "Sortable.js",
+        "Sortable.min.js"
+      ]
+    },
+    {
+      "library": "quill@2.0.3",
+      "destination": "wwwroot/lib/quill/",
+      "files": [
+        "dist/quill.bubble.css",
+        "dist/quill.bubble.css.map",
+        "dist/quill.core.css",
+        "dist/quill.core.css.map",
+        "dist/quill.core.js",
+        "dist/quill.core.js.LICENSE.txt",
+        "dist/quill.core.js.map",
+        "dist/quill.js",
+        "dist/quill.js.LICENSE.txt",
+        "dist/quill.js.map",
+        "dist/quill.snow.css",
+        "dist/quill.snow.css.map"
+      ]
+    }
+  ]
+}

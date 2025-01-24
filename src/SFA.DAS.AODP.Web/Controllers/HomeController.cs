@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Web.Models;
 
@@ -23,6 +24,5 @@ namespace SFA.DAS.AODP.Web.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
-
     }
 }

@@ -2,6 +2,7 @@ using GovUk.Frontend.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Api.Extensions;
 using SFA.DAS.AODP.Web.Extensions;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,8 +32,28 @@ builder.Services
          options.Filters.Add<AutoValidateAntiforgeryTokenAttribute>();
      });
 
+//builder.Services.AddMemoryCache(options =>
+//{
+//    options.SizeLimit = 1024 * 1024 * 100; // Limit memory to 100 MB
+//    options.ExpirationScanFrequency = TimeSpan.FromMinutes(5); // Frequency to scan expired items
+//});
+
+//builder.Services.AddScoped<ICacheManager, CacheManager>();
+//builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(CachedGenericRepository<>));
+
+builder.Services.AddMediatR(config =>
+{
+    config.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
+});
 
 var app = builder.Build();
+
+//// Seed the data
+//using (var scope = app.Services.CreateScope())
+//{
+//    var cacheManager = scope.ServiceProvider.GetRequiredService<ICacheManager>();
+//    DataSeeder.Seed(cacheManager);
+//}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

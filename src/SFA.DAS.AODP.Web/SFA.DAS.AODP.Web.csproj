@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
@@ -21,6 +21,12 @@
 		<ProjectReference Include="..\SFA.DAS.AODP.Application\SFA.DAS.AODP.Application.csproj" />
 		<ProjectReference Include="..\SFA.DAS.AODP.Common\SFA.DAS.AODP.Common.csproj" />
 		<ProjectReference Include="..\SFA.DAS.AODP.Infrastructure\SFA.DAS.AODP.Infrastructure.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Models\Helpers\" />
+	  <Folder Include="Models\Pages\" />
+	  <Folder Include="Models\Sections\" />
 	</ItemGroup>
 
 </Project>

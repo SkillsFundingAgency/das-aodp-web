@@ -1,0 +1,76 @@
+﻿@model EditFormVersionViewModel
+
+<h1 class="govuk-heading-l">Edit Form</h1>
+
+<form asp-action="Edit" method="post">
+    @Html.HiddenFor(m => m.Id)
+
+    <div class="govuk-form-group">
+        <govuk-input asp-for="@Model.Title" input-class="govuk-input--width-50" inputmode="text" pattern="[0-9]*" spellcheck="false">
+            <govuk-input-label is-page-heading="false" class="govuk-label--s">Name</govuk-input-label>
+        </govuk-input>
+    </div>
+    <div class="govuk-form-group">
+
+        <govuk-textarea asp-for="@Model.Description">
+            <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Description</govuk-textarea-label>
+        </govuk-textarea>
+    </div>
+
+    <div class="govuk-form-group">
+        <govuk-input name="Order" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" spellcheck="false" value="@Model.Order">
+            <govuk-input-label is-page-heading="false" class="govuk-label--s">Order</govuk-input-label>
+        </govuk-input>
+    </div>
+
+    <div class="govuk-form-group">
+        <govuk-input asp-for="@Model.Version" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" disabled=true spellcheck="false">
+            <govuk-input-label is-page-heading="false" class="govuk-label--s">Version</govuk-input-label>
+        </govuk-input>
+    </div>
+
+    <div class="govuk-form-group">
+        <govuk-input asp-for="@Model.Status" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" disabled=true spellcheck="false">
+            <govuk-input-label is-page-heading="false" class="govuk-label--s">Status</govuk-input-label>
+        </govuk-input>
+    </div>
+
+
+    <button class="govuk-button" type="submit">Save</button>
+    <a class="govuk-button govuk-button--secondary"
+       asp-action="Index"
+       asp-controller="Forms">
+        Cancel
+    </a>
+</form>
+
+<hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+
+<a class="govuk-button" asp-action="Create" asp-controller="Sections" asp-route-forms="forms" asp-route-formVersionId="@Model.Id">Create New Section</a>
+<table class="govuk-table">
+    <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">Name</th>
+            <th scope="col" class="govuk-table__header">Options</th>
+        </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+        @foreach (var item in Model.Sections)
+        {
+            <tr class="govuk-table__row">
+                <td>@item.Title</td>
+                <td>
+                    <a class="govuk-button"
+                       asp-action="Edit"
+                       asp-controller="Sections"
+                       asp-route-sectionId="@item.Id"
+                       asp-route-formVersionId="@Model.Id">
+                        Edit
+                    </a>
+                    &nbsp;
+                    @*                     <a class="govuk-button govuk-button--warning" asp-action="Delete" asp-controller="Sections" asp-route-sectionId="@item.Id" asp-route-forms="forms" asp asp-route-formVersionId="@Model.FormVersionId">Delete</a>
+ *@                </td>
+            </tr>
+        }
+    </tbody>
+</table>

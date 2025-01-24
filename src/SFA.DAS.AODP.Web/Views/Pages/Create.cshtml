@@ -1,0 +1,23 @@
+﻿@using SFA.DAS.AODP.Web.Models.Page
+@model CreatePageViewModel
+
+<h1 class="govuk-heading-l">Create Page</h1>
+
+<form asp-action="Create" method="post">
+    <input type="hidden" name="FormVersionId" value="@Model.FormVersionId" />
+    <div class="govuk-form-group">
+        <govuk-input asp-for="@Model.Title" input-class="govuk-input--width-50" inputmode="text" pattern="[0-9]*" spellcheck="false">
+            <govuk-input-label is-page-heading="false" class="govuk-label--s">Name</govuk-input-label>
+        </govuk-input>
+    </div>
+    <div class="govuk-form-group">
+
+        <govuk-textarea asp-for="@Model.Description">
+            <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Description</govuk-textarea-label>
+        </govuk-textarea>
+    </div>
+    <div class="govuk-button-group">
+        <govuk-button type="submit">Save</govuk-button>
+        <a class="govuk-button govuk-button--secondary" asp-action="Edit" asp-controller="Forms" asp-route-formVersionId="@Model.FormVersionId">Cancel</a>
+    </div>
+</form>
