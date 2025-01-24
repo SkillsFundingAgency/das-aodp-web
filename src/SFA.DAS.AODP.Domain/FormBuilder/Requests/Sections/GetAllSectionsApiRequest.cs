@@ -4,12 +4,8 @@ namespace SFA.DAS.AODP.Domain.FormBuilder.Requests.Sections;
 
 public class GetAllSectionsApiRequest : IGetApiRequest
 {
-    private readonly Guid _formVersionId;
+    public Guid FormVersionId { get; set; }
 
-    public GetAllSectionsApiRequest(Guid formVersionId)
-    {
-        _formVersionId = formVersionId;
-    }
 
-    public string GetUrl => $"/api/sections/form/{_formVersionId}";
+    public string GetUrl => $"/api/forms/{FormVersionId}/sections";
 }

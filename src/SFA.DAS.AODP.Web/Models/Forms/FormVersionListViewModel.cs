@@ -9,7 +9,7 @@ namespace SFA.DAS.AODP.Web.Models.Forms
 
         public class FormVersion
         {
-            public string? Name { get; set; }
+            public string? Title { get; set; }
             public Guid? DraftVersionId { get; set; }
             public Guid? PublishedVersionId { get; set; }
             public string? Status { get; set; }
@@ -20,10 +20,11 @@ namespace SFA.DAS.AODP.Web.Models.Forms
         public static FormVersionListViewModel Map(GetAllFormVersionsQueryResponse response)
         {
             var viewModel = new FormVersionListViewModel();
+            response.Data = response.Data ?? new();
             response.Data.Add(new()
             {
                 Status = FormStatus.Published,
-                Name = "Published",
+                Title = "Published",
                 Order = 1
             });
 
@@ -38,7 +39,7 @@ namespace SFA.DAS.AODP.Web.Models.Forms
                 {
                     DraftVersionId = draft?.Id,
                     PublishedVersionId = published?.Id,
-                    Name = draft?.Name ?? published?.Name,
+                    Title = draft?.Title ?? published?.Title,
                     Status = published != null ? "Published" : "Draft",
                     Order = draft?.Order ?? published?.Order,
                 };

@@ -4,12 +4,11 @@ namespace SFA.DAS.AODP.Domain.FormBuilder.Requests.Pages;
 
 public class DeletePageApiRequest : IDeleteApiRequest
 {
-    private readonly Guid _pageId;
+    public Guid PageId { get; set; }
+    public Guid FormVersionId { get; set; }
+    public Guid SectionId { get; set; }
 
-    public DeletePageApiRequest(Guid pageId)
-    {
-        _pageId = pageId;
-    }
 
-    public string DeleteUrl => $"/api/pages/{_pageId}";
+
+    public string DeleteUrl => $"/api/forms/{FormVersionId}/sections/{SectionId}/Pages/{PageId}";
 }

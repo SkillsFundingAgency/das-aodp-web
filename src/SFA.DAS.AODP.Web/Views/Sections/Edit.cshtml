@@ -1,31 +1,25 @@
-﻿@model GetSectionByIdQueryResponse.Section
+﻿@using SFA.DAS.AODP.Web.Models.Section
+@model EditSectionViewModel
 
 <h1 class="govuk-heading-l">Edit Section</h1>
 
 <form asp-action="Edit" method="post">
-    <div>
-        <govuk-input name="Title" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" spellcheck="false" value="@Model.Title">
-            <govuk-input-label is-page-heading="false" class="govuk-label--s">Title</govuk-input-label>
+    <div class="govuk-form-group">
+        <govuk-input asp-for="@Model.Title" input-class="govuk-input--width-50" inputmode="text" pattern="[0-9]*" spellcheck="false">
+            <govuk-input-label is-page-heading="false" class="govuk-label--s">Name</govuk-input-label>
         </govuk-input>
     </div>
-    <div>
-        <govuk-input name="Description" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" spellcheck="false" value="@Model.Description">
-            <govuk-input-label is-page-heading="false" class="govuk-label--s">Description</govuk-input-label>
-        </govuk-input>
+    <div class="govuk-form-group">
+
+        <govuk-textarea asp-for="@Model.Description">
+            <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Description</govuk-textarea-label>
+        </govuk-textarea>
     </div>
-    <div>
-        <govuk-input name="Order" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" spellcheck="false" value="@Model.Order">
+
+    <div class="govuk-form-group">
+        <govuk-input asp-for="@Model.Order" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" disabled=true spellcheck="false">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Order</govuk-input-label>
         </govuk-input>
-    </div>
-    <div>
-        <govuk-select name="NextSectionId">
-            <govuk-select-label>Next Section</govuk-select-label>
-            @foreach (var item in (List<GetAllSectionsQueryResponse.Section>)ViewData["Sections"])
-            {
-                <govuk-select-item value="@item.Id">@item.Title</govuk-select-item>
-            }
-        </govuk-select>
     </div>
 
     <govuk-button type="submit">Save</govuk-button>
@@ -34,8 +28,8 @@
 
 <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
 
-<a class="govuk-button" asp-action="Create" asp-controller="Page" asp-route-sectionId="@Model.Id">Create New Page</a>
-<table class="govuk-table">
+<a class="govuk-button" asp-action="Create" asp-controller="Pages" asp-route-sectionId="@Model.SectionId" asp-route-formVersionId="@Model.FormVersionId">Create New Page</a>
+@* <table class="govuk-table">
     <thead class="govuk-table__head">
         <tr class="govuk-table__row">
             <th scope="col" class="govuk-table__header">Title</th>
@@ -58,4 +52,4 @@
             </tr>
         }
     </tbody>
-</table>
+</table> *@

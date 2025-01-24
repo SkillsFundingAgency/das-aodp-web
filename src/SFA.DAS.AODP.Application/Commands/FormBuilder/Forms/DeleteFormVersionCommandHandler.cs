@@ -22,7 +22,6 @@ public class DeleteFormVersionCommandHandler : IRequestHandler<DeleteFormVersion
         try
         {
             await _apiClient.Delete(new DeleteFormVersionApiRequest(request.FormVersionId));
-            response.Data = true;
             response.Success = true;
         }
         catch (Exception ex)

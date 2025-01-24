@@ -10,12 +10,12 @@ namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 public class CreateSectionCommandHandler : IRequestHandler<CreateSectionCommand, CreateSectionCommandResponse>
 {
     private readonly IApiClient _apiClient;
-    private readonly IMapper _mapper;
 
-    public CreateSectionCommandHandler(IApiClient apiClient, IMapper mapper)
+
+    public CreateSectionCommandHandler(IApiClient apiClient)
     {
         _apiClient = apiClient;
-        _mapper = mapper;
+
     }
 
     public async Task<CreateSectionCommandResponse> Handle(CreateSectionCommand request, CancellationToken cancellationToken)
@@ -27,9 +27,19 @@ public class CreateSectionCommandHandler : IRequestHandler<CreateSectionCommand,
 
         try
         {
-            var apiRequestData = _mapper.Map<CreateSectionApiRequest.Section>(request.Data);
-            var result = await _apiClient.PostWithResponseCode<CreateSectionApiResponse>(new CreateSectionApiRequest(apiRequestData));
-            response.Data = _mapper.Map<CreateSectionCommandResponse.Section>(result.Data);
+            var apiRequest = new CreateSectionApiRequest()
+            {
+                Data = new CreateSectionApiRequest.Section()
+                {
+                    Description = request.Description,
+                    Title = request.Title,
+
+                },
+                FormVersionId = request.FormVersionId,
+            };
+
+            var result = await _apiClient.PostWithResponseCode<CreateSectionApiResponse>(apiRequest);
+            response.Id = result.Id;
             response.Success = true;
         }
         catch (Exception ex)

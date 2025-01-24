@@ -1,4 +1,6 @@
-﻿namespace SFA.DAS.AODP.Application.Queries.FormBuilder.Pages;
+﻿using SFA.DAS.AODP.Domain.FormBuilder.Responses.Pages;
+
+namespace SFA.DAS.AODP.Application.Queries.FormBuilder.Pages;
 
 public class GetPageByIdQueryResponse : BaseResponse
 {
@@ -12,6 +14,19 @@ public class GetPageByIdQueryResponse : BaseResponse
         public Guid Key { get; set; }
         public string Description { get; set; }
         public int Order { get; set; }
-        public int? NextPageId { get; set; }
+
+        public static implicit operator Page(GetPageByIdApiResponse.Page entity)
+        {
+            return new()
+            {
+                Id = entity.Id,
+                SectionId = entity.SectionId,
+                Title = entity.Title,
+                Key = entity.Key,
+                Description = entity.Description,
+                Order = entity.Order
+
+            };
+        }
     }
 }

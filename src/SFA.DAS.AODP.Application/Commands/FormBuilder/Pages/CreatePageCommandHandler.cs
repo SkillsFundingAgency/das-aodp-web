@@ -10,12 +10,12 @@ namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 public class CreatePageCommandHandler : IRequestHandler<CreatePageCommand, CreatePageCommandResponse>
 {
     private readonly IApiClient _apiClient;
-    private readonly IMapper _mapper;
+    
 
-    public CreatePageCommandHandler(IApiClient apiClient, IMapper mapper)
+    public CreatePageCommandHandler(IApiClient apiClient)
     {
         _apiClient = apiClient;
-        _mapper = mapper;
+       
     }
 
     public async Task<CreatePageCommandResponse> Handle(CreatePageCommand request, CancellationToken cancellationToken)
@@ -23,9 +23,19 @@ public class CreatePageCommandHandler : IRequestHandler<CreatePageCommand, Creat
         var response = new CreatePageCommandResponse();
         try
         {
-            var apiRequestData = _mapper.Map<CreatePageApiRequest.Page>(request.Data);
-            var result = await _apiClient.PostWithResponseCode<CreatePageApiResponse>(new CreatePageApiRequest(apiRequestData));
-            response.Data = _mapper.Map<CreatePageCommandResponse.Page>(result.Data);
+            var apiRequestData = new CreatePageApiRequest()
+            {
+                Data = new CreatePageApiRequest.Page()
+                {
+                    Description = request.Description,
+                    Title = request.Title
+                },
+                SectionId = request.SectionId,
+                FormVersionId = request.FormVersionId
+            };
+
+            var result = await _apiClient.PostWithResponseCode<CreatePageApiResponse>(apiRequestData);
+            response.Id = result!.Id;
             response.Success = true;
         }
         catch (Exception ex)

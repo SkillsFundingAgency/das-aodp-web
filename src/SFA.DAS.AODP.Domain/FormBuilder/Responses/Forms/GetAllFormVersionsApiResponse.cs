@@ -10,7 +10,7 @@ public class GetAllFormVersionsApiResponse
     {
         public Guid Id { get; set; }
         public Guid FormId { get; set; }
-        public string Name { get; set; }
+        public string Title { get; set; }
         public DateTime Version { get; set; }
         public FormStatus Status { get; set; }
         public bool Archived { get; set; }

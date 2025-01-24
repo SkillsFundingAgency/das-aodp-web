@@ -10,12 +10,12 @@ namespace SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
 public class GetSectionByIdQueryHandler : IRequestHandler<GetSectionByIdQuery, GetSectionByIdQueryResponse>
 {
     private readonly IApiClient _apiClient;
-    private readonly IMapper _mapper;
+    
 
-    public GetSectionByIdQueryHandler(IApiClient apiClient, IMapper mapper)
+    public GetSectionByIdQueryHandler(IApiClient apiClient)
     {
         _apiClient = apiClient;
-        _mapper = mapper;
+       
     }
 
     public async Task<GetSectionByIdQueryResponse> Handle(GetSectionByIdQuery request, CancellationToken cancellationToken)
@@ -25,7 +25,7 @@ public class GetSectionByIdQueryHandler : IRequestHandler<GetSectionByIdQuery, G
         try
         {
             var result = await _apiClient.Get<GetSectionByIdApiResponse>(new GetSectionByIdApiRequest(request.SectionId, request.FormVersionId));
-            response.Data = _mapper.Map<GetSectionByIdQueryResponse.Section>(result.Data);
+            response.Data = result.Data;
             response.Success = true;
         }
         catch (Exception ex)

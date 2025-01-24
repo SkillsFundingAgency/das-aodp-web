@@ -4,10 +4,8 @@ namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 
 public class DeletePageCommand : IRequest<DeletePageCommandResponse>
 {
-    public readonly Guid PageId;
+    public Guid PageId { get; set; }
+    public Guid FormVersionId { get; set; }
+    public Guid SectionId { get; set; }
 
-    public DeletePageCommand(Guid pageId)
-    {
-        PageId = pageId;
-    }
 }

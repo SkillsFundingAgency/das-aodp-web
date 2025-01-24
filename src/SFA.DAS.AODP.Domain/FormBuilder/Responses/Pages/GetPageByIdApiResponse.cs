@@ -12,6 +12,5 @@ public class GetPageByIdApiResponse
         public Guid Key { get; set; }
         public string Description { get; set; }
         public int Order { get; set; }
-        public int? NextPageId { get; set; }
     }
 }

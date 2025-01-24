@@ -10,12 +10,12 @@ namespace SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 public class GetFormVersionByIdQueryHandler : IRequestHandler<GetFormVersionByIdQuery, GetFormVersionByIdQueryResponse>
 {
     private readonly IApiClient _apiClient;
-    private readonly IMapper _mapper;
 
-    public GetFormVersionByIdQueryHandler(IApiClient apiClient, IMapper mapper)
+
+    public GetFormVersionByIdQueryHandler(IApiClient apiClient)
     {
         _apiClient = apiClient;
-        _mapper = mapper;
+
     }
 
     public async Task<GetFormVersionByIdQueryResponse> Handle(GetFormVersionByIdQuery request, CancellationToken cancellationToken)
@@ -25,7 +25,7 @@ public class GetFormVersionByIdQueryHandler : IRequestHandler<GetFormVersionById
         try
         {
             var result = await _apiClient.Get<GetFormVersionByIdApiResponse>(new GetFormVersionByIdApiRequest(request.FormVersionId));
-            response.Data = _mapper.Map<GetFormVersionByIdQueryResponse.FormVersion>(result.Data);
+            response.Data = result.Data;
             response.Success = true;
         }
         catch (Exception ex)

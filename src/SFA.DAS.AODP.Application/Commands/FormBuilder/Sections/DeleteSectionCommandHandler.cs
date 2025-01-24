@@ -23,8 +23,11 @@ public class DeleteSectionCommandHandler : IRequestHandler<DeleteSectionCommand,
 
         try
         {
-            await _apiClient.Delete(new DeleteSectionApiRequest(request.SectionId));
-            response.Data = true;
+            await _apiClient.Delete(new DeleteSectionApiRequest()
+            {
+                SectionId = request.SectionId,
+                FormVersionId = request.FormVersionId
+            });
             response.Success = true;
         }
         catch (Exception ex)

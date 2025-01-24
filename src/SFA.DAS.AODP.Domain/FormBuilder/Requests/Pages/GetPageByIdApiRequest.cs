@@ -4,14 +4,9 @@ namespace SFA.DAS.AODP.Domain.FormBuilder.Requests.Pages;
 
 public class GetPageByIdApiRequest : IGetApiRequest
 {
-    private readonly Guid _pageId;
-    private readonly Guid _sectionId;
+    public Guid PageId { get; set; }
+    public Guid FormVersionId { get; set; }
+    public Guid SectionId { get; set; }
 
-    public GetPageByIdApiRequest(Guid pageId, Guid sectionId)
-    {
-        _pageId = pageId;
-        _sectionId = sectionId;
-    }
-
-    public string GetUrl => $"/api/pages/{_pageId}/section/{_sectionId}";
+    public string GetUrl => $"/api/forms/{FormVersionId}/sections/{SectionId}/Pages/{PageId}";
 }

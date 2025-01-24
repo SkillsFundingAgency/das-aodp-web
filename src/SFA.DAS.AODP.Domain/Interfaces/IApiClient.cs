@@ -10,4 +10,5 @@ public interface IApiClient
     Task<ApiResponse<TResponse>> PutWithResponseCode<TResponse>(IPutApiRequest request);
     Task PostWithResponseCode(IPostApiRequest request);
     Task Delete(IDeleteApiRequest request);
+    Task Put(IPutApiRequest request);
 }

@@ -23,8 +23,7 @@ public class UnpublishFormVersionCommandHandler : IRequestHandler<UnpublishFormV
         try
         {
             var apiRequest = new UnpublishFormVersionApiRequest(request.FormVersionId);
-            var result = await _apiClient.PutWithResponseCode<UnpublishFormVersionApiResponse>(apiRequest);
-            response = new UnpublishFormVersionCommandResponse();
+            await _apiClient.Put(apiRequest);
             response.Success = true;
         }
         catch (Exception ex)

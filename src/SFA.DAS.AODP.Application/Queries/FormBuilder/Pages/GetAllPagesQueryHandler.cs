@@ -10,12 +10,12 @@ namespace SFA.DAS.AODP.Application.Queries.FormBuilder.Pages;
 public class GetAllPagesQueryHandler : IRequestHandler<GetAllPagesQuery, GetAllPagesQueryResponse>
 {
     private readonly IApiClient _apiClient;
-    private readonly IMapper _mapper;
 
-    public GetAllPagesQueryHandler(IApiClient apiClient, IMapper mapper)
+
+    public GetAllPagesQueryHandler(IApiClient apiClient)
     {
         _apiClient = apiClient;
-        _mapper = mapper;
+
     }
 
     public async Task<GetAllPagesQueryResponse> Handle(GetAllPagesQuery request, CancellationToken cancellationToken)
@@ -24,8 +24,12 @@ public class GetAllPagesQueryHandler : IRequestHandler<GetAllPagesQuery, GetAllP
         response.Success = false;
         try
         {
-            var result = await _apiClient.Get<GetAllPagesApiResponse>(new GetAllPagesApiRequest(request.SectionId));
-            response.Data = _mapper.Map<List<GetAllPagesQueryResponse.Page>>(result.Data);
+            var result = await _apiClient.Get<GetAllPagesApiResponse>(new GetAllPagesApiRequest()
+            {
+                FormVersionId = request.FormVersionId,
+                SectionId = request.SectionId
+            });
+            response.Data = [.. result.Data];
             response.Success = true;
         }
         catch (Exception ex)

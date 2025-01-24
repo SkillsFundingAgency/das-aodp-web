@@ -1,8 +1,4 @@
-﻿using Azure;
-using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
-
-namespace SFA.DAS.AODP.Web.Models.Forms;
-
+﻿namespace SFA.DAS.AODP.Web.Models.Forms;
 public class EditFormVersionViewModel
 {
 
@@ -10,7 +6,7 @@ public class EditFormVersionViewModel
     public string Version { get; set; }
     public string Status { get; set; }
 
-    public string? Name { get; set; }
+    public string? Title { get; set; }
     public int Order { get; set; }
     public string? Description { get; set; }
 
@@ -29,7 +25,7 @@ public class EditFormVersionViewModel
         var viewModel = new EditFormVersionViewModel();
 
         viewModel.Id = response.Data.Id;
-        viewModel.Name = response.Data.Name;
+        viewModel.Title = response.Data.Title;
         viewModel.Description = response.Data.Description;
         viewModel.Version = response.Data.Version.ToString("yyyy-MM-dd HH:mm");
         viewModel.Status = response.Data.Status.ToString();

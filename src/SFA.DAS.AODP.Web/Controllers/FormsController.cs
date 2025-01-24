@@ -37,20 +37,15 @@ public class FormsController : Controller
     }
 
     [HttpPost]
+    [Route("forms/create")]
     public async Task<IActionResult> Create(CreateFormVersionViewModel viewModel)
     {
-        #region Command Model Binding (CreateFormVersion -> CreateFormVersionCommand.FormVersion)
-        var commandModel = new CreateFormVersionCommand.FormVersion();
-        commandModel.Id = Guid.NewGuid();
-        commandModel.Name = viewModel.Name;
-        commandModel.Description = viewModel.Description;
-        commandModel.Version = viewModel.Version;
-        //commandModel.Status = viewModel.SelectedStatus;
-        commandModel.Order = viewModel.Order;
-        commandModel.DateCreated = viewModel.DateCreated;
-        #endregion
-
-        var command = new CreateFormVersionCommand(commandModel);
+        var command = new CreateFormVersionCommand
+        {
+            Title = viewModel.Name,
+            Description = viewModel.Description,
+            Order = viewModel.Order
+        };
 
         var response = await _mediator.Send(command);
         return RedirectToAction(nameof(Index));
@@ -58,7 +53,7 @@ public class FormsController : Controller
     #endregion
 
     #region Edit
-    [Route("forms/edit/{formVersionId}")]
+    [Route("forms/{formVersionId}")]
     public async Task<IActionResult> Edit(Guid formVersionId)
     {
         var formVersionQuery = new GetFormVersionByIdQuery(formVersionId);
@@ -72,38 +67,43 @@ public class FormsController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> Edit(UpdateFormVersionCommand.FormVersion formVersion)
+    [Route("forms/{formVersionId}")]
+    public async Task<IActionResult> Edit(EditFormVersionViewModel editFormVersionViewModel)
     {
-        var command = new UpdateFormVersionCommand(formVersion.Id, formVersion);
+        var command = new UpdateFormVersionCommand()
+        {
+            FormVersionId = editFormVersionViewModel.Id,
+            Description = editFormVersionViewModel.Description,
+            Order = editFormVersionViewModel.Order,
+            Name = editFormVersionViewModel.Title
+        };
 
         var response = await _mediator.Send(command);
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(Edit), new { formVersionId = editFormVersionViewModel.Id });
     }
     #endregion
 
     #region Delete
-    [Route("forms/delete/{formVersionId}")]
+    [Route("forms/{formVersionId}/delete")]
     public async Task<IActionResult> Delete(Guid formVersionId)
     {
         var query = new GetFormVersionByIdQuery(formVersionId);
         var response = await _mediator.Send(query);
         if (response.Data == null) return NotFound();
-        return View(response.Data);
+        return View(new DeleteFormViewModel()
+        {
+            FormId = formVersionId,
+            Title = response.Data.Title
+        });
     }
 
-    [HttpPost, ActionName("Delete")]
-    public async Task<IActionResult> DeleteConfirmed(Guid formVersionId)
+    [HttpPost]
+    [Route("forms/{formVersionId}/delete")]
+    public async Task<IActionResult> DeleteConfirmed(DeleteFormViewModel model)
     {
-        var query = new GetFormVersionByIdQuery(formVersionId);
-        var response = await _mediator.Send(query);
-        if (response.Data != null)
-        {
-            var command = new DeleteFormVersionCommand(response.Data.Id);
-            var deleteResponse = await _mediator.Send(command);
-            return RedirectToAction(nameof(Index));
-        }
-        return NotFound();
-
+        var command = new DeleteFormVersionCommand(model.FormId);
+        var deleteResponse = await _mediator.Send(command);
+        return RedirectToAction(nameof(Index));
     }
     #endregion
 }

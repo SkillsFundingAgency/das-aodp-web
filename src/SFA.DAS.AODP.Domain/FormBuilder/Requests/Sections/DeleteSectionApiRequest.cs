@@ -4,12 +4,9 @@ namespace SFA.DAS.AODP.Domain.FormBuilder.Requests.Sections;
 
 public class DeleteSectionApiRequest : IDeleteApiRequest
 {
-    private readonly Guid _sectionId;
 
-    public DeleteSectionApiRequest(Guid sectionId)
-    {
-        _sectionId = sectionId;
-    }
+    public Guid FormVersionId { get; set; }
+    public Guid SectionId { get; set; }
 
-    public string DeleteUrl => $"/api/sections/{_sectionId}";
+    public string DeleteUrl => $"/api/forms/{FormVersionId}/sections/{SectionId}";
 }

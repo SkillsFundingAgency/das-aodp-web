@@ -2,7 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Pages;
-using SFA.DAS.AODP.Models.Forms.FormBuilder;
+using SFA.DAS.AODP.Web.Models.Page;
+using SFA.DAS.AODP.Web.Models.Section;
 
 namespace SFA.DAS.AODP.Web.Controllers;
 
@@ -16,72 +17,107 @@ public class PagesController : Controller
     }
 
     #region Create
-    [Route("pages/create/sections/{sectionId}/forms/{formVersionId}")]
-    public async Task<IActionResult> Create(Guid sectionId, Guid formVersionId)
+    [Route("forms/{formVersionId}/sections/{sectionId}/pages/create")]
+    public async Task<IActionResult> Create(Guid formVersionId, Guid sectionId)
     {
-        var query = new GetAllPagesQuery(sectionId);
-        var response = await _mediator.Send(query);
-        ViewData["Pages"] = response.Data;
-        return View(new Page { SectionId = sectionId });
+        return View(new CreatePageViewModel()
+        {
+            FormVersionId = formVersionId,
+            SectionId = sectionId
+        });
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(CreatePageCommand.Page page)
+    [Route("forms/{formVersionId}/sections/{sectionId}/pages/create")]
+    public async Task<IActionResult> Create(CreatePageViewModel model)
     {
-        var command = new CreatePageCommand(page);
+        var command = new CreatePageCommand()
+        {
+            SectionId = model.SectionId,
+            FormVersionId = model.FormVersionId,
+            Description = model.Description,
+            Title = model.Title
+
+        };
 
         var response = await _mediator.Send(command);
-        return RedirectToAction("Edit", "Section", new { id = response.Data.SectionId });
+        if (response.Success)
+        {
+            return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId, pageId = response.Id });
+        }
+        return View(model);
     }
     #endregion
 
     #region Edit
-    [Route("pages/edit/{pageId}/sections/{sectionId}/forms/{formVersionId}")]
+    [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}")]
     public async Task<IActionResult> Edit(Guid pageId, Guid sectionId, Guid formVersionId)
     {
-        var query = new GetPageByIdQuery(pageId, sectionId);
+        var query = new GetPageByIdQuery()
+        {
+            PageId = pageId,
+            SectionId = sectionId,
+            FormVersionId = formVersionId
+        };
         var response = await _mediator.Send(query);
         if (response.Data == null) return NotFound();
 
-        var pagesQuery = new GetAllPagesQuery(response.Data.SectionId);
-        var pagesResponse = await _mediator.Send(pagesQuery);
-        ViewData["Pages"] = pagesResponse.Data;
-
-        return View(response.Data);
+        return View(EditPageViewModel.Map(response, formVersionId));
     }
 
     [HttpPost]
-    public async Task<IActionResult> Edit(UpdatePageCommand.Page page)
+    [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}")]
+    public async Task<IActionResult> Edit(EditPageViewModel model)
     {
-        var command = new UpdatePageCommand(page.Id, page);
+        var command = new UpdatePageCommand()
+        {
+            Description = model.Description,
+            Title = model.Title,
+            SectionId = model.SectionId,
+            FormVersionId = model.FormVersionId,
+            Id = model.PageId
+        };
 
         var response = await _mediator.Send(command);
-        return RedirectToAction("Edit", "Section", new { id = response.Data.SectionId });
+        return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId, pageId = model.PageId });
     }
     #endregion
 
     #region Delete
-    [Route("pages/delete/{pageId}/sections/{sectionId}/forms/{formVersionId}")]
+    [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/delete")]
     public async Task<IActionResult> Delete(Guid pageId, Guid sectionId, Guid formVersionId)
     {
-        var query = new GetPageByIdQuery(pageId, sectionId);
+        var query = new GetPageByIdQuery()
+        {
+            PageId = pageId,
+            SectionId = sectionId,
+            FormVersionId = formVersionId
+        };
         var response = await _mediator.Send(query);
         if (response.Data == null) return NotFound();
-        return View(response.Data);
+        return View(new DeletePageViewModel()
+        {
+            PageId = pageId,
+            SectionId = sectionId,
+            FormVersionId = formVersionId,
+            Title = response.Data.Title
+        });
     }
 
-    [HttpPost, ActionName("Delete")]
-    public async Task<IActionResult> DeleteConfirmed(Guid pageId, Guid sectionId)
+    [HttpPost]
+    [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/delete")]
+    public async Task<IActionResult> DeleteConfirmed(DeletePageViewModel model)
     {
-        var query = new GetPageByIdQuery(pageId, sectionId);
-        var response = await _mediator.Send(query);
-        if (response.Data != null)
+        var command = new DeletePageCommand()
         {
-            var command = new DeletePageCommand(response.Data.Id);
-            var deleteResponse = await _mediator.Send(command);
-            return RedirectToAction("Edit", "Section", new { id = response.Data.SectionId });
-        }
-        return NotFound();
+            PageId = model.PageId,
+            SectionId = model.SectionId,
+            FormVersionId = model.FormVersionId
+        };
+
+        var deleteResponse = await _mediator.Send(command);
+        return RedirectToAction("Edit", "Section", new { id = model.SectionId });
+
     }
     #endregion
 }

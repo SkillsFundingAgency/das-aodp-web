@@ -71,6 +71,20 @@ namespace SFA.DAS.AODP.Infrastructure.ApiClient
             return default;
         }
 
+        public async Task Put(IPutApiRequest request)
+        {
+            var requestMessage = new HttpRequestMessage(HttpMethod.Put, request.PutUrl)
+            {
+                Content = new StringContent(System.Text.Json.JsonSerializer.Serialize(request.Data), Encoding.UTF8, "application/json"),
+                VersionPolicy = HttpVersionPolicy.RequestVersionOrLower
+            };
+            AddAuthenticationHeader(requestMessage);
+
+            var response = await _httpClient.SendAsync(requestMessage).ConfigureAwait(false);
+
+            response.EnsureSuccessStatusCode();
+        }
+
         public async Task<ApiResponse<TResponse>> PutWithResponseCode<TResponse>(IPutApiRequest request)
         {
             var stringContent = new StringContent(JsonConvert.SerializeObject(request.Data), Encoding.UTF8, "application/json");

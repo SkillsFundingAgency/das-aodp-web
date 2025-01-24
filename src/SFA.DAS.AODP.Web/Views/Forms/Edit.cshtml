@@ -3,19 +3,18 @@
 <h1 class="govuk-heading-l">Edit Form</h1>
 
 <form asp-action="Edit" method="post">
+    @Html.HiddenFor(m => m.Id)
+
     <div class="govuk-form-group">
-        <govuk-input asp-for="@Model.Name" input-class="govuk-input--width-50" inputmode="text" pattern="[0-9]*" spellcheck="false">
-            <govuk-input-label is-page-heading="false" class="govuk-label--s">Order</govuk-input-label>
+        <govuk-input asp-for="@Model.Title" input-class="govuk-input--width-50" inputmode="text" pattern="[0-9]*" spellcheck="false">
+            <govuk-input-label is-page-heading="false" class="govuk-label--s">Name</govuk-input-label>
         </govuk-input>
     </div>
-    @* Provisional editor *@
     <div class="govuk-form-group">
-        <label class="govuk-label govuk-label--s" for="descriptionEditor">
-            Description
-        </label>
-        <div id="descriptionEditor">
-            @Html.Raw(@Model.Description.Trim('"'))
-        </div>
+
+        <govuk-textarea asp-for="@Model.Description">
+            <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Description</govuk-textarea-label>
+        </govuk-textarea>
     </div>
 
     <div class="govuk-form-group">
@@ -69,30 +68,9 @@
                         Edit
                     </a>
                     &nbsp;
-@*                     <a class="govuk-button govuk-button--warning" asp-action="Delete" asp-controller="Sections" asp-route-sectionId="@item.Id" asp-route-forms="forms" asp asp-route-formVersionId="@Model.FormVersionId">Delete</a>
+                    @*                     <a class="govuk-button govuk-button--warning" asp-action="Delete" asp-controller="Sections" asp-route-sectionId="@item.Id" asp-route-forms="forms" asp asp-route-formVersionId="@Model.FormVersionId">Delete</a>
  *@                </td>
             </tr>
         }
     </tbody>
 </table>
-
-@section Scripts {
-    <script type="text/javascript">
-        const quill = new Quill('#descriptionEditor', {
-            modules: {
-                toolbar: [
-                    ['bold', 'italic'],
-                    ['link', 'blockquote'],
-                    [{ list: 'ordered' }, { list: 'bullet' }],
-                ],
-            },
-            theme: 'snow',
-        });
-
-        const form = document.querySelector('form');
-        form.addEventListener('formdata', (event) => {
-            // Append Quill content before submitting
-            event.formData.append('Description', JSON.stringify(quill.root.innerHTML));
-        });
-    </script>
-}

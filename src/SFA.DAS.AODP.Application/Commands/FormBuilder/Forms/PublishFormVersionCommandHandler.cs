@@ -24,8 +24,7 @@ public class PublishFormVersionCommandHandler : IRequestHandler<PublishFormVersi
         try
         {
             var apiRequest = new PublishFormVersionApiRequest(request.FormVersionId);
-            var result = await _apiClient.PutWithResponseCode<PublishFormVersionApiResponse>(apiRequest);
-            response = new PublishFormVersionCommandResponse();
+            await _apiClient.Put(apiRequest);
             response.Success = true;
         }
         catch (Exception ex)

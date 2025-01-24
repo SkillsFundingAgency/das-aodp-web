@@ -1,4 +1,5 @@
-﻿using SFA.DAS.AODP.Models.Forms.FormBuilder;
+﻿using SFA.DAS.AODP.Domain.FormBuilder.Responses.Forms;
+using SFA.DAS.AODP.Models.Forms.FormBuilder;
 
 namespace SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 
@@ -10,12 +11,29 @@ public class GetAllFormVersionsQueryResponse : BaseResponse
     {
         public Guid Id { get; set; }
         public Guid FormId { get; set; }
-        public string Name { get; set; }
+        public string Title { get; set; }
         public DateTime Version { get; set; }
         public FormStatus Status { get; set; }
         public bool Archived { get; set; }
         public string Description { get; set; }
         public int Order { get; set; }
         public DateTime DateCreated { get; set; }
+
+
+        public static implicit operator FormVersion(GetAllFormVersionsApiResponse.FormVersion entity)
+        {
+            return (new()
+            {
+                Id = entity.Id,
+                FormId = entity.FormId,
+                Title = entity.Title,
+                Version = entity.Version,
+                Status = entity.Status,
+                Description = entity.Description,
+                Order = entity.Order,
+                DateCreated = entity.DateCreated,
+            });
+        }
+
     }
 }

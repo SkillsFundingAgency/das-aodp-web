@@ -15,7 +15,7 @@
         @foreach (var item in Model.FormVersions.OrderBy(o => o.Order))
         {
             <tr class="govuk-table__row">
-                <td>@item.Name</td>
+                <td>@item.Title</td>
                 <td>@item.Status</td>
                 <td>
                     @if (item.PublishedVersionId.HasValue)

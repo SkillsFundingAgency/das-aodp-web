@@ -1,7 +1,6 @@
 ﻿using MediatR;
 using SFA.DAS.AODP.Domain.FormBuilder.Requests.Pages;
 using SFA.DAS.AODP.Domain.Interfaces;
-using SFA.DAS.AODP.Domain.Models;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 
@@ -20,7 +19,12 @@ public class DeletePageCommandHandler : IRequestHandler<DeletePageCommand, Delet
 
         try
         {
-            await _apiClient.Delete(new DeletePageApiRequest(request.PageId));
+            await _apiClient.Delete(new DeletePageApiRequest()
+            {
+                FormVersionId = request.FormVersionId,
+                PageId = request.PageId,
+                SectionId = request.SectionId
+            });
             response.Data = true;
             response.Success = true;
         }

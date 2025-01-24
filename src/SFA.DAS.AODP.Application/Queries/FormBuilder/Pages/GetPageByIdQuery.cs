@@ -4,12 +4,8 @@ namespace SFA.DAS.AODP.Application.Queries.FormBuilder.Pages;
 
 public class GetPageByIdQuery : IRequest<GetPageByIdQueryResponse>
 {
-    public readonly Guid PageId;
-    public readonly Guid SectionId;
+    public Guid PageId { get; set; }
+    public Guid SectionId { get; set; }
+    public Guid FormVersionId { get; set; }
 
-    public GetPageByIdQuery(Guid pageId, Guid sectionId)
-    {
-        PageId = pageId;
-        SectionId = sectionId;
-    }
 }

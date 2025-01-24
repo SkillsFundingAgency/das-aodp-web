@@ -10,12 +10,12 @@ namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 public class UpdateSectionCommandHandler : IRequestHandler<UpdateSectionCommand, UpdateSectionCommandResponse>
 {
     private readonly IApiClient _apiClient;
-    private readonly IMapper _mapper;
 
-    public UpdateSectionCommandHandler(IApiClient apiClient, IMapper mapper)
+
+    public UpdateSectionCommandHandler(IApiClient apiClient)
     {
         _apiClient = apiClient;
-        _mapper = mapper;
+
     }
 
     public async Task<UpdateSectionCommandResponse> Handle(UpdateSectionCommand request, CancellationToken cancellationToken)
@@ -27,10 +27,16 @@ public class UpdateSectionCommandHandler : IRequestHandler<UpdateSectionCommand,
 
         try
         {
-            var apiRequestData = _mapper.Map<UpdateSectionApiRequest.Section>(request.Data);
-            var apiRequest = new UpdateSectionApiRequest(request.FormVersionId, apiRequestData);
-            var result = await _apiClient.PutWithResponseCode<UpdateSectionApiResponse>(apiRequest);
-            response.Data = _mapper.Map<UpdateSectionCommandResponse.Section>(result.Body.Data);
+            var apiRequest = new UpdateSectionApiRequest()
+            {
+                Data = new UpdateSectionApiRequest.Section()
+                {
+                    Title = request.Title,
+                    Description = request.Description
+                }
+            };
+
+            await _apiClient.Put(apiRequest);
             response.Success = true;
         }
         catch (Exception ex)
