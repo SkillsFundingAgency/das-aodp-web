@@ -27,8 +27,7 @@ public class GetSectionByIdQueryResponse : BaseResponse
                 Title = entity.Title,
                 Key = entity.Key,
                 Description = entity.Description,
-                Order = entity.Order,
-                Pages = entity.Pages != null ?[..entity.Pages] : new()
+                Order = entity.Order
 
             };
         }

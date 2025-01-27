@@ -1,4 +1,6 @@
-﻿namespace SFA.DAS.AODP.Domain.FormBuilder.Responses.Forms;
+﻿using SFA.DAS.AODP.Models.Forms.FormBuilder;
+
+namespace SFA.DAS.AODP.Domain.FormBuilder.Responses.Forms;
 
 public class GetAllFormVersionsApiResponse
 {
@@ -10,7 +12,7 @@ public class GetAllFormVersionsApiResponse
         public Guid FormId { get; set; }
         public string Title { get; set; }
         public DateTime Version { get; set; }
-        public string Status { get; set; }
+        public FormStatus Status { get; set; }
         public bool Archived { get; set; }
         public string Description { get; set; }
         public int Order { get; set; }
