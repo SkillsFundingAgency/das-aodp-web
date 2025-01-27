@@ -12,6 +12,14 @@
         Are you sure you want to delete the page "@Model.Title"?
     </govuk-warning-text>
 
-    <govuk-button class="govuk-button--warning" type="submit">Delete</govuk-button>
-    @*     <a class="govuk-button govuk-button--secondary" href="@Url.Action("Edit", "Section", new { sectionId = Model.SectionId, formVersionId = Model })">Cancel</a> *@
+    <div class="govuk-button-group">
+        <govuk-button class="govuk-button--warning" type="submit">Delete</govuk-button>
+        <a class="govuk-button govuk-button--secondary"
+           asp-action="Edit"
+           asp-controller="Sections"
+           asp-route-formVersionId="@Model.FormVersionId"
+           asp-route-sectionId="@Model.SectionId">
+            Cancel
+        </a>
+    </div>
 </form>

@@ -18,6 +18,11 @@
     </div>
     <div class="govuk-button-group">
         <govuk-button type="submit">Save</govuk-button>
-        <a class="govuk-button govuk-button--secondary" asp-action="Edit" asp-controller="Forms" asp-route-formVersionId="@Model.FormVersionId">Cancel</a>
+        <a class="govuk-button govuk-button--secondary"
+           asp-action="Edit"
+           asp-controller="Forms"
+           asp-route-formVersionId="@Model.FormVersionId">
+            Cancel
+        </a>
     </div>
 </form>
