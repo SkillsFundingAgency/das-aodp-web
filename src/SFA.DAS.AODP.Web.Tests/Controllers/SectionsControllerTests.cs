@@ -2,25 +2,24 @@ using AutoFixture;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
-using SFA.DAS.AODP.Application.Queries.FormBuilder.Pages;
+using SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
+using SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
 using SFA.DAS.AODP.Web.Controllers;
-using SFA.DAS.AODP.Web.Models.Page;
 using SFA.DAS.AODP.Web.Models.Section;
 
 namespace SFA.DAS.AODP.Web.Tests.Controllers
 {
-    public class PagesTests : IDisposable
+    public class SectionsControllerTests : IDisposable
     {
         private Mock<IMediator> _mediatorMock;
-        private PagesController _controller;
+        private SectionsController _controller;
         private readonly Fixture _fixture = new Fixture();
 
         [SetUp]
         public void Setup()
         {
             _mediatorMock = new Mock<IMediator>();
-            _controller = new PagesController(_mediatorMock.Object);
+            _controller = new SectionsController(_mediatorMock.Object);
         }
 
         [TearDown]
@@ -33,40 +32,43 @@ namespace SFA.DAS.AODP.Web.Tests.Controllers
         public async Task Create_Get_ValidRequest_ReturnsOk()
         {
             //Arrange
-            var request = new CreatePageViewModel();
+            var request = new CreateSectionViewModel();
             var formVersionId = _fixture.Create<Guid>();
-            var sectionId = _fixture.Create<Guid>();
 
             //Act
-            var result = await _controller.Create(formVersionId, sectionId);
+            var result = await _controller.Create(formVersionId);
             var okResult = (ViewResult)result;
-            var returnedData = okResult.Model as CreatePageViewModel;
+            var returnedData = okResult.Model as CreateSectionViewModel;
 
             //Assert
             Assert.That(result, Is.InstanceOf<ViewResult>());
             Assert.That(returnedData, Is.Not.Null);
-            Assert.That(returnedData, Is.TypeOf<CreatePageViewModel>());
+            Assert.That(returnedData, Is.TypeOf<CreateSectionViewModel>());
         }
 
         [Test]
         public async Task Create_Post_ValidRequest_RedirectsOk()
         {
             //Arrange
-            var expectedResponse = new CreatePageCommandResponse();
+            var expectedResponse = new CreateSectionCommandResponse();
             expectedResponse = _fixture
-                .Build<CreatePageCommandResponse>()
+                .Build<CreateSectionCommandResponse>()
                 .With(w => w.Success, true)
                 .Create();
-            var request = new CreatePageViewModel();
-            var formVersionId = _fixture.Create<Guid>();
-            var sectionId = _fixture.Create<Guid>();
-            _mediatorMock.Setup(x => x.Send(It.IsAny<CreatePageCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(expectedResponse);
+
+            var request = new CreateSectionViewModel();
+            request = _fixture
+                .Build<CreateSectionViewModel>()
+                .Create();
+
+            _mediatorMock.Setup(x => x.Send(It.IsAny<CreateSectionCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(expectedResponse);
 
             //Act
             var result = await _controller.Create(request);
             var okResult = (RedirectToActionResult)result;
 
             //Assert
+            Assert.That(expectedResponse.Success, Is.EqualTo(true));
             Assert.That(result, Is.InstanceOf<RedirectToActionResult>());
             Assert.That(okResult.ActionName, Is.EqualTo("Edit"));
         }
@@ -75,47 +77,49 @@ namespace SFA.DAS.AODP.Web.Tests.Controllers
         public async Task Edit_Get_ValidRequest_ReturnsOk()
         {
             //Arrange
-            var expectedResponse = new GetPageByIdQueryResponse();
+            var expectedResponse = new GetSectionByIdQueryResponse();
             expectedResponse = _fixture
-                .Build<GetPageByIdQueryResponse>()
+                .Build<GetSectionByIdQueryResponse>()
                 .With(w => w.Success, true)
                 .Create();
 
-            var formVersionId = _fixture.Create<Guid>();
-            var request = new GetPageByIdQuery(expectedResponse.Data.Id, expectedResponse.Data.SectionId, formVersionId);
+            var request = new GetSectionByIdQuery(expectedResponse.Data.Id, expectedResponse.Data.FormVersionId);
 
-            _mediatorMock.Setup(x => x.Send(It.IsAny<GetPageByIdQuery>(), It.IsAny<CancellationToken>())).ReturnsAsync(expectedResponse);
+            _mediatorMock.Setup(x => x.Send(It.IsAny<GetSectionByIdQuery>(), It.IsAny<CancellationToken>())).ReturnsAsync(expectedResponse);
 
             //Act
-            var result = await _controller.Edit(expectedResponse.Data.Id, expectedResponse.Data.SectionId, request.FormVersionId);
+            var result = await _controller.Edit(expectedResponse.Data.FormVersionId, expectedResponse.Data.Id);
             var okResult = (ViewResult)result;
-            var returnedData = okResult.Model as EditPageViewModel;
+            var returnedData = okResult.Model as EditSectionViewModel;
 
             //Assert
             Assert.That(result, Is.InstanceOf<ViewResult>());
             Assert.That(returnedData, Is.Not.Null);
-            Assert.That(returnedData, Is.TypeOf<EditPageViewModel>());
+            Assert.That(returnedData, Is.TypeOf<EditSectionViewModel>());
         }
 
         [Test]
         public async Task Edit_Post_ValidRequest_RedirectsOk()
         {
             //Arrange
-            var expectedResponse = new UpdatePageCommandResponse();
+            var expectedResponse = new UpdateSectionCommandResponse();
             expectedResponse = _fixture
-                .Build<UpdatePageCommandResponse>()
+                .Build<UpdateSectionCommandResponse>()
                 .With(w => w.Success, true)
                 .Create();
-            var request = new EditPageViewModel();
-            var formVersionId = _fixture.Create<Guid>();
-            var sectionId = _fixture.Create<Guid>();
-            _mediatorMock.Setup(x => x.Send(It.IsAny<UpdatePageCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(expectedResponse);
+            var request = new EditSectionViewModel();
+            request = _fixture
+                .Build<EditSectionViewModel>()
+                .Create();
+
+            _mediatorMock.Setup(x => x.Send(It.IsAny<UpdateSectionCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(expectedResponse);
 
             //Act
             var result = await _controller.Edit(request);
             var okResult = (RedirectToActionResult)result;
 
             //Assert
+            Assert.That(expectedResponse.Success, Is.EqualTo(true));
             Assert.That(result, Is.InstanceOf<RedirectToActionResult>());
             Assert.That(okResult.ActionName, Is.EqualTo("Edit"));
         }
@@ -124,51 +128,48 @@ namespace SFA.DAS.AODP.Web.Tests.Controllers
         public async Task Delete_Get_ValidRequest_ReturnsOk()
         {
             //Arrange
-            var expectedResponse = new GetPageByIdQueryResponse();
+            var expectedResponse = new GetSectionByIdQueryResponse();
             expectedResponse = _fixture
-                .Build<GetPageByIdQueryResponse>()
+                .Build<GetSectionByIdQueryResponse>()
                 .With(w => w.Success, true)
                 .Create();
 
-            var formVersionId = _fixture.Create<Guid>();
-            var request = new GetPageByIdQuery(expectedResponse.Data.Id, expectedResponse.Data.SectionId, formVersionId);
+            var request = new GetSectionByIdQuery(expectedResponse.Data.Id, expectedResponse.Data.FormVersionId);
 
-            _mediatorMock.Setup(x => x.Send(It.IsAny<GetPageByIdQuery>(), It.IsAny<CancellationToken>())).ReturnsAsync(expectedResponse);
+            _mediatorMock.Setup(x => x.Send(It.IsAny<GetSectionByIdQuery>(), It.IsAny<CancellationToken>())).ReturnsAsync(expectedResponse);
 
             //Act
-            var result = await _controller.Delete(expectedResponse.Data.Id, expectedResponse.Data.SectionId, request.FormVersionId);
+            var result = await _controller.Delete(expectedResponse.Data.Id, expectedResponse.Data.FormVersionId);
             var okResult = (ViewResult)result;
-            var returnedData = okResult.Model as DeletePageViewModel;
+            var returnedData = okResult.Model as DeleteSectionViewModel;
 
             //Assert
             Assert.That(result, Is.InstanceOf<ViewResult>());
             Assert.That(returnedData, Is.Not.Null);
-            Assert.That(returnedData, Is.TypeOf<DeletePageViewModel>());
+            Assert.That(returnedData, Is.TypeOf<DeleteSectionViewModel>());
         }
 
         [Test]
         public async Task DeleteConfirmed_Post_ValidRequest_RedirectsOk()
         {
             //Arrange
-            var expectedResponse = new DeletePageCommandResponse();
+            var expectedResponse = new DeleteSectionCommandResponse();
             expectedResponse = _fixture
-                .Build<DeletePageCommandResponse>()
+                .Build<DeleteSectionCommandResponse>()
                 .With(w => w.Success, true)
                 .Create();
-            var request = new DeletePageViewModel();
-            request.PageId = _fixture.Create<Guid>();
-            request.SectionId = _fixture.Create<Guid>();
-            request.FormVersionId = _fixture.Create<Guid>();
-
-            var formVersionId = _fixture.Create<Guid>();
-            var sectionId = _fixture.Create<Guid>();
-            _mediatorMock.Setup(x => x.Send(It.IsAny<DeletePageCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(expectedResponse);
+            var request = new DeleteSectionViewModel();
+            request = _fixture
+                .Build<DeleteSectionViewModel>()
+                .Create();
+            _mediatorMock.Setup(x => x.Send(It.IsAny<DeleteSectionCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(expectedResponse);
 
             //Act
             var result = await _controller.DeleteConfirmed(request);
             var okResult = (RedirectToActionResult)result;
 
             //Assert
+            Assert.That(expectedResponse.Success, Is.EqualTo(true));
             Assert.That(result, Is.InstanceOf<RedirectToActionResult>());
             Assert.That(okResult.ActionName, Is.EqualTo("Edit"));
         }

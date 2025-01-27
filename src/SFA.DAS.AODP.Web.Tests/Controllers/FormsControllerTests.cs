@@ -6,11 +6,10 @@ using SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Web.Controllers;
 using SFA.DAS.AODP.Web.Models.Forms;
-using System.Net;
 
 namespace SFA.DAS.AODP.Web.Tests.Controllers
 {
-    public class FormsTests : IDisposable
+    public class FormsControllerTests : IDisposable
     {
         private Mock<IMediator> _mediatorMock;
         private FormsController _controller;
