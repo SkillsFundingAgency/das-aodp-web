@@ -92,7 +92,7 @@ public class FormsController : Controller
         if (response.Data == null) return NotFound();
         return View(new DeleteFormViewModel()
         {
-            FormId = formVersionId,
+            FormVersionId = formVersionId,
             Title = response.Data.Title
         });
     }
@@ -101,7 +101,7 @@ public class FormsController : Controller
     [Route("forms/{formVersionId}/delete")]
     public async Task<IActionResult> DeleteConfirmed(DeleteFormViewModel model)
     {
-        var command = new DeleteFormVersionCommand(model.FormId);
+        var command = new DeleteFormVersionCommand(model.FormVersionId);
         var deleteResponse = await _mediator.Send(command);
         return RedirectToAction(nameof(Index));
     }

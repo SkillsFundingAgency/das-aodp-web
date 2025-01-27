@@ -3,7 +3,7 @@
 <h1 class="govuk-heading-l">Delete Form?</h1>
 
 <form asp-action="Delete" method="post">
-    @Html.HiddenFor(m => m.FormId);
+    @Html.HiddenFor(m => m.FormVersionId);
     <govuk-warning-text icon-fallback-text="Warning">
         Are you sure you want to delete the form "@Model.Title"?
     </govuk-warning-text>

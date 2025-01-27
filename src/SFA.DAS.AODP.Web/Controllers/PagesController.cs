@@ -53,12 +53,7 @@ public class PagesController : Controller
     [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}")]
     public async Task<IActionResult> Edit(Guid pageId, Guid sectionId, Guid formVersionId)
     {
-        var query = new GetPageByIdQuery()
-        {
-            PageId = pageId,
-            SectionId = sectionId,
-            FormVersionId = formVersionId
-        };
+        var query = new GetPageByIdQuery(pageId, sectionId, formVersionId);
         var response = await _mediator.Send(query);
         if (response.Data == null) return NotFound();
 
@@ -87,12 +82,7 @@ public class PagesController : Controller
     [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/delete")]
     public async Task<IActionResult> Delete(Guid pageId, Guid sectionId, Guid formVersionId)
     {
-        var query = new GetPageByIdQuery()
-        {
-            PageId = pageId,
-            SectionId = sectionId,
-            FormVersionId = formVersionId
-        };
+        var query = new GetPageByIdQuery(pageId, sectionId, formVersionId);
         var response = await _mediator.Send(query);
         if (response.Data == null) return NotFound();
         return View(new DeletePageViewModel()
