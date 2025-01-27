@@ -1,46 +1,49 @@
-﻿using MediatR;
-using SFA.DAS.AODP.Application.MediatR.Base;
-using SFA.DAS.AODP.Application.Repository;
-using SFA.DAS.AODP.Models.Forms.FormBuilder;
+﻿using AutoMapper;
+using MediatR;
+using SFA.DAS.AODP.Domain.FormBuilder.Requests.Pages;
+using SFA.DAS.AODP.Domain.Interfaces;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 
 public class UpdatePageCommandHandler : IRequestHandler<UpdatePageCommand, UpdatePageCommandResponse>
 {
-    private readonly IGenericRepository<Page> _pageRepository;
+    private readonly IApiClient _apiClient;
+    
 
-    public UpdatePageCommandHandler(IGenericRepository<Page> pageRepository)
+    public UpdatePageCommandHandler(IApiClient apiClient)
     {
-        _pageRepository = pageRepository;
+        _apiClient = apiClient;
+       
     }
 
     public async Task<UpdatePageCommandResponse> Handle(UpdatePageCommand request, CancellationToken cancellationToken)
     {
-        var response = new UpdatePageCommandResponse();
-        response.Success = false;
+        var response = new UpdatePageCommandResponse()
+        {
+            Success = false
+        };
 
         try
         {
-            var page = _pageRepository.GetById(request.Id);
-
-            if (page == null)
+            var apiRequest = new UpdatePageApiRequest()
             {
-                response.Success = false;
-                response.ErrorMessage = $"Page with id '{page!.Id}' could not be found.";
-                return response;
-            }
+                PageId = request.Id,
+                FormVersionId = request.FormVersionId,
+                SectionId = request.SectionId,
+                Data = new UpdatePageApiRequest.Page()
+                {
+                    Description = request.Description,
+                    Title = request.Title
 
-            page.Title = request.Title;
-            page.Description = request.Description;
-            page.Order = request.Order;
-            page.NextPageId = request.NextPageId;
-
-            _pageRepository.Update(page);
+                }
+            };
+            await _apiClient.Put(apiRequest);
             response.Success = true;
         }
         catch (Exception ex)
         {
             response.ErrorMessage = ex.Message;
+            response.Success = false;
         }
 
         return response;

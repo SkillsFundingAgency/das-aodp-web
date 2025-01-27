@@ -1,16 +1,21 @@
-﻿using MediatR;
-using SFA.DAS.AODP.Application.Repository;
-using SFA.DAS.AODP.Models.Forms.FormBuilder;
+﻿using AutoMapper;
+using MediatR;
+using SFA.DAS.AODP.Domain.FormBuilder.Requests.Pages;
+using SFA.DAS.AODP.Domain.FormBuilder.Responses.Pages;
+using SFA.DAS.AODP.Domain.Interfaces;
+using SFA.DAS.AODP.Domain.Models;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 
 public class CreatePageCommandHandler : IRequestHandler<CreatePageCommand, CreatePageCommandResponse>
 {
-    private readonly IGenericRepository<Page> _pageRepository;
+    private readonly IApiClient _apiClient;
+    
 
-    public CreatePageCommandHandler(IGenericRepository<Page> pageRepository)
+    public CreatePageCommandHandler(IApiClient apiClient)
     {
-        _pageRepository = pageRepository;
+        _apiClient = apiClient;
+       
     }
 
     public async Task<CreatePageCommandResponse> Handle(CreatePageCommand request, CancellationToken cancellationToken)
@@ -18,17 +23,19 @@ public class CreatePageCommandHandler : IRequestHandler<CreatePageCommand, Creat
         var response = new CreatePageCommandResponse();
         try
         {
-            var page = new Page
+            var apiRequestData = new CreatePageApiRequest()
             {
+                Data = new CreatePageApiRequest.Page()
+                {
+                    Description = request.Description,
+                    Title = request.Title
+                },
                 SectionId = request.SectionId,
-                Title = request.Title,
-                Description = request.Description,
-                Order = request.Order,
-                NextPageId = request.NextPageId
+                FormVersionId = request.FormVersionId
             };
 
-            _pageRepository.Add(page);
-
+            var result = await _apiClient.PostWithResponseCode<CreatePageApiResponse>(apiRequestData);
+            response.Id = result!.Id;
             response.Success = true;
         }
         catch (Exception ex)

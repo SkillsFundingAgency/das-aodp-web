@@ -1,11 +1,11 @@
 ﻿using MediatR;
-using SFA.DAS.AODP.Application.MediatR.Base;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 
 public class DeletePageCommand : IRequest<DeletePageCommandResponse>
 {
-    public Guid Id { get; set; }
-}
+    public Guid PageId { get; set; }
+    public Guid FormVersionId { get; set; }
+    public Guid SectionId { get; set; }
 
-public class DeletePageCommandResponse : BaseResponse { }
+}

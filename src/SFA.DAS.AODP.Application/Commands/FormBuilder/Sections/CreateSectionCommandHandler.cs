@@ -1,35 +1,45 @@
-﻿using MediatR;
-using SFA.DAS.AODP.Application.MediatR.Base;
-using SFA.DAS.AODP.Application.Repository;
-using SFA.DAS.AODP.Models.Forms.FormBuilder;
+﻿using AutoMapper;
+using MediatR;
+using SFA.DAS.AODP.Domain.FormBuilder.Requests.Sections;
+using SFA.DAS.AODP.Domain.FormBuilder.Responses.Sections;
+using SFA.DAS.AODP.Domain.Interfaces;
+using SFA.DAS.AODP.Domain.Models;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 
 public class CreateSectionCommandHandler : IRequestHandler<CreateSectionCommand, CreateSectionCommandResponse>
 {
-    private readonly IGenericRepository<Section> _sectionRepository;
+    private readonly IApiClient _apiClient;
 
-    public CreateSectionCommandHandler(IGenericRepository<Section> sectionRepository)
+
+    public CreateSectionCommandHandler(IApiClient apiClient)
     {
-        _sectionRepository = sectionRepository;
+        _apiClient = apiClient;
+
     }
 
     public async Task<CreateSectionCommandResponse> Handle(CreateSectionCommand request, CancellationToken cancellationToken)
     {
-        var response = new CreateSectionCommandResponse();
+        var response = new CreateSectionCommandResponse()
+        {
+            Success = false
+        };
+
         try
         {
-            var section = new Section
+            var apiRequest = new CreateSectionApiRequest()
             {
-                FormId = request.FormId,
-                Order = request.Order,
-                Title = request.Title,
-                Description = request.Description,
-                NextSectionId = request.NextSectionId,
+                Data = new CreateSectionApiRequest.Section()
+                {
+                    Description = request.Description,
+                    Title = request.Title,
+
+                },
+                FormVersionId = request.FormVersionId,
             };
 
-            _sectionRepository.Add(section);
-
+            var result = await _apiClient.PostWithResponseCode<CreateSectionApiResponse>(apiRequest);
+            response.Id = result.Id;
             response.Success = true;
         }
         catch (Exception ex)

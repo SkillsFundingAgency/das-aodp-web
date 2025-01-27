@@ -1,41 +1,42 @@
-﻿using MediatR;
-using SFA.DAS.AODP.Application.MediatR.Base;
-using SFA.DAS.AODP.Application.Repository;
-using SFA.DAS.AODP.Models.Forms.FormBuilder;
+﻿using AutoMapper;
+using MediatR;
+using SFA.DAS.AODP.Domain.FormBuilder.Requests.Sections;
+using SFA.DAS.AODP.Domain.FormBuilder.Responses.Sections;
+using SFA.DAS.AODP.Domain.Interfaces;
+using SFA.DAS.AODP.Domain.Models;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 
 public class UpdateSectionCommandHandler : IRequestHandler<UpdateSectionCommand, UpdateSectionCommandResponse>
 {
-    private readonly IGenericRepository<Section> _sectionRepository;
+    private readonly IApiClient _apiClient;
 
-    public UpdateSectionCommandHandler(IGenericRepository<Section> sectionRepository)
+
+    public UpdateSectionCommandHandler(IApiClient apiClient)
     {
-        _sectionRepository = sectionRepository;
+        _apiClient = apiClient;
+
     }
 
     public async Task<UpdateSectionCommandResponse> Handle(UpdateSectionCommand request, CancellationToken cancellationToken)
     {
-        var response = new UpdateSectionCommandResponse();
-        response.Success = false;
+        var response = new UpdateSectionCommandResponse()
+        {
+            Success = false
+        };
 
         try
         {
-            var section = _sectionRepository.GetById(request.Id);
-
-            if (section == null)
+            var apiRequest = new UpdateSectionApiRequest()
             {
-                response.Success = false;
-                response.ErrorMessage = $"Section with id '{section!.Id}' could not be found.";
-                return response;
-            }
+                Data = new UpdateSectionApiRequest.Section()
+                {
+                    Title = request.Title,
+                    Description = request.Description
+                }
+            };
 
-            section.Order = request.Order;
-            section.Title = request.Title;
-            section.Description = request.Description;
-            section.NextSectionId = request.NextSectionId;
-
-            _sectionRepository.Update(section);
+            await _apiClient.Put(apiRequest);
             response.Success = true;
         }
         catch (Exception ex)

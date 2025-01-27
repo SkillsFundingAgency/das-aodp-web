@@ -1,17 +1,16 @@
 ﻿using MediatR;
-using SFA.DAS.AODP.Application.MediatR.Base;
-using SFA.DAS.AODP.Application.Repository;
-using SFA.DAS.AODP.Models.Forms.FormBuilder;
+using SFA.DAS.AODP.Domain.FormBuilder.Requests.Pages;
+using SFA.DAS.AODP.Domain.Interfaces;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 
 public class DeletePageCommandHandler : IRequestHandler<DeletePageCommand, DeletePageCommandResponse>
 {
-    private readonly IGenericRepository<Page> _pageRepository;
+    private readonly IApiClient _apiClient;
 
-    public DeletePageCommandHandler(IGenericRepository<Page> pageRepository)
+    public DeletePageCommandHandler(IApiClient apiClient)
     {
-        _pageRepository = pageRepository;
+        _apiClient = apiClient;
     }
 
     public async Task<DeletePageCommandResponse> Handle(DeletePageCommand request, CancellationToken cancellationToken)
@@ -20,16 +19,13 @@ public class DeletePageCommandHandler : IRequestHandler<DeletePageCommand, Delet
 
         try
         {
-            var page = _pageRepository.GetById(request.Id);
-            if (page == null)
+            await _apiClient.Delete(new DeletePageApiRequest()
             {
-                response.Success = false;
-                response.ErrorMessage = $"Page with id '{page!.Id}' could not be found.";
-
-                return response;
-            }
-
-            _pageRepository.Delete(request.Id);
+                FormVersionId = request.FormVersionId,
+                PageId = request.PageId,
+                SectionId = request.SectionId
+            });
+            response.Data = true;
             response.Success = true;
         }
         catch (Exception ex)

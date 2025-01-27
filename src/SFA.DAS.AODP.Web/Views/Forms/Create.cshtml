@@ -1,0 +1,29 @@
+﻿@model CreateFormVersionViewModel
+
+<h1 class="govuk-heading-l">Create New Form</h1>
+
+<form asp-controller="Forms" asp-action="Create" method="post">
+    <div class="govuk-form-group">
+        <govuk-input asp-for="@Model.Name" input-class="govuk-input--width-50" inputmode="text" pattern="[0-9]*" spellcheck="false">
+            <govuk-input-label is-page-heading="false" class="govuk-label--s">Name</govuk-input-label>
+        </govuk-input>
+    </div>
+    <div class="govuk-form-group">
+        <govuk-input asp-for="@Model.Order" input-class="govuk-input--width-10" inputmode="number" pattern="[0-9]*" spellcheck="false">
+            <govuk-input-label is-page-heading="false" class="govuk-label--s">Order</govuk-input-label>
+        </govuk-input>
+    </div>
+
+    <div class="govuk-form-group">
+
+        <govuk-textarea asp-for="@Model.Description">
+            <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Description</govuk-textarea-label>
+        </govuk-textarea>
+    </div>
+
+    <div class="govuk-button-group">
+        <button class="govuk-button" type="submit">Save</button>
+        <a class="govuk-button govuk-button--secondary" asp-action="Index" asp-controller="Forms">Cancel</a>
+    </div>
+
+</form>
