@@ -32,8 +32,8 @@ namespace SFA.DAS.AODP.Web.Models.Forms
 
             foreach (var item in group)
             {
-                var published = item.FirstOrDefault(g => g.Status == FormStatus.Published);
-                var draft = item.FirstOrDefault(g => g.Status == FormStatus.Draft);
+                var published = item.FirstOrDefault(g => g.Status == FormStatus.Published.ToString());
+                var draft = item.FirstOrDefault(g => g.Status == FormStatus.Draft.ToString());
 
                 var dataItem = new FormVersion
                 {
