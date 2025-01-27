@@ -4,7 +4,7 @@
 <h1 class="govuk-heading-l">Edit Page</h1>
 
 <form asp-action="Edit" method="post">
- 
+
     <div class="govuk-form-group">
         <govuk-input asp-for="@Model.Title" input-class="govuk-input--width-50" inputmode="text" pattern="[0-9]*" spellcheck="false">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Name</govuk-input-label>
@@ -26,8 +26,10 @@
 
     <button class="govuk-button" type="submit">Save</button>
     <a class="govuk-button govuk-button--secondary"
-       asp-action="Index"
-       asp-controller="Forms">
+       asp-action="Edit"
+       asp-controller="Sections"
+       asp-route-formVersionId="@Model.FormVersionId"
+       asp-route-sectionId="@Model.SectionId">
         Cancel
     </a>
 </form>

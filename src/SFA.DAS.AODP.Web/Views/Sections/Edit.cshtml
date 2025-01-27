@@ -23,7 +23,12 @@
     </div>
 
     <govuk-button type="submit">Save</govuk-button>
-    <a class="govuk-button govuk-button--secondary" href="@Url.Action("Edit", "Form", new { id = Model.FormVersionId })">Cancel</a>
+    <a class="govuk-button govuk-button--secondary"
+       asp-action="Edit"
+       asp-controller="Forms"
+       asp-route-formVersionId="@Model.FormVersionId">
+        Cancel
+    </a>
 </form>
 
 <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
@@ -43,7 +48,6 @@
             <tr class="govuk-table__row">
                 <td>@item.Title</td>
                 <td>@item.Order</td>
-                <td>@item.Description</td>
                 <td>
                     <a class="govuk-button"
                        asp-action="Edit"

@@ -23,7 +23,7 @@ namespace SFA.DAS.AODP.Web.Models.Forms
             response.Data = response.Data ?? new();
             response.Data.Add(new()
             {
-                Status = FormStatus.Published,
+                Status = FormStatus.Published.ToString(),
                 Title = "Published",
                 Order = 1
             });
