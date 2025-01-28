@@ -4,9 +4,10 @@
 
 <h1 class="govuk-heading-l">Edit Question</h1>
 
-<form asp-controller="Question" asp-action="Edit" method="post">
-    @Html.HiddenFor(m => m.PageKey)
-    @Html.HiddenFor(m => m.SectionKey)
+<form asp-controller="Questions" asp-action="Edit" method="post">
+    @Html.HiddenFor(m => m.Id)
+    @Html.HiddenFor(m => m.PageId)
+    @Html.HiddenFor(m => m.SectionId)
     @Html.HiddenFor(m => m.FormVersionId)
     @Html.HiddenFor(m => m.Id)
     @Html.HiddenFor(m => m.Type)
@@ -14,7 +15,7 @@
     @Html.AntiForgeryToken()
 
     <div class="govuk-form-group">
-        <govuk-input asp-for="Title" input-class="govuk-input--width-50" inputmode="text">
+        <govuk-input asp-for="@Model.Title" input-class="govuk-input--width-50" inputmode="text" value="@Model.Title">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Title</govuk-input-label>
             @{
                 await Html.RenderPartialAsync("Validation/_TextInputValidationPartial", nameof(Model.Title));
@@ -23,18 +24,13 @@
     </div>
 
     <div class="govuk-form-group">
-        <govuk-input asp-for="Hint" input-class="govuk-input--width-50" inputmode="text">
-            <govuk-input-label is-page-heading="false" class="govuk-label--s">Hint</govuk-input-label>
-
+        <govuk-input asp-for="@Model.Type" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" disabled=true spellcheck="false">
+            <govuk-input-label is-page-heading="false" class="govuk-label--s">Question type</govuk-input-label>
         </govuk-input>
     </div>
 
-    <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
-
-    <h2 class="govuk-heading-m">Required</h2>
-
     <div class="govuk-form-group">
-        <govuk-radios asp-for="Required">
+        <govuk-radios asp-for="@Model.Required">
             <govuk-radios-fieldset>
                 <govuk-radios-fieldset-legend is-page-heading="false" class="govuk-fieldset__legend--s">
                     Should this question be mandatory or optional?
@@ -46,8 +42,8 @@
 
                 @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.Required))
 
-                <govuk-radios-item value="true">Mandatory</govuk-radios-item>
-                <govuk-radios-item value="false">
+                <govuk-radios-item value="true" checked="@Model.Required">Mandatory</govuk-radios-item>
+                <govuk-radios-item value="false" checked="@Model.Required == false">
                     Optional
                     <govuk-radios-hint class="govuk-hint govuk-radios__hint" id="pages-question-input-is-optional-true-hint">
                         We’ll add ‘(optional)’ to the end of the question text.
@@ -59,6 +55,16 @@
     <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
 
 
+    <div class="govuk-form-group">
+        <govuk-input asp-for="@Model.Hint" input-class="govuk-input--width-50" inputmode="text">
+            <govuk-input-label is-page-heading="false" class="govuk-label--s">Hint (Optional)</govuk-input-label>
+
+            <govuk-input-hint>
+                Keep hint text to a single short sentence, without any full stops.
+            </govuk-input-hint>
+
+        </govuk-input>
+    </div>
     @if (Model.Type == QuestionType.Text)
     {
         await Html.RenderPartialAsync("FormBuilder/QuestionEdit/_TextInput", Model.TextInput);

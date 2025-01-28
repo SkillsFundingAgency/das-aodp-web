@@ -14,6 +14,7 @@ public class GetPageByIdQueryResponse : BaseResponse
         public Guid Key { get; set; }
         public string Description { get; set; }
         public int Order { get; set; }
+        public List<Question> Questions { get; set; }
 
         public static implicit operator Page(GetPageByIdApiResponse.Page entity)
         {
@@ -24,8 +25,27 @@ public class GetPageByIdQueryResponse : BaseResponse
                 Title = entity.Title,
                 Key = entity.Key,
                 Description = entity.Description,
-                Order = entity.Order
+                Order = entity.Order,
+                Questions = entity.Questions != null ? [.. entity.Questions] : new()
 
+            };
+        }
+    }
+    public class Question
+    {
+        public Guid Id { get; set; }
+        public Guid Key { get; set; }
+        public int Order { get; set; }
+        public string Title { get; set; }
+
+        public static implicit operator Question(GetPageByIdApiResponse.Question question)
+        {
+            return new()
+            {
+                Id = question.Id,
+                Key = question.Key,
+                Order = question.Order,
+                Title = question.Title
             };
         }
     }

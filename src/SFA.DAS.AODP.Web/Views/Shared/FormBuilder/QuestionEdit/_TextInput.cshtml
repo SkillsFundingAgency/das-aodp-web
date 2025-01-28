@@ -1,18 +1,15 @@
 ﻿@using static SFA.DAS.AODP.Web.Models.Question.EditQuestionViewModel
 @model TextInputOptions
 
-<h2 class="govuk-heading-m">Validation</h2>
-
-
 <div class="govuk-form-group">
     <govuk-input type="number" asp-for="MinLength" input-class="govuk-input--width-3" inputmode="numeric" pattern="[0-9]*" spellcheck="false">
-        <govuk-input-label is-page-heading="true" class="govuk-label--s">What is the minimum input length? (Optional)</govuk-input-label>
+        <govuk-input-label is-page-heading="false" class="govuk-label--s">What is the minimum input length? (Optional)</govuk-input-label>
     </govuk-input>
 </div>
 
 <div class="govuk-form-group">
     <govuk-input type="number" asp-for="MaxLength" input-class="govuk-input--width-3" inputmode="numeric" pattern="[0-9]*" spellcheck="false">
-        <govuk-input-label is-page-heading="true" class="govuk-label--s">What is the maximum input length? (Optional)</govuk-input-label>
+        <govuk-input-label is-page-heading="false" class="govuk-label--s">What is the maximum input length? (Optional)</govuk-input-label>
     </govuk-input>
 </div>
 <style>

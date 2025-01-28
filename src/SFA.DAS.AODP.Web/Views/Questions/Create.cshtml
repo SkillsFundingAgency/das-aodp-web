@@ -3,7 +3,7 @@
 @model CreateQuestionViewModel
 
 
-<form asp-controller="Question" asp-action="Create" method="post">
+<form asp-controller="Questions" asp-action="Create" method="post">
 
     @Html.AntiForgeryToken()
 
@@ -49,7 +49,7 @@
                 <govuk-radios-item value="true">Mandatory</govuk-radios-item>
                 <govuk-radios-item value="false">
                     Optional
-                    <govuk-radios-hint class="govuk-hint govuk-radios__hint" id="pages-question-input-is-optional-true-hint">
+                    <govuk-radios-hint class="govuk-hint govuk-radios__hint govuk-!-static-padding-0" id="pages-question-input-is-optional-true-hint">
                         We’ll add ‘(optional)’ to the end of the question text.
                     </govuk-radios-hint>
                 </govuk-radios-item>

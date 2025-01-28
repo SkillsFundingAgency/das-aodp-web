@@ -6,8 +6,8 @@ namespace SFA.DAS.AODP.Web.Models.Question
 {
     public class CreateQuestionViewModel
     {
-        public Guid PageKey { get; set; }
-        public Guid SectionKey { get; set; }
+        public Guid PageId { get; set; }
+        public Guid SectionId { get; set; }
         public Guid FormVersionId { get; set; }
 
         [Required]

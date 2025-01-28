@@ -12,5 +12,15 @@ public class GetPageByIdApiResponse
         public Guid Key { get; set; }
         public string Description { get; set; }
         public int Order { get; set; }
+        public List<Question> Questions { get; set; }
+
+
+    }
+    public class Question
+    {
+        public Guid Id { get; set; }
+        public Guid Key { get; set; }
+        public int Order { get; set; }
+        public string Title { get; set; }
     }
 }

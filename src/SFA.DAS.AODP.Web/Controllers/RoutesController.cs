@@ -3,7 +3,7 @@ using SFA.DAS.AODP.Web.Models.Routing;
 
 namespace SFA.DAS.AODP.Web.Controllers;
 
-public class RouteController : Controller
+public class RoutesController : Controller
 {
     [HttpGet()]
     [Route("form/{formVersionId}/routing/add-route")]

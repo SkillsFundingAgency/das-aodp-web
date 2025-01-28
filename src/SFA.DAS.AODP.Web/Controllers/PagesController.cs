@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Pages;
 using SFA.DAS.AODP.Web.Models.Page;
-using SFA.DAS.AODP.Web.Models.Section;
 
 namespace SFA.DAS.AODP.Web.Controllers;
 
