@@ -2,7 +2,7 @@
 
 namespace SFA.DAS.AODP.Application.Queries.FormBuilder.Questions;
 
-public class GetQuestionByIdQuery : IRequest<GetQuestionByIdQueryResponse>
+public class GetQuestionByIdQuery : IRequest<BaseMediatrResponse<GetQuestionByIdQueryResponse>>
 {
     public Guid QuestionId { get; set; }
     public Guid SectionId { get; set; }

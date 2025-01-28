@@ -1,6 +1,8 @@
-﻿using SFA.DAS.AODP.Application.Queries.FormBuilder.Questions;
+﻿using SFA.DAS.AODP.Application.Commands.FormBuilder.Questions;
+using SFA.DAS.AODP.Application.Queries.FormBuilder.Questions;
 using SFA.DAS.AODP.Models.Forms.FormSchema;
 using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 
 namespace SFA.DAS.AODP.Web.Models.Question
 {
@@ -52,20 +54,80 @@ namespace SFA.DAS.AODP.Web.Models.Question
             }
         }
 
-        public static EditQuestionViewModel Map(GetQuestionByIdQueryResponse response, Guid formVersionId, Guid sectionId)
+        public static EditQuestionViewModel MapToViewModel(GetQuestionByIdQueryResponse response, Guid formVersionId, Guid sectionId)
         {
-            Enum.TryParse(response.Data.Type, out QuestionType type);
-            return new()
+            Enum.TryParse(response.Type, out QuestionType type);
+            EditQuestionViewModel model = new()
             {
-                PageId = response.Data.PageId,
-                Id = response.Data.Id,
+                PageId = response.PageId,
+                Id = response.Id,
                 FormVersionId = formVersionId,
-                Index = response.Data.Order,
-                Hint = response.Data.Hint,
-                Required = response.Data.Required,
+                Index = response.Order,
+                Hint = response.Hint,
+                Required = response.Required,
                 Type = type,
-                Title = response.Data.Title
+                Title = response.Title
             };
+
+            if (type == QuestionType.Text)
+            {
+                model.TextInput = new()
+                {
+                    MinLength = response.TextInput.MinLength,
+                    MaxLength = response.TextInput.MaxLength,
+                };
+            }
+            else if (type == QuestionType.Radio)
+            {
+                model.RadioButton.MultiChoice = new();
+                foreach (var option in response.RadioOptions)
+                {
+                    model.RadioButton.MultiChoice.Add(new()
+                    {
+                        Id = option.Id,
+                        Value = option.Value,
+                    });
+                }
+            }
+            return model;
+        }
+
+        public static UpdateQuestionCommand MapToCommand(EditQuestionViewModel model)
+        {
+            var command = new UpdateQuestionCommand()
+            {
+                Hint = model.Hint,
+                Title = model.Title,
+                Required = model.Required,
+                Id = model.Id,
+                SectionId = model.SectionId,
+                FormVersionId = model.FormVersionId,
+                PageId = model.PageId,
+
+            };
+
+            if (model.Type == QuestionType.Text)
+            {
+                model.TextInput = new()
+                {
+                    MinLength = model.TextInput.MinLength,
+                    MaxLength = model.TextInput.MaxLength,
+                };
+            }
+            else if (model.Type == QuestionType.Radio)
+            {
+                command.RadioOptions = new();
+                foreach (var option in model.RadioButton.MultiChoice)
+                {
+                    command.RadioOptions.Add(new()
+                    {
+                        Id = option.Id,
+                        Value = option.Value,
+                    });
+                }
+            }
+
+            return command;
         }
 
 

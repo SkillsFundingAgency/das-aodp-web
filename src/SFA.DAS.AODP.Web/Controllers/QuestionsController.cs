@@ -75,9 +75,9 @@ public class QuestionsController : Controller
             QuestionId = questionId
         };
         var response = await _mediator.Send(query);
-        if (response.Data == null) return NotFound();
+        if (response.Value == null) return NotFound();
 
-        var map = EditQuestionViewModel.Map(response, formVersionId, sectionId);
+        var map = EditQuestionViewModel.MapToViewModel(response.Value, formVersionId, sectionId);
         return View(map);
 
     }
@@ -97,18 +97,9 @@ public class QuestionsController : Controller
             return View(model);
 
         }
-        var command = new UpdateQuestionCommand()
-        {
-            Hint = model.Hint,
-            Title = model.Title,
-            Required = model.Required,
-            Id = model.Id,
-            SectionId = model.SectionId,
-            FormVersionId = model.FormVersionId,
-            PageId = model.PageId
-        };
-
+        var command = EditQuestionViewModel.MapToCommand(model);
         var response = await _mediator.Send(command);
+
         return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId, pageId = model.PageId, questionId = model.Id });
     }
 

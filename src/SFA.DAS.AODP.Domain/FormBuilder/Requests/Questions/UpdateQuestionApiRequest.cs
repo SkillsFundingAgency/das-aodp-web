@@ -2,29 +2,15 @@
 
 namespace SFA.DAS.AODP.Domain.FormBuilder.Requests.Questions;
 
-public class UpdateQuestionApiRequest : IPutApiRequest
+public class UpdateQuestionApiRequest(Guid questionId, Guid pageId, Guid formVersionId, Guid sectionId) : IPutApiRequest
 {
-    public Guid PageId { get; set; }
-    public Guid FormVersionId { get; set; }
-    public Guid SectionId { get; set; }
-    public Guid QuestionId { get; set; }
+    public Guid PageId { get; set; } = pageId;
+    public Guid FormVersionId { get; set; } = formVersionId;
+    public Guid SectionId { get; set; } = sectionId;
+    public Guid QuestionId { get; set; } = questionId;
 
     public string PutUrl => $"/api/forms/{FormVersionId}/sections/{SectionId}/Pages/{PageId}/Questions/{QuestionId}";
 
     public object Data { get; set; }
 
-    public class Question
-    {
-        public string Title { get; set; }
-        public string Hint { get; set; }
-        public bool Required { get; set; }
-
-        public TextInputOptions TextInput { get; set; }
-
-        public class TextInputOptions
-        {
-            public int? MinLength { get; set; }
-            public int? MaxLength { get; set; }
-        }
-    }
 }

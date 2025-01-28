@@ -1,13 +1,10 @@
 ﻿using MediatR;
-using SFA.DAS.AODP.Domain.FormBuilder.Requests.Pages;
 using SFA.DAS.AODP.Domain.FormBuilder.Requests.Questions;
-using SFA.DAS.AODP.Domain.FormBuilder.Responses.Pages;
-using SFA.DAS.AODP.Domain.FormBuilder.Responses.Questions;
 using SFA.DAS.AODP.Domain.Interfaces;
 
 namespace SFA.DAS.AODP.Application.Queries.FormBuilder.Questions;
 
-public class GetQuestionByIdQueryHandler : IRequestHandler<GetQuestionByIdQuery, GetQuestionByIdQueryResponse>
+public class GetQuestionByIdQueryHandler : IRequestHandler<GetQuestionByIdQuery, BaseMediatrResponse<GetQuestionByIdQueryResponse>>
 {
     private readonly IApiClient _apiClient;
 
@@ -18,20 +15,20 @@ public class GetQuestionByIdQueryHandler : IRequestHandler<GetQuestionByIdQuery,
 
     }
 
-    public async Task<GetQuestionByIdQueryResponse> Handle(GetQuestionByIdQuery request, CancellationToken cancellationToken)
+    public async Task<BaseMediatrResponse<GetQuestionByIdQueryResponse>> Handle(GetQuestionByIdQuery request, CancellationToken cancellationToken)
     {
-        var response = new GetQuestionByIdQueryResponse();
+        var response = new BaseMediatrResponse<GetQuestionByIdQueryResponse>();
         response.Success = false;
         try
         {
-            var result = await _apiClient.Get<GetQuestionByIdApiResponse>(new GetQuestionByIdApiRequest()
+            var result = await _apiClient.Get<GetQuestionByIdQueryResponse>(new GetQuestionByIdApiRequest()
             {
                 FormVersionId = request.FormVersionId,
                 SectionId = request.SectionId,
                 PageId = request.PageId,
                 QuestionId = request.QuestionId
             });
-            response.Data = result.Data;
+            response.Value = result;
             response.Success = true;
         }
         catch (Exception ex)

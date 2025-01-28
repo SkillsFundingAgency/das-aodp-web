@@ -11,11 +11,18 @@ public class UpdateQuestionCommand : IRequest<UpdateQuestionCommandResponse>
     public string Title { get; set; }
     public string Hint { get; set; }
     public bool Required { get; set; }
-    public TextInputOptions TextInput { get; set; }
+    public TextInputOptions TextInput { get; set; } = new();
+    public List<RadioOptionItem> RadioOptions { get; set; } = new();
 
     public class TextInputOptions
     {
         public int? MinLength { get; set; }
         public int? MaxLength { get; set; }
+    }
+
+    public class RadioOptionItem
+    {
+        public Guid Id { get; set; }
+        public string Value { get; set; }
     }
 }

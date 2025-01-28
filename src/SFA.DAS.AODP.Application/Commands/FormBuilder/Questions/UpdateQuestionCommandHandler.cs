@@ -24,23 +24,9 @@ public class UpdateQuestionCommandHandler : IRequestHandler<UpdateQuestionComman
 
         try
         {
-            var apiRequest = new UpdateQuestionApiRequest()
+            var apiRequest = new UpdateQuestionApiRequest(request.Id, request.PageId, request.FormVersionId, request.SectionId)
             {
-                QuestionId = request.Id,
-                PageId = request.PageId,
-                FormVersionId = request.FormVersionId,
-                SectionId = request.SectionId,
-                Data = new UpdateQuestionApiRequest.Question()
-                {
-                    Hint = request.Hint,
-                    Title = request.Title,
-                    Required = request.Required,
-                    TextInput = new()
-                    {
-                        MinLength = request.TextInput.MinLength,
-                        MaxLength = request.TextInput.MaxLength,
-                    }
-                }
+                Data = request
             };
             await _apiClient.Put(apiRequest);
             response.Success = true;
