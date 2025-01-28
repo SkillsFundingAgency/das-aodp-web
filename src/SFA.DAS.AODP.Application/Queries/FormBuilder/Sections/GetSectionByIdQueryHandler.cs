@@ -1,31 +1,28 @@
-﻿using AutoMapper;
-using MediatR;
+﻿using MediatR;
 using SFA.DAS.AODP.Domain.FormBuilder.Requests.Sections;
-using SFA.DAS.AODP.Domain.FormBuilder.Responses.Sections;
 using SFA.DAS.AODP.Domain.Interfaces;
-using SFA.DAS.AODP.Domain.Models;
 
 namespace SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
 
-public class GetSectionByIdQueryHandler : IRequestHandler<GetSectionByIdQuery, GetSectionByIdQueryResponse>
+public class GetSectionByIdQueryHandler : IRequestHandler<GetSectionByIdQuery, BaseMediatrResponse<GetSectionByIdQueryResponse>>
 {
     private readonly IApiClient _apiClient;
-    
+
 
     public GetSectionByIdQueryHandler(IApiClient apiClient)
     {
         _apiClient = apiClient;
-       
+
     }
 
-    public async Task<GetSectionByIdQueryResponse> Handle(GetSectionByIdQuery request, CancellationToken cancellationToken)
+    public async Task<BaseMediatrResponse<GetSectionByIdQueryResponse>> Handle(GetSectionByIdQuery request, CancellationToken cancellationToken)
     {
-        var response = new GetSectionByIdQueryResponse();
+        var response = new BaseMediatrResponse<GetSectionByIdQueryResponse>();
         response.Success = false;
         try
         {
-            var result = await _apiClient.Get<GetSectionByIdApiResponse>(new GetSectionByIdApiRequest(request.SectionId, request.FormVersionId));
-            response.Data = result.Data;
+            var result = await _apiClient.Get<GetSectionByIdQueryResponse>(new GetSectionByIdApiRequest(request.SectionId, request.FormVersionId));
+            response.Value = result;
             response.Success = true;
         }
         catch (Exception ex)

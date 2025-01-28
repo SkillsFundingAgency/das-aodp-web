@@ -95,9 +95,9 @@ namespace SFA.DAS.AODP.Infrastructure.ApiClient
             AddAuthenticationHeader(requestMessage);
             var response = await _httpClient.SendAsync(requestMessage).ConfigureAwait(false);
             var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            var apiResponse = new ApiResponse<TResponse>(JsonConvert.DeserializeObject<TResponse>(responseContent), response.StatusCode, null);
+            var QueryResponse = new ApiResponse<TResponse>(JsonConvert.DeserializeObject<TResponse>(responseContent), response.StatusCode, null);
 
-            return apiResponse;
+            return QueryResponse;
         }
 
         public async Task<TResponse?> PostWithResponseCode<TResponse>(IPostApiRequest request)

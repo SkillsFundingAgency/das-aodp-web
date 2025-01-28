@@ -4,7 +4,7 @@ using SFA.DAS.AODP.Domain.Interfaces;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Questions;
 
-public class UpdateQuestionCommandHandler : IRequestHandler<UpdateQuestionCommand, UpdateQuestionCommandResponse>
+public class UpdateQuestionCommandHandler : IRequestHandler<UpdateQuestionCommand, BaseMediatrResponse<UpdateQuestionCommandResponse>>
 {
     private readonly IApiClient _apiClient;
 
@@ -15,9 +15,9 @@ public class UpdateQuestionCommandHandler : IRequestHandler<UpdateQuestionComman
 
     }
 
-    public async Task<UpdateQuestionCommandResponse> Handle(UpdateQuestionCommand request, CancellationToken cancellationToken)
+    public async Task<BaseMediatrResponse<UpdateQuestionCommandResponse>> Handle(UpdateQuestionCommand request, CancellationToken cancellationToken)
     {
-        var response = new UpdateQuestionCommandResponse()
+        var response = new BaseMediatrResponse<UpdateQuestionCommandResponse>()
         {
             Success = false
         };

@@ -42,7 +42,7 @@ public class PagesController : Controller
         var response = await _mediator.Send(command);
         if (response.Success)
         {
-            return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId, pageId = response.Id });
+            return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId, pageId = response.Value.Id });
         }
         return View(model);
     }
@@ -59,9 +59,9 @@ public class PagesController : Controller
             FormVersionId = formVersionId
         };
         var response = await _mediator.Send(query);
-        if (response.Data == null) return NotFound();
+        if (response.Value == null) return NotFound();
 
-        return View(EditPageViewModel.Map(response, formVersionId));
+        return View(EditPageViewModel.Map(response.Value, formVersionId));
     }
 
     [HttpPost]
@@ -93,13 +93,13 @@ public class PagesController : Controller
             FormVersionId = formVersionId
         };
         var response = await _mediator.Send(query);
-        if (response.Data == null) return NotFound();
+        if (response.Value == null) return NotFound();
         return View(new DeletePageViewModel()
         {
             PageId = pageId,
             SectionId = sectionId,
             FormVersionId = formVersionId,
-            Title = response.Data.Title
+            Title = response.Value.Title
         });
     }
 

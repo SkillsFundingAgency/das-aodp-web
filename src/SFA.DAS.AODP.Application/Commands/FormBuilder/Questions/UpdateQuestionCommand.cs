@@ -2,7 +2,7 @@
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Questions;
 
-public class UpdateQuestionCommand : IRequest<UpdateQuestionCommandResponse>
+public class UpdateQuestionCommand : IRequest<BaseMediatrResponse<UpdateQuestionCommandResponse>>
 {
     public Guid Id { get; set; }
     public Guid FormVersionId { get; set; }

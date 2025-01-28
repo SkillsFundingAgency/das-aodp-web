@@ -108,7 +108,7 @@ namespace SFA.DAS.AODP.Web.Models.Question
 
             if (model.Type == QuestionType.Text)
             {
-                model.TextInput = new()
+                command.TextInput = new()
                 {
                     MinLength = model.TextInput.MinLength,
                     MaxLength = model.TextInput.MaxLength,

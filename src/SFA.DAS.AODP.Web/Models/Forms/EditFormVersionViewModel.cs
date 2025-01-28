@@ -24,13 +24,13 @@ public class EditFormVersionViewModel
     {
         var viewModel = new EditFormVersionViewModel();
 
-        viewModel.Id = response.Data.Id;
-        viewModel.Title = response.Data.Title;
-        viewModel.Description = response.Data.Description;
-        viewModel.Version = response.Data.Version.ToString("yyyy-MM-dd HH:mm");
-        viewModel.Status = response.Data.Status.ToString();
-        viewModel.Order = response.Data.Order;
-        foreach (var section in response.Data.Sections)
+        viewModel.Id = response.Id;
+        viewModel.Title = response.Title;
+        viewModel.Description = response.Description;
+        viewModel.Version = response.Version.ToString("yyyy-MM-dd HH:mm");
+        viewModel.Status = response.Status.ToString();
+        viewModel.Order = response.Order;
+        foreach (var section in response.Sections)
         {
             //Link sections to formVersionId
             var sectionItem = new Section();

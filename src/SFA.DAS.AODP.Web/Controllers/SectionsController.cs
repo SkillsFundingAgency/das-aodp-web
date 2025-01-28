@@ -36,7 +36,7 @@ public class SectionsController : Controller
         var response = await _mediator.Send(command);
         if (response.Success)
         {
-            return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = response.Id });
+            return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = response.Value.Id });
         }
         return View(model);
     }
@@ -48,9 +48,9 @@ public class SectionsController : Controller
     {
         var sectionQuery = new GetSectionByIdQuery(sectionId, formVersionId);
         var response = await _mediator.Send(sectionQuery);
-        if (response.Data == null) return NotFound();
+        if (response.Value == null) return NotFound();
 
-        return View(EditSectionViewModel.Map(response));
+        return View(EditSectionViewModel.Map(response.Value));
     }
 
     [HttpPost]
@@ -82,10 +82,10 @@ public class SectionsController : Controller
     {
         var query = new GetSectionByIdQuery(sectionId, formVerisonId);
         var response = await _mediator.Send(query);
-        if (response.Data == null) return NotFound();
+        if (response.Value == null) return NotFound();
         return View(new DeleteSectionViewModel()
         {
-            Title = response.Data.Title,
+            Title = response.Value.Title,
             SectionId = sectionId,
             FormVersionId = formVerisonId
         });

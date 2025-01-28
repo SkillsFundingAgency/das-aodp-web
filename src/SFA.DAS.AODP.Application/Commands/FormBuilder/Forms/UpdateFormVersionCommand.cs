@@ -2,7 +2,7 @@
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
 
-public class UpdateFormVersionCommand : IRequest<UpdateFormVersionCommandResponse>
+public class UpdateFormVersionCommand : IRequest<BaseMediatrResponse<UpdateFormVersionCommandResponse>>
 {
     public Guid FormVersionId { get; set; }
 

@@ -1,13 +1,10 @@
-﻿using AutoMapper;
-using MediatR;
+﻿using MediatR;
 using SFA.DAS.AODP.Domain.FormBuilder.Requests.Forms;
-using SFA.DAS.AODP.Domain.FormBuilder.Responses.Forms;
 using SFA.DAS.AODP.Domain.Interfaces;
-using SFA.DAS.AODP.Domain.Models;
 
 namespace SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 
-public class GetFormVersionByIdQueryHandler : IRequestHandler<GetFormVersionByIdQuery, GetFormVersionByIdQueryResponse>
+public class GetFormVersionByIdQueryHandler : IRequestHandler<GetFormVersionByIdQuery, BaseMediatrResponse<GetFormVersionByIdQueryResponse>>
 {
     private readonly IApiClient _apiClient;
 
@@ -18,14 +15,14 @@ public class GetFormVersionByIdQueryHandler : IRequestHandler<GetFormVersionById
 
     }
 
-    public async Task<GetFormVersionByIdQueryResponse> Handle(GetFormVersionByIdQuery request, CancellationToken cancellationToken)
+    public async Task<BaseMediatrResponse<GetFormVersionByIdQueryResponse>> Handle(GetFormVersionByIdQuery request, CancellationToken cancellationToken)
     {
-        var response = new GetFormVersionByIdQueryResponse();
+        var response = new BaseMediatrResponse<GetFormVersionByIdQueryResponse>();
         response.Success = false;
         try
         {
-            var result = await _apiClient.Get<GetFormVersionByIdApiResponse>(new GetFormVersionByIdApiRequest(request.FormVersionId));
-            response.Data = result.Data;
+            var result = await _apiClient.Get<GetFormVersionByIdQueryResponse>(new GetFormVersionByIdApiRequest(request.FormVersionId));
+            response.Value = result;
             response.Success = true;
         }
         catch (Exception ex)

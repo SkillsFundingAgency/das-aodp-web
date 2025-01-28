@@ -8,12 +8,4 @@ public class UpdateFormVersionApiRequest : IPutApiRequest
     public object Data { get; set; }
 
     public string PutUrl => $"/api/forms/{FormVersionId}";
-
-
-    public class FormVersion
-    {
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public int Order { get; set; }
-    }
 }

@@ -2,7 +2,7 @@
 
 namespace SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
 
-public class GetSectionByIdQuery : IRequest<GetSectionByIdQueryResponse>
+public class GetSectionByIdQuery : IRequest<BaseMediatrResponse<GetSectionByIdQueryResponse>>
 {
     public readonly Guid SectionId;
     public readonly Guid FormVersionId;

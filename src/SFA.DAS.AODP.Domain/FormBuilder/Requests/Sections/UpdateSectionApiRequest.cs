@@ -12,10 +12,4 @@ public class UpdateSectionApiRequest : IPutApiRequest
 
     public object Data { get; set; }
 
-
-    public class Section
-    {
-        public string Title { get; set; }
-        public string Description { get; set; }
-    }
 }

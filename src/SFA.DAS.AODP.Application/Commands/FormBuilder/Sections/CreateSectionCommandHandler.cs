@@ -1,13 +1,10 @@
-﻿using AutoMapper;
-using MediatR;
+﻿using MediatR;
 using SFA.DAS.AODP.Domain.FormBuilder.Requests.Sections;
-using SFA.DAS.AODP.Domain.FormBuilder.Responses.Sections;
 using SFA.DAS.AODP.Domain.Interfaces;
-using SFA.DAS.AODP.Domain.Models;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 
-public class CreateSectionCommandHandler : IRequestHandler<CreateSectionCommand, CreateSectionCommandResponse>
+public class CreateSectionCommandHandler : IRequestHandler<CreateSectionCommand, BaseMediatrResponse<CreateSectionCommandResponse>>
 {
     private readonly IApiClient _apiClient;
 
@@ -18,9 +15,9 @@ public class CreateSectionCommandHandler : IRequestHandler<CreateSectionCommand,
 
     }
 
-    public async Task<CreateSectionCommandResponse> Handle(CreateSectionCommand request, CancellationToken cancellationToken)
+    public async Task<BaseMediatrResponse<CreateSectionCommandResponse>> Handle(CreateSectionCommand request, CancellationToken cancellationToken)
     {
-        var response = new CreateSectionCommandResponse()
+        var response = new BaseMediatrResponse<CreateSectionCommandResponse>()
         {
             Success = false
         };
@@ -29,17 +26,12 @@ public class CreateSectionCommandHandler : IRequestHandler<CreateSectionCommand,
         {
             var apiRequest = new CreateSectionApiRequest()
             {
-                Data = new CreateSectionApiRequest.Section()
-                {
-                    Description = request.Description,
-                    Title = request.Title,
-
-                },
+                Data = request,
                 FormVersionId = request.FormVersionId,
             };
 
-            var result = await _apiClient.PostWithResponseCode<CreateSectionApiResponse>(apiRequest);
-            response.Id = result.Id;
+            var result = await _apiClient.PostWithResponseCode<CreateSectionCommandResponse>(apiRequest);
+            response.Value.Id = result.Id;
             response.Success = true;
         }
         catch (Exception ex)

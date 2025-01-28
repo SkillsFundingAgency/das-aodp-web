@@ -1,11 +1,10 @@
 ﻿using MediatR;
 using SFA.DAS.AODP.Domain.FormBuilder.Requests.Questions;
-using SFA.DAS.AODP.Domain.FormBuilder.Responses.Questions;
 using SFA.DAS.AODP.Domain.Interfaces;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Questions;
 
-public class CreateQuestionCommandHandler : IRequestHandler<CreateQuestionCommand, CreateQuestionCommandResponse>
+public class CreateQuestionCommandHandler : IRequestHandler<CreateQuestionCommand, BaseMediatrResponse<CreateQuestionCommandResponse>>
 {
     private readonly IApiClient _apiClient;
 
@@ -16,26 +15,21 @@ public class CreateQuestionCommandHandler : IRequestHandler<CreateQuestionComman
 
     }
 
-    public async Task<CreateQuestionCommandResponse> Handle(CreateQuestionCommand request, CancellationToken cancellationToken)
+    public async Task<BaseMediatrResponse<CreateQuestionCommandResponse>> Handle(CreateQuestionCommand request, CancellationToken cancellationToken)
     {
-        var response = new CreateQuestionCommandResponse();
+        var response = new BaseMediatrResponse<CreateQuestionCommandResponse>();
         try
         {
             var apiRequestData = new CreateQuestionApiRequest()
             {
-                Data = new CreateQuestionApiRequest.Question()
-                {
-                    Type = request.Type,
-                    Title = request.Title,
-                    Required = request.Required
-                },
+                Data = request,
                 SectionId = request.SectionId,
                 FormVersionId = request.FormVersionId,
                 PageId = request.PageId
             };
 
-            var result = await _apiClient.PostWithResponseCode<CreateQuestionApiResponse>(apiRequestData);
-            response.Id = result!.Id;
+            var result = await _apiClient.PostWithResponseCode<CreateQuestionCommandResponse>(apiRequestData);
+            response.Value.Id = result!.Id;
             response.Success = true;
         }
         catch (Exception ex)

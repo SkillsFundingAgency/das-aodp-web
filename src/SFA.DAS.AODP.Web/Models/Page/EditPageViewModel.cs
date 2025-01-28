@@ -1,5 +1,4 @@
 ﻿using SFA.DAS.AODP.Application.Queries.FormBuilder.Pages;
-using SFA.DAS.AODP.Domain.FormBuilder.Responses.Pages;
 
 namespace SFA.DAS.AODP.Web.Models.Page
 {
@@ -37,13 +36,13 @@ namespace SFA.DAS.AODP.Web.Models.Page
         {
             return new()
             {
-                Description = source.Data.Description,
-                Order = source.Data.Order,
-                Title = source.Data.Title,
+                Description = source.Description,
+                Order = source.Order,
+                Title = source.Title,
                 FormVersionId = formVersionId,
-                SectionId = source.Data.SectionId,
-                PageId = source.Data.Id,
-                Questions = source.Data.Questions != null ? [.. source.Data.Questions] : new()
+                SectionId = source.SectionId,
+                PageId = source.Id,
+                Questions = source.Questions != null ? [.. source.Questions] : new()
             };
         }
     }

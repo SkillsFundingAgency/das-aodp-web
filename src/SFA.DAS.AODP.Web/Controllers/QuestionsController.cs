@@ -58,7 +58,7 @@ public class QuestionsController : Controller
             formVersionId = model.FormVersionId,
             sectionId = model.SectionId,
             pageId = model.PageId,
-            questionId = response.Id
+            questionId = response.Value.Id
         });
     }
 

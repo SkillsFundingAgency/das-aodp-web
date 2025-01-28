@@ -1,13 +1,10 @@
-﻿using AutoMapper;
-using MediatR;
+﻿using MediatR;
 using SFA.DAS.AODP.Domain.FormBuilder.Requests.Sections;
-using SFA.DAS.AODP.Domain.FormBuilder.Responses.Sections;
 using SFA.DAS.AODP.Domain.Interfaces;
-using SFA.DAS.AODP.Domain.Models;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 
-public class UpdateSectionCommandHandler : IRequestHandler<UpdateSectionCommand, UpdateSectionCommandResponse>
+public class UpdateSectionCommandHandler : IRequestHandler<UpdateSectionCommand, BaseMediatrResponse<UpdateSectionCommandResponse>>
 {
     private readonly IApiClient _apiClient;
 
@@ -18,9 +15,9 @@ public class UpdateSectionCommandHandler : IRequestHandler<UpdateSectionCommand,
 
     }
 
-    public async Task<UpdateSectionCommandResponse> Handle(UpdateSectionCommand request, CancellationToken cancellationToken)
+    public async Task<BaseMediatrResponse<UpdateSectionCommandResponse>> Handle(UpdateSectionCommand request, CancellationToken cancellationToken)
     {
-        var response = new UpdateSectionCommandResponse()
+        var response = new BaseMediatrResponse<UpdateSectionCommandResponse>()
         {
             Success = false
         };
@@ -29,11 +26,7 @@ public class UpdateSectionCommandHandler : IRequestHandler<UpdateSectionCommand,
         {
             var apiRequest = new UpdateSectionApiRequest()
             {
-                Data = new UpdateSectionApiRequest.Section()
-                {
-                    Title = request.Title,
-                    Description = request.Description
-                }
+                Data = request
             };
 
             await _apiClient.Put(apiRequest);

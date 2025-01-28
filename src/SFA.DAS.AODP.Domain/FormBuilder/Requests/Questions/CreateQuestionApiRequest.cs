@@ -11,11 +11,4 @@ public class CreateQuestionApiRequest : IPostApiRequest
     public string PostUrl => $"/api/forms/{FormVersionId}/sections/{SectionId}/pages/{PageId}/questions";
 
     public object Data { get; set; }
-
-    public class Question
-    {
-        public string Title { get; set; }
-        public string Type { get; set; }
-        public bool Required { get; set; }
-    }
 }

@@ -5,20 +5,20 @@ using SFA.DAS.AODP.Domain.Interfaces;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 
-public class UpdatePageCommandHandler : IRequestHandler<UpdatePageCommand, UpdatePageCommandResponse>
+public class UpdatePageCommandHandler : IRequestHandler<UpdatePageCommand, BaseMediatrResponse<UpdatePageCommandResponse>>
 {
     private readonly IApiClient _apiClient;
-    
+
 
     public UpdatePageCommandHandler(IApiClient apiClient)
     {
         _apiClient = apiClient;
-       
+
     }
 
-    public async Task<UpdatePageCommandResponse> Handle(UpdatePageCommand request, CancellationToken cancellationToken)
+    public async Task<BaseMediatrResponse<UpdatePageCommandResponse>> Handle(UpdatePageCommand request, CancellationToken cancellationToken)
     {
-        var response = new UpdatePageCommandResponse()
+        var response = new BaseMediatrResponse<UpdatePageCommandResponse>()
         {
             Success = false
         };
@@ -30,12 +30,7 @@ public class UpdatePageCommandHandler : IRequestHandler<UpdatePageCommand, Updat
                 PageId = request.Id,
                 FormVersionId = request.FormVersionId,
                 SectionId = request.SectionId,
-                Data = new UpdatePageApiRequest.Page()
-                {
-                    Description = request.Description,
-                    Title = request.Title
-
-                }
+                Data = request
             };
             await _apiClient.Put(apiRequest);
             response.Success = true;
