@@ -2,7 +2,7 @@
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
 
-public class UnpublishFormVersionCommand : IRequest<UnpublishFormVersionCommandResponse>
+public class UnpublishFormVersionCommand : IRequest<BaseMediatrResponse<UnpublishFormVersionCommandResponse>>
 {
     public readonly Guid FormVersionId;
 

@@ -3,7 +3,7 @@ using SFA.DAS.AODP.Models.Settings;
 using StackExchange.Redis;
 using System.Diagnostics.CodeAnalysis;
 
-namespace SFA.DAS.AODP.Api.Extensions;
+namespace SFA.DAS.AODP.Web.Extensions;
 
 [ExcludeFromCodeCoverage]
 public static class AddDataProtectionExtensions

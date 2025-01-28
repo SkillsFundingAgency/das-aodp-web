@@ -1,6 +1,6 @@
 ﻿using SFA.DAS.AODP.Application.Queries.FormBuilder.Pages;
 
-namespace SFA.DAS.AODP.Web.Models.Section
+namespace SFA.DAS.AODP.Web.Models.Page
 {
     public class EditPageViewModel
     {
@@ -10,19 +10,39 @@ namespace SFA.DAS.AODP.Web.Models.Section
         public Guid FormVersionId { get; set; }
         public Guid SectionId { get; set; }
         public Guid PageId { get; set; }
+        public List<Question> Questions { get; set; }
 
 
+        public class Question
+        {
+            public Guid Id { get; set; }
+            public Guid Key { get; set; }
+            public int Order { get; set; }
+            public string Title { get; set; }
+
+            public static implicit operator Question(GetPageByIdQueryResponse.Question question)
+            {
+                return new()
+                {
+                    Id = question.Id,
+                    Key = question.Key,
+                    Order = question.Order,
+                    Title = question.Title,
+                };
+            }
+        }
 
         public static EditPageViewModel Map(GetPageByIdQueryResponse source, Guid formVersionId)
         {
             return new()
             {
-                Description = source.Data.Description,
-                Order = source.Data.Order,
-                Title = source.Data.Title,
+                Description = source.Description,
+                Order = source.Order,
+                Title = source.Title,
                 FormVersionId = formVersionId,
-                SectionId = source.Data.SectionId,
-                PageId = source.Data.Id
+                SectionId = source.SectionId,
+                PageId = source.Id,
+                Questions = source.Questions != null ? [.. source.Questions] : new()
             };
         }
     }

@@ -1,6 +1,5 @@
 using GovUk.Frontend.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
-using SFA.DAS.AODP.Api.Extensions;
 using SFA.DAS.AODP.Web.Extensions;
 using System.Reflection;
 

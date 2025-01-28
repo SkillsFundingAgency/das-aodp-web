@@ -29,4 +29,11 @@
 	  <Folder Include="Models\Sections\" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Content Update="Views\Shared\FormBuilder\QuestionEdit\_RadioInput.cshtml">
+	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+	  </Content>
+	</ItemGroup>
+
 </Project>

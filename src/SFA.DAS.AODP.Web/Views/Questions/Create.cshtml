@@ -1,0 +1,63 @@
+﻿@using SFA.DAS.AODP.Models.Forms.FormSchema
+@using SFA.DAS.AODP.Web.Models.Question
+@model CreateQuestionViewModel
+
+
+<form asp-controller="Questions" asp-action="Create" method="post">
+
+    @Html.AntiForgeryToken()
+
+    <div class="govuk-form-group">
+        <govuk-input asp-for="Title" input-class="govuk-input--width-50" inputmode="text">
+            <govuk-input-label is-page-heading="false" class="govuk-label--s">Title</govuk-input-label>
+            @Html.RenderPartialAsync("Validation/_TextInputValidationPartial", nameof(Model.Title))
+        </govuk-input>
+    </div>
+    <div class="govuk-form-group">
+        <govuk-radios asp-for="QuestionType">
+            <govuk-radios-fieldset>
+                <govuk-radios-fieldset-legend is-page-heading="false" class="govuk-fieldset__legend--s">
+                    Choose type of question
+                </govuk-radios-fieldset-legend>
+
+                <govuk-radios-hint>
+                    Select one option.
+                </govuk-radios-hint>
+
+                @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.QuestionType))
+
+                <govuk-radios-item value="@QuestionType.Text">Short text</govuk-radios-item>
+                <govuk-radios-item value="@QuestionType.Radio">User selects single option from a list of options</govuk-radios-item>
+
+            </govuk-radios-fieldset>
+        </govuk-radios>
+    </div>
+
+    <div class="govuk-form-group">
+        <govuk-radios asp-for="Required">
+            <govuk-radios-fieldset>
+                <govuk-radios-fieldset-legend is-page-heading="false" class="govuk-fieldset__legend--s">
+                    Should this question be mandatory or optional?
+                </govuk-radios-fieldset-legend>
+
+                <govuk-radios-hint>
+                    Select one option.
+                </govuk-radios-hint>
+
+                @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.Required))
+
+                <govuk-radios-item value="true">Mandatory</govuk-radios-item>
+                <govuk-radios-item value="false">
+                    Optional
+                    <govuk-radios-hint class="govuk-hint govuk-radios__hint govuk-!-static-padding-0" id="pages-question-input-is-optional-true-hint">
+                        We’ll add ‘(optional)’ to the end of the question text.
+                    </govuk-radios-hint>
+                </govuk-radios-item>
+
+
+            </govuk-radios-fieldset>
+        </govuk-radios>
+    </div>
+    <govuk-button type="submit">Save</govuk-button>
+
+</form>

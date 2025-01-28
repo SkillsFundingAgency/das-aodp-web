@@ -1,11 +1,10 @@
 ﻿using MediatR;
 using SFA.DAS.AODP.Domain.FormBuilder.Requests.Forms;
 using SFA.DAS.AODP.Domain.Interfaces;
-using SFA.DAS.AODP.Domain.Models;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
 
-public class DeleteFormVersionCommandHandler : IRequestHandler<DeleteFormVersionCommand, DeleteFormVersionCommandResponse>
+public class DeleteFormVersionCommandHandler : IRequestHandler<DeleteFormVersionCommand, BaseMediatrResponse<DeleteFormVersionCommandResponse>>
 {
     private readonly IApiClient _apiClient;
 
@@ -14,9 +13,9 @@ public class DeleteFormVersionCommandHandler : IRequestHandler<DeleteFormVersion
         _apiClient = apiClient;
     }
 
-    public async Task<DeleteFormVersionCommandResponse> Handle(DeleteFormVersionCommand request, CancellationToken cancellationToken)
+    public async Task<BaseMediatrResponse<DeleteFormVersionCommandResponse>> Handle(DeleteFormVersionCommand request, CancellationToken cancellationToken)
     {
-        var response = new DeleteFormVersionCommandResponse();
+        var response = new BaseMediatrResponse<DeleteFormVersionCommandResponse>();
         response.Success = false;
 
         try
