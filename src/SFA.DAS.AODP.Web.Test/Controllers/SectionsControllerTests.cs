@@ -2,6 +2,7 @@ using AutoFixture;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using NuGet.Frameworks;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
 using SFA.DAS.AODP.Web.Controllers;
@@ -9,23 +10,32 @@ using SFA.DAS.AODP.Web.Models.Section;
 
 namespace SFA.DAS.AODP.Web.Tests.Controllers
 {
-    public class SectionsControllerTests : IDisposable
+    public class SectionsControllerTests
     {
-        private Mock<IMediator> _mediatorMock;
+        // private Mock<IMediator> _mediatorMock;
+        // private SectionsController _controller;
+        // private readonly Fixture _fixture = new Fixture();
+
+        // [SetUp]
+        // public void Setup()
+        // {
+        //     _mediatorMock = new Mock<IMediator>();
+        //     _controller = new SectionsController(_mediatorMock.Object);
+        // }
+
+        // [TearDown]
+        // public void TearDown()
+        // {
+        //     _controller?.Dispose();
+        // }
+
+        private Mock<IMediator> _mediatorMock = new();
         private SectionsController _controller;
-        private readonly Fixture _fixture = new Fixture();
+        private readonly Fixture _fixture = new();
 
-        [SetUp]
-        public void Setup()
+        public SectionsControllerTests()
         {
-            _mediatorMock = new Mock<IMediator>();
             _controller = new SectionsController(_mediatorMock.Object);
-        }
-
-        [TearDown]
-        public void TearDown()
-        {
-            _controller?.Dispose();
         }
 
         [Fact]
@@ -41,9 +51,9 @@ namespace SFA.DAS.AODP.Web.Tests.Controllers
             var returnedData = okResult.Model as CreateSectionViewModel;
 
             //Assert
-            Assert.That(result, Is.InstanceOf<ViewResult>());
-            Assert.That(returnedData, Is.Not.Null);
-            Assert.That(returnedData, Is.TypeOf<CreateSectionViewModel>());
+            Assert.IsType<ViewResult>(result); // Assert.That(result, Is.InstanceOf<ViewResult>());
+            Assert.NotNull(result); // Assert.That(returnedData, Is.Not.Null);
+            Assert.IsType<CreateSectionViewModel>(returnedData); // Assert.That(returnedData, Is.TypeOf<CreateSectionViewModel>());
         }
 
         [Fact]
@@ -68,9 +78,9 @@ namespace SFA.DAS.AODP.Web.Tests.Controllers
             var okResult = (RedirectToActionResult)result;
 
             //Assert
-            Assert.That(expectedResponse.Success, Is.EqualTo(true));
-            Assert.That(result, Is.InstanceOf<RedirectToActionResult>());
-            Assert.That(okResult.ActionName, Is.EqualTo("Edit"));
+            Assert.True(expectedResponse.Success); // Assert.That(expectedResponse.Success, Is.EqualTo(true));
+            Assert.IsType<RedirectToActionResult>(result); // Assert.That(result, Is.InstanceOf<RedirectToActionResult>());
+            Assert.Equal("Edit", okResult.ActionName); // Assert.That(okResult.ActionName, Is.EqualTo("Edit"));
         }
 
         [Fact]
@@ -93,9 +103,9 @@ namespace SFA.DAS.AODP.Web.Tests.Controllers
             var returnedData = okResult.Model as EditSectionViewModel;
 
             //Assert
-            Assert.That(result, Is.InstanceOf<ViewResult>());
-            Assert.That(returnedData, Is.Not.Null);
-            Assert.That(returnedData, Is.TypeOf<EditSectionViewModel>());
+            Assert.IsType<ViewResult>(result); // Assert.That(result, Is.InstanceOf<ViewResult>());
+            Assert.NotNull(returnedData); // Assert.That(returnedData, Is.Not.Null);
+            Assert.IsType<EditSectionViewModel>(returnedData); // Assert.That(returnedData, Is.TypeOf<EditSectionViewModel>());
         }
 
         [Fact]
@@ -119,9 +129,9 @@ namespace SFA.DAS.AODP.Web.Tests.Controllers
             var okResult = (RedirectToActionResult)result;
 
             //Assert
-            Assert.That(expectedResponse.Success, Is.EqualTo(true));
-            Assert.That(result, Is.InstanceOf<RedirectToActionResult>());
-            Assert.That(okResult.ActionName, Is.EqualTo("Edit"));
+            Assert.True(expectedResponse.Success); // Assert.That(expectedResponse.Success, Is.EqualTo(true));
+            Assert.IsType<RedirectToActionResult>(result); // Assert.That(result, Is.InstanceOf<RedirectToActionResult>());
+            Assert.Equal("Edit", okResult.ActionName); // Assert.That(okResult.ActionName, Is.EqualTo("Edit"));
         }
 
         [Fact]
@@ -144,9 +154,9 @@ namespace SFA.DAS.AODP.Web.Tests.Controllers
             var returnedData = okResult.Model as DeleteSectionViewModel;
 
             //Assert
-            Assert.That(result, Is.InstanceOf<ViewResult>());
-            Assert.That(returnedData, Is.Not.Null);
-            Assert.That(returnedData, Is.TypeOf<DeleteSectionViewModel>());
+            Assert.IsType<ViewResult>(result); // Assert.That(result, Is.InstanceOf<ViewResult>());
+            Assert.NotNull(returnedData); // Assert.That(returnedData, Is.Not.Null);
+            Assert.IsType<DeleteSectionViewModel>(returnedData); // Assert.That(returnedData, Is.TypeOf<DeleteSectionViewModel>());
         }
 
         [Fact]
@@ -169,14 +179,14 @@ namespace SFA.DAS.AODP.Web.Tests.Controllers
             var okResult = (RedirectToActionResult)result;
 
             //Assert
-            Assert.That(expectedResponse.Success, Is.EqualTo(true));
-            Assert.That(result, Is.InstanceOf<RedirectToActionResult>());
-            Assert.That(okResult.ActionName, Is.EqualTo("Edit"));
+            Assert.True(expectedResponse.Success); // Assert.That(expectedResponse.Success, Is.EqualTo(true));
+            Assert.IsType<RedirectToActionResult>(result); // Assert.That(result, Is.InstanceOf<RedirectToActionResult>());
+            Assert.Equal("Edit", okResult.ActionName); // Assert.That(okResult.ActionName, Is.EqualTo("Edit"));
         }
 
-        public void Dispose()
-        {
-            _controller?.Dispose();
-        }
+        // public void Dispose()
+        // {
+        //     _controller?.Dispose();
+        // }
     }
 }

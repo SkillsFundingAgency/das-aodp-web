@@ -58,9 +58,9 @@ namespace SFA.DAS.AODP.Web.Tests.Controllers
             var returnedData = okResult.Model as CreateFormVersionViewModel;
 
             //Assert
-            Assert.That(result, Is.InstanceOf<ViewResult>());
-            Assert.That(returnedData, Is.Not.Null);
-            Assert.That(returnedData, Is.TypeOf<CreateFormVersionViewModel>());
+            Assert.IsType<ViewResult>(result); // Assert.That(result, Is.InstanceOf<ViewResult>());
+            Assert.NotNull(returnedData); // Assert.That(returnedData, Is.Not.Null);
+            Assert.IsType<CreateFormVersionViewModel>(returnedData); // Assert.That(returnedData, Is.TypeOf<CreateFormVersionViewModel>());
         }
 
         [Fact]
@@ -87,9 +87,9 @@ namespace SFA.DAS.AODP.Web.Tests.Controllers
             var okResult = (RedirectToActionResult)result;
 
             //Assert
-            Assert.That(expectedResponse.Success, Is.EqualTo(true));
-            Assert.That(result, Is.InstanceOf<RedirectToActionResult>());
-            Assert.That(okResult.ActionName, Is.EqualTo("Index"));
+            Assert.True(expectedResponse.Success); // Assert.That(expectedResponse.Success, Is.EqualTo(true));
+            Assert.IsType<RedirectToActionResult>(result); // Assert.That(result, Is.InstanceOf<RedirectToActionResult>());
+            Assert.Equal("Index", okResult.ActionName); // Assert.That(okResult.ActionName, Is.EqualTo("Index"));
         }
 
         [Fact]
@@ -102,7 +102,7 @@ namespace SFA.DAS.AODP.Web.Tests.Controllers
                 .With(w => w.Success, true)
                 .Create();
 
-            var request = new GetFormVersionByIdQuery(expectedResponse.Data.Id);
+            var request = new GetFormVersionByIdQuery(expectedResponse.Data!.Id);
 
             _mediatorMock.Setup(x => x.Send(It.IsAny<GetFormVersionByIdQuery>(), It.IsAny<CancellationToken>())).ReturnsAsync(expectedResponse);
 
@@ -112,9 +112,9 @@ namespace SFA.DAS.AODP.Web.Tests.Controllers
             var returnedData = okResult.Model as EditFormVersionViewModel;
 
             //Assert
-            Assert.That(result, Is.InstanceOf<ViewResult>());
-            Assert.That(returnedData, Is.Not.Null);
-            Assert.That(returnedData, Is.TypeOf<EditFormVersionViewModel>());
+            Assert.IsType<ViewResult>(result); // Assert.That(result, Is.InstanceOf<ViewResult>());
+            Assert.NotNull(returnedData); // Assert.That(returnedData, Is.Not.Null);
+            Assert.IsType<EditFormVersionViewModel>(returnedData); // Assert.That(returnedData, Is.TypeOf<EditFormVersionViewModel>());
         }
 
         [Fact]
@@ -137,9 +137,9 @@ namespace SFA.DAS.AODP.Web.Tests.Controllers
             var okResult = (RedirectToActionResult)result;
 
             //Assert
-            Assert.That(expectedResponse.Success, Is.EqualTo(true));
-            Assert.That(result, Is.InstanceOf<RedirectToActionResult>());
-            Assert.That(okResult.ActionName, Is.EqualTo("Edit"));
+            Assert.True(expectedResponse.Success); // Assert.That(expectedResponse.Success, Is.EqualTo(true));
+            Assert.IsType<RedirectToActionResult>(result); // Assert.That(result, Is.InstanceOf<RedirectToActionResult>());
+            Assert.Equal("Edit", okResult.ActionName); // Assert.That(okResult.ActionName, Is.EqualTo("Edit"));
         }
 
         [Fact]
@@ -152,7 +152,7 @@ namespace SFA.DAS.AODP.Web.Tests.Controllers
                 .With(w => w.Success, true)
                 .Create();
 
-            var request = new GetFormVersionByIdQuery(expectedResponse.Data.Id);
+            var request = new GetFormVersionByIdQuery(expectedResponse.Data!.Id);
 
             _mediatorMock.Setup(x => x.Send(It.IsAny<GetFormVersionByIdQuery>(), It.IsAny<CancellationToken>())).ReturnsAsync(expectedResponse);
 
@@ -162,9 +162,9 @@ namespace SFA.DAS.AODP.Web.Tests.Controllers
             var returnedData = okResult.Model as DeleteFormViewModel;
 
             //Assert
-            Assert.That(result, Is.InstanceOf<ViewResult>());
-            Assert.That(returnedData, Is.Not.Null);
-            Assert.That(returnedData, Is.TypeOf<DeleteFormViewModel>());
+            Assert.IsType<ViewResult>(result); // Assert.That(result, Is.InstanceOf<ViewResult>());
+            Assert.NotNull(returnedData); // Assert.That(returnedData, Is.Not.Null);
+            Assert.IsType<DeleteFormViewModel>(returnedData); // Assert.That(returnedData, Is.TypeOf<DeleteFormViewModel>());
         }
 
         [Fact]
@@ -187,8 +187,8 @@ namespace SFA.DAS.AODP.Web.Tests.Controllers
             var okResult = (RedirectToActionResult)result;
 
             //Assert
-            Assert.That(result, Is.InstanceOf<RedirectToActionResult>());
-            Assert.That(okResult.ActionName, Is.EqualTo("Index"));
+            Assert.IsType<RedirectToActionResult>(result); // Assert.That(result, Is.InstanceOf<RedirectToActionResult>());
+            Assert.Equal("Index", okResult.ActionName); // Assert.That(okResult.ActionName, Is.EqualTo("Index"));
         }
     }
 }
