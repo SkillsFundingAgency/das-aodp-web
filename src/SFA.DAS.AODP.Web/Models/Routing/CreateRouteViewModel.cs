@@ -21,15 +21,6 @@
         public int Order { get; set; }
     }
 
-
-    public class CreateRouteChooseSectionViewModel
-    {
-        public Guid FormVersionId { get; set; }
-        public Guid ChosenSectionKey { get; set; }
-        public List<SectionInformation> Sections { get; set; }
-
-    }
-
     public class RouteInformation
     {
         public Guid OptionKey { get; set; }

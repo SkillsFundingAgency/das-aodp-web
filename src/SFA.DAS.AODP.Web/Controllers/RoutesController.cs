@@ -1,10 +1,19 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
 using SFA.DAS.AODP.Web.Models.Routing;
 
 namespace SFA.DAS.AODP.Web.Controllers;
 
 public class RoutesController : Controller
 {
+    private readonly IMediator _mediator;
+
+    public RoutesController(IMediator mediator)
+    {
+        _mediator = mediator;
+    }
+
     [HttpGet()]
     [Route("form/{formVersionId}/routing/add-route")]
     public async Task<IActionResult> Create(Guid formVersionId)
@@ -19,19 +28,11 @@ public class RoutesController : Controller
     [Route("form/{formVersionId}/routing/choose-section")]
     public async Task<IActionResult> ChooseSection(Guid formVersionId)
     {
-        return View(new CreateRouteChooseSectionViewModel
-        {
-            FormVersionId = formVersionId,
-            Sections = new()
-            {
-                new()
-                {
-                     Key = Guid.NewGuid(),
-                     Order = 1,
-                     Title = "Section 1"
-                }
-            }
-        });
+        var query = new GetAllSectionsQuery(formVersionId);
+        var response = await _mediator.Send(query);
+        if (!response.Success) return NotFound();
+
+        return View(CreateRouteChooseSectionViewModel.MapToViewModel(response.Value, formVersionId));
     }
 
     [HttpGet()]
