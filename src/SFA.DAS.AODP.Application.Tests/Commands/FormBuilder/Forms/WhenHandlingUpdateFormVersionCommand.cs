@@ -6,14 +6,14 @@ using SFA.DAS.AODP.Domain.Interfaces;
 
 namespace SFA.DAS.AODP.Application.Tests.Commands.FormBuilder.Forms
 {
-    public class WhenHandlingCreateFormVersionCommand
+    public class WhenHandlingUpdateFormVersionCommand
     {
         private readonly Fixture _fixture = new();
         private readonly Mock<IApiClient> _apiClient = new();
-        private readonly CreateFormVersionCommandHandler _handler;
+        private readonly UpdateFormVersionCommandHandler _handler;
 
 
-        public WhenHandlingCreateFormVersionCommand()
+        public WhenHandlingUpdateFormVersionCommand()
         {
             _handler = new(_apiClient.Object);
         }
@@ -22,24 +22,22 @@ namespace SFA.DAS.AODP.Application.Tests.Commands.FormBuilder.Forms
         public async Task Then_The_CommandResult_Is_Returned_As_Expected()
         {
             // Arrange
-            var expectedResponse = _fixture.Create<CreateFormVersionCommandResponse>();
-            var request = _fixture.Create<CreateFormVersionCommand>();
+            var expectedResponse = _fixture.Create<UpdateFormVersionCommandResponse>();
+            var request = _fixture.Create<UpdateFormVersionCommand>();
             _apiClient
-                .Setup(a => a.PostWithResponseCode<CreateFormVersionCommandResponse>(It.IsAny<CreateFormVersionApiRequest>()))
-                .ReturnsAsync(expectedResponse);
+                .Setup(a => a.Put(It.IsAny<UpdateFormVersionApiRequest>()));
 
             // Act
             var response = await _handler.Handle(request, default);
 
             // Assert
             _apiClient
-                .Verify(a => a.PostWithResponseCode<CreateFormVersionCommandResponse>(It.Is<CreateFormVersionApiRequest>(r => r.Data == request)));
+                .Verify(a => a.Put(It.Is<UpdateFormVersionApiRequest>(r => r.Data == request)));
 
             Assert.NotNull(response);
             Assert.True(response.Success);
 
             Assert.NotNull(response.Value);
-            Assert.Equal(expectedResponse.Id, response.Value.Id);
         }
 
         [Fact]
@@ -47,9 +45,9 @@ namespace SFA.DAS.AODP.Application.Tests.Commands.FormBuilder.Forms
         {
             // Arrange
             var expectedException = _fixture.Create<Exception>();
-            var request = _fixture.Create<CreateFormVersionCommand>();
+            var request = _fixture.Create<UpdateFormVersionCommand>();
             _apiClient
-                .Setup(a => a.PostWithResponseCode<CreateFormVersionCommandResponse>(It.IsAny<CreateFormVersionApiRequest>()))
+                .Setup(a => a.Put(It.IsAny<UpdateFormVersionApiRequest>()))
                 .ThrowsAsync(expectedException);
 
             // Act
@@ -58,8 +56,7 @@ namespace SFA.DAS.AODP.Application.Tests.Commands.FormBuilder.Forms
             // Assert
             Assert.NotNull(response);
             Assert.False(response.Success);
-
-            Assert.NotEmpty(response.ErrorMessage);
+            Assert.NotEmpty(response.ErrorMessage!);
             Assert.Equal(expectedException.Message, response.ErrorMessage);
         }
     }
