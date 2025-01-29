@@ -2,7 +2,7 @@
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 
-public class CreateSectionCommand : IRequest<CreateSectionCommandResponse>
+public class CreateSectionCommand : IRequest<BaseMediatrResponse<CreateSectionCommandResponse>>
 {
 
     public Guid FormVersionId { get; set; }

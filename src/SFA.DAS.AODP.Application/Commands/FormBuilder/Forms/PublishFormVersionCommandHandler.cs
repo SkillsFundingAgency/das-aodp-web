@@ -1,13 +1,10 @@
-﻿using AutoMapper;
-using MediatR;
+﻿using MediatR;
 using SFA.DAS.AODP.Domain.FormBuilder.Requests.Forms;
-using SFA.DAS.AODP.Domain.FormBuilder.Responses.Forms;
 using SFA.DAS.AODP.Domain.Interfaces;
-using SFA.DAS.AODP.Domain.Models;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
 
-public class PublishFormVersionCommandHandler : IRequestHandler<PublishFormVersionCommand, PublishFormVersionCommandResponse>
+public class PublishFormVersionCommandHandler : IRequestHandler<PublishFormVersionCommand, BaseMediatrResponse<PublishFormVersionCommandResponse>>
 {
     private readonly IApiClient _apiClient;
 
@@ -16,9 +13,9 @@ public class PublishFormVersionCommandHandler : IRequestHandler<PublishFormVersi
         _apiClient = apiClient;
     }
 
-    public async Task<PublishFormVersionCommandResponse> Handle(PublishFormVersionCommand request, CancellationToken cancellationToken)
+    public async Task<BaseMediatrResponse<PublishFormVersionCommandResponse>> Handle(PublishFormVersionCommand request, CancellationToken cancellationToken)
     {
-        var response = new PublishFormVersionCommandResponse();
+        var response = new BaseMediatrResponse<PublishFormVersionCommandResponse>();
         response.Success = false;
 
         try

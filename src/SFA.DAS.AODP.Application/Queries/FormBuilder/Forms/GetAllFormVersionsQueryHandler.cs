@@ -1,13 +1,10 @@
-﻿using AutoMapper;
-using MediatR;
+﻿using MediatR;
 using SFA.DAS.AODP.Domain.FormBuilder.Requests.Forms;
-using SFA.DAS.AODP.Domain.FormBuilder.Responses.Forms;
 using SFA.DAS.AODP.Domain.Interfaces;
-using SFA.DAS.AODP.Domain.Models;
 
 namespace SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 
-public class GetAllFormVersionsQueryHandler : IRequestHandler<GetAllFormVersionsQuery, GetAllFormVersionsQueryResponse>
+public class GetAllFormVersionsQueryHandler : IRequestHandler<GetAllFormVersionsQuery, BaseMediatrResponse<GetAllFormVersionsQueryResponse>>
 {
     private readonly IApiClient _apiClient;
 
@@ -18,17 +15,17 @@ public class GetAllFormVersionsQueryHandler : IRequestHandler<GetAllFormVersions
 
     }
 
-    public async Task<GetAllFormVersionsQueryResponse> Handle(GetAllFormVersionsQuery request, CancellationToken cancellationToken)
+    public async Task<BaseMediatrResponse<GetAllFormVersionsQueryResponse>> Handle(GetAllFormVersionsQuery request, CancellationToken cancellationToken)
     {
-        var response = new GetAllFormVersionsQueryResponse
+        var response = new BaseMediatrResponse<GetAllFormVersionsQueryResponse>
         {
             Success = false
         };
 
         try
         {
-            var result = await _apiClient.Get<GetAllFormVersionsApiResponse>(new GetAllFormVersionsApiRequest());
-            response.Data = [.. result.Data];
+            var result = await _apiClient.Get<GetAllFormVersionsQueryResponse>(new GetAllFormVersionsApiRequest());
+            response.Value = result;
             response.Success = true;
         }
         catch (Exception ex)

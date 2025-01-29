@@ -1,4 +1,4 @@
-﻿@using SFA.DAS.AODP.Web.Models.Section
+﻿@using SFA.DAS.AODP.Web.Models.Page
 @model EditPageViewModel
 
 <h1 class="govuk-heading-l">Edit Page</h1>
@@ -23,14 +23,47 @@
         </govuk-input>
     </div>
 
-    <div class="govuk-button-group">
-        <govuk-button type="submit">Save</govuk-button>
-        <a class="govuk-button govuk-button--secondary"
-           asp-action="Edit"
-           asp-controller="Sections"
-           asp-route-formVersionId="@Model.FormVersionId"
-           asp-route-sectionId="@Model.SectionId">
-            Cancel
-        </a>
-    </div>
+
+    <button class="govuk-button" type="submit">Save</button>
+    <a class="govuk-button govuk-button--secondary"
+       asp-action="Edit"
+       asp-controller="Sections"
+       asp-route-formVersionId="@Model.FormVersionId"
+       asp-route-sectionId="@Model.SectionId">
+        Cancel
+    </a>
+    </a>
 </form>
+
+<a class="govuk-button" asp-action="Create" asp-controller="Questions" asp-route-pageId="@Model.PageId" asp-route-sectionId="@Model.SectionId" asp-route-formVersionId="@Model.FormVersionId">Create New Question</a>
+
+
+<table class="govuk-table">
+    <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">Name</th>
+            <th scope="col" class="govuk-table__header">Options</th>
+        </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+        @foreach (var item in Model.Questions)
+        {
+            <tr class="govuk-table__row">
+                <td>@item.Title</td>
+                <td>
+                    <a class="govuk-button"
+                       asp-action="Edit"
+                       asp-controller="Questions"
+                       asp-route-pageId="@Model.PageId"
+                       asp-route-questionId="@item.Id"
+                       asp-route-sectionId="@Model.SectionId"
+                       asp-route-formVersionId="@Model.FormVersionId">
+                        Edit
+                    </a>
+                    &nbsp;
+                    @*                     <a class="govuk-button govuk-button--warning" asp-action="Delete" asp-controller="Sections" asp-route-sectionId="@item.Id" asp-route-forms="forms" asp asp-route-formVersionId="@Model.FormVersionId">Delete</a>
+ *@                </td>
+            </tr>
+        }
+    </tbody>
+</table>

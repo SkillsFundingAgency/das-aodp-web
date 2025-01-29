@@ -1,4 +1,4 @@
-﻿namespace SFA.DAS.AODP.Web.Models.Section
+﻿namespace SFA.DAS.AODP.Web.Models.Page
 {
     public class DeletePageViewModel
     {

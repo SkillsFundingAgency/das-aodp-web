@@ -22,7 +22,7 @@ public class FormsController : Controller
         var query = new GetAllFormVersionsQuery();
         var response = await _mediator.Send(query);
 
-        var viewModel = FormVersionListViewModel.Map(response);
+        var viewModel = FormVersionListViewModel.Map(response.Value);
 
         return View(viewModel);
     }
@@ -58,9 +58,9 @@ public class FormsController : Controller
     {
         var formVersionQuery = new GetFormVersionByIdQuery(formVersionId);
         var response = await _mediator.Send(formVersionQuery);
-        if (response.Data == null) return NotFound();
+        if (response.Value== null) return NotFound();
 
-        var viewModel = EditFormVersionViewModel.Map(response);
+        var viewModel = EditFormVersionViewModel.Map(response.Value);
 
 
         return View(viewModel);
@@ -89,11 +89,11 @@ public class FormsController : Controller
     {
         var query = new GetFormVersionByIdQuery(formVersionId);
         var response = await _mediator.Send(query);
-        if (response.Data == null) return NotFound();
+        if (response.Value== null) return NotFound();
         return View(new DeleteFormViewModel()
         {
             FormVersionId = formVersionId,
-            Title = response.Data.Title
+            Title = response.Value.Title
         });
     }
 

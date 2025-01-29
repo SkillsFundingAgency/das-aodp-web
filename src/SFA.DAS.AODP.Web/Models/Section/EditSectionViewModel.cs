@@ -10,7 +10,7 @@ namespace SFA.DAS.AODP.Web.Models.Section
         public string Description { get; set; }
         public Guid FormVersionId { get; set; }
         public Guid SectionId { get; set; }
-        public List<Page> Pages { get; set; }
+        public List<Page> Pages { get; set; } = new();
         public class Page
         {
             public Guid Id { get; set; }
@@ -35,12 +35,12 @@ namespace SFA.DAS.AODP.Web.Models.Section
         {
             return new()
             {
-                Description = source.Data.Description,
-                Order = source.Data.Order,
-                Title = source.Data.Title,
-                FormVersionId = source.Data.FormVersionId,
-                SectionId = source.Data.Id,
-                Pages = source.Data.Pages != null ? [..source.Data.Pages] : new()
+                Description = source.Description,
+                Order = source.Order,
+                Title = source.Title,
+                FormVersionId = source.FormVersionId,
+                SectionId = source.Id,
+                Pages = source.Pages != null ? [..source.Pages] : new()
             };
         }
     }

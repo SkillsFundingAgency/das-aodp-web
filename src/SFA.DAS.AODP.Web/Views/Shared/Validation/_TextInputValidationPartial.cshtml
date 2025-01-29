@@ -1,0 +1,6 @@
+﻿@model string
+
+@if (ViewContext.ModelState.ContainsKey(Model))
+{
+    <govuk-textarea-error-message>@ViewContext.ModelState[Model]?.Errors.FirstOrDefault()?.ErrorMessage</govuk-textarea-error-message>
+}

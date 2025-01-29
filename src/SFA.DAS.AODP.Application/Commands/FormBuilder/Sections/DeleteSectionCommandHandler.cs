@@ -5,7 +5,7 @@ using SFA.DAS.AODP.Domain.Models;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 
-public class DeleteSectionCommandHandler : IRequestHandler<DeleteSectionCommand, DeleteSectionCommandResponse>
+public class DeleteSectionCommandHandler : IRequestHandler<DeleteSectionCommand, BaseMediatrResponse<DeleteSectionCommandResponse>>
 {
     private readonly IApiClient _apiClient;
 
@@ -14,9 +14,9 @@ public class DeleteSectionCommandHandler : IRequestHandler<DeleteSectionCommand,
         _apiClient = apiClient;
     }
 
-    public async Task<DeleteSectionCommandResponse> Handle(DeleteSectionCommand request, CancellationToken cancellationToken)
+    public async Task<BaseMediatrResponse<DeleteSectionCommandResponse>> Handle(DeleteSectionCommand request, CancellationToken cancellationToken)
     {
-        var response = new DeleteSectionCommandResponse()
+        var response = new BaseMediatrResponse<DeleteSectionCommandResponse>()
         {
             Success = false
         };

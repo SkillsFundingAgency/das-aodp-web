@@ -1,0 +1,37 @@
+﻿@using SFA.DAS.AODP.Web.Models.Routing
+@model CreateRouteChooseQuestionViewModel
+
+
+<form asp-controller="Route" asp-action="ChooseQuestion" method="post">
+
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(v => v.FormVersionId)
+    @Html.HiddenFor(v => v.SectionKey)
+    @Html.HiddenFor(v => v.PageKey)
+
+    <div class="govuk-form-group">
+        <govuk-radios asp-for="ChosenQuestionKey">
+            <govuk-radios-fieldset>
+                <govuk-radios-fieldset-legend is-page-heading="true">
+                    <h1 class="govuk-heading-l">Choose page</h1>
+                </govuk-radios-fieldset-legend>
+
+                <govuk-radios-hint>
+                    Select one option. Only pages with questions requiring user to select a option are shown.
+                </govuk-radios-hint>
+
+                @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.ChosenQuestionKey))
+
+                @foreach (var pageInformation in Model.Questions.OrderBy(o => o.Order))
+                {
+                    <govuk-radios-item value="@pageInformation.Key">@pageInformation.Title</govuk-radios-item>
+                }
+
+
+            </govuk-radios-fieldset>
+        </govuk-radios>
+    </div>
+
+    <govuk-button type="submit">Continue to configure routing</govuk-button>
+
+</form>
