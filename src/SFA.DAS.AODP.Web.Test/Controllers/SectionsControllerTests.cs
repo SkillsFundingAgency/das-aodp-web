@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NuGet.Frameworks;
+using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
 using SFA.DAS.AODP.Web.Controllers;
@@ -60,14 +61,12 @@ namespace SFA.DAS.AODP.Web.Tests.Controllers
         public async Task Create_Post_ValidRequest_RedirectsOk()
         {
             //Arrange
-            var expectedResponse = new CreateSectionCommandResponse();
-            expectedResponse = _fixture
-                .Build<CreateSectionCommandResponse>()
+            var expectedResponse = _fixture
+                .Build<BaseMediatrResponse<CreateSectionCommandResponse>>()
                 .With(w => w.Success, true)
                 .Create();
 
-            var request = new CreateSectionViewModel();
-            request = _fixture
+            var request = _fixture
                 .Build<CreateSectionViewModel>()
                 .Create();
 
@@ -87,18 +86,17 @@ namespace SFA.DAS.AODP.Web.Tests.Controllers
         public async Task Edit_Get_ValidRequest_ReturnsOk()
         {
             //Arrange
-            var expectedResponse = new GetSectionByIdQueryResponse();
-            expectedResponse = _fixture
-                .Build<GetSectionByIdQueryResponse>()
+            var expectedResponse = _fixture
+                .Build<BaseMediatrResponse<GetSectionByIdQueryResponse>>()
                 .With(w => w.Success, true)
                 .Create();
 
-            var request = new GetSectionByIdQuery(expectedResponse.Data.Id, expectedResponse.Data.FormVersionId);
+            var request = new GetSectionByIdQuery(expectedResponse.Value.Id, expectedResponse.Value.FormVersionId);
 
             _mediatorMock.Setup(x => x.Send(It.IsAny<GetSectionByIdQuery>(), It.IsAny<CancellationToken>())).ReturnsAsync(expectedResponse);
 
             //Act
-            var result = await _controller.Edit(expectedResponse.Data.FormVersionId, expectedResponse.Data.Id);
+            var result = await _controller.Edit(expectedResponse.Value.FormVersionId, expectedResponse.Value.Id);
             var okResult = (ViewResult)result;
             var returnedData = okResult.Model as EditSectionViewModel;
 
@@ -112,9 +110,8 @@ namespace SFA.DAS.AODP.Web.Tests.Controllers
         public async Task Edit_Post_ValidRequest_RedirectsOk()
         {
             //Arrange
-            var expectedResponse = new UpdateSectionCommandResponse();
-            expectedResponse = _fixture
-                .Build<UpdateSectionCommandResponse>()
+            var expectedResponse = _fixture
+                .Build<BaseMediatrResponse<UpdateSectionCommandResponse>>()
                 .With(w => w.Success, true)
                 .Create();
             var request = new EditSectionViewModel();
@@ -138,18 +135,17 @@ namespace SFA.DAS.AODP.Web.Tests.Controllers
         public async Task Delete_Get_ValidRequest_ReturnsOk()
         {
             //Arrange
-            var expectedResponse = new GetSectionByIdQueryResponse();
-            expectedResponse = _fixture
-                .Build<GetSectionByIdQueryResponse>()
+            var expectedResponse = _fixture
+                .Build<BaseMediatrResponse<GetSectionByIdQueryResponse>>()
                 .With(w => w.Success, true)
                 .Create();
 
-            var request = new GetSectionByIdQuery(expectedResponse.Data.Id, expectedResponse.Data.FormVersionId);
+            var request = new GetSectionByIdQuery(expectedResponse.Value.Id, expectedResponse.Value.FormVersionId);
 
             _mediatorMock.Setup(x => x.Send(It.IsAny<GetSectionByIdQuery>(), It.IsAny<CancellationToken>())).ReturnsAsync(expectedResponse);
 
             //Act
-            var result = await _controller.Delete(expectedResponse.Data.Id, expectedResponse.Data.FormVersionId);
+            var result = await _controller.Delete(expectedResponse.Value.Id, expectedResponse.Value.FormVersionId);
             var okResult = (ViewResult)result;
             var returnedData = okResult.Model as DeleteSectionViewModel;
 
@@ -163,9 +159,8 @@ namespace SFA.DAS.AODP.Web.Tests.Controllers
         public async Task DeleteConfirmed_Post_ValidRequest_RedirectsOk()
         {
             //Arrange
-            var expectedResponse = new DeleteSectionCommandResponse();
-            expectedResponse = _fixture
-                .Build<DeleteSectionCommandResponse>()
+            var expectedResponse = _fixture
+                .Build<BaseMediatrResponse<DeleteSectionCommandResponse>>()
                 .With(w => w.Success, true)
                 .Create();
             var request = new DeleteSectionViewModel();

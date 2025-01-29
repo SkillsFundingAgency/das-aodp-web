@@ -2,6 +2,7 @@ using AutoFixture;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Web.Controllers;
@@ -25,9 +26,8 @@ namespace SFA.DAS.AODP.Web.Tests.Controllers
         {
             //Arrange
             var request = new GetAllFormVersionsQuery();
-            var expectedResponse = new GetAllFormVersionsQueryResponse();
-            expectedResponse = _fixture
-                .Build<GetAllFormVersionsQueryResponse>()
+            var expectedResponse = _fixture
+                .Build<BaseMediatrResponse<GetAllFormVersionsQueryResponse>>()
                 .With(w => w.Success, true)
                 .Create();
 
@@ -43,7 +43,7 @@ namespace SFA.DAS.AODP.Web.Tests.Controllers
             var returnedData = okResult.Model as FormVersionListViewModel;
 
             Assert.NotNull(returnedData);
-            Assert.Equal(returnedData.FormVersions.Count, expectedResponse.Data.Count);
+            Assert.Equal(returnedData.FormVersions.Count, expectedResponse.Value.Data.Count);
         }
 
         [Fact]
@@ -67,13 +67,11 @@ namespace SFA.DAS.AODP.Web.Tests.Controllers
         public async Task Create_Post_ValidRequest_RedirectsOk()
         {
             //Arrange
-            var expectedResponse = new CreateFormVersionCommandResponse();
-            expectedResponse = _fixture
-                .Build<CreateFormVersionCommandResponse>()
+            var expectedResponse = _fixture
+                .Build<BaseMediatrResponse<CreateFormVersionCommandResponse>>()
                 .With(w => w.Success, true)
                 .Create();
-            var request = new CreateFormVersionViewModel();
-            request = _fixture
+            var request = _fixture
                 .Build<CreateFormVersionViewModel>()
                 .Create();
 
@@ -96,18 +94,17 @@ namespace SFA.DAS.AODP.Web.Tests.Controllers
         public async Task Edit_Get_ValidRequest_ReturnsOk()
         {
             //Arrange
-            var expectedResponse = new GetFormVersionByIdQueryResponse();
-            expectedResponse = _fixture
-                .Build<GetFormVersionByIdQueryResponse>()
+            var expectedResponse = _fixture
+                .Build<BaseMediatrResponse<GetFormVersionByIdQueryResponse>>()
                 .With(w => w.Success, true)
                 .Create();
 
-            var request = new GetFormVersionByIdQuery(expectedResponse.Data!.Id);
+            var request = new GetFormVersionByIdQuery(expectedResponse.Value.Id);
 
             _mediatorMock.Setup(x => x.Send(It.IsAny<GetFormVersionByIdQuery>(), It.IsAny<CancellationToken>())).ReturnsAsync(expectedResponse);
 
             //Act
-            var result = await _controller.Edit(expectedResponse.Data.Id);
+            var result = await _controller.Edit(expectedResponse.Value.Id);
             var okResult = (ViewResult)result;
             var returnedData = okResult.Model as EditFormVersionViewModel;
 
@@ -121,13 +118,11 @@ namespace SFA.DAS.AODP.Web.Tests.Controllers
         public async Task Edit_Post_ValidRequest_RedirectsOk()
         {
             //Arrange
-            var expectedResponse = new UpdateFormVersionCommandResponse();
-            expectedResponse = _fixture
-                .Build<UpdateFormVersionCommandResponse>()
+            var expectedResponse = _fixture
+                .Build<BaseMediatrResponse<UpdateFormVersionCommandResponse>>()
                 .With(w => w.Success, true)
                 .Create();
-            var request = new EditFormVersionViewModel();
-            request = _fixture
+            var request = _fixture
                 .Build<EditFormVersionViewModel>()
                 .Create();
             _mediatorMock.Setup(x => x.Send(It.IsAny<UpdateFormVersionCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(expectedResponse);
@@ -146,18 +141,17 @@ namespace SFA.DAS.AODP.Web.Tests.Controllers
         public async Task Delete_Get_ValidRequest_ReturnsOk()
         {
             //Arrange
-            var expectedResponse = new GetFormVersionByIdQueryResponse();
-            expectedResponse = _fixture
-                .Build<GetFormVersionByIdQueryResponse>()
+            var expectedResponse = _fixture
+                .Build<BaseMediatrResponse<GetFormVersionByIdQueryResponse>>()
                 .With(w => w.Success, true)
                 .Create();
 
-            var request = new GetFormVersionByIdQuery(expectedResponse.Data!.Id);
+            var request = new GetFormVersionByIdQuery(expectedResponse.Value.Id);
 
             _mediatorMock.Setup(x => x.Send(It.IsAny<GetFormVersionByIdQuery>(), It.IsAny<CancellationToken>())).ReturnsAsync(expectedResponse);
 
             //Act
-            var result = await _controller.Delete(expectedResponse.Data.Id);
+            var result = await _controller.Delete(expectedResponse.Value.Id);
             var okResult = (ViewResult)result;
             var returnedData = okResult.Model as DeleteFormViewModel;
 
@@ -171,13 +165,11 @@ namespace SFA.DAS.AODP.Web.Tests.Controllers
         public async Task DeleteConfirmed_Post_ValidRequest_RedirectsOk()
         {
             //Arrange
-            var expectedResponse = new DeleteFormVersionCommandResponse();
-            expectedResponse = _fixture
-                .Build<DeleteFormVersionCommandResponse>()
+            var expectedResponse = _fixture
+                .Build<BaseMediatrResponse<DeleteFormVersionCommandResponse>>()
                 .With(w => w.Success, true)
                 .Create();
-            var request = new DeleteFormViewModel();
-            request = _fixture
+            var request = _fixture
                 .Build<DeleteFormViewModel>()
                 .Create();
             _mediatorMock.Setup(x => x.Send(It.IsAny<DeleteFormVersionCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(expectedResponse);
