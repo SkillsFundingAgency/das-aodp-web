@@ -20,7 +20,8 @@ public class DeleteFormVersionCommandHandler : IRequestHandler<DeleteFormVersion
 
         try
         {
-            await _apiClient.Delete(new DeleteFormVersionApiRequest(request.FormVersionId));
+            var apiRequest = new DeleteFormVersionApiRequest(request.FormVersionId);
+            await _apiClient.Delete(apiRequest);
             response.Success = true;
         }
         catch (Exception ex)
