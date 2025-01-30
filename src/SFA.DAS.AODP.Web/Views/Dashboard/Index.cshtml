@@ -1,0 +1,35 @@
+﻿@using System.Security.Claims
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="govuk-width-container">
+    <main class="govuk-main-wrapper">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <h2 class="govuk-heading-m">Dashboard</h2>
+                <govuk-notification-banner type="Success" class="govuk-!-margin-1">
+                    <p class="govuk-notification-banner__heading">
+                      A dashboard
+    
+               
+                    </p>
+                </govuk-notification-banner>
+            </div>
+            <div class="govuk-grid-column-two-thirds">
+                <p>
+                    <p>Some Claims</p>
+                <table>
+                    @foreach (var item in ((ClaimsIdentity)User.Identity).Claims)
+                    {
+                        <tr>
+                            <td>@item.Type</td>
+                            <td>@item.Value</td>
+                        </tr>
+                    }
+                </table>
+                </p>
+            </div>
+        </div>
+    </main>
+</div>
