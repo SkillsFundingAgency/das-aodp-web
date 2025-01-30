@@ -20,6 +20,8 @@ namespace SFA.DAS.AODP.Web.Models.Forms
         public static FormVersionListViewModel Map(GetAllFormVersionsQueryResponse response)
         {
             var viewModel = new FormVersionListViewModel();
+            if (response?.Data == null || response?.Data?.Any() == false) return viewModel;
+
             var group = response.Data.GroupBy(x => x.FormId);
 
             foreach (var item in group)

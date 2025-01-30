@@ -2,7 +2,6 @@
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Questions;
 using SFA.DAS.AODP.Models.Forms.FormSchema;
 using System.ComponentModel.DataAnnotations;
-using System.Reflection;
 
 namespace SFA.DAS.AODP.Web.Models.Question
 {
@@ -49,8 +48,9 @@ namespace SFA.DAS.AODP.Web.Models.Question
 
             public class RadioOptionItem
             {
-                public Guid Id { get; set; } = Guid.NewGuid();
+                public Guid Id { get; set; }
                 public string Value { get; set; }
+                public int Order { get; set; }
             }
         }
 
@@ -79,6 +79,7 @@ namespace SFA.DAS.AODP.Web.Models.Question
             }
             else if (type == QuestionType.Radio)
             {
+                response.RadioOptions = response.RadioOptions.OrderBy(o => o.Order).ToList();
                 model.RadioButton.MultiChoice = new();
                 foreach (var option in response.RadioOptions)
                 {
@@ -86,6 +87,7 @@ namespace SFA.DAS.AODP.Web.Models.Question
                     {
                         Id = option.Id,
                         Value = option.Value,
+                        Order = option.Order
                     });
                 }
             }

@@ -10,7 +10,7 @@
             Section
         </govuk-summary-list-row-key>
         <govuk-summary-list-row-value>
-            Section 1
+            @Model.SectionTitle
         </govuk-summary-list-row-value>
     </govuk-summary-list-row>
     <govuk-summary-list-row>
@@ -18,7 +18,7 @@
             Page
         </govuk-summary-list-row-key>
         <govuk-summary-list-row-value>
-            Page 1
+            @Model.PageTitle
         </govuk-summary-list-row-value>
     </govuk-summary-list-row>
     <govuk-summary-list-row>
@@ -26,62 +26,76 @@
             Question
         </govuk-summary-list-row-key>
         <govuk-summary-list-row-value>
-            Question 1
+            @Model.QuestionTitle
         </govuk-summary-list-row-value>
     </govuk-summary-list-row>
 </govuk-summary-list>
 
 
-<form asp-controller="Route" asp-action="Create" method="post">
+<form asp-controller="Routes" asp-action="Create" method="post">
 
     @Html.AntiForgeryToken()
     @Html.HiddenFor(v => v.FormVersionId)
-    @Html.HiddenFor(v => v.SectionKey)
-    @Html.HiddenFor(v => v.PageKey)
-    @Html.HiddenFor(v => v.QuestionKey)
-    <govuk-summary-card>
-        <govuk-summary-card-title>Option 1</govuk-summary-card-title>
-        <govuk-summary-list>
-            <govuk-summary-list-row>
-                <govuk-summary-list-row-key>
-                    If the answer is
-                </govuk-summary-list-row-key>
-                <govuk-summary-list-row-value>
-                    Option 1
-                </govuk-summary-list-row-value>
-            </govuk-summary-list-row>
-            <govuk-summary-list-row>
-                <govuk-summary-list-row-key>
-                    the next page should be
-                </govuk-summary-list-row-key>
-                <govuk-summary-list-row-value>
-                    <govuk-select name="Sort">
-                        <govuk-select-label>Choose next page in this section</govuk-select-label>
-                        <govuk-select-item value="Default" selected=true>Default next page</govuk-select-item>
+    @Html.HiddenFor(v => v.SectionId)
+    @Html.HiddenFor(v => v.PageId)
+    @Html.HiddenFor(v => v.QuestionId)
 
-                        <govuk-select-item value="EndSection">Go to end of section</govuk-select-item>
-                        <govuk-select-item value="views">Most views</govuk-select-item>
-                        <govuk-select-item value="comments">Most comments</govuk-select-item>
-                    </govuk-select>
-                </govuk-summary-list-row-value>
-            </govuk-summary-list-row>
-            <govuk-summary-list-row>
-                <govuk-summary-list-row-key>
-                    the next section should be
-                </govuk-summary-list-row-key>
-                <govuk-summary-list-row-value>
-                    <govuk-select name="Sort">
-                        <govuk-select-label>Choose next section</govuk-select-label>
-                        <govuk-select-item value="Default" selected=true>Default next section</govuk-select-item>
-                        <govuk-select-item value="views">Most views</govuk-select-item>
-                        <govuk-select-item value="comments">Most comments</govuk-select-item>
-                    </govuk-select>
-                </govuk-summary-list-row-value>
-            </govuk-summary-list-row>
-        </govuk-summary-list>
-    </govuk-summary-card>
+    @for (int i = 0; i < Model.Options.Count; i++)
+    {
 
+        var option = Model.Options[i];
 
+        <govuk-summary-card>
+            <govuk-summary-card-title>Option @option.Order</govuk-summary-card-title>
+            <govuk-summary-list>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>
+                        If the answer is
+                    </govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>
+                        @option.Value
+                    </govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>
+                        the next page should be
+                    </govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>
+                        <input type="hidden" name="SelectedOptions[@i][OptionId]" value="@option.Id" />
+
+                        <govuk-select name="SelectedOptions[@i][SelectedPageId]">
+                            <govuk-select-label>Choose next page in this section</govuk-select-label>
+
+                            @foreach (var item in Model.NextPageOptions)
+                            {
+                                <govuk-select-item value="@item.Id" selected="@Model.SelectedOptions.FirstOrDefault(o => o.OptionId == option.Id)?.SelectedPageId == item.Id">@item.Title</govuk-select-item>
+                            }
+
+                        </govuk-select>
+                    </govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>
+                        the next section should be
+                    </govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>
+                        <input type="hidden" name="SelectedOptions[@i][OptionId]" value="@option.Id" />
+
+                        <govuk-select name="SelectedOptions[@i][SelectedSectionId]">
+                            <govuk-select-label>Choose next section in this form</govuk-select-label>
+
+                            @foreach (var item in Model.NextSectionOptions)
+                            {
+                                <govuk-select-item value="@item.Id" selected="@Model.SelectedOptions.FirstOrDefault(o => o.OptionId == option.Id)?.SelectedSectionId == item.Id">@item.Title</govuk-select-item>
+                            }
+
+                        </govuk-select>
+                    </govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+            </govuk-summary-list>
+        </govuk-summary-card>
+
+    }
 
     <govuk-button type="submit">Save</govuk-button>
 
