@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Routes;
 using SFA.DAS.AODP.Domain.FormBuilder.Requests.Sections;
 using SFA.DAS.AODP.Web.Models.Routing;
+using System.Reflection;
 
 namespace SFA.DAS.AODP.Web.Controllers;
 
@@ -16,8 +17,8 @@ public class RoutesController : Controller
     }
 
     [HttpGet()]
-    [Route("form/{formVersionId}/routing/section/{sectionId}/page/{pageId}/question/{questionId}")]
-    public async Task<IActionResult> Create(Guid formVersionId, Guid questionId, Guid sectionId, Guid pageId)
+    [Route("forms/{formVersionId}/routes/sections/{sectionId}/pages/{pageId}/questions/{questionId}")]
+    public async Task<IActionResult> Configure(Guid formVersionId, Guid questionId, Guid sectionId, Guid pageId)
     {
         var query = new GetRoutingInformationForQuestionQuery()
         {
@@ -34,19 +35,17 @@ public class RoutesController : Controller
     }
 
     [HttpPost()]
-    [Route("form/{formVersionId}/routing/section/{sectionId}/page/{pageId}/question/{questionId}")]
-    public async Task<IActionResult> Create(CreateRouteViewModel createRouteViewModel)
+    [Route("forms/{formVersionId}/routes/sections/{sectionId}/pages/{pageId}/questions/{questionId}")]
+    public async Task<IActionResult> Configure(CreateRouteViewModel model)
     {
-        var command = CreateRouteViewModel.MapToCommand(createRouteViewModel);
+        var command = CreateRouteViewModel.MapToCommand(model);
 
         var response = await _mediator.Send(command);
         if (!response.Success) return NotFound();
-        return View(createRouteViewModel);
-
+        return RedirectToAction(nameof(List), new { formVersionId = model.FormVersionId });
     }
-
     [HttpGet()]
-    [Route("form/{formVersionId}/routing/choose-section-page")]
+    [Route("forms/{formVersionId}/routes/choose-section-page")]
     public async Task<IActionResult> ChooseSection(Guid formVersionId)
     {
         var query = new GetAvailableSectionsAndPagesForRoutingQuery()
@@ -55,12 +54,11 @@ public class RoutesController : Controller
         };
         var response = await _mediator.Send(query);
         if (!response.Success) return NotFound();
-
         return View(CreateRouteChooseSectionAndPageViewModel.MapToViewModel(response.Value, formVersionId));
     }
 
     [HttpPost()]
-    [Route("form/{formVersionId}/routing/choose-section-page")]
+    [Route("forms/{formVersionId}/routes/choose-section-page")]
     public async Task<IActionResult> ChooseSection(CreateRouteChooseSectionAndPageViewModel model)
     {
         if (!ModelState.IsValid)
@@ -82,7 +80,7 @@ public class RoutesController : Controller
     }
 
     [HttpGet()]
-    [Route("form/{formVersionId}/routing/section/{sectionId}/page/{pageId}/choose-question")]
+    [Route("forms/{formVersionId}/routes/sections/{sectionId}/pages/{pageId}/choose-question")]
     public async Task<IActionResult> ChooseQuestion(Guid formVersionId, Guid sectionId, Guid pageId)
     {
         var query = new GetAvailableQuestionsForRoutingQuery()
@@ -98,7 +96,7 @@ public class RoutesController : Controller
     }
 
     [HttpPost()]
-    [Route("form/{formVersionId}/routing/section/{sectionId}/page/{pageId}/choose-question")]
+    [Route("forms/{formVersionId}/routes/sections/{sectionId}/pages/{pageId}/choose-question")]
     public async Task<IActionResult> ChooseQuestion(CreateRouteChooseQuestionViewModel model)
     {
         if (!ModelState.IsValid)
@@ -113,7 +111,7 @@ public class RoutesController : Controller
             return View(CreateRouteChooseQuestionViewModel.MapToViewModel(response.Value, model.FormVersionId, model.SectionId, model.PageId));
         }
 
-        return RedirectToAction(nameof(Create), new { formVersionId = model.FormVersionId, sectionId = model.SectionId, pageId = model.PageId, questionId = model.ChosenQuestionId });
+        return RedirectToAction(nameof(Configure), new { formVersionId = model.FormVersionId, sectionId = model.SectionId, pageId = model.PageId, questionId = model.ChosenQuestionId });
 
     }
 
@@ -129,6 +127,10 @@ public class RoutesController : Controller
         var response = await _mediator.Send(query);
         if (!response.Success) return NotFound();
 
-        return View(response.Value);
+        return View(new ListRoutesViewModel()
+        {
+            FormVersionId = formVersionId,
+            Response = response.Value
+        });
     }
 }
