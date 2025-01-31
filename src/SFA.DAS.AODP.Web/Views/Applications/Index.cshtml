@@ -1,0 +1,33 @@
+﻿@using SFA.DAS.AODP.Web.Models.Application
+@model ListApplicationsViewModel
+
+@{
+    ViewData["Title"] = "View applications";
+}
+
+<a class="govuk-button" asp-action="AvailableForms" asp-route-organisationId="@Model.OrganisationId" asp-controller="Applications">Start new application</a>
+
+
+<table class="govuk-table">
+    <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">Reference</th>
+            <th scope="col" class="govuk-table__header">Name</th>
+            <th scope="col" class="govuk-table__header">Status</th>
+            <th scope="col" class="govuk-table__header">Owner</th>
+        </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+        @foreach (var item in Model.Applications)
+        {
+            <tr class="govuk-table__row">
+                <td>@item.Reference</td>
+                <td>
+                    <a class="govuk-link" asp-action="ViewApplication" asp-route-organisationId="@Model.OrganisationId" asp-route-applicationId="@item.Id" asp-controller="Applications">@item.Name</a>
+                </td>
+                <td>@(item.Submitted ? "Completed" : "In Progress")</td>
+                <td>@item.Owner</td>
+            </tr>
+        }
+    </tbody>
+</table>

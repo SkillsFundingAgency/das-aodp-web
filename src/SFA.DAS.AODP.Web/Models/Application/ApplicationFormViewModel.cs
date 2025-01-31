@@ -1,15 +1,18 @@
 ﻿namespace SFA.DAS.AODP.Web.Models.Application
 {
-    public class ViewApplicationFormViewModel
+    public class ApplicationFormViewModel
     {
         public Guid OrganisationId { get; set; }
         public Guid FormVersionId { get; set; }
+        public Guid ApplicationId { get; set; }
         public string ApplicationName { get; set; }
-        public string FormName { get; set; }
-        public string FormDescription { get; set; }
+        public string FormTitle { get; set; }
+        public string Reference { get; set; }
+
         public bool IsCompleted { get; set; }
         public bool IsSubmitted { get; set; }
-
+        public DateTime? SubmittedDate { get; set; }
+        public string Owner { get; set; }
         public List<Section> Sections { get; set; }
 
         public class Section
