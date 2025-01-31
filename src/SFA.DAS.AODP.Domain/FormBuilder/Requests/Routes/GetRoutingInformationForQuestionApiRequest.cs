@@ -1,6 +1,6 @@
 ﻿using SFA.DAS.AODP.Domain.Interfaces;
 
-namespace SFA.DAS.AODP.Domain.FormBuilder.Requests.Sections;
+namespace SFA.DAS.AODP.Domain.FormBuilder.Requests.Routes;
 
 public class GetRoutingInformationForQuestionApiRequest : IGetApiRequest
 {
