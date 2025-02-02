@@ -1,0 +1,69 @@
+﻿@model SFA.DAS.AODP.Web.Models.Qualifications.QualificationDetailsViewModel
+
+@{
+    ViewData["Title"] = "Qualification Details";
+}
+
+<h1 class="govuk-heading-xl">Qualification Details</h1>
+
+<dl class="govuk-summary-list">
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Status</dt>
+        <dd class="govuk-summary-list__value">@Model.Status</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Priority</dt>
+        <dd class="govuk-summary-list__value">@Model.Priority</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Changes</dt>
+        <dd class="govuk-summary-list__value">@Model.Changes</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Qualification Reference</dt>
+        <dd class="govuk-summary-list__value">@Model.QualificationReference</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Awarding Organisation</dt>
+        <dd class="govuk-summary-list__value">@Model.AwardingOrganisation</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Qualification Title</dt>
+        <dd class="govuk-summary-list__value">@Model.Title</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Qualification Type</dt>
+        <dd class="govuk-summary-list__value">@Model.QualificationType</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Level</dt>
+        <dd class="govuk-summary-list__value">@Model.Level</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Proposed Changes</dt>
+        <dd class="govuk-summary-list__value">@Model.ProposedChanges</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Age Group</dt>
+        <dd class="govuk-summary-list__value">@Model.AgeGroup</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Category</dt>
+        <dd class="govuk-summary-list__value">@Model.Category</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Subject</dt>
+        <dd class="govuk-summary-list__value">@Model.Subject</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Sector Subject Area</dt>
+        <dd class="govuk-summary-list__value">@Model.SectorSubjectArea</dd>
+    </div>
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">Comments</dt>
+        <dd class="govuk-summary-list__value">
+            <textarea class="govuk-textarea" rows="4">@Model.Comments</textarea>
+        </dd>
+    </div>
+</dl>
+
