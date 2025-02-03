@@ -68,8 +68,16 @@ public class FormsController : Controller
 
     [HttpPost]
     [Route("forms/{formVersionId}")]
-    public async Task<IActionResult> Edit(EditFormVersionViewModel editFormVersionViewModel)
+    public async Task<IActionResult> Edit(string formVersionId, EditFormVersionViewModel editFormVersionViewModel)
     {
+        if (editFormVersionViewModel.AdditionalFormActions.MoveSectionUp != default)
+        {
+            return await Edit(editFormVersionViewModel.Id);
+        }
+        if (editFormVersionViewModel.AdditionalFormActions.MoveSectionDown != default)
+        {
+            return await Edit(editFormVersionViewModel.Id);
+        }
         var command = new UpdateFormVersionCommand()
         {
             FormVersionId = editFormVersionViewModel.Id,
