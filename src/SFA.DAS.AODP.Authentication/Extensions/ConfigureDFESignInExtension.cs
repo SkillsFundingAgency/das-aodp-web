@@ -8,7 +8,6 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using SFA.DAS.AODP.Web.DfeSignIn.Configuration;
 using SFA.DAS.AODP.Web.DfeSignIn.Services;
-using System.IdentityModel.Tokens.Jwt;
 
 namespace SFA.DAS.AODP.Web.DfeSignIn.Extensions
 {
