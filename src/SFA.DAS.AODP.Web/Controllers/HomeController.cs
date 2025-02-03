@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 
 namespace SFA.DAS.AODP.Web.Controllers
 {
-
+    [AllowAnonymous]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;

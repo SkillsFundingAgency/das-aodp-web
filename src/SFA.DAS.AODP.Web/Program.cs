@@ -1,7 +1,6 @@
 using GovUk.Frontend.AspNetCore;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
-using Polly;
 using SFA.DAS.AODP.Web.DfeSignIn.Enums;
 using SFA.DAS.AODP.Web.DfeSignIn.Extensions;
 using SFA.DAS.AODP.Web.DfeSignIn.Interfaces;
@@ -24,11 +23,10 @@ internal class Program
 
         builder.Services
             .AddServiceRegistrations(configuration)
-        .AddAuthorization(options=> { 
-            options.AddPolicy("Reviewer", policy => policy.RequireAssertion(c=>c.User.HasClaim(c=>c.Type=="roleid" && c.Value=="8ccdab74-9594-458c-815d-15e4cac1fb51")));
-            options.AddPolicy("Admin", policy => policy.RequireAssertion(c => c.User.HasClaim(c => c.Type == "roleid" && c.Value == "8ccdab74-9594-458c-815d-15e4cac1fb51")));
-            options.AddPolicy("Test", policy=>policy.RequireAssertion(c => c.User.HasClaim(c => c.Type == "roleid" && c.Value == "12312-9594-458c-815d-1231")));
-        })
+        .AddAuthorization(options =>
+        options.FallbackPolicy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .Build())
             .AddGovUkFrontend()
             .AddLogging()
             .AddDataProtectionKeys("das-aodp-web", configuration, builder.Environment.IsDevelopment())
