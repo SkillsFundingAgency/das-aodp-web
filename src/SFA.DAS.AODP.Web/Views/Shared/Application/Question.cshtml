@@ -1,0 +1,11 @@
+﻿@using SFA.DAS.AODP.Web.Models.Application
+@model ApplicationPageViewModel.Question
+
+@if (Model.Type == SFA.DAS.AODP.Models.Forms.FormSchema.QuestionType.Text)
+{
+    <input type="hidden" name="Questions[@(Model.Order - 1)][Id]" value="@Model.Id" />
+    <govuk-input asp-for="@Model" name="Questions[@(Model.Order - 1)][Answer][TextValue]" value="@Model.Answer?.TextValue" input-class="govuk-input--width-50" spellcheck="false">
+        <govuk-input-label is-page-heading="false" class="govuk-label govuk-label--m">@Model.Title</govuk-input-label>
+        <govuk-input-hint>@Model.Hint</govuk-input-hint>
+    </govuk-input>
+}

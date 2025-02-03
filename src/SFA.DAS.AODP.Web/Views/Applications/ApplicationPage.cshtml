@@ -1,0 +1,40 @@
+﻿@using SFA.DAS.AODP.Web.Models.Application
+@model ApplicationPageViewModel
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+        <govuk-back-link asp-controller="Applications" asp-action="ViewApplication" asp-route-organisationId="@Model.OrganisationId" asp-route-applicationId="@Model.PageId">Back to view application</govuk-back-link>
+
+        <form asp-controller="Applications" asp-action="ApplicationPage" method="post">
+
+            @Html.HiddenFor(m => m.OrganisationId)
+            @Html.HiddenFor(m => m.PageId)
+            @Html.HiddenFor(m => m.FormVersionId)
+            @Html.HiddenFor(m => m.ApplicationId)
+            @Html.HiddenFor(m => m.SectionId)
+            @Html.HiddenFor(m => m.Order)
+
+
+            @if (Model.Questions.Count == 1)
+            {
+                <span class="govuk-caption-xl">@Model.Title</span>
+            }
+            else
+            {
+                <h1 class="govuk-heading-l">@Model.Title</h1>
+            }
+
+            @for (int i = 0; i < Model.Questions.Count; i++)
+            {
+
+                await Html.RenderPartialAsync("Application/Question", Model.Questions[i]);
+
+            }
+
+            <govuk-button type="submit">Save and continue</govuk-button>
+
+        </form>
+
+    </div>
+</div>
