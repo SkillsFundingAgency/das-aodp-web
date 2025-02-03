@@ -1,27 +1,24 @@
 ﻿using MediatR;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
-using SFA.DAS.AODP.Web.Models.Qualifications;
+using SFA.DAS.AODP.Domain.FormBuilder.Requests.Qualifications;
+using SFA.DAS.AODP.Domain.Interfaces;
 
 namespace SFA.DAS.AODP.Application.Queries.Test
 {
     public class GetNewQualificationsQueryHandler : IRequestHandler<GetNewQualificationsQuery, GetNewQualificationsQueryResponse>
     {
-        public Task<GetNewQualificationsQueryResponse> Handle(GetNewQualificationsQuery request, CancellationToken cancellationToken)
-        {
-            // Stubbed data until API is available
-            var mockQualifications = new List<NewQualification>
-            {
-                new NewQualification { Id = 1, Title = "EDEXCEL Intermediate GNVQ in Retail and Distributive Services" },
-                new NewQualification { Id = 2, Title = "EDEXCEL Intermediate GNVQ in Art and Design" },
-                new NewQualification { Id = 3, Title = "EDEXCEL Intermediate GNVQ in Business" },
-                new NewQualification { Id = 4, Title = "OCR Intermediate GNVQ in Science" }
-            };
+        private readonly IApiClient _apiClient;
 
-            return Task.FromResult(new GetNewQualificationsQueryResponse
-            {
-                Success = true,
-                NewQualifications = mockQualifications
-            });
+        public GetNewQualificationsQueryHandler(IApiClient apiClient)
+        {
+            _apiClient = apiClient;
+        }
+
+        public async Task<GetNewQualificationsQueryResponse> Handle(GetNewQualificationsQuery request, CancellationToken cancellationToken)
+        {
+            return await _apiClient.Get<GetNewQualificationsQueryResponse>(
+                new GetNewQualificationsApiRequest())
+                ?? new GetNewQualificationsQueryResponse { Success = false };
         }
     }
 }
