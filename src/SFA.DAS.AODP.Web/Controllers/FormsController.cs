@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
@@ -7,6 +8,7 @@ using SFA.DAS.AODP.Web.Models.Forms;
 
 namespace SFA.DAS.AODP.Web.Controllers;
 
+[Authorize(Policy = "Test")]
 public class FormsController : Controller
 {
     private readonly IMediator _mediator;

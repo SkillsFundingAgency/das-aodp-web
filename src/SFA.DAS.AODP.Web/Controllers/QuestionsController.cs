@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Questions;
@@ -10,7 +11,7 @@ using SFA.DAS.AODP.Web.Models.Section;
 using System.Reflection;
 
 namespace SFA.DAS.AODP.Web.Controllers;
-
+[Authorize(Policy = "Reviewer")]
 public class QuestionsController : Controller
 {
     private readonly IMediator _mediator;

@@ -1,11 +1,12 @@
 using GovUk.Frontend.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using Polly;
+using SFA.DAS.AODP.Web.DfeSignIn.Enums;
+using SFA.DAS.AODP.Web.DfeSignIn.Extensions;
+using SFA.DAS.AODP.Web.DfeSignIn.Interfaces;
 using SFA.DAS.AODP.Web.Extensions;
-using SFA.DAS.DfESignIn.Auth.AppStart;
-using SFA.DAS.DfESignIn.Auth.Enums;
-using SFA.DAS.DfESignIn.Auth.Interfaces;
 using System.Reflection;
-
 public class CustomServiceRole : ICustomServiceRole
 {
     public string RoleClaimType => "http://schemas.portal.com/service";
@@ -23,19 +24,18 @@ internal class Program
 
         builder.Services
             .AddServiceRegistrations(configuration)
+        .AddAuthorization(options=> { 
+            options.AddPolicy("Reviewer", policy => policy.RequireAssertion(c=>c.User.HasClaim(c=>c.Type=="roleid" && c.Value=="8ccdab74-9594-458c-815d-15e4cac1fb51")));
+            options.AddPolicy("Admin", policy => policy.RequireAssertion(c => c.User.HasClaim(c => c.Type == "roleid" && c.Value == "8ccdab74-9594-458c-815d-15e4cac1fb51")));
+            options.AddPolicy("Test", policy=>policy.RequireAssertion(c => c.User.HasClaim(c => c.Type == "roleid" && c.Value == "12312-9594-458c-815d-1231")));
+        })
             .AddGovUkFrontend()
             .AddLogging()
             .AddDataProtectionKeys("das-aodp-web", configuration, builder.Environment.IsDevelopment())
             .AddHttpContextAccessor()
             .AddHealthChecks();
 
-        builder.Services.AddAndConfigureDfESignInAuthentication(configuration,
-        "SFA.DAS.AODP.Web",
-        typeof(CustomServiceRole),
-        ClientName.ServiceAdmin,
-        "/signout",
-        "signin");
-
+        builder.Services.AddAndConfigureDfESignInAuthentication(configuration, "SFA.DAS.AODP.Web", typeof(CustomServiceRole), "/signout", "signins");
         builder.Services.AddSession(options =>
         {
             options.IdleTimeout = TimeSpan.FromMinutes(10);
@@ -50,6 +50,9 @@ internal class Program
              {
                  options.Filters.Add<AutoValidateAntiforgeryTokenAttribute>();
              });
+
+
+
 
         //builder.Services.AddMemoryCache(options =>
         //{
@@ -91,9 +94,8 @@ internal class Program
             .UseStaticFiles()
             .UseCookiePolicy()
             .UseRouting()
-               .UseAuthentication()
+            .UseAuthentication()
             .UseAuthorization()
-
             .UseSession()
             .UseEndpoints(endpoints =>
             {

@@ -8,9 +8,12 @@
 
 	<ItemGroup>
 		<PackageReference Include="GovUk.Frontend.AspNetCore" Version="2.7.1" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.12" />
 		<PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="9.0.0" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
-		<PackageReference Include="SFA.DAS.DfESignIn.Auth" Version="17.1.89" />
+		<PackageReference Include="Microsoft.Extensions.Http.Polly" Version="8.0.12" />
+		<PackageReference Include="Polly.Core" Version="8.5.0" />
+		<PackageReference Include="Polly.Extensions.Http" Version="3.0.0" />
 		<PackageReference Include="System.Formats.Asn1" Version="9.0.0" />
 		<PackageReference Include="System.Text.Json" Version="9.0.0" />
 		<PackageReference Include="BuildBundlerMinifier" Version="3.2.449" />
