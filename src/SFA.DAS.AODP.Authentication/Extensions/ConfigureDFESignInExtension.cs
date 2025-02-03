@@ -54,12 +54,14 @@ namespace SFA.DAS.AODP.Web.DfeSignIn.Extensions
                         options.Scope.Add(scope);
                     }
 
-                        options.TokenHandler = new JsonWebTokenHandler()
-                        {
-                            InboundClaimTypeMap = new Dictionary<string, string>(),
-                            TokenLifetimeInMinutes = 90,
-                            SetDefaultTimesOnTokenCreation = true
-                        };
+                    options.TokenValidationParameters = new TokenValidationParameters { RoleClaimType = "roleName" };
+                    // This was updated 
+                    options.TokenHandler = new JsonWebTokenHandler()
+                    {
+                        InboundClaimTypeMap = new Dictionary<string, string>(),
+                        TokenLifetimeInMinutes = 90,
+                        SetDefaultTimesOnTokenCreation = true
+                    };
                     options.ProtocolValidator = new OpenIdConnectProtocolValidator
                     {
                         RequireSub = true,
