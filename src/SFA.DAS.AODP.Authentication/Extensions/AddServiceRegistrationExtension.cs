@@ -1,12 +1,14 @@
 using Microsoft.Extensions.Options;
 using Polly;
-using Polly.Extensions.Http;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using SFA.DAS.AODP.Web.DfeSignIn.Services;
 using SFA.DAS.AODP.Web.DfeSignIn.Configuration;
 using SFA.DAS.AODP.Web.DfeSignIn.Interfaces;
 using SFA.DAS.AODP.Web.DfeSignIn.DfeSignInApi.Client;
 using SFA.DAS.AODP.Web.DfeSignIn.DfeSignInApi.JWTHelpers;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using Polly.Extensions.Http;
 
 namespace SFA.DAS.AODPs.Web.DfeSignIn.Extensions
 {
