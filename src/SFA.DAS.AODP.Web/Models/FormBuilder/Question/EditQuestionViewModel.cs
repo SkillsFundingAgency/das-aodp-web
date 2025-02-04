@@ -62,6 +62,7 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
                 PageId = response.PageId,
                 Id = response.Id,
                 FormVersionId = formVersionId,
+                SectionId = sectionId,
                 Index = response.Order,
                 Hint = response.Hint,
                 Required = response.Required,
