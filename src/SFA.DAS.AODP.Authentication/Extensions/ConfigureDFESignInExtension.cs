@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -7,6 +8,7 @@ using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using SFA.DAS.AODP.Web.DfeSignIn.Configuration;
+using SFA.DAS.AODP.Web.DfeSignIn.Constants;
 using SFA.DAS.AODP.Web.DfeSignIn.Services;
 
 namespace SFA.DAS.AODP.Web.DfeSignIn.Extensions
@@ -36,8 +38,8 @@ namespace SFA.DAS.AODP.Web.DfeSignIn.Extensions
                     options.ResponseType = "code";
                     options.AuthenticationMethod = OpenIdConnectRedirectBehavior.RedirectGet;
                     options.SignedOutRedirectUri = redirectUrl;
-                    options.SignedOutCallbackPath = "/signout-oidc"; // the path the authentication provider posts back after signing out.
-                    options.CallbackPath = "/signin-oidc"; // the path the authentication provider posts back when authenticating.
+                    options.SignedOutCallbackPath = new PathString(RoutePath.OidcSignOut); // the path the authentication provider posts back after signing out.
+                    options.CallbackPath = new PathString(RoutePath.OidcSignIn); // the path the authentication provider posts back when authenticating.
                     options.SaveTokens = true;
                     options.GetClaimsFromUserInfoEndpoint = true;
                     options.ResponseMode = string.Empty;
