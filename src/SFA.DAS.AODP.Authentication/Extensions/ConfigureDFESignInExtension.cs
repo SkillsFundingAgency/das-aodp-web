@@ -36,8 +36,8 @@ namespace SFA.DAS.AODP.Web.DfeSignIn.Extensions
                     options.ResponseType = "code";
                     options.AuthenticationMethod = OpenIdConnectRedirectBehavior.RedirectGet;
                     options.SignedOutRedirectUri = redirectUrl;
-                    options.SignedOutCallbackPath = "/signout-callback-oidc"; // the path the authentication provider posts back after signing out.
-                    options.CallbackPath = "/sign-in"; // the path the authentication provider posts back when authenticating.
+                    options.SignedOutCallbackPath = "/signout-oidc"; // the path the authentication provider posts back after signing out.
+                    options.CallbackPath = "/signin-oidc"; // the path the authentication provider posts back when authenticating.
                     options.SaveTokens = true;
                     options.GetClaimsFromUserInfoEndpoint = true;
                     options.ResponseMode = string.Empty;
