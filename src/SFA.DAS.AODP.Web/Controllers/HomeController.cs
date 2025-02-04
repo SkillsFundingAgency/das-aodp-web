@@ -39,9 +39,9 @@ namespace SFA.DAS.AODP.Web.Controllers
             var authenticationProperties = new AuthenticationProperties();
             authenticationProperties.Parameters.Clear();
             authenticationProperties.Parameters.Add("id_token", idToken);
-            authenticationProperties.Parameters.Add("post_logout_redirect_uri", "/signed-out");
-            return SignOut(
-                authenticationProperties, CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme);
+            authenticationProperties.Parameters.Add("post_logout_redirect_uri", "/signout");
+            return SignOut(authenticationProperties,
+                CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme);
 
         }
 
