@@ -15,11 +15,11 @@ namespace SFA.DAS.AODP.Stubs
         private readonly RSA _rsa;
         private readonly string _kid;
 
-        public JwtTokenGenerator(string authority, string audience)
+        public JwtTokenGenerator(string authority, string audience, string secretKey)
         {
             Authority = authority;
             Audience = audience;
-            _kid = Guid.NewGuid().ToString("N");
+            _kid = secretKey;
             _rsa = RSA.Create(2048);
             _signingCredentials = new SigningCredentials(
                 new RsaSecurityKey(_rsa)

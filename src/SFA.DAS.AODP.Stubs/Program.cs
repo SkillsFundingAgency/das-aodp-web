@@ -21,6 +21,9 @@ namespace SFA.DAS.AODP.Stubs
                 _fakeIdentityService = IdentityServerBuilder.Create(PortIdentityService)                       
                         .WithWellKnownOpenIdEndpoint()
                         .WithSigningKeyInfoEndpoint()
+                        .WithAuthorizeEndpoint()
+                        .WithUserInfoEndpoint()
+                        .WithTokenEndpoint()                        
                         .Build();
             }
             finally
