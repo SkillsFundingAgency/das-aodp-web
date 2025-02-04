@@ -43,6 +43,7 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
             {
                 public Guid? RemoveOption { get; set; }
                 public bool AddOption { get; set; }
+                public int? RemoveOptionIndex { get; set; }
 
             }
 
