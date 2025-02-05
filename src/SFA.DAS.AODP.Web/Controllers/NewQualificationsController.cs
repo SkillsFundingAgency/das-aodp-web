@@ -28,7 +28,11 @@ namespace SFA.DAS.AODP.Web.Controllers
             var viewModel = result.NewQualifications.Select(q => new NewQualificationsViewModel
             {
                 Id = q.Id,
-                Title = q.Title
+                Title = q.Title,
+                AwardingOrganisation = q.AwardingOrganisation,
+                Reference = q.Reference,
+                Status = q.Status
+
             }).ToList();
 
             return View(viewModel);

@@ -9,7 +9,10 @@
 <table class="govuk-table">
     <thead class="govuk-table__head">
         <tr class="govuk-table__row">
+            <th class="govuk-table__header">Reference</th>
             <th class="govuk-table__header">Qualification Title</th>
+            <th class="govuk-table__header">Awarding Organisation</th>
+            <th class="govuk-table__header">Status</th>
             <th class="govuk-table__header">Actions</th>
         </tr>
     </thead>
@@ -17,7 +20,10 @@
         @foreach (var qualification in Model)
         {
             <tr class="govuk-table__row">
+                <td class="govuk-table__cell">@qualification.Reference</td>
                 <td class="govuk-table__cell">@qualification.Title</td>
+                <td class="govuk-table__cell">@qualification.AwardingOrganisation</td>
+                <td class="govuk-table__cell">@qualification.Status</td>
                 <td class="govuk-table__cell">
                     <a class="govuk-link" href="@Url.Action("QualificationDetails", "NewQualifications", new { id = qualification.Id })">
                         View Details
