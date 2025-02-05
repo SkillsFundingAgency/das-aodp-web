@@ -7,12 +7,12 @@ using SFA.DAS.AODP.Authentication.DfeSignInApi.Models;
 
 namespace SFA.DAS.DfESignIn.Auth.UnitTests.Api.Client
 {
-    public class DfeSignInApiHelperTest
+    public class DfeSignInApiTests
     {
         private Mock<HttpMessageHandler> _mockHttpMessageHandler;
         private Mock<ITokenBuilder> _tokenBuilder;
 
-        public DfeSignInApiHelperTest()
+        public DfeSignInApiTests()
         {
             _mockHttpMessageHandler = new Mock<HttpMessageHandler>(MockBehavior.Strict);
             _tokenBuilder = new Mock<ITokenBuilder>();
