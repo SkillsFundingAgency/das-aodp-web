@@ -5,7 +5,7 @@ using SFA.DAS.AODP.Authentication.DfeSignInApi.Client;
 using SFA.DAS.AODP.Authentication.DfeSignInApi.JWTHelpers;
 using SFA.DAS.AODP.Authentication.DfeSignInApi.Models;
 
-namespace SFA.DAS.DfESignIn.Auth.UnitTests.Api.Client
+namespace SFA.DAS.AODP.Authentication.Tests.Api.Client
 {
     public class DfeSignInApiTests
     {
@@ -100,7 +100,7 @@ namespace SFA.DAS.DfESignIn.Auth.UnitTests.Api.Client
             {
                 BaseAddress = new Uri("http://test.com/"),
             };
-            
+
             var subjectUnderTest = new DFESignInAPIClient(httpClient, _tokenBuilder.Object);
 
             // ACT
