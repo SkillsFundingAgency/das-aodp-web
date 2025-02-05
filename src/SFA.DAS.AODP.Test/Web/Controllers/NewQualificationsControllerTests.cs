@@ -31,7 +31,7 @@ public class NewQualificationsControllerTests
             NewQualifications = new List<NewQualification>
             {
                 new NewQualification { Id = 1, Title = "Qualification 1", Reference = "Ref 1", AwardingOrganisation = "AO 1", Status = "Status 1" },
-                new NewQualification { Id = 2, Title = "Qualification 2", Reference = "Ref 2", AwardingOrganisation = "AO 2", Status = "Status 2" },
+                new NewQualification { Id = 2, Title = "Qualification 2", Reference = "Ref 2", AwardingOrganisation = "AO 2", Status = "Status 2" }
             }
         };
         _mediatorMock.Setup(m => m.Send(It.IsAny<GetNewQualificationsQuery>(), default))
