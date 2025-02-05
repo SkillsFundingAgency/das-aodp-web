@@ -1,4 +1,4 @@
-﻿namespace SFA.DAS.AODP.Web.DfeSignIn.DfeSignInApi.Client
+﻿namespace SFA.DAS.AODP.Authentication.DfeSignInApi.Client
 {
     public interface IDFESignInAPIClient
     {

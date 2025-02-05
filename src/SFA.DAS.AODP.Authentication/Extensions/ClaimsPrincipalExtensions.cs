@@ -1,4 +1,4 @@
-﻿namespace SFA.DAS.AODP.Web.DfeSignIn.Extensions
+﻿namespace SFA.DAS.AODP.Authentication.Extensions
 {
     using System.Security.Claims;
 

@@ -1,16 +1,16 @@
 using Microsoft.Extensions.Options;
 using Polly;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using SFA.DAS.AODP.Web.DfeSignIn.Services;
-using SFA.DAS.AODP.Web.DfeSignIn.Configuration;
-using SFA.DAS.AODP.Web.DfeSignIn.Interfaces;
-using SFA.DAS.AODP.Web.DfeSignIn.DfeSignInApi.Client;
-using SFA.DAS.AODP.Web.DfeSignIn.DfeSignInApi.JWTHelpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Polly.Extensions.Http;
+using SFA.DAS.AODP.Authentication.DfeSignInApi.JWTHelpers;
+using SFA.DAS.AODP.Authentication.DfeSignInApi.Client;
+using SFA.DAS.AODP.Authentication.Interfaces;
+using SFA.DAS.AODP.Authentication.Services;
+using SFA.DAS.AODP.Authentication.Configuration;
 
-namespace SFA.DAS.AODPs.Web.DfeSignIn.Extensions
+namespace SFA.DAS.AODP.Authentication.Extensions
 {
     internal static class AddServiceRegistrationExtension
     {

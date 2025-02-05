@@ -7,11 +7,11 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
-using SFA.DAS.AODP.Web.DfeSignIn.Configuration;
-using SFA.DAS.AODP.Web.DfeSignIn.Constants;
-using SFA.DAS.AODP.Web.DfeSignIn.Services;
+using SFA.DAS.AODP.Authentication.Configuration;
+using SFA.DAS.AODP.Authentication.Constants;
+using SFA.DAS.AODP.Authentication.Services;
 
-namespace SFA.DAS.AODP.Web.DfeSignIn.Extensions
+namespace SFA.DAS.AODP.Authentication.Extensions
 {
     internal static class ConfigureDfESignInAuthenticationExtension
     {

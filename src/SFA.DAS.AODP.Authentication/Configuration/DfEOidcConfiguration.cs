@@ -1,4 +1,4 @@
-namespace SFA.DAS.AODP.Web.DfeSignIn.Configuration
+namespace SFA.DAS.AODP.Authentication.Configuration
 {
     public class DfEOidcConfiguration
     {

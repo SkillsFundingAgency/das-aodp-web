@@ -1,4 +1,4 @@
-﻿namespace SFA.DAS.AODP.Web.DfeSignIn.DfeSignInApi.Models
+﻿namespace SFA.DAS.AODP.Authentication.DfeSignInApi.Models
 {
     public class ApiServiceResponse
     {

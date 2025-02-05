@@ -1,4 +1,4 @@
-﻿namespace SFA.DAS.AODP.Web.DfeSignIn.Enums
+﻿namespace SFA.DAS.AODP.Authentication.Enums
 {
     public enum CustomServiceRoleValueType
     {

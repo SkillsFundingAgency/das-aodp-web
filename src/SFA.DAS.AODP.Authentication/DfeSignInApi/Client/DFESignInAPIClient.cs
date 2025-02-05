@@ -1,8 +1,8 @@
 ﻿using Newtonsoft.Json;
-using SFA.DAS.AODP.Web.DfeSignIn.DfeSignInApi.JWTHelpers;
+using SFA.DAS.AODP.Authentication.DfeSignInApi.JWTHelpers;
 using System.Net.Http.Headers;
 
-namespace SFA.DAS.AODP.Web.DfeSignIn.DfeSignInApi.Client
+namespace SFA.DAS.AODP.Authentication.DfeSignInApi.Client
 {
     public class DFESignInAPIClient : IDFESignInAPIClient
     {

@@ -1,6 +1,6 @@
-﻿using SFA.DAS.AODP.Web.DfeSignIn.Enums;
+﻿using SFA.DAS.AODP.Authentication.Enums;
 
-namespace SFA.DAS.AODP.Web.DfeSignIn.Interfaces
+namespace SFA.DAS.AODP.Authentication.Interfaces
 {
     public interface ICustomServiceRole
     {

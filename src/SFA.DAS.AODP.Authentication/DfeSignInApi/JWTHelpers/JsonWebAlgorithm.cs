@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace SFA.DAS.AODP.Web.DfeSignIn.DfeSignInApi.JWTHelpers
+namespace SFA.DAS.AODP.Authentication.DfeSignInApi.JWTHelpers
 {
     public static class JsonWebAlgorithm
     {

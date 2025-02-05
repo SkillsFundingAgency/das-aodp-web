@@ -1,9 +1,9 @@
 using GovUk.Frontend.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SFA.DAS.AODP.Web.DfeSignIn.Enums;
-using SFA.DAS.AODP.Web.DfeSignIn.Extensions;
-using SFA.DAS.AODP.Web.DfeSignIn.Interfaces;
+using SFA.DAS.AODP.Authentication.Enums;
+using SFA.DAS.AODP.Authentication.Extensions;
+using SFA.DAS.AODP.Authentication.Interfaces;
 using SFA.DAS.AODP.Web.Extensions;
 using System.Reflection;
 public class CustomServiceRole : ICustomServiceRole

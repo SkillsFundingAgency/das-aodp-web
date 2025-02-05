@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace SFA.DAS.AODP.Web.DfeSignIn.Extensions
+namespace SFA.DAS.AODP.Authentication.Extensions
 {
     public static class ConfigureSharedAuthenticationExtension
     {
@@ -25,7 +25,7 @@ namespace SFA.DAS.AODP.Web.DfeSignIn.Extensions
                 options.Cookie.SameSite = SameSiteMode.None;
                 options.CookieManager = new ChunkingCookieManager { ChunkSize = 3000 };
                 options.LogoutPath = new PathString(signedOutCallbackPath);
-           
+
             });
         }
     }

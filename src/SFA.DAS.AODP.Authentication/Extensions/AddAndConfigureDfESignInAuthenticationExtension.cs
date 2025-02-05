@@ -1,10 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using SFA.DAS.AODP.Web.DfeSignIn.Extensions;
-using SFA.DAS.AODP.Web.DfeSignIn.Interfaces;
-using SFA.DAS.AODPs.Web.DfeSignIn.Extensions;
 
-namespace SFA.DAS.AODP.Web.DfeSignIn.Extensions
+namespace SFA.DAS.AODP.Authentication.Extensions
 {
     public static class AddAndConfigureDfESignInAuthenticationExtension
     {
@@ -17,7 +14,7 @@ namespace SFA.DAS.AODP.Web.DfeSignIn.Extensions
             string redirectUrl = "")
         {
             services.AddServiceRegistration(configuration, customServiceRole);
-                services.ConfigureDfESignInAuthentication(configuration, authenticationCookieName, signedOutCallbackPath, "/");
+            services.ConfigureDfESignInAuthentication(configuration, authenticationCookieName, signedOutCallbackPath, "/");
         }
     }
 }

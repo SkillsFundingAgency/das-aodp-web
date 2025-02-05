@@ -1,10 +1,10 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Options;
-using SFA.DAS.AODP.Web.DfeSignIn.Configuration;
-using SFA.DAS.AODP.Web.DfeSignIn.Constants;
+using SFA.DAS.AODP.Authentication.Configuration;
+using SFA.DAS.AODP.Authentication.Constants;
 
-namespace SFA.DAS.AODP.Web.DfeSignIn.DfeSignInApi.JWTHelpers
+namespace SFA.DAS.AODP.Authentication.DfeSignInApi.JWTHelpers
 {
     public interface ITokenBuilder
     {

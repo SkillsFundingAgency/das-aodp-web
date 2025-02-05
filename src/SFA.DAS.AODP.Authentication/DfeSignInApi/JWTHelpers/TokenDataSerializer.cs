@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace SFA.DAS.AODP.Web.DfeSignIn.DfeSignInApi.JWTHelpers
+namespace SFA.DAS.AODP.Authentication.DfeSignInApi.JWTHelpers
 {
     public sealed class TokenDataSerializer : ITokenDataSerializer
     {

@@ -1,19 +1,19 @@
 ﻿using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using SFA.DAS.AODP.Web.DfeSignIn.Configuration;
-using SFA.DAS.AODP.Web.DfeSignIn.Constants;
-using SFA.DAS.AODP.Web.DfeSignIn.DfeSignInApi.Client;
-using SFA.DAS.AODP.Web.DfeSignIn.DfeSignInApi.Models;
-using SFA.DAS.AODP.Web.DfeSignIn.Enums;
-using SFA.DAS.AODP.Web.DfeSignIn.Extensions;
-using SFA.DAS.AODP.Web.DfeSignIn.Interfaces;
+using SFA.DAS.AODP.Authentication.Configuration;
+using SFA.DAS.AODP.Authentication.Constants;
+using SFA.DAS.AODP.Authentication.DfeSignInApi.Client;
+using SFA.DAS.AODP.Authentication.DfeSignInApi.Models;
+using SFA.DAS.AODP.Authentication.Enums;
+using SFA.DAS.AODP.Authentication.Extensions;
+using SFA.DAS.AODP.Authentication.Interfaces;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
 
 [assembly: InternalsVisibleTo("SFA.DAS.DfESignIn.Auth.UnitTests")]
 
-namespace SFA.DAS.AODP.Web.DfeSignIn.Services
+namespace SFA.DAS.AODP.Authentication.Services
 {
     internal class DfESignInService : IDfESignInService
     {
@@ -44,7 +44,7 @@ namespace SFA.DAS.AODP.Web.DfeSignIn.Services
                 var ukPrn = userOrganisation.UkPrn?.ToString() ?? "0";
 
                 if (userId != null)
-                    await PopulateDfEClaims(ctx, userId, Convert.ToString(userOrganisation.Id));
+                    await PopulateUserAccessClaims(ctx, userId, Convert.ToString(userOrganisation.Id));
 
                 var displayName = $"{ctx.Principal.GetClaimValue(ClaimName.GivenName)} {ctx.Principal.GetClaimValue(ClaimName.FamilyName)}";
 
@@ -57,7 +57,13 @@ namespace SFA.DAS.AODP.Web.DfeSignIn.Services
             }
         }
 
-        private async Task PopulateDfEClaims(TokenValidatedContext ctx, string userId, string userOrgId)
+        //private async Task PopulateOrganisations(TokenValidatedContext ctx, string userId)
+        //{
+        //    var response = await _DFESignInAPIClient.Get<ApiServiceResponse>($"{_configuration.APIServiceUrl}/services/{_configuration.APIServiceId}/organisations/{userOrgId}/users/{userId}");
+
+        //}
+
+        private async Task PopulateUserAccessClaims(TokenValidatedContext ctx, string userId, string userOrgId)
         {
             var response = await _DFESignInAPIClient.Get<ApiServiceResponse>($"{_configuration.APIServiceUrl}/services/{_configuration.APIServiceId}/organisations/{userOrgId}/users/{userId}");
 

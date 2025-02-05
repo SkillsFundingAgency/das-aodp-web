@@ -1,4 +1,4 @@
-﻿namespace SFA.DAS.AODP.Web.DfeSignIn.Constants
+﻿namespace SFA.DAS.AODP.Authentication.Constants
 {
     public static class ClaimName
     {

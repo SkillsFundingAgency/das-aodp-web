@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 
-namespace SFA.DAS.AODP.Web.DfeSignIn.Services
+namespace SFA.DAS.AODP.Authentication.Services
 {
     public interface IDfESignInService
     {

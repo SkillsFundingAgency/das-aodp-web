@@ -2,9 +2,9 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Options;
-using SFA.DAS.AODP.Web.DfeSignIn.Configuration;
+using SFA.DAS.AODP.Authentication.Configuration;
 
-namespace SFA.DAS.AODP.Web.DfeSignIn.Services
+namespace SFA.DAS.AODP.Authentication.Services
 {
     public class AuthenticationTicketStore : ITicketStore
     {
