@@ -10,7 +10,6 @@ public class CustomServiceRole : ICustomServiceRole
 {
     public string RoleClaimType => "http://schemas.portal.com/service";
     public CustomServiceRoleValueType RoleValueType => CustomServiceRoleValueType.Code;
-
 }
 internal class Program
 {
@@ -48,9 +47,6 @@ internal class Program
              {
                  options.Filters.Add<AutoValidateAntiforgeryTokenAttribute>();
              });
-
-
-
 
         //builder.Services.AddMemoryCache(options =>
         //{
