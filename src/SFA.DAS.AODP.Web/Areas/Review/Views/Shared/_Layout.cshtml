@@ -13,14 +13,14 @@
                 </a>
             </div>
             <div class="dfe-header__content" id="content-header">
-                <ul class="dfe-header__action-links">
+                <ul class="dfe-header__action-links">                    
                     <li>
                         <a href="/" class="govuk-link govuk-link--inverse">Sign out</a>
                     </li>
                 </ul>
                 <div class="dfe-header__menu">
                     <button class="dfe-header__menu-toggle" id="toggle-menu" aria-controls="header-navigation" aria-expanded="false">Menu</button>
-                </div>
+                </div>               
             </div>
         </div>
         <div class="govuk-width-container dfe-header__service-name">
@@ -48,15 +48,7 @@
                                 <path d="M15.5 12a1 1 0 0 1-.29.71l-5 5a1 1 0 0 1-1.42-1.42l4.3-4.29-4.3-4.29a1 1 0 0 1 1.42-1.42l5 5a1 1 0 0 1 .29.71z"></path>
                             </svg>
                         </a>
-                    </li>
-                    <li class="dfe-header__navigation-item">
-                        <a class="dfe-header__navigation-link" asp-action="Index" asp-controller="Forms">                 
-                            Form Management
-                            <svg class="dfe-icon dfe-icon__chevron-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" width="34" height="34">
-                                <path d="M15.5 12a1 1 0 0 1-.29.71l-5 5a1 1 0 0 1-1.42-1.42l4.3-4.29-4.3-4.29a1 1 0 0 1 1.42-1.42l5 5a1 1 0 0 1 .29.71z"></path>
-                            </svg>
-                        </a>
-                    </li>
+                    </li>                    
                 </ul>
             </div>
         </nav>
@@ -116,14 +108,14 @@
 }
 
 @section BodyEnd {
-    @Html.GovUkFrontendScriptImports()
-
-    <environment include="Development">
-        <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <environment include="Development">        
+        <script src="~/lib/dfe-frontend/dist/dfefrontend.js"></script>
         <script src="~/js/site.js"></script>
     </environment>
     <environment exclude="Development">
         <script src="~/js/application.min.js"></script>
+        <script src="~/lib/dfe-frontend/dist/dfefrontend.min.js"></script>
     </environment>
 
     @RenderSection("Scripts", required: false)

@@ -1,0 +1,11 @@
+{
+  "version": "1.0.0",
+  "name": "asp.net",
+  "private": true,
+  "devDependencies": {
+    "gulp": "^5.0.0"
+  },
+  "scripts": {
+    "gulp": "gulp"
+  }
+}

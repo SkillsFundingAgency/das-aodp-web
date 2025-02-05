@@ -7,9 +7,21 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Areas\Review\Data\**" />
+	  <Compile Remove="Areas\Review\Models\**" />
+	  <Content Remove="Areas\Review\Data\**" />
+	  <Content Remove="Areas\Review\Models\**" />
+	  <EmbeddedResource Remove="Areas\Review\Data\**" />
+	  <EmbeddedResource Remove="Areas\Review\Models\**" />
+	  <None Remove="Areas\Review\Data\**" />
+	  <None Remove="Areas\Review\Models\**" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="GovUk.Frontend.AspNetCore" Version="2.7.1" />
 		<PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="9.0.0" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
+		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
 		<PackageReference Include="System.Formats.Asn1" Version="9.0.0" />
 		<PackageReference Include="System.Text.Json" Version="9.0.0" />
 		<PackageReference Include="BuildBundlerMinifier" Version="3.2.449" />
