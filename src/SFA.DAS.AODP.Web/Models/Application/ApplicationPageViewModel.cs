@@ -1,4 +1,5 @@
-﻿using SFA.DAS.AODP.Models.Forms.FormSchema;
+﻿using Newtonsoft.Json.Linq;
+using SFA.DAS.AODP.Models.Forms;
 
 namespace SFA.DAS.AODP.Web.Models.Application
 {
@@ -17,7 +18,7 @@ namespace SFA.DAS.AODP.Web.Models.Application
         public int Order { get; set; }
 
 
-        public List<Question> Questions { get; set; }
+        public List<Question> Questions { get; set; } = new();
 
         public class Question
         {
@@ -27,7 +28,7 @@ namespace SFA.DAS.AODP.Web.Models.Application
             public bool Required { get; set; }
             public string? Hint { get; set; } = string.Empty;
             public int Order { get; set; }
-            public Answer? Answer { get; set; }
+            public Answer? Answer { get; set; } = new();
 
             public TextInputOptions TextInput { get; set; } = new();
             public RadioOptions RadioButton { get; set; } = new();
@@ -37,10 +38,10 @@ namespace SFA.DAS.AODP.Web.Models.Application
         public class Answer
         {
             public string? TextValue { get; set; }
-            public int? IntegerValue { get; set; }
+            public double? NumberValue { get; set; }
             public DateTime? DateValue { get; set; }
             public List<string>? MultipleChoiceValue { get; set; }
-            public string RadioChoiceValue { get; set; }
+            public string? RadioChoiceValue { get; set; }
         }
 
 
@@ -69,7 +70,8 @@ namespace SFA.DAS.AODP.Web.Models.Application
             Guid applicationId,
             Guid formVersionId,
             Guid sectionId,
-            Guid organisationId
+            Guid organisationId,
+            GetApplicationPageAnswersByPageIdQueryResponse answers
         )
         {
             ApplicationPageViewModel model = new ApplicationPageViewModel()
@@ -78,25 +80,55 @@ namespace SFA.DAS.AODP.Web.Models.Application
                 FormVersionId = formVersionId,
                 PageId = value.Id,
                 SectionId = sectionId,
-                Description = value.Description,
                 OrganisationId = organisationId,
-                Title = value.Title,
-                Order = value.Order,
-                Questions = new()
             };
+
+            return PopulateViewModel(model, value, answers);
+        }
+
+        public static ApplicationPageViewModel RepopulatePageDataOnViewModel
+       (
+           GetApplicationPageByIdQueryResponse value,
+           ApplicationPageViewModel viewModel
+       )
+        {
+            return PopulateViewModel(viewModel, value);
+
+        }
+
+        private static ApplicationPageViewModel PopulateViewModel
+        (
+            ApplicationPageViewModel model,
+            GetApplicationPageByIdQueryResponse value,
+
+            GetApplicationPageAnswersByPageIdQueryResponse? answers = null
+        )
+        {
+            model.Description = value.Description;
+            model.Title = value.Title;
+            model.Order = value.Order;
+            model.Questions ??= new();
 
             foreach (var question in value.Questions ?? [])
             {
                 Enum.TryParse(question.Type, out QuestionType type);
-                Question questionModel = new()
+                var questionModel = model.Questions.FirstOrDefault(x => x.Id == question.Id);
+
+                if (questionModel == null)
                 {
-                    Id = question.Id,
-                    Order = question.Order,
-                    Hint = question.Hint,
-                    Required = question.Required,
-                    Type = type,
-                    Title = question.Title
-                };
+                    questionModel = new();
+                    model.Questions.Add(questionModel);
+
+                }
+
+
+                questionModel.Id = question.Id;
+                questionModel.Order = question.Order;
+                questionModel.Hint = question.Hint;
+                questionModel.Required = question.Required;
+                questionModel.Type = type;
+                questionModel.Title = question.Title;
+
 
                 if (type == QuestionType.Text)
                 {
@@ -105,6 +137,7 @@ namespace SFA.DAS.AODP.Web.Models.Application
                         MinLength = question.TextInput.MinLength,
                         MaxLength = question.TextInput.MaxLength,
                     };
+
                 }
                 else if (type == QuestionType.Radio)
                 {
@@ -121,16 +154,33 @@ namespace SFA.DAS.AODP.Web.Models.Application
                     }
                 }
 
-                model.Questions.Add(questionModel);
             }
 
             model.Questions = model.Questions.OrderBy(o => o.Order).ToList();
-            // TODO link to question answer
+            if (answers != null) PopulateExistingAnswers(model.Questions, answers);
 
             return model;
         }
 
-        public static UpdatePageAnswersCommand MapToCommand(ApplicationPageViewModel model)
+        private static void PopulateExistingAnswers(List<Question> questions, GetApplicationPageAnswersByPageIdQueryResponse answers)
+        {
+            foreach (var question in questions ?? [])
+            {
+                var answer = answers.Questions.FirstOrDefault(a => a.QuestionId == question.Id)?.Answer;
+                if (question.Type == QuestionType.Text)
+                {
+                    question.Answer.TextValue = answer?.TextValue;
+
+                }
+                else if (question.Type == QuestionType.Radio)
+                {
+                    question.Answer.RadioChoiceValue = answer?.RadioChoiceValue;
+                }
+            }
+
+        }
+
+        public static UpdatePageAnswersCommand MapToCommand(ApplicationPageViewModel model, GetApplicationPageByIdQueryResponse page)
         {
             UpdatePageAnswersCommand command = new()
             {
@@ -153,6 +203,30 @@ namespace SFA.DAS.AODP.Web.Models.Application
                 if (question.Type == QuestionType.Text)
                 {
                     commandQuestion.Answer.TextValue = question.Answer.TextValue;
+                }
+                else if (question.Type == QuestionType.Radio)
+                {
+                    commandQuestion.Answer.RadioChoiceValue = question.Answer.RadioChoiceValue;
+
+                    var routes = page.Questions.First(p => p.Id == question.Id).Routes;
+
+                    if (routes != null && routes.Any())
+                    {
+                        var relevantRoute = routes.FirstOrDefault(r => r.OptionId.ToString() == question.Answer.RadioChoiceValue);
+                        if (relevantRoute != null)
+                        {
+                            command.Routing = new()
+                            {
+                                OptionId = relevantRoute.OptionId,
+                                EndForm = relevantRoute.EndForm,
+                                EndSection = relevantRoute.EndSection,
+                                NextPageOrder = relevantRoute.NextPageOrder,
+                                NextSectionOrder = relevantRoute.NextSectionOrder,
+                                QuestionId = question.Id,
+                            };
+                        }
+                    }
+
                 }
 
                 command.Questions.Add(commandQuestion);
