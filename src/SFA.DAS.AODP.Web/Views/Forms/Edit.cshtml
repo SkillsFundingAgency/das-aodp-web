@@ -36,23 +36,23 @@
         @if (Model.Status == "Draft")
         {
             <button type="submit"
-                class="govuk-button govuk-button"
+                    class="govuk-button govuk-button--secondary"
                     data-module="govuk-button"
                     data-prevent-double-click="true"
                     value="@Model.Id"
-                    name="AdditionalFormOptions[Publish]">
+                    name="AdditionalFormActions[Publish]">
                 Publish
             </button>
         }
         @if (Model.Status == "Published")
         {
             <button type="submit"
-                    class="govuk-button govuk-button"
+                    class="govuk-button govuk-button--secondary"
                     data-module="govuk-button"
                     data-prevent-double-click="true"
                     value="@Model.Id"
-                    name="AdditionalFormOptions[Publish]">
-                Publish
+                    name="AdditionalFormActions[UnPublish]">
+                Unpublish
             </button>
         }
     </div>
