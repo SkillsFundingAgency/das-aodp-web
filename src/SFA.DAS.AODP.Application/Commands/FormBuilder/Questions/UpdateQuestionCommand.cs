@@ -13,7 +13,6 @@ public class UpdateQuestionCommand : IRequest<BaseMediatrResponse<UpdateQuestion
     public bool Required { get; set; }
     public TextInputOptions TextInput { get; set; } = new();
     public List<RadioOptionItem> RadioOptions { get; set; } = new();
-
     public class TextInputOptions
     {
         public int? MinLength { get; set; }

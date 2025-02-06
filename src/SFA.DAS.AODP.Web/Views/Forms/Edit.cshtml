@@ -68,27 +68,16 @@
                         </a>
                         @if (i != 0)
                         {
-                            <button type="submit"
-                                class="govuk-button"
-                                data-module="govuk-button"
-                                data-prevent-double-click="true"
-                                value="@item.Id"
-                                name="AdditionalFormActions[MoveSectionUp]">
+                            <button class="govuk-button govuk-button--secondary" type="submit" value="@item.Id" name="AdditionalActions[MoveUp]">
                                 Move Up
                             </button>
                         }
                         @if (i != Model.Sections.Count() - 1)
                         {
-                            <button type="submit"
-                                    class="govuk-button"
-                                    data-module="govuk-button"
-                                    data-prevent-double-click="true"
-                                    value="@item.Id"
-                                    name="AdditionalFormActions[MoveSectionDown]">
+                            <button class="govuk-button govuk-button--secondary" type="submit" value="@item.Id" name="AdditionalActions[MoveDown]">
                                 Move Down
                             </button>
                         }
-                        &nbsp;
                     </td>
                 </tr>
             }

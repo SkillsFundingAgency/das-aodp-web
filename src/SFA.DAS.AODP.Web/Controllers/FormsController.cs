@@ -1,8 +1,10 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
+using SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
+using SFA.DAS.AODP.Models.Forms.DTO;
 using SFA.DAS.AODP.Web.Models.Forms;
 
 namespace SFA.DAS.AODP.Web.Controllers;
@@ -70,23 +72,25 @@ public class FormsController : Controller
     [Route("forms/{formVersionId}")]
     public async Task<IActionResult> Edit(string formVersionId, EditFormVersionViewModel editFormVersionViewModel)
     {
-        if (editFormVersionViewModel.AdditionalFormActions.MoveSectionUp != default)
+        if (editFormVersionViewModel.AdditionalActions.MoveUp != default)
         {
-            return await Edit(editFormVersionViewModel.Id);
-        }
-        if (editFormVersionViewModel.AdditionalFormActions.MoveSectionDown != default)
-        {
-            return await Edit(editFormVersionViewModel.Id);
-        }
-        var command = new UpdateFormVersionCommand()
-        {
-            FormVersionId = editFormVersionViewModel.Id,
-            Description = editFormVersionViewModel.Description,
-            Order = editFormVersionViewModel.Order,
-            Name = editFormVersionViewModel.Title
-        };
 
-        var response = await _mediator.Send(command);
+        }
+        if (editFormVersionViewModel.AdditionalActions.MoveDown != default)
+        {
+
+        }
+        else
+        {
+            var command = new UpdateFormVersionCommand()
+            {
+                FormVersionId = editFormVersionViewModel.Id,
+                Description = editFormVersionViewModel.Description,
+                Order = editFormVersionViewModel.Order,
+                Name = editFormVersionViewModel.Title
+            };
+            var response = await _mediator.Send(command);
+        }
         return RedirectToAction(nameof(Edit), new { formVersionId = editFormVersionViewModel.Id });
     }
     #endregion

@@ -68,12 +68,21 @@ public class PagesController : Controller
     [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}")]
     public async Task<IActionResult> Edit(EditPageViewModel model)
     {
+        if (model.AdditionalActions.MoveUp != default)
+        {
+            return View(model);
+        }
+        else if (model.AdditionalActions.MoveDown != default)
+        {
+            return View(model);
+        }
         var command = new UpdatePageCommand()
         {
             Description = model.Description,
             Title = model.Title,
             SectionId = model.SectionId,
             FormVersionId = model.FormVersionId,
+            Order = model.Order,
             Id = model.PageId
         };
 

@@ -12,19 +12,20 @@ public class EditFormVersionViewModel
 
     public List<Section> Sections { get; set; } = new();
 
-    public AdditionalActions AdditionalFormActions { get; set; } = new();
+    public AdditionalFormActions AdditionalActions { get; set; } = new AdditionalFormActions();
+
+    public class AdditionalFormActions
+    {
+        public Guid? MoveUp { get; set; }
+        public Guid? MoveDown { get; set; }
+
+    }
 
     public class Section
     {
         public Guid Id { get; set; }
         public int Order { get; set; }
         public string? Title { get; set; }
-    }
-
-    public class AdditionalActions
-    {
-        public Guid? MoveSectionUp { get; set; }
-        public Guid? MoveSectionDown { get; set; }
     }
 
     public static EditFormVersionViewModel Map(GetFormVersionByIdQueryResponse response)

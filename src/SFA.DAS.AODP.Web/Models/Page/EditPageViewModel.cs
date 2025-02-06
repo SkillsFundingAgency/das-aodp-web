@@ -12,7 +12,14 @@ namespace SFA.DAS.AODP.Web.Models.Page
         public Guid PageId { get; set; }
         public List<Question> Questions { get; set; }
 
+        public AdditionalPageActions AdditionalActions { get; set; } = new AdditionalPageActions();
 
+        public class AdditionalPageActions
+        {
+            public Guid? MoveUp { get; set; }
+            public Guid? MoveDown { get; set; }
+
+        }
         public class Question
         {
             public Guid Id { get; set; }
