@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Section;
@@ -57,21 +58,45 @@ public class SectionsController : Controller
     [Route("forms/{formVersionId}/sections/{sectionId}")]
     public async Task<IActionResult> Edit(EditSectionViewModel model)
     {
-        var command = new UpdateSectionCommand()
+        if (model.AdditionalActions.MoveUp != default)
         {
-            FormVersionId = model.FormVersionId,
-            Description = model.Description,
-            Title = model.Title,
-            Id = model.SectionId
-        };
-
-        var response = await _mediator.Send(command);
-        if (response.Success)
-        {
-            return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId });
+            var command = new MovePageUpCommand()
+            {
+                FormVersionId = model.FormVersionId,
+                SectionId = model.SectionId,
+                PageId = model.AdditionalActions.MoveUp ?? Guid.Empty,
+            };
+            var response = await _mediator.Send(command);
+            return View(model);
         }
+        else if (model.AdditionalActions.MoveDown != default)
+        {
+            var command = new MovePageDownCommand()
+            {
+                FormVersionId = model.FormVersionId,
+                SectionId = model.SectionId,
+                PageId = model.AdditionalActions.MoveDown ?? Guid.Empty,
+            };
+            var response = await _mediator.Send(command);
+            return View(model);
+        }
+        else
+        {
+            var command = new UpdateSectionCommand()
+            {
+                FormVersionId = model.FormVersionId,
+                Description = model.Description,
+                Title = model.Title,
+                Id = model.SectionId
+            };
 
-        return View(model);
+            var response = await _mediator.Send(command);
+            if (response.Success)
+            {
+                return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId });
+            }
+            return View(model);
+        }
 
     }
     #endregion

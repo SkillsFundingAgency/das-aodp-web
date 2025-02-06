@@ -2,8 +2,9 @@
 
 @model ListRoutesViewModel
 
-
-<govuk-back-link href="/">Back to form</govuk-back-link>
+<a class="govuk-back-link" asp-action="Edit" asp-controller="Forms" asp-route-formVersionId="@Model.FormVersionId">
+    Back to Form
+</a>
 
 <h1 class="govuk-heading-l">Routes</h1>
 

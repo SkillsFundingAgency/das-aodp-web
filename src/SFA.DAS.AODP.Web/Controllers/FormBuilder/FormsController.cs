@@ -1,6 +1,8 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
+using SFA.DAS.AODP.Application.Commands.FormBuilder.Questions;
+using SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Form;
@@ -70,15 +72,56 @@ public class FormsController : Controller
     [Route("forms/{formVersionId}")]
     public async Task<IActionResult> Edit(EditFormVersionViewModel editFormVersionViewModel)
     {
-        var command = new UpdateFormVersionCommand()
+        if (editFormVersionViewModel.AdditionalFormActions.Publish != default)
         {
-            FormVersionId = editFormVersionViewModel.Id,
-            Description = editFormVersionViewModel.Description,
-            Order = editFormVersionViewModel.Order,
-            Name = editFormVersionViewModel.Title
-        };
-
-        var response = await _mediator.Send(command);
+            var command = new PublishFormVersionCommand(editFormVersionViewModel.Id);
+            var response = await _mediator.Send(command);
+        }
+        else if (editFormVersionViewModel.AdditionalFormActions.UnPublish != default)
+        {
+            var command = new UnpublishFormVersionCommand(editFormVersionViewModel.Id);
+            var response = await _mediator.Send(command);
+        }
+        else
+        {
+            var command = new UpdateFormVersionCommand()
+            {
+                FormVersionId = editFormVersionViewModel.Id,
+                Description = editFormVersionViewModel.Description,
+                Order = editFormVersionViewModel.Order,
+                Name = editFormVersionViewModel.Title
+            };
+            var response = await _mediator.Send(command);
+        }
+        if (editFormVersionViewModel.AdditionalFormActions.MoveUp != default)
+        {
+            var command = new MoveSectionUpCommand()
+            {
+                FormVersionId = editFormVersionViewModel.Id,
+                SectionId = editFormVersionViewModel.AdditionalFormActions.MoveUp ?? Guid.Empty,
+            };
+            var response = await _mediator.Send(command);
+        }
+        if (editFormVersionViewModel.AdditionalFormActions.MoveDown != default)
+        {
+            var command = new MoveSectionDownCommand()
+            {
+                FormVersionId = editFormVersionViewModel.Id,
+                SectionId = editFormVersionViewModel.AdditionalFormActions.MoveDown ?? Guid.Empty,
+            };
+            var response = await _mediator.Send(command);
+        }
+        else
+        {
+            var command = new UpdateFormVersionCommand()
+            {
+                FormVersionId = editFormVersionViewModel.Id,
+                Description = editFormVersionViewModel.Description,
+                Order = editFormVersionViewModel.Order,
+                Name = editFormVersionViewModel.Title
+            };
+            var response = await _mediator.Send(command);
+        }
         return RedirectToAction(nameof(Edit), new { formVersionId = editFormVersionViewModel.Id });
     }
     #endregion
@@ -92,7 +135,7 @@ public class FormsController : Controller
         if (response.Value == null) return NotFound();
         return View(new DeleteFormViewModel()
         {
-            FormId = formVersionId,
+            FormVersionId = formVersionId,
             Title = response.Value.Title
         });
     }
@@ -101,7 +144,7 @@ public class FormsController : Controller
     [Route("forms/{formVersionId}/delete")]
     public async Task<IActionResult> DeleteConfirmed(DeleteFormViewModel model)
     {
-        var command = new DeleteFormVersionCommand(model.FormId);
+        var command = new DeleteFormVersionCommand(model.FormVersionId);
         var deleteResponse = await _mediator.Send(command);
         return RedirectToAction(nameof(Index));
     }

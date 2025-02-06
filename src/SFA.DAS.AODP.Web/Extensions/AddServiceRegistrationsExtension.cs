@@ -18,6 +18,8 @@ public static class AddServiceRegistrationsExtension
 
         services.AddHttpClient<IApiClient, ApiClient>();
 
+        services.AddValidators();
+
         return services;
     }
 }

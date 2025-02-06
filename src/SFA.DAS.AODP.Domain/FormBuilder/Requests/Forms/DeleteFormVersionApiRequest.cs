@@ -4,12 +4,12 @@ namespace SFA.DAS.AODP.Domain.FormBuilder.Requests.Forms;
 
 public class DeleteFormVersionApiRequest : IDeleteApiRequest
 {
-    private readonly Guid _formVersionId;
+    public readonly Guid FormVersionId;
 
     public DeleteFormVersionApiRequest(Guid formVersionId)
     {
-        _formVersionId = formVersionId;
+        FormVersionId = formVersionId;
     }
 
-    public string DeleteUrl => $"/api/forms/{_formVersionId}";
+    public string DeleteUrl => $"/api/forms/{FormVersionId}";
 }

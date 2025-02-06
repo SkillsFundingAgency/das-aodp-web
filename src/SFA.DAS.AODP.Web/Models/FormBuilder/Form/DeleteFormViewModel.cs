@@ -2,6 +2,6 @@
 
 public class DeleteFormViewModel
 {
-    public Guid FormId { get; set; }
+    public Guid FormVersionId { get; set; }
     public string Title { get; set; }
 }

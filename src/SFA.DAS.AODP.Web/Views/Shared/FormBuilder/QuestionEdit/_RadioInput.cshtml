@@ -23,8 +23,8 @@
                         class="govuk-button govuk-button--warning"
                         data-module="govuk-button"
                         data-prevent-double-click="true"
-                        value="@Model.MultiChoice[i].Id"
-                        name="RadioButton[AdditionalFormActions][RemoveOption]">
+                        value="@i"
+                        name="RadioButton[AdditionalFormActions][RemoveOptionIndex]">
                     Remove
                     <span class="govuk-visually-hidden">option @(i + 1)</span>
                 </button>

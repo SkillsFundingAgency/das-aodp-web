@@ -3,7 +3,7 @@
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-        <govuk-back-link asp-controller="Applications" asp-action="Index" asp-route-organisationId="@Model.OrganisationId">Back to view alls applications</govuk-back-link>
+        <govuk-back-link asp-controller="Applications" asp-action="Index" asp-route-organisationId="@Model.OrganisationId">Back to view all applications</govuk-back-link>
 
         <h1 class="govuk-heading-l">Application overview</h1>
 
@@ -29,7 +29,7 @@
                     Reference
                 </govuk-summary-list-row-key>
                 <govuk-summary-list-row-value>
-                    @Model.Reference
+                    @Model.Reference Coming Soon
                 </govuk-summary-list-row-value>
             </govuk-summary-list-row>
             <govuk-summary-list-row>
@@ -46,27 +46,31 @@
         <h2 class="govuk-heading-m">Application progress</h2>
 
         <ul class="govuk-task-list">
-            @foreach (var sectionInfo in Model.Sections)
+            @foreach (var sectionInfo in Model.Sections.OrderBy(o => o.Order))
             {
                 <li class="govuk-task-list__item govuk-task-list__item--with-link">
                     <div class="govuk-task-list__name-and-hint">
 
 
                         <a class="govuk-link govuk-task-list__link"
-                           asp-action="ViewApplicationSection" asp-route-sectionId="@sectionInfo.Id" asp-route-organisationId="@Model.OrganisationId"
-                           asp-route-applicationId="@Model.ApplicationId" asp-controller="Applications">@sectionInfo.Title</a>
+                           asp-action="ViewApplicationSection"
+                           asp-route-sectionId="@sectionInfo.Id"
+                           asp-controller="Applications"
+                           asp-action="ViewApplication"
+                           asp-route-formVersionId="@Model.FormVersionId"
+                           asp-route-organisationId="@Model.OrganisationId"
+                           asp-route-applicationId="@Model.ApplicationId">@sectionInfo.Title</a>
 
-
-                        @if (sectionInfo.RemainingMandatoryQuestions > 0)
+                        @if (sectionInfo.PagesRemaining.HasValue && sectionInfo.PagesRemaining > 0)
                         {
                             <div class="govuk-task-list__hint">
-                                @sectionInfo.RemainingMandatoryQuestions mandatory @(sectionInfo.RemainingMandatoryQuestions == 1 ? "question" : "questions") remaining
+                                @sectionInfo.PagesRemaining @(sectionInfo.PagesRemaining == 1 ? "page" : "pages") remaining
                             </div>
                         }
 
                     </div>
                     <div class="govuk-task-list__status">
-                        @(sectionInfo.RemainingMandatoryQuestions > 0 ? "Completed" : "In progress")
+                        @(!sectionInfo.PagesRemaining.HasValue || sectionInfo.PagesRemaining.Value == 0 ? "Completed" : "In progress")
                     </div>
                 </li>
             }

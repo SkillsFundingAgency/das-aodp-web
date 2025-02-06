@@ -4,7 +4,47 @@
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
 
-        <govuk-back-link asp-controller="Applications" asp-action="ViewApplication" asp-route-organisationId="@Model.OrganisationId" asp-route-applicationId="@Model.PageId">Back to view application</govuk-back-link>
+        <govuk-back-link class="govuk-link govuk-task-list__link"
+           asp-action="ViewApplicationSection"
+           asp-route-sectionId="@Model.SectionId"
+           asp-controller="Applications"
+           asp-route-formVersionId="@Model.FormVersionId"
+           asp-route-organisationId="@Model.OrganisationId"
+           asp-route-applicationId="@Model.ApplicationId">Back to view section</govuk-back-link>
+
+        @if (!ViewContext.ModelState.IsValid)
+        {
+            <div class="govuk-error-summary" data-module="govuk-error-summary">
+                <div role="alert">
+                    <h2 class="govuk-error-summary__title">
+                        There is a problem
+                    </h2>
+                    <div class="govuk-error-summary__body">
+                        <ul class="govuk-list govuk-error-summary__list">
+
+                            @foreach (var error in ViewContext.ModelState)
+                            {
+                                var question = Model.Questions.FirstOrDefault(q => q.Id.ToString() == error.Key);
+                                var errorMsg = @error.Value.Errors.FirstOrDefault()?.ErrorMessage;
+                                if (question != null)
+                                {
+                                    <li>
+                                        <a href="#question-@question.Id">Question @(question.Order). @errorMsg</a>
+                                    </li>
+                                }
+                                else
+                                {
+                                    <li>@errorMsg</li>
+                                }
+
+                            }
+
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        }
+
 
         <form asp-controller="Applications" asp-action="ApplicationPage" method="post">
 
@@ -28,7 +68,9 @@
             @for (int i = 0; i < Model.Questions.Count; i++)
             {
 
+
                 await Html.RenderPartialAsync("Application/Question", Model.Questions[i]);
+
 
             }
 

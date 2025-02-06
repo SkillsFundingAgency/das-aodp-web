@@ -9,6 +9,19 @@ public class UpdatePageAnswersCommand : IRequest<BaseMediatrResponse<UpdatePageA
     public List<Question> Questions { get; set; } = new();
     public Guid ApplicationId { get; set; }
 
+    public Route Routing { get; set; } = new();
+
+
+    public class Route
+    {
+        public Guid QuestionId { get; set; }
+        public Guid OptionId { get; set; }
+        public int? NextPageOrder { get; set; }
+        public int? NextSectionOrder { get; set; }
+        public bool EndForm { get; set; }
+        public bool EndSection { get; set; }
+    }
+
     public class Question
     {
         public Guid QuestionId { get; set; }
@@ -19,7 +32,7 @@ public class UpdatePageAnswersCommand : IRequest<BaseMediatrResponse<UpdatePageA
     public class Answer
     {
         public string? TextValue { get; set; }
-        public int? IntegerValue { get; set; }
+        public decimal? NumberValue { get; set; }
         public DateTime? DateValue { get; set; }
         public List<string>? MultipleChoiceValue { get; set; }
         public string RadioChoiceValue { get; set; }

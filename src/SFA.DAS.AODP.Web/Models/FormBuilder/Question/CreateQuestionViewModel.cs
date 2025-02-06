@@ -1,5 +1,4 @@
-﻿using SFA.DAS.AODP.Models.Forms.FormSchema;
-using SFA.DAS.AODP.Models.Forms.Validators;
+﻿using SFA.DAS.AODP.Models.Forms;
 using System.ComponentModel.DataAnnotations;
 
 namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question

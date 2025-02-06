@@ -1,6 +1,6 @@
 ﻿using SFA.DAS.AODP.Application.Commands.FormBuilder.Questions;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Questions;
-using SFA.DAS.AODP.Models.Forms.FormSchema;
+using SFA.DAS.AODP.Models.Forms;
 using System.ComponentModel.DataAnnotations;
 
 namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
@@ -43,6 +43,7 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
             {
                 public Guid? RemoveOption { get; set; }
                 public bool AddOption { get; set; }
+                public int? RemoveOptionIndex { get; set; }
 
             }
 
@@ -62,6 +63,7 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
                 PageId = response.PageId,
                 Id = response.Id,
                 FormVersionId = formVersionId,
+                SectionId = sectionId,
                 Index = response.Order,
                 Hint = response.Hint,
                 Required = response.Required,
