@@ -86,12 +86,16 @@ public class QuestionsController : Controller
             model.RadioButton.MultiChoice.Add(new());
             return View(model);
         }
-        else if (model.RadioButton.AdditionalFormActions.RemoveOption != default)
+        else if (model.RadioButton.AdditionalFormActions.RemoveOptionIndex.HasValue)
         {
-            model.RadioButton.MultiChoice = model.RadioButton.MultiChoice.Where(o => o.Id != model.RadioButton.AdditionalFormActions.RemoveOption).ToList();
+            int indexToRemove = model.RadioButton.AdditionalFormActions.RemoveOptionIndex.Value;
+            if (indexToRemove >= 0 && indexToRemove < model.RadioButton.MultiChoice.Count)
+            {
+                model.RadioButton.MultiChoice.RemoveAt(indexToRemove);
+            }
             return View(model);
-
         }
+
         var command = EditQuestionViewModel.MapToCommand(model);
         var response = await _mediator.Send(command);
 
