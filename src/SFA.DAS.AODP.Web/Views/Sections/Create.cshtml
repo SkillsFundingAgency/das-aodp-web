@@ -1,5 +1,9 @@
 ﻿@model CreateSectionViewModel
 
+<a class="govuk-back-link" asp-action="Edit" asp-controller="Forms" asp-route-formVersionId="@Model.FormVersionId">
+    Back to Form
+</a>
+
 <h1 class="govuk-heading-l">Create Section</h1>
 
 <form asp-action="Create" method="post">

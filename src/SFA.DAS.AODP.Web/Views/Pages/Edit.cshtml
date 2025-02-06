@@ -1,5 +1,9 @@
 ﻿@model EditPageViewModel
 
+<a class="govuk-back-link" asp-action="Edit" asp-controller="Sections" asp-route-formVersionId="@Model.FormVersionId" asp-route-sectionId="@Model.SectionId">
+    Back to Section
+</a>
+
 <h1 class="govuk-heading-l">Edit Page</h1>
 
 <form asp-action="Edit" method="post">
