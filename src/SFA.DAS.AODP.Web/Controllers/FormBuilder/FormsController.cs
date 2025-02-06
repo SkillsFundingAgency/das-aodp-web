@@ -1,6 +1,8 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
+using SFA.DAS.AODP.Application.Commands.FormBuilder.Questions;
+using SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Form;
@@ -91,7 +93,35 @@ public class FormsController : Controller
             };
             var response = await _mediator.Send(command);
         }
-
+        if (editFormVersionViewModel.AdditionalFormActions.MoveUp != default)
+        {
+            var command = new MoveSectionUpCommand()
+            {
+                FormVersionId = editFormVersionViewModel.Id,
+                SectionId = editFormVersionViewModel.AdditionalFormActions.MoveUp ?? Guid.Empty,
+            };
+            var response = await _mediator.Send(command);
+        }
+        if (editFormVersionViewModel.AdditionalFormActions.MoveDown != default)
+        {
+            var command = new MoveSectionDownCommand()
+            {
+                FormVersionId = editFormVersionViewModel.Id,
+                SectionId = editFormVersionViewModel.AdditionalFormActions.MoveDown ?? Guid.Empty,
+            };
+            var response = await _mediator.Send(command);
+        }
+        else
+        {
+            var command = new UpdateFormVersionCommand()
+            {
+                FormVersionId = editFormVersionViewModel.Id,
+                Description = editFormVersionViewModel.Description,
+                Order = editFormVersionViewModel.Order,
+                Name = editFormVersionViewModel.Title
+            };
+            var response = await _mediator.Send(command);
+        }
         return RedirectToAction(nameof(Edit), new { formVersionId = editFormVersionViewModel.Id });
     }
     #endregion

@@ -96,6 +96,7 @@ public class QuestionsController : Controller
             return View(model);
         }
 
+
         var command = EditQuestionViewModel.MapToCommand(model);
         var response = await _mediator.Send(command);
 
@@ -104,21 +105,6 @@ public class QuestionsController : Controller
 
 
 
-    //[HttpPost]
-    //public async Task<IActionResult> Create(Page page)
-    //{
-    //    var command = new CreatePageCommand
-    //    {
-    //        SectionId = page.SectionId,
-    //        Title = page.Title,
-    //        Description = page.Description,
-    //        Order = page.Order,
-    //        NextPageId = page.NextPageId,
-    //    };
-
-    //    var createPageResponse = await _mediator.Send(command);
-    //    return RedirectToAction("Edit", "Section", new { id = page.SectionId });
-    //}
     #endregion
 
 

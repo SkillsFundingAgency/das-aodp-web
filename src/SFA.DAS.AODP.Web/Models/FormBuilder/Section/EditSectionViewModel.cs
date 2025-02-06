@@ -11,6 +11,14 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Section
         public Guid FormVersionId { get; set; }
         public Guid SectionId { get; set; }
         public List<Page> Pages { get; set; } = new();
+        public AdditionalSectionActions AdditionalActions { get; set; } = new AdditionalSectionActions();
+
+        public class AdditionalSectionActions
+        {
+            public Guid? MoveUp { get; set; }
+            public Guid? MoveDown { get; set; }
+
+        }
         public class Page
         {
             public Guid Id { get; set; }
