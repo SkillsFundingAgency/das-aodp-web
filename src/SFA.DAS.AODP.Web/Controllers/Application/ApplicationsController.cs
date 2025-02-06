@@ -1,70 +1,52 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Web.Models.Application;
+using SFA.DAS.AODP.Web.Validators;
 
 namespace SFA.DAS.AODP.Web.Controllers.Application
 {
     public class ApplicationsController : Controller
     {
         private readonly IMediator _mediator;
+        private readonly IApplicationAnswersValidator _validator;
 
-        public ApplicationsController(IMediator mediator)
+        public ApplicationsController(IMediator mediator, IApplicationAnswersValidator validator)
         {
             _mediator = mediator;
+            _validator = validator;
         }
 
         [HttpGet]
         [Route("organisations/{organisationId}")]
-        public IActionResult Index(Guid organisationId)
+        public async Task<IActionResult> IndexAsync(Guid organisationId)
         {
-            return View(new ListApplicationsViewModel()
-            {
-                OrganisationId = Guid.NewGuid(),
-                Applications = new()
-                 {
-                     new()
-                     {
-                          CreatedDate = DateTime.Now,
-                           Id = Guid.NewGuid(),
-                            LastSubmittedDate = DateTime.Now,
-                             Name = "name",
-                              Owner  = "owner",
-                               Reference = "RF123",
-                                Submitted = false
-                     }
-                 }
-            });
+            var applications = await _mediator.Send(new GetApplicationsByOrganisationIdQuery(organisationId));
+            ListApplicationsViewModel model = ListApplicationsViewModel.Map(applications.Value, organisationId);
+            return View(model);
         }
 
         [HttpGet]
         [Route("organisations/{organisationId}/forms")]
-        public IActionResult AvailableForms(Guid organisationId)
+        public async Task<IActionResult> AvailableFormsAsync(Guid organisationId)
         {
-            return View(new ListAvailableFormsViewModel()
-            {
-                OrganisationId = organisationId,
-                Forms = new()
-                {
-                    new()
-                    {
-                         Id = Guid.NewGuid(),
-                         Title = "name",
-                          Description = "description",
-                          Order = 1,
-                    }
-                }
-            });
+            var formsResponse = await _mediator.Send(new GetApplicationFormsQuery());
+            ListAvailableFormsViewModel model = ListAvailableFormsViewModel.Map(formsResponse.Value, organisationId);
+            return View(model);
         }
 
         [HttpGet]
         [Route("organisations/{organisationId}/forms/{formVersionId}/Create")]
-        public IActionResult Create(Guid organisationId, Guid formVersionId)
+        public async Task<IActionResult> Create(Guid organisationId, Guid formVersionId)
         {
+            var formVersion = await _mediator.Send(new GetFormVersionByIdQuery(formVersionId));
+            if (!formVersion.Success) return StatusCode(StatusCodes.Status500InternalServerError);
+
             return View(new CreateApplicationViewModel()
             {
                 OrganisationId = organisationId,
                 FormVersionId = formVersionId,
-                FormTitle = "Some form"
+                FormTitle = formVersion.Value.Title
             });
         }
 
@@ -89,63 +71,41 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
 
             if (!response.Success) return NotFound();
 
-            return RedirectToAction(nameof(ViewApplication), new { organisationId = createApplicationViewModel.OrganisationId, applicationId = response.Value.Id });
+            return RedirectToAction(nameof(ViewApplication), new { organisationId = createApplicationViewModel.OrganisationId, applicationId = response.Value.Id, formVersionId = createApplicationViewModel.FormVersionId });
         }
 
 
         [HttpGet]
-        [Route("organisations/{organisationId}/applications/{applicationId}")]
-        public IActionResult ViewApplication(Guid organisationId, Guid applicationId)
+        [Route("organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}")]
+        public async Task<IActionResult> ViewApplication(Guid organisationId, Guid applicationId, Guid formVersionId)
         {
-            return View(new ApplicationFormViewModel()
-            {
-                OrganisationId = organisationId,
-                ApplicationName = "Application name",
-                Owner = "owenr",
-                FormVersionId = Guid.NewGuid(),
-                IsCompleted = true,
-                IsSubmitted = true,
-                Sections = new()
-                {
-                          new()   {
-                               Id = Guid.NewGuid(),
-                                Description = "description",
-                                Order = 1,
-                                RemainingMandatoryQuestions = 1,
-                                Title = "title",
-                          }
-                }
+            var formsResponse = await _mediator.Send(new GetApplicationFormByIdQuery(formVersionId));
 
-            });
+            var statusResponse = await _mediator.Send(new GetApplicationFormStatusByApplicationIdQuery(formVersionId, applicationId));
+
+            ApplicationFormViewModel model = ApplicationFormViewModel.Map(formsResponse.Value, statusResponse.Value, formVersionId, organisationId, applicationId);
+
+            return View(model);
+
         }
 
 
         [HttpGet]
-        [Route("organisations/{organisationId}/applications/{applicationId}/sections/{sectionId}")]
-        public IActionResult ViewApplicationSection(Guid organisationId, Guid applicationId, Guid sectionId)
+        [Route("organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/sections/{sectionId}")]
+        public async Task<IActionResult> ViewApplicationSection(Guid organisationId, Guid applicationId, Guid sectionId, Guid formVersionId)
         {
-            return View(new ApplicationSectionViewModel()
-            {
-                OrganisationId = organisationId,
-                ApplicationName = "Application name",
-                FormVersionId = Guid.NewGuid(),
-                IsCompleted = true,
-                IsSubmitted = true,
-                Pages = new()
-                {
-                          new()   {
-                               Id = Guid.NewGuid(),
-                                Order = 1,
-                                Title = "title",
-                          }
-                }
+            var sectionResponse = await _mediator.Send(new GetApplicationSectionByIdQuery(sectionId, formVersionId));
 
-            });
+            var sectionStatus = await _mediator.Send(new GetApplicationSectionStatusByApplicationIdQuery(sectionId, formVersionId, applicationId));
+
+            ApplicationSectionViewModel model = ApplicationSectionViewModel.Map(sectionResponse.Value, sectionStatus.Value, organisationId, formVersionId, sectionId, applicationId);
+
+            return View(model);
         }
 
         [HttpGet]
         [Route("organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/sections/{sectionId}/pages/{pageOrder}")]
-        public async Task<IActionResult> ApplicationPageAsync(Guid organisationId, Guid applicationId, Guid sectionId, int pageOrder, Guid formVersionId)
+        public async Task<IActionResult> ApplicationPage(Guid organisationId, Guid applicationId, Guid sectionId, int pageOrder, Guid formVersionId)
         {
             var request = new GetApplicationPageByIdQuery()
             {
@@ -157,7 +117,10 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
             var response = await _mediator.Send(request);
             if (!response.Success) return NotFound();
 
-            ApplicationPageViewModel viewModel = ApplicationPageViewModel.MapToViewModel(response.Value, applicationId, formVersionId, sectionId, organisationId);
+            var answers = await _mediator.Send(new GetApplicationPageAnswersByPageIdQuery(applicationId, response.Value.Id, sectionId, formVersionId));
+            if (!answers.Success) return NotFound();
+
+            ApplicationPageViewModel viewModel = ApplicationPageViewModel.MapToViewModel(response.Value, applicationId, formVersionId, sectionId, organisationId, answers.Value);
 
             return View(viewModel);
         }
@@ -166,17 +129,46 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
         [Route("organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/sections/{sectionId}/pages/{pageOrder}")]
         public async Task<IActionResult> ApplicationPageAsync(ApplicationPageViewModel model)
         {
-            var command = ApplicationPageViewModel.MapToCommand(model);
+            var request = new GetApplicationPageByIdQuery()
+            {
+                FormVersionId = model.FormVersionId,
+                PageOrder = model.Order,
+                SectionId = model.SectionId,
+            };
 
-            var response = await _mediator.Send(command);
-
+            var response = await _mediator.Send(request);
             if (!response.Success) return NotFound();
 
-            //refetch
-            // map answers back
+            _validator.ValidateApplicationPageAnswers(ModelState, response.Value, model);
 
-            return Ok();
+            if (!ModelState.IsValid)
+            {
+                model = ApplicationPageViewModel.RepopulatePageDataOnViewModel(response.Value, model);
+                return View(model);
+            }
+
+            var command = ApplicationPageViewModel.MapToCommand(model, response.Value);
+
+            var commandResponse = await _mediator.Send(command);
+
+            if (!commandResponse.Success) return NotFound();
+
+            bool endSection = command.Routing?.EndSection == true || response.Value.TotalSectionPages == response.Value.Order;
+            if (endSection) return RedirectToAction(nameof(ViewApplicationSection), new { organisationId = model.OrganisationId, applicationId = model.ApplicationId, sectionId = model.SectionId, formVersionId = model.FormVersionId });
+
+
+            return RedirectToAction(nameof(ApplicationPage),
+                new
+                {
+                    organisationId = model.OrganisationId,
+                    applicationId = model.ApplicationId,
+                    sectionId = model.SectionId,
+                    pageOrder = command.Routing?.NextPageOrder ?? response.Value.Order + 1,
+                    formVersionId = model.FormVersionId
+                });
         }
-    }
 
+    }
 }
+
+

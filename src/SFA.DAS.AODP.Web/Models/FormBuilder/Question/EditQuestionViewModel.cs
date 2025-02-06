@@ -1,6 +1,6 @@
 ﻿using SFA.DAS.AODP.Application.Commands.FormBuilder.Questions;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Questions;
-using SFA.DAS.AODP.Models.Forms.FormSchema;
+using SFA.DAS.AODP.Models.Forms;
 using System.ComponentModel.DataAnnotations;
 
 namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
