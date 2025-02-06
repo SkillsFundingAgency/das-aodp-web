@@ -12,16 +12,12 @@
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Name</govuk-input-label>
         </govuk-input>
     </div>
-    <div class="govuk-form-group">
-        <govuk-input asp-for="@Model.Order" input-class="govuk-input--width-10" inputmode="number" pattern="[0-9]*" spellcheck="false">
-            <govuk-input-label is-page-heading="false" class="govuk-label--s">Order</govuk-input-label>
-        </govuk-input>
-    </div>
 
     <div class="govuk-form-group">
 
         <govuk-textarea asp-for="@Model.Description">
             <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Description</govuk-textarea-label>
+            <govuk-textarea-hint>This field will allow for links to be provided in the upcoming sprints.</govuk-textarea-hint>
         </govuk-textarea>
     </div>
 

@@ -35,7 +35,6 @@ public class PagesController : Controller
         {
             SectionId = model.SectionId,
             FormVersionId = model.FormVersionId,
-            Description = model.Description,
             Title = model.Title
 
         };
@@ -92,7 +91,6 @@ public class PagesController : Controller
         {
             var command = new UpdatePageCommand()
             {
-                Description = model.Description,
                 Title = model.Title,
                 SectionId = model.SectionId,
                 FormVersionId = model.FormVersionId,

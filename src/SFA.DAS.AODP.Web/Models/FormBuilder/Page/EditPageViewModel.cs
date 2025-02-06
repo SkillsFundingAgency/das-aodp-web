@@ -6,7 +6,6 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Page
     {
         public int Order { get; set; }
         public string Title { get; set; }
-        public string Description { get; set; }
         public Guid FormVersionId { get; set; }
         public Guid SectionId { get; set; }
         public Guid PageId { get; set; }
@@ -45,7 +44,6 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Page
         {
             return new()
             {
-                Description = source.Description,
                 Order = source.Order,
                 Title = source.Title,
                 FormVersionId = formVersionId,

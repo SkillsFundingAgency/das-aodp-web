@@ -13,19 +13,6 @@
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Name</govuk-input-label>
         </govuk-input>
     </div>
-    <div class="govuk-form-group">
-
-        <govuk-textarea asp-for="@Model.Description">
-            <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Description</govuk-textarea-label>
-        </govuk-textarea>
-    </div>
-
-    <div class="govuk-form-group">
-        <govuk-input name="Order" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" spellcheck="false" value="@Model.Order" disabled="true">
-            <govuk-input-label is-page-heading="false" class="govuk-label--s">Order</govuk-input-label>
-        </govuk-input>
-    </div>
-
 
     <button class="govuk-button" type="submit">Save</button>
     <a class="govuk-button govuk-button--secondary"
@@ -49,7 +36,7 @@
         </tr>
     </thead>
     <tbody class="govuk-table__body">
-        @foreach (var (item, i) in Model.Questions.Select((v, i) => (v, i)))
+        @foreach (var (item, i) in Model.Questions.OrderBy(o => o.Order).Select((v, i) => (v, i)))
         {
             <tr class="govuk-table__row">
                 <td>@item.Title</td>

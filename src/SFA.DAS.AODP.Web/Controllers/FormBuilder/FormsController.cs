@@ -46,7 +46,6 @@ public class FormsController : Controller
         {
             Title = viewModel.Name,
             Description = viewModel.Description,
-            Order = viewModel.Order
         };
 
         var response = await _mediator.Send(command);
