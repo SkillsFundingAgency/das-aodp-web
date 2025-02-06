@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
+using SFA.DAS.AODP.Application.Commands.FormBuilder.Questions;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
@@ -74,11 +75,21 @@ public class FormsController : Controller
     {
         if (editFormVersionViewModel.AdditionalActions.MoveUp != default)
         {
-
+            var command = new MoveSectionUpCommand()
+            {
+                FormVersionId = editFormVersionViewModel.Id,
+                SectionId = editFormVersionViewModel.AdditionalActions.MoveUp ?? Guid.Empty,
+            };
+            var response = await _mediator.Send(command);
         }
         if (editFormVersionViewModel.AdditionalActions.MoveDown != default)
         {
-
+            var command = new MoveSectionDownCommand()
+            {
+                FormVersionId = editFormVersionViewModel.Id,
+                SectionId = editFormVersionViewModel.AdditionalActions.MoveDown ?? Guid.Empty,
+            };
+            var response = await _mediator.Send(command);
         }
         else
         {

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
+using SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 using SFA.DAS.AODP.Web.Models.Forms;
 using SFA.DAS.AODP.Web.Models.Section;
 
@@ -60,10 +61,24 @@ public class SectionsController : Controller
     {
         if (model.AdditionalActions.MoveUp != default)
         {
+            var command = new MovePageUpCommand()
+            {
+                FormVersionId = model.FormVersionId,
+                SectionId = model.SectionId,
+                PageId = model.AdditionalActions.MoveUp ?? Guid.Empty,
+            };
+            var response = await _mediator.Send(command);
             return View(model);
         }
         else if (model.AdditionalActions.MoveDown != default)
         {
+            var command = new MovePageDownCommand()
+            {
+                FormVersionId = model.FormVersionId,
+                SectionId = model.SectionId,
+                PageId = model.AdditionalActions.MoveDown ?? Guid.Empty,
+            };
+            var response = await _mediator.Send(command);
             return View(model);
         }
         else
