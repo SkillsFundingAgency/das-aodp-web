@@ -5,9 +5,12 @@
         public Guid OrganisationId { get; set; }
         public List<Form> Forms { get; set; } = new();
 
-        public static ListAvailableFormsViewModel Map(GetApplicationFormsQueryResponse value)
+        public static ListAvailableFormsViewModel Map(GetApplicationFormsQueryResponse value, Guid organisationId)
         {
-            ListAvailableFormsViewModel model = new();
+            ListAvailableFormsViewModel model = new()
+            {
+                OrganisationId = organisationId
+            };
 
             foreach (var form in value.Forms)
             {
@@ -23,7 +26,7 @@
             return model;
         }
 
-      
+
 
         public class Form
         {

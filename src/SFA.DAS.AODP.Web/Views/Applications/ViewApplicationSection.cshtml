@@ -3,8 +3,14 @@
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-
-        <govuk-back-link asp-controller="Applications" asp-action="ViewApplication" asp-route-organisationId="@Model.OrganisationId" asp-route-applicationId="@Model.ApplicationId">Back to view application</govuk-back-link>
+        <govuk-back-link class="govuk-link"
+                         asp-action="ViewApplication"
+                         asp-route-organisationId="@Model.OrganisationId"
+                         asp-route-applicationId="@Model.ApplicationId"
+                         asp-route-formVersionId="@Model.FormVersionId"
+                         asp-controller="Applications">
+            Back to view application
+        </govuk-back-link>
 
         <h1 class="govuk-heading-l">@Model.SectionTitle</h1>
 

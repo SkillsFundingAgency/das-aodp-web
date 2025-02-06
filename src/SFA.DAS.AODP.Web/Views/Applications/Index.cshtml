@@ -21,8 +21,8 @@
         @foreach (var item in Model.Applications)
         {
             <tr class="govuk-table__row">
-                <td>Coming soon</td>
-                <td>
+                <td class="govuk-table__cell">Coming soon</td>
+                <td class="govuk-table__cell">
                     <a class="govuk-link"
                        asp-action="ViewApplication"
                        asp-route-organisationId="@Model.OrganisationId"
@@ -30,8 +30,8 @@
                        asp-route-formVersionId="@item.FormVersionId"
                        asp-controller="Applications">@item.Name</a>
                 </td>
-                <td>@(item.Submitted ? "Completed" : "In Progress")</td>
-                <td>@item.Owner</td>
+                <td class="govuk-table__cell">@(item.Submitted ? "Completed" : "In Progress")</td>
+                <td class="govuk-table__cell">@item.Owner</td>
             </tr>
         }
     </tbody>

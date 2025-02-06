@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Web.Models.Application;
 using SFA.DAS.AODP.Web.Validators;
 
@@ -30,19 +31,22 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
         public async Task<IActionResult> AvailableFormsAsync(Guid organisationId)
         {
             var formsResponse = await _mediator.Send(new GetApplicationFormsQuery());
-            ListAvailableFormsViewModel model = ListAvailableFormsViewModel.Map(formsResponse.Value);
+            ListAvailableFormsViewModel model = ListAvailableFormsViewModel.Map(formsResponse.Value, organisationId);
             return View(model);
         }
 
         [HttpGet]
         [Route("organisations/{organisationId}/forms/{formVersionId}/Create")]
-        public IActionResult Create(Guid organisationId, Guid formVersionId)
+        public async Task<IActionResult> Create(Guid organisationId, Guid formVersionId)
         {
+            var formVersion = await _mediator.Send(new GetFormVersionByIdQuery(formVersionId));
+            if (!formVersion.Success) return StatusCode(StatusCodes.Status500InternalServerError);
+
             return View(new CreateApplicationViewModel()
             {
                 OrganisationId = organisationId,
                 FormVersionId = formVersionId,
-                FormTitle = "Some form"
+                FormTitle = formVersion.Value.Title
             });
         }
 
@@ -67,13 +71,13 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
 
             if (!response.Success) return NotFound();
 
-            return RedirectToAction(nameof(ViewApplicationAsync), new { organisationId = createApplicationViewModel.OrganisationId, applicationId = response.Value.Id });
+            return RedirectToAction(nameof(ViewApplication), new { organisationId = createApplicationViewModel.OrganisationId, applicationId = response.Value.Id, formVersionId = createApplicationViewModel.FormVersionId });
         }
 
 
         [HttpGet]
         [Route("organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}")]
-        public async Task<IActionResult> ViewApplicationAsync(Guid organisationId, Guid applicationId, Guid formVersionId)
+        public async Task<IActionResult> ViewApplication(Guid organisationId, Guid applicationId, Guid formVersionId)
         {
             var formsResponse = await _mediator.Send(new GetApplicationFormByIdQuery(formVersionId));
 
