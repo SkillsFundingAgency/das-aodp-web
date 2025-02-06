@@ -9,6 +9,7 @@ public class EditFormVersionViewModel
     public string? Title { get; set; }
     public int Order { get; set; }
     public string? Description { get; set; }
+    public AdditionalActions AdditionalFormActions { get; set; } = new AdditionalActions();
 
 
     public List<Section> Sections { get; set; } = new();
@@ -18,6 +19,12 @@ public class EditFormVersionViewModel
         public Guid Id { get; set; }
         public int Order { get; set; }
         public string? Title { get; set; }
+    }
+
+    public class AdditionalActions
+    {
+        public Guid? UnPublish { get; set; }
+        public Guid? Publish { get; set; }
     }
 
     public static EditFormVersionViewModel Map(GetFormVersionByIdQueryResponse response)

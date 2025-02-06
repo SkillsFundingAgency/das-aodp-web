@@ -70,15 +70,28 @@ public class FormsController : Controller
     [Route("forms/{formVersionId}")]
     public async Task<IActionResult> Edit(EditFormVersionViewModel editFormVersionViewModel)
     {
-        var command = new UpdateFormVersionCommand()
+        if (editFormVersionViewModel.AdditionalFormActions.Publish != default)
         {
-            FormVersionId = editFormVersionViewModel.Id,
-            Description = editFormVersionViewModel.Description,
-            Order = editFormVersionViewModel.Order,
-            Name = editFormVersionViewModel.Title
-        };
+            var command = new PublishFormVersionCommand(editFormVersionViewModel.Id);
+            var response = await _mediator.Send(command);
+        }
+        else if (editFormVersionViewModel.AdditionalFormActions.UnPublish != default)
+        {
+            var command = new UnpublishFormVersionCommand(editFormVersionViewModel.Id);
+            var response = await _mediator.Send(command);
+        }
+        else
+        {
+            var command = new UpdateFormVersionCommand()
+            {
+                FormVersionId = editFormVersionViewModel.Id,
+                Description = editFormVersionViewModel.Description,
+                Order = editFormVersionViewModel.Order,
+                Name = editFormVersionViewModel.Title
+            };
+            var response = await _mediator.Send(command);
+        }
 
-        var response = await _mediator.Send(command);
         return RedirectToAction(nameof(Edit), new { formVersionId = editFormVersionViewModel.Id });
     }
     #endregion
