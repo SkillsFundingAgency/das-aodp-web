@@ -5,9 +5,8 @@ using Moq;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Pages;
-using SFA.DAS.AODP.Web.Controllers;
-using SFA.DAS.AODP.Web.Models.Page;
-using SFA.DAS.AODP.Web.Models.Section;
+using SFA.DAS.AODP.Web.Controllers.FormBuilder;
+using SFA.DAS.AODP.Web.Models.FormBuilder.Page;
 
 namespace SFA.DAS.AODP.Web.Tests.Controllers
 {

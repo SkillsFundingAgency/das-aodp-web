@@ -2,12 +2,11 @@ using AutoFixture;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
-using NuGet.Frameworks;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
-using SFA.DAS.AODP.Web.Controllers;
-using SFA.DAS.AODP.Web.Models.Section;
+using SFA.DAS.AODP.Web.Controllers.FormBuilder;
+using SFA.DAS.AODP.Web.Models.FormBuilder.Section;
 
 namespace SFA.DAS.AODP.Web.Tests.Controllers
 {
