@@ -25,9 +25,15 @@
         </govuk-input>
     </div>
 
-    <govuk-button type="submit">Save</govuk-button>
-    <a class="govuk-button govuk-button--secondary" asp-action="Edit" asp-controller="Forms" asp-route-formVersionId="@Model.FormVersionId">Cancel</a>    
-    @* <a class="govuk-button govuk-button--secondary" href="@Url.Action("Edit", "forms", new { id = Model.FormVersionId })">Cancel</a> *@
+    <div class="govuk-button-group">
+        <govuk-button type="submit">Save</govuk-button>
+        <a class="govuk-button govuk-button--secondary"
+           asp-action="Edit"
+           asp-controller="Forms"
+           asp-route-formVersionId="@Model.FormVersionId">
+            Cancel
+        </a>
+    </div>
 </form>
 
 <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">

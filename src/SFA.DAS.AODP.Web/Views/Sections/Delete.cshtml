@@ -13,6 +13,13 @@
         Are you sure you want to delete the section "@Model.Title"?
     </govuk-warning-text>
 
-    <govuk-button class="govuk-button--warning" type="submit">Delete</govuk-button>
-    <a class="govuk-button govuk-button--secondary" href="@Url.Action("Edit", "Form", new { id = Model.FormVersionId })">Cancel</a>
+    <div class="govuk-button-group">
+        <govuk-button class="govuk-button--warning" type="submit">Delete</govuk-button>
+        <a class="govuk-button govuk-button--secondary"
+           asp-action="Edit"
+           asp-controller="Forms"
+           asp-route-formVersionId="@Model.FormVersionId">
+            Cancel
+        </a>
+    </div>
 </form>

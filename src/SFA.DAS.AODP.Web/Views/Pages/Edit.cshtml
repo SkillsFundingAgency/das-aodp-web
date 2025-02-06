@@ -29,9 +29,12 @@
 
     <button class="govuk-button" type="submit">Save</button>
     <a class="govuk-button govuk-button--secondary"
-       asp-action="Index"
-       asp-controller="Forms">
+       asp-action="Edit"
+       asp-controller="Sections"
+       asp-route-formVersionId="@Model.FormVersionId"
+       asp-route-sectionId="@Model.SectionId">
         Cancel
+    </a>
     </a>
 </form>
 
