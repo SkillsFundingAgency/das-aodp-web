@@ -29,49 +29,48 @@
        asp-controller="Forms">
         Cancel
     </a>
-</form>
 
-<a class="govuk-button" asp-action="Create" asp-controller="Questions" asp-route-pageId="@Model.PageId" asp-route-sectionId="@Model.SectionId" asp-route-formVersionId="@Model.FormVersionId">Create New Question</a>
+    <a class="govuk-button" asp-action="Create" asp-controller="Questions" asp-route-pageId="@Model.PageId" asp-route-sectionId="@Model.SectionId" asp-route-formVersionId="@Model.FormVersionId">Create New Question</a>
 
 
-<table class="govuk-table">
-    <thead class="govuk-table__head">
-        <tr class="govuk-table__row">
-            <th scope="col" class="govuk-table__header">Name</th>
-            <th scope="col" class="govuk-table__header">Options</th>
-        </tr>
-    </thead>
-    <tbody class="govuk-table__body">
-        @foreach (var (item, i) in Model.Questions.Select((v, i) => (v, i)))
-        {
+    <table class="govuk-table">
+        <thead class="govuk-table__head">
             <tr class="govuk-table__row">
-                <td>@item.Title</td>
-                <td>
-                    <a class="govuk-button"
-                       asp-action="Edit"
-                       asp-controller="Questions"
-                       asp-route-pageId="@Model.PageId"
-                       asp-route-questionId="@item.Id"
-                       asp-route-sectionId="@Model.SectionId"
-                       asp-route-formVersionId="@Model.FormVersionId">
-                        Edit
-                    </a>
-                    @if (i != 0)
-                    {
-                        <button class="govuk-button govuk-button--secondary" type="submit" value="@item.Id" name="AdditionalActions[MoveUp]" data-module="govuk-button" data-prevent-double-click="true">
-                            Move Up
-                        </button>
-                    }
-                    @if (i != Model.Questions.Count() - 1)
-                    {
-                        <button class="govuk-button govuk-button--secondary" type="submit" value="@item.Id" name="AdditionalActions[MoveDown]">
-                            Move Down
-                        </button>
-                    }
-                    &nbsp;
-                    @*                     <a class="govuk-button govuk-button--warning" asp-action="Delete" asp-controller="Sections" asp-route-sectionId="@item.Id" asp-route-forms="forms" asp asp-route-formVersionId="@Model.FormVersionId">Delete</a>
- *@            </td>
+                <th scope="col" class="govuk-table__header">Name</th>
+                <th scope="col" class="govuk-table__header">Options</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody class="govuk-table__body">
+            @foreach (var (item, i) in Model.Questions.Select((v, i) => (v, i)))
+            {
+                <tr class="govuk-table__row">
+                    <td>@item.Title</td>
+                    <td>
+                        <a class="govuk-button"
+                           asp-action="Edit"
+                           asp-controller="Questions"
+                           asp-route-pageId="@Model.PageId"
+                           asp-route-questionId="@item.Id"
+                           asp-route-sectionId="@Model.SectionId"
+                           asp-route-formVersionId="@Model.FormVersionId">
+                            Edit
+                        </a>
+                        @if (i != 0)
+                        {
+                            <button class="govuk-button govuk-button--secondary" type="submit" value="@item.Id" name="AdditionalActions[MoveUp]" data-module="govuk-button" data-prevent-double-click="true">
+                                Move Up
+                            </button>
+                        }
+                        @if (i != Model.Questions.Count() - 1)
+                        {
+                            <button class="govuk-button govuk-button--secondary" type="submit" value="@item.Id" name="AdditionalActions[MoveDown]">
+                                Move Down
+                            </button>
+                        }
+                        &nbsp;
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</form>

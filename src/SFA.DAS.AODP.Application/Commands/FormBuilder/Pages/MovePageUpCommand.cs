@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 
-public class MovePageUpCommand : IRequest<BaseMediatrResponse<MovePageDownCommandResponse>>
+public class MovePageUpCommand : IRequest<BaseMediatrResponse<MovePageUpCommandResponse>>
 {
     public Guid PageId { get; set; }
     public Guid FormVersionId { get; set; }

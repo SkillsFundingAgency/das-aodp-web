@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
-using SFA.DAS.AODP.Web.Models.Forms;
-using SFA.DAS.AODP.Web.Models.Section;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Section;
 
 namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
@@ -69,7 +67,7 @@ public class SectionsController : Controller
                 PageId = model.AdditionalActions.MoveUp ?? Guid.Empty,
             };
             var response = await _mediator.Send(command);
-            return View(model);
+            return await Edit(model.FormVersionId, model.SectionId);
         }
         else if (model.AdditionalActions.MoveDown != default)
         {
@@ -80,7 +78,7 @@ public class SectionsController : Controller
                 PageId = model.AdditionalActions.MoveDown ?? Guid.Empty,
             };
             var response = await _mediator.Send(command);
-            return View(model);
+            return await Edit(model.FormVersionId, model.SectionId);
         }
         else
         {

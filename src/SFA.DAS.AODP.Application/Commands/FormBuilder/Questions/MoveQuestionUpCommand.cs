@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Questions;
 
-public class MoveQuestionUpCommand : IRequest<BaseMediatrResponse<MoveQuestionDownCommandResponse>>
+public class MoveQuestionUpCommand : IRequest<BaseMediatrResponse<MoveQuestionUpCommandResponse>>
 {
     public Guid QuestionId { get; set; }
     public Guid PageId { get; set; }

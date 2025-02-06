@@ -1,4 +1,5 @@
-﻿using SFA.DAS.AODP.Domain.FormBuilder.Requests.Pages;
+﻿using MediatR;
+using SFA.DAS.AODP.Domain.FormBuilder.Requests.Pages;
 using SFA.DAS.AODP.Domain.FormBuilder.Requests.Sections;
 using SFA.DAS.AODP.Domain.Interfaces;
 using System;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 
-public class MovePageUpCommandHandler
+public class MovePageUpCommandHandler : IRequestHandler<MovePageUpCommand, BaseMediatrResponse<MovePageUpCommandResponse>>
 {
     private readonly IApiClient _apiClient;
 
