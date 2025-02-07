@@ -81,7 +81,7 @@ public class QuestionsController : Controller
 
     [HttpPost()]
     [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/questions/{questionId}")]
-    public async Task<IActionResult> Edit(EditQuestionViewModel model)
+    public async Task<IActionResult> Edit(EditQuestionViewModel model, string redirectTo)
     {
         if (model.RadioButton.AdditionalFormActions.AddOption)
         {
@@ -102,7 +102,33 @@ public class QuestionsController : Controller
         var command = EditQuestionViewModel.MapToCommand(model);
         var response = await _mediator.Send(command);
 
-        return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId, pageId = model.PageId, questionId = model.Id });
+        switch (redirectTo)
+        {
+            case "new":
+                return RedirectToAction("Create", "Questions", new
+                {
+                    formVersionId = model.FormVersionId,
+                    sectionId = model.SectionId,
+                    pageId = model.PageId
+                });
+
+            case "exit":
+                return RedirectToAction("Edit", "Pages", new
+                {
+                    formVersionId = model.FormVersionId,
+                    sectionId = model.SectionId,
+                    pageId = model.PageId
+                });
+
+            default:
+                return RedirectToAction("Edit", new
+                {
+                    formVersionId = model.FormVersionId,
+                    sectionId = model.SectionId,
+                    pageId = model.PageId,
+                    questionId = model.Id
+                });
+        }
     }
     #endregion
 
