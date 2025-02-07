@@ -10,6 +10,8 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Section
         public Guid FormVersionId { get; set; }
         public Guid SectionId { get; set; }
         public List<Page> Pages { get; set; } = new();
+        public bool Editable { get; set; }
+
         public AdditionalSectionActions AdditionalActions { get; set; } = new AdditionalSectionActions();
 
         public class AdditionalSectionActions
@@ -46,7 +48,8 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Section
                 Title = source.Title,
                 FormVersionId = source.FormVersionId,
                 SectionId = source.Id,
-                Pages = source.Pages != null ? [.. source.Pages] : new()
+                Pages = source.Pages != null ? [.. source.Pages] : new(),
+                Editable = source.Editable,
             };
         }
     }

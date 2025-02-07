@@ -28,6 +28,22 @@ public class FormsController : Controller
 
         return View(viewModel);
     }
+
+    [HttpPost]
+    public async Task<IActionResult> Index(FormVersionListViewModel model)
+    {
+        if (model.AdditionalActions.CreateDraft.HasValue)
+        {
+            var command = new CreateDraftFormVersionCommand(model.AdditionalActions.CreateDraft.Value);
+            var response = await _mediator.Send(command);
+            if (!response.Success) return StatusCode(StatusCodes.Status500InternalServerError);
+
+            return RedirectToAction(nameof(Edit), new { formVersionId = response.Value.FormVersionId });
+
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
     #endregion
 
     #region Create

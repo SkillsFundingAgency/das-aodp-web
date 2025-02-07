@@ -4,6 +4,8 @@
     public class GetRoutingInformationForFormQueryResponse
     {
         public List<Section> Sections { get; set; }
+        public bool Editable { get; set; }
+
         public class Section
         {
             public Guid Id { get; set; }

@@ -9,23 +9,33 @@
 <form asp-action="Edit" method="post">
 
     <div class="govuk-form-group">
-        <govuk-input asp-for="@Model.Title" input-class="govuk-input--width-50" inputmode="text" pattern="[0-9]*" spellcheck="false">
+        <govuk-input disabled="@(!Model.Editable)" asp-for="@Model.Title" input-class="govuk-input--width-50" inputmode="text" pattern="[0-9]*" spellcheck="false">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Name</govuk-input-label>
         </govuk-input>
     </div>
 
-    <button class="govuk-button" type="submit">Save</button>
-    <a class="govuk-button govuk-button--secondary"
-       asp-action="Edit"
-       asp-controller="Sections"
-       asp-route-formVersionId="@Model.FormVersionId"
-       asp-route-sectionId="@Model.SectionId">
-        Cancel
-    </a>
-    </a>
+    @if (Model.Editable)
+    {
+        <button class="govuk-button" type="submit">Save</button>
+        <a class="govuk-button govuk-button--secondary"
+           asp-action="Edit"
+           asp-controller="Sections"
+           asp-route-formVersionId="@Model.FormVersionId"
+           asp-route-sectionId="@Model.SectionId">
+            Cancel
+        </a>
+    }
+
 </form>
 
-<a class="govuk-button" asp-action="Create" asp-controller="Questions" asp-route-pageId="@Model.PageId" asp-route-sectionId="@Model.SectionId" asp-route-formVersionId="@Model.FormVersionId">Create New Question</a>
+<hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+
+
+@if (Model.Editable)
+{
+    <a class="govuk-button" asp-action="Create" asp-controller="Questions" asp-route-pageId="@Model.PageId" asp-route-sectionId="@Model.SectionId" asp-route-formVersionId="@Model.FormVersionId">Create New Question</a>
+}
+<a class="govuk-button" asp-action="Preview" asp-controller="Pages" asp-route-pageId="@Model.PageId" asp-route-sectionId="@Model.SectionId" asp-route-formVersionId="@Model.FormVersionId">Preview page</a>
 
 
 <table class="govuk-table">
@@ -48,23 +58,23 @@
                        asp-route-questionId="@item.Id"
                        asp-route-sectionId="@Model.SectionId"
                        asp-route-formVersionId="@Model.FormVersionId">
-                        Edit
+                        @(Model.Editable ? "Edit" : "View")
+
                     </a>
-                    @if (i != 0)
+                    @if (i != 0 && Model.Editable)
                     {
                         <button class="govuk-button govuk-button--secondary" type="submit" value="@item.Id" name="AdditionalActions[MoveUp]" data-module="govuk-button" data-prevent-double-click="true">
                             Move Up
                         </button>
                     }
-                    @if (i != Model.Questions.Count() - 1)
+                    @if (i != Model.Questions.Count() - 1 && Model.Editable)
                     {
                         <button class="govuk-button govuk-button--secondary" type="submit" value="@item.Id" name="AdditionalActions[MoveDown]">
                             Move Down
                         </button>
                     }
                     &nbsp;
-                    @*                     <a class="govuk-button govuk-button--warning" asp-action="Delete" asp-controller="Sections" asp-route-sectionId="@item.Id" asp-route-forms="forms" asp asp-route-formVersionId="@Model.FormVersionId">Delete</a>
- *@            </td>
+                </td>
             </tr>
         }
     </tbody>

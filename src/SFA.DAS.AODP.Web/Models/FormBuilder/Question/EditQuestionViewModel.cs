@@ -26,6 +26,7 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
 
         public TextInputOptions TextInput { get; set; } = new();
         public RadioOptions RadioButton { get; set; } = new();
+        public bool Editable { get; set; }
 
         public class TextInputOptions
         {
@@ -68,7 +69,8 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
                 Hint = response.Hint,
                 Required = response.Required,
                 Type = type,
-                Title = response.Title
+                Title = response.Title,
+                Editable = response.Editable,
             };
 
             if (type == QuestionType.Text)

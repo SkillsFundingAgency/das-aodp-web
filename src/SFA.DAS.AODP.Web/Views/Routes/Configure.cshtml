@@ -1,6 +1,9 @@
 ﻿@using SFA.DAS.AODP.Web.Models.FormBuilder.Routing
 @model CreateRouteViewModel
 
+<a class="govuk-back-link" asp-action="List" asp-controller="Routes" asp-route-formVersionId="@Model.FormVersionId">
+    Back to view routes
+</a>
 
 <h1 class="govuk-heading-l">Configure route</h1>
 
@@ -63,7 +66,7 @@
                     <govuk-summary-list-row-value>
                         <input type="hidden" name="SelectedOptions[@i][OptionId]" value="@option.Id" />
 
-                        <govuk-select name="SelectedOptions[@i][SelectedPageId]">
+                        <govuk-select disabled="@(!Model.Editable)" name="SelectedOptions[@i][SelectedPageId]">
                             <govuk-select-label>Choose next page in this section</govuk-select-label>
 
                             @foreach (var item in Model.NextPageOptions)
@@ -81,7 +84,7 @@
                     <govuk-summary-list-row-value>
                         <input type="hidden" name="SelectedOptions[@i][OptionId]" value="@option.Id" />
 
-                        <govuk-select name="SelectedOptions[@i][SelectedSectionId]">
+                        <govuk-select disabled="@(!Model.Editable)" name="SelectedOptions[@i][SelectedSectionId]">
                             <govuk-select-label>Choose next section in this form</govuk-select-label>
 
                             @foreach (var item in Model.NextSectionOptions)
@@ -96,7 +99,9 @@
         </govuk-summary-card>
 
     }
-
-    <govuk-button type="submit">Save</govuk-button>
+    @if (Model.Editable)
+    {
+        <govuk-button type="submit">Save</govuk-button>
+    }
 
 </form>
