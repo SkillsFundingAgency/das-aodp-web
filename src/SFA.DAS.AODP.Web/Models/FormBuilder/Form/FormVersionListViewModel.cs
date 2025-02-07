@@ -6,6 +6,12 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Form
     public class FormVersionListViewModel
     {
         public List<FormVersion> FormVersions { get; set; } = new();
+        public FormActions AdditionalActions { get; set; } = new();
+
+        public class FormActions
+        {
+            public Guid? CreateDraft { get; set; }
+        }
 
         public class FormVersion
         {
@@ -14,6 +20,7 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Form
             public Guid? PublishedVersionId { get; set; }
             public string? Status { get; set; }
             public int? Order { get; set; }
+            public Guid? FormId { get; set; }
 
         }
 
@@ -36,6 +43,7 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Form
                     Title = draft?.Title ?? published?.Title,
                     Status = published != null ? "Published" : "Draft",
                     Order = draft?.Order ?? published?.Order,
+                    FormId = draft?.FormId ?? published?.FormId,
                 };
 
                 viewModel.FormVersions.Add(dataItem);

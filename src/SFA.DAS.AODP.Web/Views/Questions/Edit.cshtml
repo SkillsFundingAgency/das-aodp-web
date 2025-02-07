@@ -7,6 +7,10 @@
 
 <h1 class="govuk-heading-l">Edit Question</h1>
 
+@{
+    ViewBag.IsEditable = Model.Editable;
+}
+
 <form asp-controller="Questions" asp-action="Edit" method="post">
     @Html.HiddenFor(m => m.Id)
     @Html.HiddenFor(m => m.PageId)
@@ -14,11 +18,12 @@
     @Html.HiddenFor(m => m.FormVersionId)
     @Html.HiddenFor(m => m.Id)
     @Html.HiddenFor(m => m.Type)
+    @Html.HiddenFor(m => m.Editable)
 
     @Html.AntiForgeryToken()
 
     <div class="govuk-form-group">
-        <govuk-input asp-for="@Model.Title" input-class="govuk-input--width-50" inputmode="text" value="@Model.Title">
+        <govuk-input disabled="@(!Model.Editable)" asp-for="@Model.Title" input-class="govuk-input--width-50" inputmode="text" value="@Model.Title">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Title</govuk-input-label>
             @{
                 await Html.RenderPartialAsync("Validation/_TextInputValidationPartial", nameof(Model.Title));
@@ -34,7 +39,7 @@
 
     <div class="govuk-form-group">
         <govuk-radios asp-for="@Model.Required">
-            <govuk-radios-fieldset>
+            <govuk-radios-fieldset disabled="@(!Model.Editable)">
                 <govuk-radios-fieldset-legend is-page-heading="false" class="govuk-fieldset__legend--s">
                     Should this question be mandatory or optional?
                 </govuk-radios-fieldset-legend>
@@ -48,7 +53,7 @@
                 <govuk-radios-item value="true" checked="@Model.Required">Mandatory</govuk-radios-item>
                 <govuk-radios-item value="false" checked="@Model.Required == false">
                     Optional
-                    <govuk-radios-hint class="govuk-hint govuk-radios__hint" id="pages-question-input-is-optional-true-hint">
+                    <govuk-radios-hint class="govuk-hint govuk-radios__hint" style="padding: 0 !important;">
                         We’ll add ‘(optional)’ to the end of the question text.
                     </govuk-radios-hint>
                 </govuk-radios-item>
@@ -59,8 +64,8 @@
 
 
     <div class="govuk-form-group">
-        <govuk-input asp-for="@Model.Hint" input-class="govuk-input--width-50" inputmode="text">
-            <govuk-input-label is-page-heading="false" class="govuk-label--s">Hint (Optional)</govuk-input-label>
+        <govuk-input disabled="@(!Model.Editable)" asp-for="@Model.Hint" input-class="govuk-input--width-50" inputmode="text">
+            <govuk-input-label is-page-heading="false" class="govuk-label--s">Hint (optional)</govuk-input-label>
 
             <govuk-input-hint>
                 Keep hint text to a single short sentence, without any full stops.
@@ -80,34 +85,37 @@
     }
     <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
 
-    <div class="govuk-button-group">
-        <button type="submit" class="govuk-button govuk-!-margin-bottom-3" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init="">Save question</button>
-        <a class="govuk-button govuk-!-margin-bottom-3 govuk-button--secondary" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init=""
-            asp-action="Create" 
-            asp-controller="Questions" 
-            asp-route-formVersionId="@Model.FormVersionId"
-            asp-route-sectionId="@Model.SectionId"
-            asp-route-pageId="@Model.PageId">
-            Save and add new question
-        </a>
-        <button type="submit" class="govuk-button govuk-!-margin-bottom-3 govuk-button--secondary" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init="" 
-            asp-action="Edit" 
-            asp-controller="Pages" 
-            asp-route-formVersionId="@Model.FormVersionId"
-            asp-route-sectionId="@Model.SectionId"
-            asp-route-pageId="@Model.PageId">
-            Save question and exit
-        </button>
-    </div>
-
-    <ul class="govuk-list govuk-list--spaced">
-        <li>
-            <a class="govuk-button govuk-button--warning" data-module="govuk-button" href="/forms/5711/pages/19692/delete" data-govuk-button-init="">Delete question</a>
-        </li>
-        <li>
-            <a class="govuk-link" asp-action="Edit" asp-controller="Pages" asp-route-formVersionId="@Model.FormVersionId" asp-route-pageId="@Model.PageId" asp-route-sectionId="@Model.SectionId">
-                Back to your questions
+    @if (Model.Editable)
+    {
+        <div class="govuk-button-group">
+            <button type="submit" class="govuk-button govuk-!-margin-bottom-3" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init="">Save question</button>
+            <a class="govuk-button govuk-!-margin-bottom-3 govuk-button--secondary" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init=""
+               asp-action="Create"
+               asp-controller="Questions"
+               asp-route-formVersionId="@Model.FormVersionId"
+               asp-route-sectionId="@Model.SectionId"
+               asp-route-pageId="@Model.PageId">
+                Save and add new question
             </a>
-        </li>
-    </ul>
+            <button type="submit" class="govuk-button govuk-!-margin-bottom-3 govuk-button--secondary" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init=""
+                    asp-action="Edit"
+                    asp-controller="Pages"
+                    asp-route-formVersionId="@Model.FormVersionId"
+                    asp-route-sectionId="@Model.SectionId"
+                    asp-route-pageId="@Model.PageId">
+                Save question and exit
+            </button>
+        </div>
+
+        <ul class="govuk-list govuk-list--spaced">
+            <li>
+                <a class="govuk-button govuk-button--warning" data-module="govuk-button" href="/forms/5711/pages/19692/delete" data-govuk-button-init="">Delete question</a>
+            </li>
+            <li>
+                <a class="govuk-link" asp-action="Edit" asp-controller="Pages" asp-route-formVersionId="@Model.FormVersionId" asp-route-pageId="@Model.PageId" asp-route-sectionId="@Model.SectionId">
+                    Back to your questions
+                </a>
+            </li>
+        </ul>
+    }
 </form>

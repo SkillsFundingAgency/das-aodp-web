@@ -35,7 +35,6 @@ public class PagesController : Controller
         {
             SectionId = model.SectionId,
             FormVersionId = model.FormVersionId,
-            Description = model.Description,
             Title = model.Title
 
         };
@@ -92,7 +91,6 @@ public class PagesController : Controller
         {
             var command = new UpdatePageCommand()
             {
-                Description = model.Description,
                 Title = model.Title,
                 SectionId = model.SectionId,
                 FormVersionId = model.FormVersionId,
@@ -105,6 +103,23 @@ public class PagesController : Controller
     }
     #endregion
 
+    #region Preview
+    [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/preview")]
+    public async Task<IActionResult> Preview(Guid pageId, Guid sectionId, Guid formVersionId)
+    {
+        var query = new GetPagePreviewByIdQuery(pageId, sectionId, formVersionId);
+        var response = await _mediator.Send(query);
+        if (response.Value == null) return NotFound();
+
+        return View(new PreviewPageViewModel()
+        {
+            PageId = pageId,
+            SectionId = sectionId,
+            FormVersionId = formVersionId,
+            Value = response.Value
+        });
+    }
+    #endregion
     #region Delete
     [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/delete")]
     public async Task<IActionResult> Delete(Guid pageId, Guid sectionId, Guid formVersionId)
