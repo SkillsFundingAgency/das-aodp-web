@@ -117,14 +117,17 @@ namespace SFA.DAS.AODP.Web.Tests.Controllers
             request = _fixture
                 .Build<EditSectionViewModel>()
                 .Create();
+            request.AdditionalActions.MoveUp = Guid.Empty;
+            request.AdditionalActions.MoveDown = Guid.Empty;
 
             _mediatorMock.Setup(x => x.Send(It.IsAny<UpdateSectionCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(expectedResponse);
 
             //Act
             var result = await _controller.Edit(request);
-            var okResult = (RedirectToActionResult)result;
+            var okResult = result as RedirectToActionResult;
 
             //Assert
+            Assert.NotNull(okResult);
             Assert.True(expectedResponse.Success); // Assert.That(expectedResponse.Success, Is.EqualTo(true));
             Assert.IsType<RedirectToActionResult>(result); // Assert.That(result, Is.InstanceOf<RedirectToActionResult>());
             Assert.Equal("Edit", okResult.ActionName); // Assert.That(okResult.ActionName, Is.EqualTo("Edit"));
