@@ -6,6 +6,7 @@ public class DeleteQuestionViewModel
     public Guid PageId { get; set; }
     public Guid SectionId { get; set; }
     public Guid FormVersionId { get; set; }
+    public string Title { get; set; }
     public static DeleteQuestionViewModel MapToViewModel(GetQuestionByIdQueryResponse response, Guid formVersionId, Guid sectionId)
     {
         return new DeleteQuestionViewModel()
@@ -13,7 +14,8 @@ public class DeleteQuestionViewModel
             QuestionId = response.Id,
             PageId = response.PageId,
             SectionId = sectionId,
-            FormVersionId = formVersionId
+            FormVersionId = formVersionId,
+            Title = response.Title
         };
     }
 }

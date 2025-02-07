@@ -105,6 +105,13 @@
                                 Move Down
                             </button>
                         }
+                        <a class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init=""
+                           asp-action="Delete"
+                           asp-controller="Sections"
+                           asp-route-formVersionId="@Model.Id"
+                           asp-route-sectionId="@item.Id">
+                            Delete
+                        </a>
                     </td>
                 </tr>
             }

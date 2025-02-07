@@ -107,7 +107,7 @@ public class PagesController : Controller
 
     #region Delete
     [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/delete")]
-    public async Task<IActionResult> Delete(Guid pageId, Guid sectionId, Guid formVersionId)
+    public async Task<IActionResult> Delete(Guid formVersionId, Guid sectionId, Guid pageId)
     {
         var query = new GetPageByIdQuery(pageId, sectionId, formVersionId);
         var response = await _mediator.Send(query);
@@ -133,7 +133,7 @@ public class PagesController : Controller
         };
 
         var deleteResponse = await _mediator.Send(command);
-        return RedirectToAction("Edit", "Section", new { id = model.SectionId });
+        return RedirectToAction("Edit", "Sections", new { formVersionId = model.FormVersionId, sectionId = model.SectionId });
 
     }
     #endregion

@@ -123,9 +123,6 @@ public class QuestionsController : Controller
         var response = await _mediator.Send(query);
 
         if (response.Value == null) return NotFound();
-    //    return RedirectToAction("Edit", "Section", new { id = page.SectionId });
-    //}
-    #endregion
 
         var vm = DeleteQuestionViewModel.MapToViewModel(response.Value, formVersionId, sectionId);
 
