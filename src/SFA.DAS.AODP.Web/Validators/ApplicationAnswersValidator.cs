@@ -62,7 +62,7 @@ namespace SFA.DAS.AODP.Web.Validators
             if (minLength is not null && (String.IsNullOrEmpty(answer!.TextValue) || minLength >= answer.TextValue.Length))
                 throw new QuestionValidationFailed(question.Id, question.Title, $"The value must be greater than {minLength} characters long.");
 
-            if (maxLength is not null && (String.IsNullOrEmpty(answer!.TextValue) && maxLength > answer.TextValue?.Length))
+            if (maxLength is not null && (String.IsNullOrEmpty(answer!.TextValue) && maxLength < answer.TextValue?.Length))
                 throw new QuestionValidationFailed(question.Id, question.Title, $"The value must be less than {maxLength} characters long.");
         }
     }
