@@ -65,7 +65,8 @@ public class FormsController : Controller
         };
 
         var response = await _mediator.Send(command);
-        return RedirectToAction(nameof(Index));
+        if (!response.Success) return View(viewModel);
+        return RedirectToAction(nameof(Edit), new { formVersionId = response.Value.Id });
     }
     #endregion
 
@@ -75,7 +76,7 @@ public class FormsController : Controller
     {
         var formVersionQuery = new GetFormVersionByIdQuery(formVersionId);
         var response = await _mediator.Send(formVersionQuery);
-        if (response.Value == null) return NotFound();
+        if (!response.Success) return NotFound();
 
         var viewModel = EditFormVersionViewModel.Map(response.Value);
 

@@ -8,7 +8,7 @@ using SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
 using SFA.DAS.AODP.Web.Controllers.FormBuilder;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Section;
 
-namespace SFA.DAS.AODP.Web.Tests.Controllers
+namespace SFA.DAS.AODP.Web.Test.Controllers
 {
     public class SectionsControllerTests
     {
