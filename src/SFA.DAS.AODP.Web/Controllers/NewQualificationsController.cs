@@ -40,11 +40,6 @@ namespace SFA.DAS.AODP.Web.Controllers
 
         public async Task<IActionResult> QualificationDetails([FromQuery]string qualificationReference)
         {
-            if (string.IsNullOrWhiteSpace(qualificationReference))
-            {
-                return BadRequest(new { message = "Qualification reference cannot be empty" });
-            }
-
             var result = await _mediator.Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });
 
             if (!result.Success)
