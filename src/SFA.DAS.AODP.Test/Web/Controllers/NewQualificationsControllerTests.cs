@@ -1,13 +1,14 @@
-﻿using MediatR;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using Moq;
+﻿using Moq;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
-using SFA.DAS.AODP.Application.Queries.Test;
 using SFA.DAS.AODP.Web.Controllers;
 using SFA.DAS.AODP.Web.Models.Qualifications;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using MediatR;
+using SFA.DAS.AODP.Application.Queries.Test;
 
 namespace SFA.DAS.AODP.Test.Web.Controllers;
+
 public class NewQualificationsControllerTests
 {
     private readonly Mock<ILogger<NewQualificationsController>> _loggerMock;
@@ -44,10 +45,14 @@ public class NewQualificationsControllerTests
         var viewResult = Assert.IsType<ViewResult>(result);
         var model = Assert.IsAssignableFrom<List<NewQualificationsViewModel>>(viewResult.ViewData.Model);
         Assert.Equal(2, model.Count);
+        Assert.Equal("Qualification 1", model[0].Title);
+        Assert.Equal("Ref 1", model[0].Reference);
+        Assert.Equal("AO 1", model[0].AwardingOrganisation);
+        Assert.Equal("Status 1", model[0].Status);
     }
 
     [Fact]
-    public async Task Index_ReturnsErrorView_WhenQueryFails()
+    public async Task Index_ReturnsNotFound_WhenQueryFails()
     {
         // Arrange
         var queryResponse = new GetNewQualificationsQueryResponse { Success = false };
@@ -58,8 +63,8 @@ public class NewQualificationsControllerTests
         var result = await _controller.Index();
 
         // Assert
-        var viewResult = Assert.IsType<ViewResult>(result);
-        Assert.Equal("Error", viewResult.ViewName);
+        var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
+        Assert.Equal("Error", notFoundResult.Value);
     }
 
     [Fact]
@@ -89,7 +94,7 @@ public class NewQualificationsControllerTests
                      .ReturnsAsync(queryResponse);
 
         // Act
-        var result = await _controller.QualificationDetails(1);
+        var result = await _controller.QualificationDetails("Ref123");
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -107,7 +112,7 @@ public class NewQualificationsControllerTests
                      .ReturnsAsync(queryResponse);
 
         // Act
-        var result = await _controller.QualificationDetails(1);
+        var result = await _controller.QualificationDetails("Ref123");
 
         // Assert
         Assert.IsType<NotFoundResult>(result);
