@@ -1,10 +1,7 @@
-﻿using Xunit;
-using Moq;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using Moq;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Domain.Interfaces;
-using SFA.DAS.AODP.Domain.FormBuilder.Requests.Qualifications;
+using SFA.DAS.AODP.Domain.Qualifications.Requests;
 
 namespace SFA.DAS.AODP.Test.Infrastructure.Queries.Qualifications;
 
@@ -23,7 +20,7 @@ public class GetQualificationDetailsQueryHandlerTests
     public async Task Then_The_Api_Is_Called_With_The_Request_And_QualificationDetailsData_Is_Returned()
     {
         // Arrange
-        var query = new GetQualificationDetailsQuery { Id = 1 };
+        var query = new GetQualificationDetailsQuery { QualificationReference = "Ref123" };
         var response = new GetQualificationDetailsQueryResponse
         {
             Success = true,
@@ -60,7 +57,7 @@ public class GetQualificationDetailsQueryHandlerTests
     public async Task Then_The_Api_Is_Called_With_The_Request_And_Failure_Is_Returned()
     {
         // Arrange
-        var query = new GetQualificationDetailsQuery { Id = 1 };
+        var query = new GetQualificationDetailsQuery { QualificationReference = "Ref123" };
         _apiClientMock.Setup(x => x.Get<GetQualificationDetailsQueryResponse?>(It.IsAny<GetQualificationDetailsApiRequest>()))
                       .ReturnsAsync((GetQualificationDetailsQueryResponse?)null);
 
@@ -72,4 +69,5 @@ public class GetQualificationDetailsQueryHandlerTests
         Assert.False(result.Success);
     }
 }
+
 

@@ -4,8 +4,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Domain.Interfaces;
-using SFA.DAS.AODP.Domain.FormBuilder.Requests.Qualifications;
 using SFA.DAS.AODP.Application.Queries.Test;
+using SFA.DAS.AODP.Domain.Qualifications.Requests;
 
 namespace SFA.DAS.AODP.Test.Infrastructure.Queries.Qualifications;
 
