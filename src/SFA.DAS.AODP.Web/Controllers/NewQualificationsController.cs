@@ -22,7 +22,7 @@ namespace SFA.DAS.AODP.Web.Controllers
 
             if (!result.Success)
             {
-                return View("Error"); // Handle errors properly
+                return NotFound("Error"); // Handle errors properly
             }
 
             var viewModel = result.NewQualifications.Select(q => new NewQualificationsViewModel
@@ -38,14 +38,18 @@ namespace SFA.DAS.AODP.Web.Controllers
             return View(viewModel);
         }
 
-        [Route("qualificationdetails")]
-        public async Task<IActionResult> QualificationDetails([FromQuery]int id)
+        public async Task<IActionResult> QualificationDetails([FromQuery]string qualificationReference)
         {
-            var result = await _mediator.Send(new GetQualificationDetailsQuery { Id = id });
+            if (string.IsNullOrWhiteSpace(qualificationReference))
+            {
+                return BadRequest(new { message = "Qualification reference cannot be empty" });
+            }
+
+            var result = await _mediator.Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });
 
             if (!result.Success)
             {
-                return NotFound(); // Handle the case where qualification does not exist
+                return NotFound(); 
             }
 
             var viewModel = new QualificationDetailsViewModel
