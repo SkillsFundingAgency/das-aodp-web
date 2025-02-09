@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
-using SFA.DAS.AODP.Domain.FormBuilder.Requests.Qualifications;
 using SFA.DAS.AODP.Domain.Interfaces;
+using SFA.DAS.AODP.Domain.Qualifications.Requests;
 
 namespace SFA.DAS.AODP.Application.Queries.Test
 {

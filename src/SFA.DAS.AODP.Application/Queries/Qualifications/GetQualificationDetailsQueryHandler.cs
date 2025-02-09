@@ -1,6 +1,6 @@
 ﻿using MediatR;
-using SFA.DAS.AODP.Domain.FormBuilder.Requests.Qualifications;
 using SFA.DAS.AODP.Domain.Interfaces;
+using SFA.DAS.AODP.Domain.Qualifications.Requests;
 
 namespace SFA.DAS.AODP.Application.Queries.Qualifications
 {
@@ -16,7 +16,7 @@ namespace SFA.DAS.AODP.Application.Queries.Qualifications
         public async Task<GetQualificationDetailsQueryResponse> Handle(GetQualificationDetailsQuery request, CancellationToken cancellationToken)
         {
             return await _apiClient.Get<GetQualificationDetailsQueryResponse>(
-                new GetQualificationDetailsApiRequest(request.Id))
+                new GetQualificationDetailsApiRequest(request.QualificationReference))
                 ?? new GetQualificationDetailsQueryResponse { Success = false };
         }
     }
