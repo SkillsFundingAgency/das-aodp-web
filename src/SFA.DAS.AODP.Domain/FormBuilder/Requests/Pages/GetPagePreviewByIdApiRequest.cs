@@ -2,11 +2,11 @@
 
 namespace SFA.DAS.AODP.Domain.FormBuilder.Requests.Pages;
 
-public class GetPageByIdApiRequest : IGetApiRequest
+public class GetPagePreviewByIdApiRequest : IGetApiRequest
 {
     public Guid PageId { get; set; }
     public Guid FormVersionId { get; set; }
     public Guid SectionId { get; set; }
 
-    public string GetUrl => $"/api/forms/{FormVersionId}/sections/{SectionId}/Pages/{PageId}";
+    public string GetUrl => $"/api/forms/{FormVersionId}/sections/{SectionId}/Pages/{PageId}/Preview";
 }

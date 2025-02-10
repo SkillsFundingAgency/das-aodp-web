@@ -1,4 +1,5 @@
-﻿using SFA.DAS.AODP.Domain.FormBuilder.Requests.Sections;
+﻿using MediatR;
+using SFA.DAS.AODP.Domain.FormBuilder.Requests.Sections;
 using SFA.DAS.AODP.Domain.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 
-public class MoveSectionUpCommandHandler
+public class MoveSectionUpCommandHandler : IRequestHandler<MoveSectionUpCommand, BaseMediatrResponse<MoveSectionUpCommandResponse>>
 {
     private readonly IApiClient _apiClient;
 

@@ -8,7 +8,7 @@ using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Web.Controllers.FormBuilder;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Form;
 
-namespace SFA.DAS.AODP.Web.Tests.Controllers
+namespace SFA.DAS.AODP.Web.Test.Controllers
 {
     public class FormsControllerTests
     {

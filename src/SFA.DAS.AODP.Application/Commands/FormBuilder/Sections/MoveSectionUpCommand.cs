@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 
-public class MoveSectionUpCommand : IRequest<BaseMediatrResponse<MoveSectionDownCommandResponse>>
+public class MoveSectionUpCommand : IRequest<BaseMediatrResponse<MoveSectionUpCommandResponse>>
 {
     public Guid FormVersionId { get; set; }
     public Guid SectionId { get; set; }

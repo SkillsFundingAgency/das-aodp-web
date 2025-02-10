@@ -28,6 +28,22 @@ public class FormsController : Controller
 
         return View(viewModel);
     }
+
+    [HttpPost]
+    public async Task<IActionResult> Index(FormVersionListViewModel model)
+    {
+        if (model.AdditionalActions.CreateDraft.HasValue)
+        {
+            var command = new CreateDraftFormVersionCommand(model.AdditionalActions.CreateDraft.Value);
+            var response = await _mediator.Send(command);
+            if (!response.Success) return StatusCode(StatusCodes.Status500InternalServerError);
+
+            return RedirectToAction(nameof(Edit), new { formVersionId = response.Value.FormVersionId });
+
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
     #endregion
 
     #region Create
@@ -46,11 +62,11 @@ public class FormsController : Controller
         {
             Title = viewModel.Name,
             Description = viewModel.Description,
-            Order = viewModel.Order
         };
 
         var response = await _mediator.Send(command);
-        return RedirectToAction(nameof(Index));
+        if (!response.Success) return View(viewModel);
+        return RedirectToAction(nameof(Edit), new { formVersionId = response.Value.Id });
     }
     #endregion
 
@@ -61,7 +77,7 @@ public class FormsController : Controller
     {
         var formVersionQuery = new GetFormVersionByIdQuery(formVersionId);
         var response = await _mediator.Send(formVersionQuery);
-        if (response.Value == null) return NotFound();
+        if (!response.Success) return NotFound();
 
         var viewModel = EditFormVersionViewModel.Map(response.Value);
 

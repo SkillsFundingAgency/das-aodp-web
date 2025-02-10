@@ -1,4 +1,6 @@
-﻿using SFA.DAS.AODP.Domain.FormBuilder.Requests.Pages;
+﻿using MediatR;
+using SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
+using SFA.DAS.AODP.Domain.FormBuilder.Requests.Pages;
 using SFA.DAS.AODP.Domain.FormBuilder.Requests.Questions;
 using SFA.DAS.AODP.Domain.FormBuilder.Requests.Sections;
 using SFA.DAS.AODP.Domain.Interfaces;
@@ -10,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Questions;
 
-public class MoveQuestionUpCommandHandler
+public class MoveQuestionUpCommandHandler : IRequestHandler<MoveQuestionUpCommand, BaseMediatrResponse<MoveQuestionUpCommandResponse>>
 {
     private readonly IApiClient _apiClient;
 

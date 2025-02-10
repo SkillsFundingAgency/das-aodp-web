@@ -12,6 +12,7 @@
         public List<RadioOptionItem> RadioOptions { get; set; } = new();
         public List<Page> NextPages { get; set; } = new();
         public List<Page> NextSections { get; set; } = new();
+        public bool Editable { get; set; }
 
         public class RadioOptionItem
         {

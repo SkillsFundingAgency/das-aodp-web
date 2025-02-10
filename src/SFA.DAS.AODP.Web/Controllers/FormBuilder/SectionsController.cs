@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
+using SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Section;
 
 namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
@@ -30,7 +31,6 @@ public class SectionsController : Controller
         var command = new CreateSectionCommand()
         {
             FormVersionId = model.FormVersionId,
-            Description = model.Description,
             Title = model.Title
         };
 
@@ -67,7 +67,7 @@ public class SectionsController : Controller
                 PageId = model.AdditionalActions.MoveUp ?? Guid.Empty,
             };
             var response = await _mediator.Send(command);
-            return View(model);
+            return await Edit(model.FormVersionId, model.SectionId);
         }
         else if (model.AdditionalActions.MoveDown != Guid.Empty)
         {
@@ -78,14 +78,13 @@ public class SectionsController : Controller
                 PageId = model.AdditionalActions.MoveDown ?? Guid.Empty,
             };
             var response = await _mediator.Send(command);
-            return View(model);
+            return await Edit(model.FormVersionId, model.SectionId);
         }
         else
         {
             var command = new UpdateSectionCommand()
             {
                 FormVersionId = model.FormVersionId,
-                Description = model.Description,
                 Title = model.Title,
                 Id = model.SectionId
             };

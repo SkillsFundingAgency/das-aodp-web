@@ -16,6 +16,8 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Routing
         public string QuestionTitle { get; set; }
         public string SectionTitle { get; set; }
         public string PageTitle { get; set; }
+        public bool Editable { get; set; }
+
 
         public List<NextPageOption> NextPageOptions { get; set; } = new();
         public List<NextSectionOption> NextSectionOptions { get; set; } = new();
@@ -63,6 +65,7 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Routing
                 QuestionTitle = value.QuestionTitle,
                 PageTitle = value.PageTitle,
                 SectionTitle = value.SectionTitle,
+                Editable = value.Editable,
             };
 
             foreach (var option in value.RadioOptions?.OrderBy(o => o.Order).ToList() ?? [])
