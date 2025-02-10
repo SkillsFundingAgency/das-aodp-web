@@ -38,7 +38,7 @@
             </tr>
         </thead>
         <tbody class="govuk-table__body">
-            @foreach (var (item, i) in Model.Pages.Select((v, i) => (v, i)))
+            @foreach (var (item, i) in Model.Pages.OrderBy(v => v.Order).Select((v, i) => (v, i)))
             {
                 <tr class="govuk-table__row">
                     <td>@item.Title</td>
