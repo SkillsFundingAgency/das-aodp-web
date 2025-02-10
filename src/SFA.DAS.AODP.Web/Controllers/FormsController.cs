@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
-using SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
 using SFA.DAS.AODP.Web.Models.Forms;
 
 namespace SFA.DAS.AODP.Web.Controllers;

@@ -1,16 +1,10 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Questions;
-using SFA.DAS.AODP.Application.Queries.FormBuilder.Pages;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Questions;
-using SFA.DAS.AODP.Models.Forms.FormBuilder;
 using SFA.DAS.AODP.Web.Models.Question;
-using SFA.DAS.AODP.Web.Models.Section;
-using System.Reflection;
 
 namespace SFA.DAS.AODP.Web.Controllers;
-
 public class QuestionsController : Controller
 {
     private readonly IMediator _mediator;
@@ -18,6 +12,11 @@ public class QuestionsController : Controller
     public QuestionsController(IMediator mediator)
     {
         _mediator = mediator;
+    }
+
+    public IActionResult Index()
+    {
+        return View();
     }
 
     #region Create

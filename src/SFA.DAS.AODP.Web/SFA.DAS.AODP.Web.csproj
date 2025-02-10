@@ -19,9 +19,11 @@
 
 	<ItemGroup>
 		<PackageReference Include="GovUk.Frontend.AspNetCore" Version="2.7.1" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.12" />
 		<PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="9.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.12" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Http.Polly" Version="8.0.12" />
 		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
 		<PackageReference Include="System.Formats.Asn1" Version="9.0.0" />
 		<PackageReference Include="System.Text.Json" Version="9.0.0" />
@@ -32,6 +34,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\SFA.DAS.AODP.Application\SFA.DAS.AODP.Application.csproj" />
+		<ProjectReference Include="..\SFA.DAS.AODP.Authentication\SFA.DAS.AODP.Authentication.csproj" />
 		<ProjectReference Include="..\SFA.DAS.AODP.Common\SFA.DAS.AODP.Common.csproj" />
 		<ProjectReference Include="..\SFA.DAS.AODP.Infrastructure\SFA.DAS.AODP.Infrastructure.csproj" />
 	</ItemGroup>
@@ -46,6 +49,12 @@
 	  <Content Update="Views\Shared\FormBuilder\QuestionEdit\_RadioInput.cshtml">
 	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+	  </Content>
+	  <Content Update="wwwroot\js\site.js">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Update="wwwroot\js\site.min.js">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	</ItemGroup>
 
