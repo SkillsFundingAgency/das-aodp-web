@@ -58,7 +58,7 @@ public class SectionsController : Controller
     [Route("forms/{formVersionId}/sections/{sectionId}")]
     public async Task<IActionResult> Edit(EditSectionViewModel model)
     {
-        if (model.AdditionalActions.MoveUp != Guid.Empty)
+        if (model.AdditionalActions.MoveUp != default)
         {
             var command = new MovePageUpCommand()
             {
@@ -69,7 +69,7 @@ public class SectionsController : Controller
             var response = await _mediator.Send(command);
             return await Edit(model.FormVersionId, model.SectionId);
         }
-        else if (model.AdditionalActions.MoveDown != Guid.Empty)
+        else if (model.AdditionalActions.MoveDown != default)
         {
             var command = new MovePageDownCommand()
             {

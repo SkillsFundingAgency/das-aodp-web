@@ -50,6 +50,8 @@ jobs:
             ConfigurationSecrets:
               SharedRedisConnectionString: $(SharedRedisConnectionString)
               AodpApimSubscriptionKey: $(AodpApimSubscriptionKey)
+              ProviderAPIServiceSecret: $(ProviderAPIServiceSecret)
+              ProviderDfESecret: $(ProviderDfESecret)
         - template: azure-pipelines-templates/deploy/step/app-deploy.yml@das-platform-building-blocks
           parameters:
             ServiceConnection: ${{ parameters.ServiceConnection }}
