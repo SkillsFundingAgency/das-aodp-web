@@ -1,0 +1,49 @@
+﻿@using SFA.DAS.AODP.Web.Models.Application
+@model PreviewPageViewModel
+
+@{
+    Model.Value.Questions = Model.Value.Questions.OrderBy(o => o.Order).ToList();
+}
+
+<div class="govuk-phase-banner">
+    <p class="govuk-phase-banner__content">
+        <strong class="govuk-tag govuk-phase-banner__content__tag">
+            Preview
+        </strong>
+        <span class="govuk-phase-banner__text">
+            This is preview for page: @Model.Value.Title
+        </span>
+    </p>
+</div>
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+        <govuk-back-link class="govuk-link govuk-task-list__link"
+                         asp-action="Edit"
+                         asp-route-sectionId="@Model.SectionId"
+                         asp-route-pageId="@Model.PageId"
+                         asp-controller="Pages"
+                         asp-route-formVersionId="@Model.FormVersionId">Back to view page</govuk-back-link>
+
+
+        @if (Model.Value.Questions.Count == 1)
+        {
+            <span class="govuk-caption-xl">@Model.Value.Title</span>
+        }
+        else
+        {
+            <h1 class="govuk-heading-l">@Model.Value.Title</h1>
+        }
+
+        @for (int i = 0; i < Model.Value.Questions.Count; i++)
+        {
+
+
+            await Html.RenderPartialAsync("FormBuilder/PagePreview/Question", Model.Value.Questions[i]);
+
+
+        }
+
+    </div>
+</div>

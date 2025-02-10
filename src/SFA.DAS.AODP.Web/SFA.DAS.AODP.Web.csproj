@@ -18,6 +18,21 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Models\Helpers\**" />
+	  <Compile Remove="Models\Pages\**" />
+	  <Compile Remove="Models\Sections\**" />
+	  <Content Remove="Models\Helpers\**" />
+	  <Content Remove="Models\Pages\**" />
+	  <Content Remove="Models\Sections\**" />
+	  <EmbeddedResource Remove="Models\Helpers\**" />
+	  <EmbeddedResource Remove="Models\Pages\**" />
+	  <EmbeddedResource Remove="Models\Sections\**" />
+	  <None Remove="Models\Helpers\**" />
+	  <None Remove="Models\Pages\**" />
+	  <None Remove="Models\Sections\**" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="GovUk.Frontend.AspNetCore" Version="2.7.1" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.12" />
 		<PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="9.0.0" />
@@ -40,9 +55,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Models\Helpers\" />
-	  <Folder Include="Models\Pages\" />
-	  <Folder Include="Models\Sections\" />
+	  <Content Update="Views\Shared\FormBuilder\QuestionEdit\_RadioInput.cshtml">
+	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+	  </Content>
 	</ItemGroup>
 
 	<ItemGroup>
