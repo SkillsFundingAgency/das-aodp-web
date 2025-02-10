@@ -29,6 +29,22 @@ public class FormsController : Controller
 
         return View(viewModel);
     }
+
+    [HttpPost]
+    public async Task<IActionResult> Index(FormVersionListViewModel model)
+    {
+        if (model.AdditionalActions.CreateDraft.HasValue)
+        {
+            var command = new CreateDraftFormVersionCommand(model.AdditionalActions.CreateDraft.Value);
+            var response = await _mediator.Send(command);
+            if (!response.Success) return StatusCode(StatusCodes.Status500InternalServerError);
+
+            return RedirectToAction(nameof(Edit), new { formVersionId = response.Value.FormVersionId });
+
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
     #endregion
 
     #region Create
@@ -47,11 +63,11 @@ public class FormsController : Controller
         {
             Title = viewModel.Name,
             Description = viewModel.Description,
-            Order = viewModel.Order
         };
 
         var response = await _mediator.Send(command);
-        return RedirectToAction(nameof(Index));
+        if (!response.Success) return View(viewModel);
+        return RedirectToAction(nameof(Edit), new { formVersionId = response.Value.Id });
     }
     #endregion
 
@@ -61,7 +77,7 @@ public class FormsController : Controller
     {
         var formVersionQuery = new GetFormVersionByIdQuery(formVersionId);
         var response = await _mediator.Send(formVersionQuery);
-        if (response.Value == null) return NotFound();
+        if (!response.Success) return NotFound();
 
         var viewModel = EditFormVersionViewModel.Map(response.Value);
 
@@ -71,23 +87,44 @@ public class FormsController : Controller
 
     [HttpPost]
     [Route("forms/{formVersionId}")]
-    public async Task<IActionResult> Edit(string formVersionId, EditFormVersionViewModel editFormVersionViewModel)
+    public async Task<IActionResult> Edit(EditFormVersionViewModel editFormVersionViewModel)
     {
-        if (editFormVersionViewModel.AdditionalActions.MoveUp != default)
+        if (editFormVersionViewModel.AdditionalFormActions.Publish != default)
+        {
+            var command = new PublishFormVersionCommand(editFormVersionViewModel.Id);
+            var response = await _mediator.Send(command);
+        }
+        else if (editFormVersionViewModel.AdditionalFormActions.UnPublish != default)
+        {
+            var command = new UnpublishFormVersionCommand(editFormVersionViewModel.Id);
+            var response = await _mediator.Send(command);
+        }
+        else
+        {
+            var command = new UpdateFormVersionCommand()
+            {
+                FormVersionId = editFormVersionViewModel.Id,
+                Description = editFormVersionViewModel.Description,
+                Order = editFormVersionViewModel.Order,
+                Name = editFormVersionViewModel.Title
+            };
+            var response = await _mediator.Send(command);
+        }
+        if (editFormVersionViewModel.AdditionalFormActions.MoveUp != default)
         {
             var command = new MoveSectionUpCommand()
             {
                 FormVersionId = editFormVersionViewModel.Id,
-                SectionId = editFormVersionViewModel.AdditionalActions.MoveUp ?? Guid.Empty,
+                SectionId = editFormVersionViewModel.AdditionalFormActions.MoveUp ?? Guid.Empty,
             };
             var response = await _mediator.Send(command);
         }
-        if (editFormVersionViewModel.AdditionalActions.MoveDown != default)
+        if (editFormVersionViewModel.AdditionalFormActions.MoveDown != default)
         {
             var command = new MoveSectionDownCommand()
             {
                 FormVersionId = editFormVersionViewModel.Id,
-                SectionId = editFormVersionViewModel.AdditionalActions.MoveDown ?? Guid.Empty,
+                SectionId = editFormVersionViewModel.AdditionalFormActions.MoveDown ?? Guid.Empty,
             };
             var response = await _mediator.Send(command);
         }
@@ -115,7 +152,7 @@ public class FormsController : Controller
         if (response.Value == null) return NotFound();
         return View(new DeleteFormViewModel()
         {
-            FormId = formVersionId,
+            FormVersionId = formVersionId,
             Title = response.Value.Title
         });
     }
@@ -124,7 +161,7 @@ public class FormsController : Controller
     [Route("forms/{formVersionId}/delete")]
     public async Task<IActionResult> DeleteConfirmed(DeleteFormViewModel model)
     {
-        var command = new DeleteFormVersionCommand(model.FormId);
+        var command = new DeleteFormVersionCommand(model.FormVersionId);
         var deleteResponse = await _mediator.Send(command);
         return RedirectToAction(nameof(Index));
     }

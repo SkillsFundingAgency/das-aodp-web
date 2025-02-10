@@ -2,8 +2,9 @@
 
 @model ListRoutesViewModel
 
-
-<govuk-back-link href="/">Back to form</govuk-back-link>
+<a class="govuk-back-link" asp-action="Edit" asp-controller="Forms" asp-route-formVersionId="@Model.FormVersionId">
+    Back to Form
+</a>
 
 <h1 class="govuk-heading-l">Routes</h1>
 
@@ -18,7 +19,7 @@
             <govuk-summary-card-title>Routes for Question @pageInfo.Quesiton.Order: @pageInfo.Quesiton.Title</govuk-summary-card-title>
             <govuk-summary-card-actions>
                 <govuk-summary-card-action>
-                    <a class="govuk-button" asp-action="Configure" asp-controller="Routes" asp-route-questionId="@pageInfo.Quesiton.Id" asp-route-pageId="@pageInfo.Id" asp-route-sectionId="@sectionInfo.Id" asp-route-formVersionId="@Model.FormVersionId">Edit</a>
+                    <a class="govuk-button" asp-action="Configure" asp-controller="Routes" asp-route-questionId="@pageInfo.Quesiton.Id" asp-route-pageId="@pageInfo.Id" asp-route-sectionId="@sectionInfo.Id" asp-route-formVersionId="@Model.FormVersionId">@(Model.Response.Editable ? "Edit" : "View")</a>
                 </govuk-summary-card-action>
             </govuk-summary-card-actions>
             <govuk-summary-list>
@@ -35,10 +36,12 @@
                                 {
                                     <li>The next page is: <strong>@(option.NextPage.Order). @option.NextPage.Title</strong></li>
                                 }
-                                else if(option.EndSection){
+                                else if (option.EndSection)
+                                {
                                     <li>Go to end of current section.</li>
                                 }
-                                else {
+                                else
+                                {
                                     <li>Go to default next page.</li>
                                 }
 
@@ -63,11 +66,9 @@
         </govuk-summary-card>
     }
 }
-
-<a class="govuk-button" asp-action="ChooseSection" asp-controller="Routes" asp-route-formVersionId="@Model.FormVersionId">Create New Route</a>
-
-
-
-
+@if (Model.Response.Editable)
+{
+    <a class="govuk-button" asp-action="ChooseSection" asp-controller="Routes" asp-route-formVersionId="@Model.FormVersionId">Create New Route</a>
+}
 
 

@@ -14,6 +14,7 @@ public class GetQuestionByIdQueryResponse
 
     public TextInputOptions TextInput { get; set; } = new();
     public List<RadioOptionItem> RadioOptions { get; set; } = new();
+    public bool Editable { get; set; }
 
     public class TextInputOptions
     {

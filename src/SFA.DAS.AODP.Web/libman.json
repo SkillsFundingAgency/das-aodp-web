@@ -27,6 +27,10 @@
         "dist/quill.snow.css",
         "dist/quill.snow.css.map"
       ]
+    },
+    {
+      "library": "dfe-frontend@2.0.1",
+      "destination": "wwwroot/lib/dfe-frontend/"
     }
   ]
 }

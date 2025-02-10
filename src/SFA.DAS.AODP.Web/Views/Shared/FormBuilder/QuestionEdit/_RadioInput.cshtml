@@ -1,46 +1,47 @@
 ﻿@using static SFA.DAS.AODP.Web.Models.FormBuilder.Question.EditQuestionViewModel
 @model RadioOptions
 
-<govuk-fieldset>
+<govuk-fieldset disabled="@(!ViewBag.IsEditable)">
     <govuk-fieldset-legend class="govuk-fieldset__legend--s">Options</govuk-fieldset-legend>
     <ul class="govuk-list">
         @for (int i = 0; i < Model.MultiChoice.Count; i++)
         {
             <li class="app-select-options__list-item" style="display: flex; align-items: flex-end;">
 
-                <div class="govuk-form-group">
+                <div class="govuk-form-group" style="width:80%">
                     <label class="govuk-label"
                            for="RadioButton[MultiChoice][@i][Value]">Option @(i + 1)</label>
 
                     <input type="hidden" name="RadioButton[MultiChoice][@i][Id]" value="@Model.MultiChoice[i].Id" />
                     <input type="text"
                            name="RadioButton[MultiChoice][@i][Value]"
-                           class="govuk-input govuk-input--width-20"
+                           class="govuk-input govuk-input--width-50"
                            value="@Model.MultiChoice[i].Value" />
                 </div>
 
-                <button type="submit"
-                        class="govuk-button govuk-button--warning"
-                        data-module="govuk-button"
-                        data-prevent-double-click="true"
-                        value="@Model.MultiChoice[i].Id"
-                        name="RadioButton[AdditionalFormActions][RemoveOption]">
-                    Remove
-                    <span class="govuk-visually-hidden">option @(i + 1)</span>
-                </button>
+                @if (ViewBag.IsEditable)
+                {
+                    <button type="submit"
+                            class="govuk-button govuk-button--warning"
+                            data-module="govuk-button"
+                            data-prevent-double-click="true"
+                            value="@i"
+                            name="RadioButton[AdditionalFormActions][RemoveOptionIndex]">
+                        Remove
+                        <span class="govuk-visually-hidden">option @(i + 1)</span>
+                    </button>
+                }
             </li>
         }
     </ul>
 
-    <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button"
-            data-prevent-double-click="true" name="RadioButton[AdditionalFormActions][AddOption]" value="true" data-govuk-button-init="" autofocus>
-        Add another option
-    </button>
+    @if (ViewBag.IsEditable)
+    {
+        <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button"
+                data-prevent-double-click="true" name="RadioButton[AdditionalFormActions][AddOption]" value="true" data-govuk-button-init="" autofocus>
+            Add another option
+        </button>
+    }
+
 </govuk-fieldset>
 
-
-<style>
-    #pages-question-input-is-optional-true-hint {
-        padding: 0 !important;
-    }
-</style>

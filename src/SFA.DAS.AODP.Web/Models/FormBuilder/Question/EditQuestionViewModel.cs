@@ -1,6 +1,6 @@
 ﻿using SFA.DAS.AODP.Application.Commands.FormBuilder.Questions;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Questions;
-using SFA.DAS.AODP.Models.Forms.FormSchema;
+using SFA.DAS.AODP.Models.Forms;
 using System.ComponentModel.DataAnnotations;
 
 namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
@@ -26,6 +26,7 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
 
         public TextInputOptions TextInput { get; set; } = new();
         public RadioOptions RadioButton { get; set; } = new();
+        public bool Editable { get; set; }
 
         public class TextInputOptions
         {
@@ -43,6 +44,7 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
             {
                 public Guid? RemoveOption { get; set; }
                 public bool AddOption { get; set; }
+                public int? RemoveOptionIndex { get; set; }
 
             }
 
@@ -62,11 +64,13 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
                 PageId = response.PageId,
                 Id = response.Id,
                 FormVersionId = formVersionId,
+                SectionId = sectionId,
                 Index = response.Order,
                 Hint = response.Hint,
                 Required = response.Required,
                 Type = type,
-                Title = response.Title
+                Title = response.Title,
+                Editable = response.Editable,
             };
 
             if (type == QuestionType.Text)

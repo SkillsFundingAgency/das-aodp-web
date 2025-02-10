@@ -1,5 +1,9 @@
 ﻿@model CreateSectionViewModel
 
+<a class="govuk-back-link" asp-action="Edit" asp-controller="Forms" asp-route-formVersionId="@Model.FormVersionId">
+    Back to Form
+</a>
+
 <h1 class="govuk-heading-l">Create Section</h1>
 
 <form asp-action="Create" method="post">
@@ -9,14 +13,13 @@
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Name</govuk-input-label>
         </govuk-input>
     </div>
-    <div class="govuk-form-group">
-
-        <govuk-textarea asp-for="@Model.Description">
-            <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Description</govuk-textarea-label>
-        </govuk-textarea>
-    </div>
     <div class="govuk-button-group">
         <govuk-button type="submit">Save</govuk-button>
-        <a class="govuk-button govuk-button--secondary" asp-action="Edit" asp-controller="Forms" asp-route-formVersionId="@Model.FormVersionId">Cancel</a>
+        <a class="govuk-button govuk-button--secondary"
+           asp-action="Edit"
+           asp-controller="Forms"
+           asp-route-formVersionId="@Model.FormVersionId">
+            Cancel
+        </a>
     </div>
 </form>

@@ -35,7 +35,6 @@ public class PagesController : Controller
         {
             SectionId = model.SectionId,
             FormVersionId = model.FormVersionId,
-            Description = model.Description,
             Title = model.Title
 
         };
@@ -53,12 +52,7 @@ public class PagesController : Controller
     [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}")]
     public async Task<IActionResult> Edit(Guid pageId, Guid sectionId, Guid formVersionId)
     {
-        var query = new GetPageByIdQuery()
-        {
-            PageId = pageId,
-            SectionId = sectionId,
-            FormVersionId = formVersionId
-        };
+        var query = new GetPageByIdQuery(pageId, sectionId, formVersionId);
         var response = await _mediator.Send(query);
         if (response.Value == null) return NotFound();
 
@@ -69,26 +63,26 @@ public class PagesController : Controller
     [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}")]
     public async Task<IActionResult> Edit(EditPageViewModel model)
     {
-        if (model.AdditionalActions.MoveUp != default)
+        if (model.AdditionalFormActions.MoveUp != default)
         {
             var command = new MoveQuestionUpCommand()
             {
                 FormVersionId = model.FormVersionId,
                 SectionId = model.SectionId,
                 PageId = model.PageId,
-                QuestionId = model.AdditionalActions.MoveDown ?? Guid.Empty
+                QuestionId = model.AdditionalFormActions.MoveDown ?? Guid.Empty
             };
             var response = await _mediator.Send(command);
             return await Edit(model.PageId, model.SectionId, model.FormVersionId);
         }
-        else if (model.AdditionalActions.MoveDown != default)
+        else if (model.AdditionalFormActions.MoveDown != default)
         {
             var command = new MoveQuestionDownCommand()
             {
                 FormVersionId = model.FormVersionId,
                 SectionId = model.SectionId,
                 PageId = model.PageId,
-                QuestionId = model.AdditionalActions.MoveDown ?? Guid.Empty
+                QuestionId = model.AdditionalFormActions.MoveDown ?? Guid.Empty
             };
             var response = await _mediator.Send(command);
             return await Edit(model.PageId, model.SectionId, model.FormVersionId);
@@ -97,7 +91,6 @@ public class PagesController : Controller
         {
             var command = new UpdatePageCommand()
             {
-                Description = model.Description,
                 Title = model.Title,
                 SectionId = model.SectionId,
                 FormVersionId = model.FormVersionId,
@@ -110,16 +103,28 @@ public class PagesController : Controller
     }
     #endregion
 
+    #region Preview
+    [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/preview")]
+    public async Task<IActionResult> Preview(Guid pageId, Guid sectionId, Guid formVersionId)
+    {
+        var query = new GetPagePreviewByIdQuery(pageId, sectionId, formVersionId);
+        var response = await _mediator.Send(query);
+        if (response.Value == null) return NotFound();
+
+        return View(new PreviewPageViewModel()
+        {
+            PageId = pageId,
+            SectionId = sectionId,
+            FormVersionId = formVersionId,
+            Value = response.Value
+        });
+    }
+    #endregion
     #region Delete
     [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/delete")]
     public async Task<IActionResult> Delete(Guid pageId, Guid sectionId, Guid formVersionId)
     {
-        var query = new GetPageByIdQuery()
-        {
-            PageId = pageId,
-            SectionId = sectionId,
-            FormVersionId = formVersionId
-        };
+        var query = new GetPageByIdQuery(pageId, sectionId, formVersionId);
         var response = await _mediator.Send(query);
         if (response.Value == null) return NotFound();
         return View(new DeletePageViewModel()

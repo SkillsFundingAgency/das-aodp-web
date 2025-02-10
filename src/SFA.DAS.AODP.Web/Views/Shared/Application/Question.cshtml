@@ -1,11 +1,65 @@
-﻿@using SFA.DAS.AODP.Web.Models.Application
+﻿@using SFA.DAS.AODP.Models.Forms
+@using SFA.DAS.AODP.Web.Models.Application
 @model ApplicationPageViewModel.Question
 
-@if (Model.Type == SFA.DAS.AODP.Models.Forms.FormSchema.QuestionType.Text)
-{
-    <input type="hidden" name="Questions[@(Model.Order - 1)][Id]" value="@Model.Id" />
-    <govuk-input asp-for="@Model" name="Questions[@(Model.Order - 1)][Answer][TextValue]" value="@Model.Answer?.TextValue" input-class="govuk-input--width-50" spellcheck="false">
-        <govuk-input-label is-page-heading="false" class="govuk-label govuk-label--m">@Model.Title</govuk-input-label>
-        <govuk-input-hint>@Model.Hint</govuk-input-hint>
-    </govuk-input>
+
+
+@{
+    var errored = ViewContext.ModelState.Any(k => k.Key == Model.Id.ToString());
+    var formGroupErrorClass = errored ? "govuk-form-group--error" : "";
+    var inputErrorClass = errored ? "govuk-input--error" : "";
 }
+
+
+<input type="hidden" name="Questions[@(Model.Order - 1)][Id]" value="@Model.Id" />
+<input type="hidden" name="Questions[@(Model.Order - 1)][Type]" value="@Model.Type.ToString()" />
+
+<div class="govuk-form-group @formGroupErrorClass">
+
+    <h1 class="govuk-label-wrapper">
+        <label class="govuk-label govuk-label--l" for="question-@Model.Id">
+            @Model.Title @(Model.Required ? "" : "(optional)")
+        </label>
+    </h1>
+
+    <div id="question-@Model.Id-hint" class="govuk-hint">
+        @Model.Hint
+    </div>
+
+    @if (ViewContext.ModelState.ContainsKey(Model.Id.ToString()))
+    {
+        <p id="question-@Model.Id-error" class="govuk-error-message">
+            <span class="govuk-visually-hidden">Error:</span> @ViewContext.ModelState[Model.Id.ToString()]!.Errors.First().ErrorMessage.ToString()
+        </p>
+    }
+
+    @{
+        string htmlId = $"question-{Model.Id}";
+    }
+
+    @if (Model.Type == QuestionType.Text)
+    {
+        <input class="govuk-input @inputErrorClass"
+               id="@htmlId"
+               name="Questions[@(Model.Order - 1)][Answer][TextValue]"
+               value="@Model.Answer?.TextValue"
+               type="text"
+               aria-describedby="question-@Model.Id-hint question-@Model.Id-error">
+    }
+
+    else if (Model.Type == QuestionType.Radio)
+    {
+        <div class="govuk-radios" data-module="govuk-radios">
+
+            @foreach (var option in Model.RadioButton.MultiChoice)
+            {
+                <div class="govuk-radios__item" id="@htmlId">
+                    <input @(Model.Answer?.RadioChoiceValue == option.Id.ToString() ? "checked" :"") class="govuk-radios__input" id="@htmlId-@option.Id" name="Questions[@(Model.Order - 1)][Answer][RadioChoiceValue]" type="radio" value="@option.Id">
+                    <label class="govuk-label govuk-radios__label" for="@htmlId-@option.Id">
+                        @option.Value
+                    </label>
+                </div>
+            }
+        </div>
+    }
+</div>

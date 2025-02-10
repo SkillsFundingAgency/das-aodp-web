@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
@@ -30,7 +31,6 @@ public class SectionsController : Controller
         var command = new CreateSectionCommand()
         {
             FormVersionId = model.FormVersionId,
-            Description = model.Description,
             Title = model.Title
         };
 
@@ -85,7 +85,6 @@ public class SectionsController : Controller
             var command = new UpdateSectionCommand()
             {
                 FormVersionId = model.FormVersionId,
-                Description = model.Description,
                 Title = model.Title,
                 Id = model.SectionId
             };

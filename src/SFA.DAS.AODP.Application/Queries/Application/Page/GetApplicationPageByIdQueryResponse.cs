@@ -20,7 +20,17 @@
 
         public TextInputOptions TextInput { get; set; } = new();
         public RadioOptions RadioButton { get; set; } = new();
+        public List<RouteInformation> Routes { get; set; } = new();
 
+    }
+
+    public class RouteInformation
+    {
+        public Guid OptionId { get; set; }
+        public int? NextPageOrder { get; set; }
+        public int? NextSectionOrder { get; set; }
+        public bool EndForm { get; set; }
+        public bool EndSection { get; set; }
     }
 
     public class Answer

@@ -4,34 +4,43 @@
 <h1 class="govuk-heading-l">View Forms</h1>
 
 <a class="govuk-button" asp-action="Create" asp-controller="Forms">Create New Form</a>
-<table class="govuk-table">
-    <thead class="govuk-table__head">
-        <tr class="govuk-table__row">
-            <th scope="col" class="govuk-table__header">Name</th>
-            <th scope="col" class="govuk-table__header">Status</th>
-            <th scope="col" class="govuk-table__header">Options</th>
-        </tr>
-    </thead>
-    <tbody class="govuk-table__body">
-        @foreach (var item in Model.FormVersions.OrderBy(o => o.Order))
-        {
+
+<form asp-action="Index" method="post">
+
+    <table class="govuk-table">
+        <thead class="govuk-table__head">
             <tr class="govuk-table__row">
-                <td>@item.Title</td>
-                <td>@item.Status</td>
-                <td>
-                    @if (item.PublishedVersionId.HasValue)
-                    {
-                        <a class="govuk-button" asp-action="Edit" asp-controller="Forms" asp-route-formVersionId="@item.PublishedVersionId">View Published Version</a>
-
-                    }
-
-                    @if (item.DraftVersionId.HasValue)
-                    {
-
-                        <a class="govuk-button" asp-action="Edit" asp-controller="Forms" asp-route-formVersionId="@item.DraftVersionId">View Draft Version</a>
-                    }
-                </td>
+                <th scope="col" class="govuk-table__header">Name</th>
+                <th scope="col" class="govuk-table__header">Status</th>
+                <th scope="col" class="govuk-table__header">Options</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody class="govuk-table__body">
+            @foreach (var item in Model.FormVersions.OrderBy(o => o.Order))
+            {
+                <tr class="govuk-table__row">
+                    <td>@item.Title</td>
+                    <td>@item.Status</td>
+                    <td>
+                        @if (item.PublishedVersionId.HasValue)
+                        {
+                            <a class="govuk-button" asp-action="Edit" asp-controller="Forms" asp-route-formVersionId="@item.PublishedVersionId">View published version</a>
+
+                        }
+
+                        @if (item.DraftVersionId.HasValue)
+                        {
+                            <a class="govuk-button" asp-action="Edit" asp-controller="Forms" asp-route-formVersionId="@item.DraftVersionId">Edit draft version</a>
+                        }
+                        else
+                        {
+                            <button data-prevent-double-click="true" class="govuk-button govuk-button--secondary" type="submit" value="@item.FormId" name="AdditionalActions[CreateDraft]">
+                                Create draft version
+                            </button>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</form>

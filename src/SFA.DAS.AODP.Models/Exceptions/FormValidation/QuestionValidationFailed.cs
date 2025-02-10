@@ -2,5 +2,5 @@
 
 public class QuestionValidationFailed : QuestionValidationException
 {
-    public QuestionValidationFailed(int id, string title, string message) : base(id, title, message) { }
+    public QuestionValidationFailed(Guid id, string title, string message) : base(id, title, message) { }
 }

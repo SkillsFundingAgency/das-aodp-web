@@ -1,35 +1,35 @@
 ﻿@model EditSectionViewModel
 
+<a class="govuk-back-link" asp-action="Edit" asp-controller="Forms" asp-route-formVersionId="@Model.FormVersionId">
+    Back to Form
+</a>
+
 <h1 class="govuk-heading-l">Edit Section</h1>
 
 <form asp-action="Edit" method="post">
     <div class="govuk-form-group">
-        <govuk-input asp-for="@Model.Title" input-class="govuk-input--width-50" inputmode="text" pattern="[0-9]*" spellcheck="false">
+        <govuk-input disabled="@(!Model.Editable)" asp-for="@Model.Title" input-class="govuk-input--width-50" inputmode="text" pattern="[0-9]*" spellcheck="false">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Name</govuk-input-label>
         </govuk-input>
     </div>
-    <div class="govuk-form-group">
-
-        <govuk-textarea asp-for="@Model.Description">
-            <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Description</govuk-textarea-label>
-        </govuk-textarea>
-    </div>
-
-    <div class="govuk-form-group">
-        <govuk-input asp-for="@Model.Order" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" disabled=true spellcheck="false">
-            <govuk-input-label is-page-heading="false" class="govuk-label--s">Order</govuk-input-label>
-        </govuk-input>
-    </div>
-
-    <govuk-button type="submit">Save</govuk-button>
-    <a class="govuk-button govuk-button--secondary" asp-action="Edit" asp-controller="Forms" asp-route-formVersionId="@Model.FormVersionId">Cancel</a>    
-    @* <a class="govuk-button govuk-button--secondary" href="@Url.Action("Edit", "forms", new { id = Model.FormVersionId })">Cancel</a> *@
-
+    @if (Model.Editable)
+    {
+        <div class="govuk-button-group">
+            <govuk-button type="submit">Save</govuk-button>
+            <a class="govuk-button govuk-button--secondary"
+               asp-action="Edit"
+               asp-controller="Forms"
+               asp-route-formVersionId="@Model.FormVersionId">
+                Cancel
+            </a>
+        </div>
+    }
 
     <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
-
-    <a class="govuk-button" asp-action="Create" asp-controller="Pages" asp-route-sectionId="@Model.SectionId" asp-route-formVersionId="@Model.FormVersionId">Create New Page</a>
-
+    @if (Model.Editable)
+    {
+        <a class="govuk-button" asp-action="Create" asp-controller="Pages" asp-route-sectionId="@Model.SectionId" asp-route-formVersionId="@Model.FormVersionId">Create New Page</a>
+    }
     <table class="govuk-table">
         <thead class="govuk-table__head">
             <tr class="govuk-table__row">
@@ -38,18 +38,18 @@
             </tr>
         </thead>
         <tbody class="govuk-table__body">
-            @foreach (var (item, i) in Model.Pages.OrderBy(v => v.Order).Select((v, i) => (v, i)))
+            @foreach (var (item, i) in Model.Pages.OrderBy(o => o.Order).Select((v, i) => (v, i)))
             {
                 <tr class="govuk-table__row">
                     <td>@item.Title</td>
                     <td>
                         <a class="govuk-button"
-                           asp-action="Edit"
-                           asp-controller="Pages"
-                           asp-route-pageId="@item.Id"
-                           asp-route-sectionId="@Model.SectionId"
-                           asp-route-formVersionId="@Model.FormVersionId">
-                            Edit
+                        asp-action="Edit"
+                        asp-controller="Pages"
+                        asp-route-pageId="@item.Id"
+                        asp-route-sectionId="@Model.SectionId"
+                        asp-route-formVersionId="@Model.FormVersionId">
+                            @(Model.Editable ? "Edit" : "View")
                         </a>
                         @if (i != 0)
                         {
@@ -63,6 +63,7 @@
                                 Move Down
                             </button>
                         }
+
                     </td>
                 </tr>
             }

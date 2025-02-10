@@ -1,6 +1,11 @@
-﻿@using SFA.DAS.AODP.Models.Forms.FormSchema
+﻿@using SFA.DAS.AODP.Models.Forms
 @model CreateQuestionViewModel
 
+<a class="govuk-back-link" asp-action="Edit" asp-controller="Pages" asp-route-formVersionId="@Model.FormVersionId" asp-route-sectionId="@Model.SectionId" asp-route-pageId="@Model.PageId">
+    Back to Page
+</a>
+
+<h1 class="govuk-heading-l">Create Question</h1>
 
 <form asp-controller="Questions" asp-action="Create" method="post">
 

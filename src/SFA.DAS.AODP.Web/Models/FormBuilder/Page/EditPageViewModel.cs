@@ -6,13 +6,13 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Page
     {
         public int Order { get; set; }
         public string Title { get; set; }
-        public string Description { get; set; }
         public Guid FormVersionId { get; set; }
         public Guid SectionId { get; set; }
         public Guid PageId { get; set; }
         public List<Question> Questions { get; set; }
+        public bool Editable { get; set; }
 
-        public AdditionalPageActions AdditionalActions { get; set; } = new AdditionalPageActions();
+        public AdditionalPageActions AdditionalFormActions { get; set; } = new AdditionalPageActions();
 
         public class AdditionalPageActions
         {
@@ -20,6 +20,8 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Page
             public Guid? MoveDown { get; set; }
 
         }
+
+
         public class Question
         {
             public Guid Id { get; set; }
@@ -43,13 +45,13 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Page
         {
             return new()
             {
-                Description = source.Description,
                 Order = source.Order,
                 Title = source.Title,
                 FormVersionId = formVersionId,
                 SectionId = source.SectionId,
                 PageId = source.Id,
-                Questions = source.Questions != null ? [.. source.Questions] : new()
+                Questions = source.Questions != null ? [.. source.Questions] : new(),
+                Editable = source.Editable,
             };
         }
     }
