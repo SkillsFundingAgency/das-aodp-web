@@ -50,7 +50,7 @@ namespace SFA.DAS.AODP.Web.Controllers
         [Route("signin", Name = "provider-signin")]
         public async Task SignIn()
         {
-            await HttpContext.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme, new AuthenticationProperties { RedirectUri="/dashboard"});
+            await HttpContext.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme, new AuthenticationProperties { RedirectUri="/dashboard" });
         }
     }
 }
