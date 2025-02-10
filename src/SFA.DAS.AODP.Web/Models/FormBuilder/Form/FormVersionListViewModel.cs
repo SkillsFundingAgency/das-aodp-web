@@ -11,6 +11,8 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Form
         public class FormActions
         {
             public Guid? CreateDraft { get; set; }
+            public Guid? MoveUp { get; set; }
+            public Guid? MoveDown { get; set; }
         }
 
         public class FormVersion

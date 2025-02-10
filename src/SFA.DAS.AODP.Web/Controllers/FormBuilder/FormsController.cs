@@ -41,6 +41,16 @@ public class FormsController : Controller
             return RedirectToAction(nameof(Edit), new { formVersionId = response.Value.FormVersionId });
 
         }
+        else if (model.AdditionalActions.MoveDown.HasValue)
+        {
+            var command = new MoveFormDownCommand(model.AdditionalActions.MoveDown.Value);
+            var response = await _mediator.Send(command);
+        }
+        else if (model.AdditionalActions.MoveUp.HasValue)
+        {
+            var command = new MoveFormUpCommand(model.AdditionalActions.MoveUp.Value);
+            var response = await _mediator.Send(command);
+        }
 
         return RedirectToAction(nameof(Index));
     }
