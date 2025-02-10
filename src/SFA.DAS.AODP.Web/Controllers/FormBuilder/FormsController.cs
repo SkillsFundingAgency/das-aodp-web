@@ -71,6 +71,7 @@ public class FormsController : Controller
     #endregion
 
     #region Edit
+    [HttpGet]
     [Route("forms/{formVersionId}")]
     public async Task<IActionResult> Edit(Guid formVersionId)
     {

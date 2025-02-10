@@ -56,7 +56,9 @@ public class QuestionsController : Controller
             questionId = response.Value.Id
         });
     }
+    #endregion
 
+    #region Edit
 
     [HttpGet()]
     [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/questions/{questionId}")]
@@ -102,29 +104,47 @@ public class QuestionsController : Controller
 
         return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId, pageId = model.PageId, questionId = model.Id });
     }
-
-
-
     #endregion
 
-
     #region Delete
-    //public async Task<IActionResult> Delete(Guid id)
-    //{
-    //    var pageQuery = await _mediator.Send(new GetPageByIdQuery { Id = id });
-    //    if (pageQuery.Data == null) return NotFound();
-    //    return View(pageQuery.Data);
-    //}
 
-    //[HttpPost, ActionName("Delete")]
-    //public async Task<IActionResult> DeleteConfirmed(Guid id)
-    //{
+    [HttpGet()]
+    [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/questions/{questionId}/delete")]
+    public async Task<IActionResult> Delete(Guid formVersionId, Guid sectionId, Guid pageId, Guid questionId)
+    {
+        var query = new GetQuestionByIdQuery()
+        {
+            PageId = pageId,
+            SectionId = sectionId,
+            FormVersionId = formVersionId,
+            QuestionId = questionId
+        };
 
-    //    var command = new DeletePageCommand { PageId = id };
-    //    var deletePageResponse = await _mediator.Send(command);
-    //    return RedirectToAction("Edit", "Section", new { id = pageQuery.Data.SectionId });
+        var response = await _mediator.Send(query);
 
-    //    return NotFound();
-    //}
+        if (response.Value == null) return NotFound();
+
+        var vm = DeleteQuestionViewModel.MapToViewModel(response.Value, formVersionId, sectionId);
+
+        return View(vm);
+    }
+
+    [HttpPost()]
+    [ValidateAntiForgeryToken]
+    [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/questions/{questionId}/delete")]
+    public async Task<IActionResult> DeleteConfirmed(Guid formVersionId, Guid sectionId, Guid pageId, Guid questionId)
+    {
+        var command = new DeleteQuestionCommand
+        {
+            PageId = pageId,
+            SectionId = sectionId,
+            FormVersionId = formVersionId,
+            QuestionId = questionId
+        };
+
+        var deleteQuestionResponse = await _mediator.Send(command);
+
+        return RedirectToAction("Edit", "Pages", new { formVersionId = formVersionId, sectionId = sectionId, pageId = pageId });
+    }
     #endregion
 }
