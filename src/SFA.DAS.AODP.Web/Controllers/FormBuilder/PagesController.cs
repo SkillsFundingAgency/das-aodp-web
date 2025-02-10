@@ -73,11 +73,11 @@ public class PagesController : Controller
                 QuestionId = model.AdditionalFormActions.MoveDown ?? Guid.Empty
             };
             var response = await _mediator.Send(command);
-            return View(model);
+            return await Edit(model.PageId, model.SectionId, model.FormVersionId);
         }
         else if (model.AdditionalFormActions.MoveDown != default)
         {
-            var command = new MoveQuestionUpCommand()
+            var command = new MoveQuestionDownCommand()
             {
                 FormVersionId = model.FormVersionId,
                 SectionId = model.SectionId,
@@ -85,7 +85,7 @@ public class PagesController : Controller
                 QuestionId = model.AdditionalFormActions.MoveDown ?? Guid.Empty
             };
             var response = await _mediator.Send(command);
-            return View(model);
+            return await Edit(model.PageId, model.SectionId, model.FormVersionId);
         }
         else
         {

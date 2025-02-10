@@ -7,10 +7,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MediatR;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Questions;
 
-public class MoveQuestionDownCommandHandler
+public class MoveQuestionDownCommandHandler : IRequestHandler<MoveQuestionDownCommand, BaseMediatrResponse<MoveQuestionDownCommandResponse>>
 {
     private readonly IApiClient _apiClient;
 
