@@ -1,60 +1,83 @@
-﻿@using SFA.DAS.AODP.Web.Models.Section
-@model EditSectionViewModel
+﻿@model EditSectionViewModel
+
+<a class="govuk-back-link" asp-action="Edit" asp-controller="Forms" asp-route-formVersionId="@Model.FormVersionId">
+    Back to Form
+</a>
 
 <h1 class="govuk-heading-l">Edit Section</h1>
 
 <form asp-action="Edit" method="post">
     <div class="govuk-form-group">
-        <govuk-input asp-for="@Model.Title" input-class="govuk-input--width-50" inputmode="text" pattern="[0-9]*" spellcheck="false">
+        <govuk-input disabled="@(!Model.Editable)" asp-for="@Model.Title" input-class="govuk-input--width-50" inputmode="text" pattern="[0-9]*" spellcheck="false">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Name</govuk-input-label>
         </govuk-input>
     </div>
-    <div class="govuk-form-group">
+    @if (Model.Editable)
+    {
+        <div class="govuk-button-group">
+            <govuk-button type="submit">Save</govuk-button>
+            <a class="govuk-button govuk-button--secondary"
+               asp-action="Edit"
+               asp-controller="Forms"
+               asp-route-formVersionId="@Model.FormVersionId">
+                Cancel
+            </a>
+        </div>
+    }
 
-        <govuk-textarea asp-for="@Model.Description">
-            <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Description</govuk-textarea-label>
-        </govuk-textarea>
-    </div>
-
-    <div class="govuk-form-group">
-        <govuk-input asp-for="@Model.Order" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" disabled=true spellcheck="false">
-            <govuk-input-label is-page-heading="false" class="govuk-label--s">Order</govuk-input-label>
-        </govuk-input>
-    </div>
-
-    <govuk-button type="submit">Save</govuk-button>
-    <a class="govuk-button govuk-button--secondary" href="@Url.Action("Edit", "Form", new { id = Model.FormVersionId })">Cancel</a>
-</form>
-
-<hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
-
-<a class="govuk-button" asp-action="Create" asp-controller="Pages" asp-route-sectionId="@Model.SectionId" asp-route-formVersionId="@Model.FormVersionId">Create New Page</a>
-
-<table class="govuk-table">
-    <thead class="govuk-table__head">
-        <tr class="govuk-table__row">
-            <th scope="col" class="govuk-table__header">Name</th>
-            <th scope="col" class="govuk-table__header">Options</th>
-        </tr>
-    </thead>
-    <tbody class="govuk-table__body">
-        @foreach (var item in Model.Pages)
-        {
+    <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+    @if (Model.Editable)
+    {
+        <a class="govuk-button" asp-action="Create" asp-controller="Pages" asp-route-sectionId="@Model.SectionId" asp-route-formVersionId="@Model.FormVersionId">Create New Page</a>
+    }
+    <table class="govuk-table">
+        <thead class="govuk-table__head">
             <tr class="govuk-table__row">
-                <td>@item.Title</td>
-                <td>
-                    <a class="govuk-button"
-                       asp-action="Edit"
-                       asp-controller="Pages"
-                       asp-route-pageId="@item.Id"
-                       asp-route-sectionId="@Model.SectionId"
-                       asp-route-formVersionId="@Model.FormVersionId">
-                        Edit
-                    </a>
-                    &nbsp;
-                    @*                     <a class="govuk-button govuk-button--warning" asp-action="Delete" asp-controller="Sections" asp-route-sectionId="@item.Id" asp-route-forms="forms" asp asp-route-formVersionId="@Model.FormVersionId">Delete</a>
- *@                </td>
+                <th scope="col" class="govuk-table__header">Name</th>
+                <th scope="col" class="govuk-table__header">Options</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody class="govuk-table__body">
+            @foreach (var (item, i) in Model.Pages.OrderBy(o => o.Order).Select((v, i) => (v, i)))
+            {
+                <tr class="govuk-table__row">
+                    <td>@item.Title</td>
+                    <td>
+                        <a class="govuk-button"
+                        asp-action="Edit"
+                        asp-controller="Pages"
+                        asp-route-pageId="@item.Id"
+                        asp-route-sectionId="@Model.SectionId"
+                        asp-route-formVersionId="@Model.FormVersionId">
+                            @(Model.Editable ? "Edit" : "View")
+                        </a>
+                        @if (i != 0)
+                        {
+                            <button class="govuk-button govuk-button--secondary" type="submit" value="@item.Id" name="AdditionalActions[MoveUp]">
+                                Move Up
+                            </button>
+                        }
+                        @if (i != Model.Pages.Count() - 1)
+                        {
+                            <button class="govuk-button govuk-button--secondary" type="submit" value="@item.Id" name="AdditionalActions[MoveDown]">
+                                Move Down
+                            </button>
+                        }
+                          @if (Model.Editable)
+                    {
+                      <a class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init=""
+                            asp-action="Delete"
+                            asp-controller="Pages"
+                            asp-route-formVersionId="@Model.FormVersionId"
+                            asp-route-sectionId="@Model.SectionId"
+                            asp-route-pageId="@item.Id">
+                        Delete
+                    </a>
+                    }
+
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</form>

@@ -1,0 +1,107 @@
+﻿@using SFA.DAS.AODP.Web.Models.FormBuilder.Routing
+@model CreateRouteViewModel
+
+<a class="govuk-back-link" asp-action="List" asp-controller="Routes" asp-route-formVersionId="@Model.FormVersionId">
+    Back to view routes
+</a>
+
+<h1 class="govuk-heading-l">Configure route</h1>
+
+<govuk-summary-list>
+    <govuk-summary-list-row>
+        <govuk-summary-list-row-key>
+            Section
+        </govuk-summary-list-row-key>
+        <govuk-summary-list-row-value>
+            @Model.SectionTitle
+        </govuk-summary-list-row-value>
+    </govuk-summary-list-row>
+    <govuk-summary-list-row>
+        <govuk-summary-list-row-key>
+            Page
+        </govuk-summary-list-row-key>
+        <govuk-summary-list-row-value>
+            @Model.PageTitle
+        </govuk-summary-list-row-value>
+    </govuk-summary-list-row>
+    <govuk-summary-list-row>
+        <govuk-summary-list-row-key>
+            Question
+        </govuk-summary-list-row-key>
+        <govuk-summary-list-row-value>
+            @Model.QuestionTitle
+        </govuk-summary-list-row-value>
+    </govuk-summary-list-row>
+</govuk-summary-list>
+
+
+<form asp-controller="Routes" asp-action="Configure" method="post">
+
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(v => v.FormVersionId)
+    @Html.HiddenFor(v => v.SectionId)
+    @Html.HiddenFor(v => v.PageId)
+    @Html.HiddenFor(v => v.QuestionId)
+
+    @for (int i = 0; i < Model.Options.Count; i++)
+    {
+
+        var option = Model.Options[i];
+
+        <govuk-summary-card>
+            <govuk-summary-card-title>Option @option.Order</govuk-summary-card-title>
+            <govuk-summary-list>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>
+                        If the answer is
+                    </govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>
+                        @option.Value
+                    </govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>
+                        the next page should be
+                    </govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>
+                        <input type="hidden" name="SelectedOptions[@i][OptionId]" value="@option.Id" />
+
+                        <govuk-select disabled="@(!Model.Editable)" name="SelectedOptions[@i][SelectedPageId]">
+                            <govuk-select-label>Choose next page in this section</govuk-select-label>
+
+                            @foreach (var item in Model.NextPageOptions)
+                            {
+                                <govuk-select-item value="@item.Id" selected="@Model.SelectedOptions.FirstOrDefault(o => o.OptionId == option.Id)?.SelectedPageId == item.Id">@item.Title</govuk-select-item>
+                            }
+
+                        </govuk-select>
+                    </govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>
+                        the next section should be
+                    </govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>
+                        <input type="hidden" name="SelectedOptions[@i][OptionId]" value="@option.Id" />
+
+                        <govuk-select disabled="@(!Model.Editable)" name="SelectedOptions[@i][SelectedSectionId]">
+                            <govuk-select-label>Choose next section in this form</govuk-select-label>
+
+                            @foreach (var item in Model.NextSectionOptions)
+                            {
+                                <govuk-select-item value="@item.Id" selected="@Model.SelectedOptions.FirstOrDefault(o => o.OptionId == option.Id)?.SelectedSectionId == item.Id">@item.Title</govuk-select-item>
+                            }
+
+                        </govuk-select>
+                    </govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+            </govuk-summary-list>
+        </govuk-summary-card>
+
+    }
+    @if (Model.Editable)
+    {
+        <govuk-button type="submit">Save</govuk-button>
+    }
+
+</form>

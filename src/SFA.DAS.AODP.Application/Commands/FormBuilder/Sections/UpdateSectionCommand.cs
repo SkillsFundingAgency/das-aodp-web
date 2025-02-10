@@ -7,6 +7,4 @@ public class UpdateSectionCommand : IRequest<BaseMediatrResponse<UpdateSectionCo
     public Guid FormVersionId { get; set; }
     public Guid Id { get; set; }
     public string Title { get; set; }
-    public string Description { get; set; }
-
 }

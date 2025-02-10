@@ -1,0 +1,42 @@
+﻿@using SFA.DAS.AODP.Web.Models.Application
+@model ApplicationSectionViewModel
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <govuk-back-link class="govuk-link"
+                         asp-action="ViewApplication"
+                         asp-route-organisationId="@Model.OrganisationId"
+                         asp-route-applicationId="@Model.ApplicationId"
+                         asp-route-formVersionId="@Model.FormVersionId"
+                         asp-controller="Applications">
+            Back to view application
+        </govuk-back-link>
+
+        <h1 class="govuk-heading-l">@Model.SectionTitle</h1>
+
+        <ul class="govuk-task-list">
+            @foreach (var pageInfo in Model.Pages.OrderBy(o => o.Order))
+            {
+                <li class="govuk-task-list__item govuk-task-list__item--with-link">
+                    <div class="govuk-task-list__name-and-hint">
+                        <a class="govuk-link govuk-task-list__link"
+                           asp-action="ApplicationPage"
+                           asp-controller="Applications"
+                           asp-route-organisationId="@Model.OrganisationId"
+                           asp-route-formVersionId="@Model.FormVersionId"
+                           asp-route-applicationId="@Model.ApplicationId"
+                           asp-route-pageOrder="@pageInfo.Order"
+                           asp-route-sectionId="@Model.SectionId">
+                            @pageInfo.Title
+                        </a>
+
+                    </div>
+                    <div class="govuk-task-list__status">
+                        @(pageInfo.Completed ? "Completed" : "In progress")
+                    </div>
+                </li>
+            }
+        </ul>
+
+    </div>
+</div>

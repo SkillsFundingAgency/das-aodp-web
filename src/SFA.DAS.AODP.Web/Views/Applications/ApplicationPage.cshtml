@@ -1,0 +1,82 @@
+﻿@using SFA.DAS.AODP.Web.Models.Application
+@model ApplicationPageViewModel
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+        <govuk-back-link class="govuk-link govuk-task-list__link"
+           asp-action="ViewApplicationSection"
+           asp-route-sectionId="@Model.SectionId"
+           asp-controller="Applications"
+           asp-route-formVersionId="@Model.FormVersionId"
+           asp-route-organisationId="@Model.OrganisationId"
+           asp-route-applicationId="@Model.ApplicationId">Back to view section</govuk-back-link>
+
+        @if (!ViewContext.ModelState.IsValid)
+        {
+            <div class="govuk-error-summary" data-module="govuk-error-summary">
+                <div role="alert">
+                    <h2 class="govuk-error-summary__title">
+                        There is a problem
+                    </h2>
+                    <div class="govuk-error-summary__body">
+                        <ul class="govuk-list govuk-error-summary__list">
+
+                            @foreach (var error in ViewContext.ModelState)
+                            {
+                                var question = Model.Questions.FirstOrDefault(q => q.Id.ToString() == error.Key);
+                                var errorMsg = @error.Value.Errors.FirstOrDefault()?.ErrorMessage;
+                                if (question != null)
+                                {
+                                    <li>
+                                        <a href="#question-@question.Id">Question @(question.Order). @errorMsg</a>
+                                    </li>
+                                }
+                                else
+                                {
+                                    <li>@errorMsg</li>
+                                }
+
+                            }
+
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        }
+
+
+        <form asp-controller="Applications" asp-action="ApplicationPage" method="post">
+
+            @Html.HiddenFor(m => m.OrganisationId)
+            @Html.HiddenFor(m => m.PageId)
+            @Html.HiddenFor(m => m.FormVersionId)
+            @Html.HiddenFor(m => m.ApplicationId)
+            @Html.HiddenFor(m => m.SectionId)
+            @Html.HiddenFor(m => m.Order)
+
+
+            @if (Model.Questions.Count == 1)
+            {
+                <span class="govuk-caption-xl">@Model.Title</span>
+            }
+            else
+            {
+                <h1 class="govuk-heading-l">@Model.Title</h1>
+            }
+
+            @for (int i = 0; i < Model.Questions.Count; i++)
+            {
+
+
+                await Html.RenderPartialAsync("Application/Question", Model.Questions[i]);
+
+
+            }
+
+            <govuk-button type="submit">Save and continue</govuk-button>
+
+        </form>
+
+    </div>
+</div>

@@ -1,0 +1,22 @@
+﻿@using SFA.DAS.AODP.Web.Models.Application
+@model ListAvailableFormsViewModel
+
+@{
+    ViewData["Title"] = "Available forms";
+}
+
+
+<h1 class="govuk-heading-l">Available forms</h1>
+
+@foreach (var form in Model.Forms.OrderBy(o => o.Order))
+{
+    <h2 class="govuk-heading-m">@form.Title</h2>
+
+    <div class="govuk-!-margin-bottom-2">
+        <p>@form.Description </p>
+    </div>
+
+    <a class="govuk-button" asp-action="Create" asp-controller="Applications" asp-route-organisationId="@Model.OrganisationId" asp-route-formVersionId="@form.Id">Start application</a>
+}
+
+<hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">

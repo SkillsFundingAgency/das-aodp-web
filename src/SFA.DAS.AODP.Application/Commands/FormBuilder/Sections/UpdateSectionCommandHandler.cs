@@ -26,6 +26,8 @@ public class UpdateSectionCommandHandler : IRequestHandler<UpdateSectionCommand,
         {
             var apiRequest = new UpdateSectionApiRequest()
             {
+                FormVersionId = request.FormVersionId,
+                SectionId = request.Id,
                 Data = request
             };
 

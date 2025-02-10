@@ -8,9 +8,39 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Areas\Review\Data\**" />
+	  <Compile Remove="Areas\Review\Models\**" />
+	  <Content Remove="Areas\Review\Data\**" />
+	  <Content Remove="Areas\Review\Models\**" />
+	  <EmbeddedResource Remove="Areas\Review\Data\**" />
+	  <EmbeddedResource Remove="Areas\Review\Models\**" />
+	  <None Remove="Areas\Review\Data\**" />
+	  <None Remove="Areas\Review\Models\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Remove="Models\Helpers\**" />
+	  <Compile Remove="Models\Pages\**" />
+	  <Compile Remove="Models\Sections\**" />
+	  <Content Remove="Models\Helpers\**" />
+	  <Content Remove="Models\Pages\**" />
+	  <Content Remove="Models\Sections\**" />
+	  <EmbeddedResource Remove="Models\Helpers\**" />
+	  <EmbeddedResource Remove="Models\Pages\**" />
+	  <EmbeddedResource Remove="Models\Sections\**" />
+	  <None Remove="Models\Helpers\**" />
+	  <None Remove="Models\Pages\**" />
+	  <None Remove="Models\Sections\**" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="GovUk.Frontend.AspNetCore" Version="2.7.1" />
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.12" />
 		<PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="9.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="8.0.12" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Http.Polly" Version="8.0.12" />
+		<PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
 		<PackageReference Include="System.Formats.Asn1" Version="9.0.0" />
 		<PackageReference Include="System.Text.Json" Version="9.0.0" />
 		<PackageReference Include="BuildBundlerMinifier" Version="3.2.449" />
@@ -20,20 +50,28 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\SFA.DAS.AODP.Application\SFA.DAS.AODP.Application.csproj" />
+		<ProjectReference Include="..\SFA.DAS.AODP.Authentication\SFA.DAS.AODP.Authentication.csproj" />
 		<ProjectReference Include="..\SFA.DAS.AODP.Common\SFA.DAS.AODP.Common.csproj" />
 		<ProjectReference Include="..\SFA.DAS.AODP.Infrastructure\SFA.DAS.AODP.Infrastructure.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Models\Helpers\" />
-	  <Folder Include="Models\Pages\" />
-	  <Folder Include="Models\Sections\" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <Content Update="Views\Shared\FormBuilder\QuestionEdit\_RadioInput.cshtml">
 	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Update="Views\Shared\FormBuilder\QuestionEdit\_RadioInput.cshtml">
+	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+	  </Content>
+	  <Content Update="wwwroot\js\site.js">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Update="wwwroot\js\site.min.js">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	</ItemGroup>
 
