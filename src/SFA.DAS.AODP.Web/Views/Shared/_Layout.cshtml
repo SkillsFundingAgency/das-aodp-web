@@ -1,130 +1,142 @@
 ﻿@using GovUk.Frontend.AspNetCore
 @{
-    Layout = "_GovUkPageTemplate";
+	Layout = "_GovUkPageTemplate";
 }
 
 @section Header {
-    <header class="dfe-header" role="banner">
-        <div class="govuk-width-container dfe-header__container">
-            <div class="dfe-header__logo">
-                <a class="dfe-header__link" href="/" aria-label="DfE homepage">
-                    <img src="/assets/images/dfe-logo.png" class="dfe-logo" alt="Department for Education">
-                    <img src="/assets/images/dfe-logo-alt.png" class="dfe-logo-hover" alt="Department for Education">
-                </a>
-            </div>
-            <div class="dfe-header__content" id="content-header">
-                <ul class="dfe-header__action-links">
-                    <li>
-                        <a href="/" class="govuk-link govuk-link--inverse">Sign out</a>
-                    </li>
-                </ul>
-                <div class="dfe-header__menu">
-                    <button class="dfe-header__menu-toggle" id="toggle-menu" aria-controls="header-navigation" aria-expanded="false">Menu</button>
-                </div>
-            </div>
-        </div>
-        <div class="govuk-width-container dfe-header__service-name">
-            <a href="/" class="dfe-header__link--service">Qualification Funding Service</a>
-        </div>
-        <nav class="dfe-header__navigation" id="header-navigation" role="navigation" aria-label="Primary navigation" aria-labelledby="label-navigation">
-            <div class="govuk-width-container">
-                <p class="dfe-header__navigation-title">
-                    <span id="label-navigation">
-                        Menu
-                        <div id="extwaiokist" style="display:none" v="bmmch" q="f0ae2e3d" c="594.5" i="601" u="0.751" s="04272401" sg="svr_09102316-ga_04272401-bai_04252415" d="1" w="false" e="}" a="2" m="BMe=" vn="9colr"><div id="extwaigglbit" style="display:none" v="bmmch" q="f0ae2e3d" c="594.5" i="601" u="0.751" s="04272401" sg="svr_09102316-ga_04272401-bai_04252415" d="1" w="false" e="}" a="2" m="BMe="></div></div>
-                    </span>
-                    <button class="dfe-header__navigation-close" id="close-menu">
-                        <svg class="dfe-icon dfe-icon__close" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false" width="27" height="27">
-                            <path d="M13.41 12l5.3-5.29a1 1 0 1 0-1.42-1.42L12 10.59l-5.29-5.3a1 1 0 0 0-1.42 1.42l5.3 5.29-5.3 5.29a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l5.29-5.3 5.29 5.3a1 1 0 0 0 1.42 0 1 1 0 0 0 0-1.42z"></path>
-                        </svg>
-                        <span class="govuk-visually-hidden">Close menu</span>
-                    </button>
-                </p>
-                <ul class="dfe-header__navigation-list">
-                    <li class="dfe-header__navigation-item dfe-header__navigation-item--current">
-                        <a class="dfe-header__navigation-link" href="#">
-                            Home
-                            <svg class="dfe-icon dfe-icon__chevron-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" width="34" height="34">
-                                <path d="M15.5 12a1 1 0 0 1-.29.71l-5 5a1 1 0 0 1-1.42-1.42l4.3-4.29-4.3-4.29a1 1 0 0 1 1.42-1.42l5 5a1 1 0 0 1 .29.71z"></path>
-                            </svg>
-                        </a>
-                    </li>
-                    <li class="dfe-header__navigation-item">
-                        <a class="dfe-header__navigation-link" asp-action="Index" asp-controller="Forms">                 
-                            Form Management
-                            <svg class="dfe-icon dfe-icon__chevron-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" width="34" height="34">
-                                <path d="M15.5 12a1 1 0 0 1-.29.71l-5 5a1 1 0 0 1-1.42-1.42l4.3-4.29-4.3-4.29a1 1 0 0 1 1.42-1.42l5 5a1 1 0 0 1 .29.71z"></path>
-                            </svg>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </nav>
-    </header>
-    <script src="~/lib/sortablejs/sortable.min.js"></script>
-    <link href="~/lib/quill/dist/quill.snow.css" rel="stylesheet" />
-    <script src="~/lib/quill/dist/quill.js"></script>
+	<header class="dfe-header" role="banner">
+		<div class="govuk-width-container dfe-header__container">
+			<div class="dfe-header__logo">
+				<a class="dfe-header__link" href="/" aria-label="DfE homepage">
+					<img src="/assets/images/dfe-logo.png" class="dfe-logo" alt="Department for Education">
+					<img src="/assets/images/dfe-logo-alt.png" class="dfe-logo-hover" alt="Department for Education">
+				</a>
+			</div>
+			<div class="dfe-header__content" id="content-header">
+				<ul class="dfe-header__action-links">
+					<li>
+						@if (User.Identity.IsAuthenticated)
+						{
+							<a asp-controller="home" asp-action="signout" class="govuk-link govuk-link--inverse">Sign out</a>
+						}
+					</li>
+				</ul>
+				<div class="dfe-header__menu">
+					<button class="dfe-header__menu-toggle" id="toggle-menu" aria-controls="header-navigation" aria-expanded="false">Menu</button>
+				</div>
+			</div>
+		</div>
+		<div class="govuk-width-container dfe-header__service-name">
+			<a href="/" class="dfe-header__link--service">Review qualifications for funding</a>
+		</div>
+		<nav class="dfe-header__navigation" id="header-navigation" role="navigation" aria-label="Primary navigation" aria-labelledby="label-navigation">
+			<div class="govuk-width-container">
+				<p class="dfe-header__navigation-title">
+					<span id="label-navigation">
+						Menu
+						<div id="extwaiokist" style="display:none" v="bmmch" q="f0ae2e3d" c="594.5" i="601" u="0.751" s="04272401" sg="svr_09102316-ga_04272401-bai_04252415" d="1" w="false" e="}" a="2" m="BMe=" vn="9colr"><div id="extwaigglbit" style="display:none" v="bmmch" q="f0ae2e3d" c="594.5" i="601" u="0.751" s="04272401" sg="svr_09102316-ga_04272401-bai_04252415" d="1" w="false" e="}" a="2" m="BMe="></div></div>
+					</span>
+					<button class="dfe-header__navigation-close" id="close-menu">
+						<svg class="dfe-icon dfe-icon__close" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false" width="27" height="27">
+							<path d="M13.41 12l5.3-5.29a1 1 0 1 0-1.42-1.42L12 10.59l-5.29-5.3a1 1 0 0 0-1.42 1.42l5.3 5.29-5.3 5.29a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l5.29-5.3 5.29 5.3a1 1 0 0 0 1.42 0 1 1 0 0 0 0-1.42z"></path>
+						</svg>
+						<span class="govuk-visually-hidden">Close menu</span>
+					</button>
+				</p>
+				@if (User.Identity.IsAuthenticated)
+				{
+					<ul class="dfe-header__navigation-list">
+						<li class="dfe-header__navigation-item dfe-header__navigation-item--current">
+						<a class="dfe-header__navigation-link" href="#">
+							Home
+							<svg class="dfe-icon dfe-icon__chevron-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" width="34" height="34">
+								<path d="M15.5 12a1 1 0 0 1-.29.71l-5 5a1 1 0 0 1-1.42-1.42l4.3-4.29-4.3-4.29a1 1 0 0 1 1.42-1.42l5 5a1 1 0 0 1 .29.71z"></path>
+							</svg>
+						</a>
+					</li>
+					<li class="dfe-header__navigation-item">
+						<a class="dfe-header__navigation-link" asp-action="Index" asp-controller="Forms">
+							Form Management
+							<svg class="dfe-icon dfe-icon__chevron-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" width="34" height="34">
+								<path d="M15.5 12a1 1 0 0 1-.29.71l-5 5a1 1 0 0 1-1.42-1.42l4.3-4.29-4.3-4.29a1 1 0 0 1 1.42-1.42l5 5a1 1 0 0 1 .29.71z"></path>
+							</svg>
+						</a>
+					</li>
+				</ul>
+				}
+
+			</div>
+		</nav>
+	</header>
+	<script src="~/lib/sortablejs/sortable.min.js"></script>
+	<link href="~/lib/quill/dist/quill.snow.css" rel="stylesheet" />
+	<script src="~/lib/quill/dist/quill.js"></script>
 }
 
 @section Head {
-    @Html.GovUkFrontendStyleImports()
+	@Html.GovUkFrontendStyleImports()
 
-    <environment include="Development">
-        <link rel="stylesheet" href="~/lib/dfe-frontend/dist/dfefrontend.css">
-        <link rel="stylesheet" href="/stylesheets/application.css">
-    </environment>
-    <environment exclude="Development">
-        <link rel="stylesheet" href="~/lib/dfe-frontend/dist/dfefrontend-2.0.0.min.css">
-        <link rel="stylesheet" href="/stylesheets/application.min.css">
-    </environment>
+	<environment include="Development">
+		<link rel="stylesheet" href="~/lib/dfe-frontend/dist/dfefrontend.css">
+		<link rel="stylesheet" href="/stylesheets/application.css">
+	</environment>
+	<environment exclude="Development">
+		<link rel="stylesheet" href="~/lib/dfe-frontend/dist/dfefrontend-2.0.0.min.css">
+		<link rel="stylesheet" href="/stylesheets/application.min.css">
+	</environment>
 
 }
-
+<div class="govuk-phhase-banner">
+	<p class="govuk-phase-banner__content">
+		<strong class="govuk-tag govuk-phase-banner__content__tag">Development</strong>
+		<span class="govuk-phase-banner__text">This site is currently in active development.</span>
+		</p>
+</div>
 @RenderBody()
 
 @section Footer {
-    <footer class="govuk-footer">
-        <div class="govuk-width-container">
-            <div class="govuk-footer__meta">
-                <div class="govuk-footer__meta-item govuk-footer__meta-item--grow">
-                    <svg aria-hidden="true"
-                         focusable="false"
-                         class="govuk-footer__licence-logo"
-                         xmlns="http://www.w3.org/2000/svg"
-                         viewBox="0 0 483.2 195.7"
-                         height="17"
-                         width="41">
-                        <path fill="currentColor"
-                              d="M421.5 142.8V.1l-50.7 32.3v161.1h112.4v-50.7zm-122.3-9.6A47.12 47.12 0 0 1 221 97.8c0-26 21.1-47.1 47.1-47.1 16.7 0 31.4 8.7 39.7 21.8l42.7-27.2A97.63 97.63 0 0 0 268.1 0c-36.5 0-68.3 20.1-85.1 49.7A98 98 0 0 0 97.8 0C43.9 0 0 43.9 0 97.8s43.9 97.8 97.8 97.8c36.5 0 68.3-20.1 85.1-49.7a97.76 97.76 0 0 0 149.6 25.4l19.4 22.2h3v-87.8h-80l24.3 27.5zM97.8 145c-26 0-47.1-21.1-47.1-47.1s21.1-47.1 47.1-47.1 47.2 21 47.2 47S123.8 145 97.8 145" />
-                    </svg>
-                    <span class="govuk-footer__licence-description">
-                        All content is available under the
-                        <a class="govuk-footer__link"
-                           href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
-                           rel="license">Open Government Licence v3.0</a>, except where otherwise stated
-                    </span>
-                </div>
-                <div class="govuk-footer__meta-item">
-                    <a class="govuk-footer__link govuk-footer__copyright-logo"
-                       href="https://www.nationalarchives.gov.uk/information-management/re-using-public-sector-information/uk-government-licensing-framework/crown-copyright/">
-                        © Crown copyright
-                    </a>
-                </div>
-            </div>
-        </div>
-    </footer>
+	<footer class="govuk-footer">
+		<div class="govuk-width-container">
+			<div class="govuk-footer__meta">
+				<div class="govuk-footer__meta-item govuk-footer__meta-item--grow">
+					<svg aria-hidden="true"
+						 focusable="false"
+						 class="govuk-footer__licence-logo"
+						 xmlns="http://www.w3.org/2000/svg"
+						 viewBox="0 0 483.2 195.7"
+						 height="17"
+						 width="41">
+						<path fill="currentColor"
+							  d="M421.5 142.8V.1l-50.7 32.3v161.1h112.4v-50.7zm-122.3-9.6A47.12 47.12 0 0 1 221 97.8c0-26 21.1-47.1 47.1-47.1 16.7 0 31.4 8.7 39.7 21.8l42.7-27.2A97.63 97.63 0 0 0 268.1 0c-36.5 0-68.3 20.1-85.1 49.7A98 98 0 0 0 97.8 0C43.9 0 0 43.9 0 97.8s43.9 97.8 97.8 97.8c36.5 0 68.3-20.1 85.1-49.7a97.76 97.76 0 0 0 149.6 25.4l19.4 22.2h3v-87.8h-80l24.3 27.5zM97.8 145c-26 0-47.1-21.1-47.1-47.1s21.1-47.1 47.1-47.1 47.2 21 47.2 47S123.8 145 97.8 145" />
+					</svg>
+					<span class="govuk-footer__licence-description">
+						All content is available under the
+						<a class="govuk-footer__link"
+						   href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
+						   rel="license">Open Government Licence v3.0</a>, except where otherwise stated
+					</span>
+				</div>
+				<div class="govuk-footer__meta-item">
+					<a class="govuk-footer__link govuk-footer__copyright-logo"
+					   href="https://www.nationalarchives.gov.uk/information-management/re-using-public-sector-information/uk-government-licensing-framework/crown-copyright/">
+						© Crown copyright
+					</a>
+				</div>
+			</div>
+		</div>
+	</footer>
 }
 
 @section BodyEnd {
-    @Html.GovUkFrontendScriptImports()
+	@Html.GovUkFrontendScriptImports()
 
-    <environment include="Development">
-        <script src="~/lib/jquery/dist/jquery.min.js"></script>
-        <script src="~/js/site.js"></script>
-    </environment>
-    <environment exclude="Development">
-        <script src="~/js/application.min.js"></script>
-    </environment>
+	<environment include="Development">
+		<script src="~/lib/jquery/dist/jquery.min.js"></script>
+		<script src="~/js/site.js"></script>
+	</environment>
+	<environment exclude="Development">
+		<script src="~/js/application.min.js"></script>
+	</environment>
 
-    @RenderSection("Scripts", required: false)
+	@RenderSection("Scripts", required: false)
 }

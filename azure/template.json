@@ -41,14 +41,20 @@
         "keyVaultCertificateName": {
             "type": "string"
         },
-        "<sharedFrontEndAppServicePlanName> or <sharedBackEndAppServicePlanName>": { //PLACEHOLDER
+        "sharedFrontEndAppServicePlanName": {
             "type": "string"
         },
-        "<sharedFrontEndSubnetResourceId> or <sharedBackEndSubnetResourceId>": { //PLACEHOLDER
+        "sharedFrontEndSubnetResourceId": {
             "type": "string"
         },
-        "<frontEndAccessRestrictions> or <backEndAccessRestrictions>": { //PLACEHOLDER
+        "frontEndAccessRestrictions": {
             "type": "array"
+        },
+        "sharedApimResourceGroup": {
+            "type": "string"
+        },
+        "sharedApimName": {
+            "type": "string"
         },
         "logAnalyticsSubscriptionId": {
             "type": "string",
@@ -67,7 +73,7 @@
         "resourceNamePrefix": "[toLower(concat('das-', parameters('resourceEnvironmentName'),'-', parameters('serviceName')))]",
         "resourceGroupName": "[concat(variables('resourceNamePrefix'), '-rg')]",
         "appServiceName": "[concat(variables('resourceNamePrefix'), '-as')]",
-        "configNames": "__SolutionBaseName__" //PLACEHOLDER
+        "configNames": "SFA.DAS.AODP.Web"
     },
     "resources": [
         {
@@ -145,13 +151,13 @@
                         "value": "[variables('appServiceName')]"
                     },
                     "appServicePlanName": {
-                        "value": "[parameters('<sharedFrontEndAppServicePlanName> or <sharedBackEndAppServicePlanName>')]" //PLACEHOLDER
+                        "value": "[parameters('sharedFrontEndAppServicePlanName')]"
                     },
                     "appServicePlanResourceGroup": {
                         "value": "[parameters('sharedEnvResourceGroup')]"
                     },
                     "subnetResourceId": {
-                        "value": "[parameters('<sharedFrontEndSubnetResourceId> or <sharedBackEndSubnetResourceId>')]" //PLACEHOLDER
+                        "value": "[parameters('sharedFrontEndSubnetResourceId')]"
                     },
                     "appServiceAppSettings": {
                         "value": {
@@ -194,13 +200,37 @@
                         "value": "[reference(concat(variables('appServiceName'), '-app-service-certificate-', parameters('utcValue'))).outputs.certificateThumbprint.value]"
                     },
                     "ipSecurityRestrictions": {
-                        "value": "[parameters('<frontEndAccessRestrictions> or <backEndAccessRestrictions>')]" //PLACEHOLDER
+                        "value": "[parameters('frontEndAccessRestrictions')]"
                     }
                 }
             },
             "dependsOn": [
                 "[variables('resourceGroupName')]"
             ]
+        },
+        {
+            "apiVersion": "2020-06-01",
+            "name": "[concat(variables('appServiceName'), '-apim-subscription-', parameters('utcValue'))]",
+            "resourceGroup": "[parameters('sharedApimResourceGroup')]",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('deploymentUrlBase'),'apim/apim-subscription.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "apimName": {
+                        "value": "[parameters('sharedApimName')]"
+                    },
+                    "subscriptionName": {
+                        "value": "[variables('appServiceName')]"
+                    },
+                    "subscriptionScope": {
+                        "value": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', parameters('sharedApimResourceGroup'), '/providers/Microsoft.ApiManagement/service/', parameters('sharedApimName'), '/products/AodpOuterApi')]"
+                    }
+                }
+            }
         }
     ],
     "outputs": {

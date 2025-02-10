@@ -19,18 +19,18 @@ namespace SFA.DAS.AODP.Web.Extensions
                 .AddJsonFile("appsettings.Development.json", true);
 #endif
 
-            if (!isDevelopment)
-            {
+            //if (!isDevelopment)
+            //{
 
                 configBuilder.AddAzureTableStorage(options =>
                 {
                     options.ConfigurationKeys = configuration["ConfigNames"].Split(",");
                     options.StorageConnectionString = configuration["ConfigurationStorageConnectionString"];
-                    options.EnvironmentName = configuration["Environment"];
+                    options.EnvironmentName = configuration["EnvironmentName"];
                     options.PreFixConfigurationKeys = false;
                 }
                    );
-            }
+            //}
 
             return configBuilder.Build();
 
