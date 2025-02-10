@@ -98,18 +98,7 @@ public class FormsController : Controller
             var command = new UnpublishFormVersionCommand(editFormVersionViewModel.Id);
             var response = await _mediator.Send(command);
         }
-        else
-        {
-            var command = new UpdateFormVersionCommand()
-            {
-                FormVersionId = editFormVersionViewModel.Id,
-                Description = editFormVersionViewModel.Description,
-                Order = editFormVersionViewModel.Order,
-                Name = editFormVersionViewModel.Title
-            };
-            var response = await _mediator.Send(command);
-        }
-        if (editFormVersionViewModel.AdditionalFormActions.MoveUp != default)
+        else if (editFormVersionViewModel.AdditionalFormActions.MoveUp != default)
         {
             var command = new MoveSectionUpCommand()
             {
@@ -118,7 +107,7 @@ public class FormsController : Controller
             };
             var response = await _mediator.Send(command);
         }
-        if (editFormVersionViewModel.AdditionalFormActions.MoveDown != default)
+        else if (editFormVersionViewModel.AdditionalFormActions.MoveDown != default)
         {
             var command = new MoveSectionDownCommand()
             {
