@@ -1,13 +1,38 @@
-﻿@* @model Section
+﻿﻿@using SFA.DAS.AODP.Web.Models.FormBuilder.Question
+@model DeleteQuestionViewModel
 
-<h1 class="govuk-heading-l">Delete Section?</h1>
+<a class="govuk-back-link" asp-action="Edit" asp-controller="Questions" asp-route-formVersionId="@Model.FormVersionId" asp-route-sectionId="@Model.SectionId" asp-route-pageId="@Model.PageId" asp-route-questionId="@Model.QuestionId">
+    Back to Question
+</a>
 
-<form asp-action="Delete" method="post">
-    <input type="hidden" id="Id" name="Id" value="@Model.Id" />
+<h1 class="govuk-heading-l">Delete Question?</h1>
+
+<form asp-action="DeleteConfirmed" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" id="Id" name="Id" value="@Model.QuestionId" />
     <govuk-warning-text icon-fallback-text="Warning">
-        Are you sure you want to delete the section "@Model.Title"?
+        Are you sure you want to delete the question?
     </govuk-warning-text>
+    
+    <p class="govuk-body">
+        @Model.Title.ToString()
+    </p>
 
-    <govuk-button class="govuk-button--warning" type="submit">Delete</govuk-button>
-    <a class="govuk-button govuk-button--secondary" href="@Url.Action("Edit", "Form", new { id = Model.FormId })">Cancel</a>
-</form> *@
+    <govuk-button class="govuk-button--warning" type="submit" 
+        asp-action="DeleteConfirmed" asp-controller="Questions" 
+        asp-route-formVersionId="@Model.FormVersionId" 
+        asp-route-sectionId="@Model.SectionId" 
+        asp-route-pageId="@Model.PageId" 
+        asp-route-questionId="@Model.QuestionId">
+        Delete
+    </govuk-button>
+
+    <a class="govuk-button govuk-button--secondary" 
+        asp-action="Edit" asp-controller="Questions" 
+        asp-route-formVersionId="@Model.FormVersionId" 
+        asp-route-sectionId="@Model.SectionId" 
+        asp-route-pageId="@Model.PageId" 
+        asp-route-questionId="@Model.QuestionId">
+        Cancel
+    </a>
+</form>

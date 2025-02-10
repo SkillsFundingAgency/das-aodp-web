@@ -58,7 +58,7 @@ public class SectionsController : Controller
     [Route("forms/{formVersionId}/sections/{sectionId}")]
     public async Task<IActionResult> Edit(EditSectionViewModel model)
     {
-        if (model.AdditionalActions.MoveUp != default)
+        if (model.AdditionalActions.MoveUp != Guid.Empty)
         {
             var command = new MovePageUpCommand()
             {
@@ -69,7 +69,7 @@ public class SectionsController : Controller
             var response = await _mediator.Send(command);
             return await Edit(model.FormVersionId, model.SectionId);
         }
-        else if (model.AdditionalActions.MoveDown != default)
+        else if (model.AdditionalActions.MoveDown != Guid.Empty)
         {
             var command = new MovePageDownCommand()
             {
@@ -101,21 +101,23 @@ public class SectionsController : Controller
     #endregion
 
     #region Delete
+    [HttpGet]
     [Route("forms/{formVersionId}/sections/{sectionId}/delete")]
-    public async Task<IActionResult> Delete(Guid sectionId, Guid formVerisonId)
+    public async Task<IActionResult> Delete(Guid sectionId, Guid formVersionId)
     {
-        var query = new GetSectionByIdQuery(sectionId, formVerisonId);
+        var query = new GetSectionByIdQuery(sectionId, formVersionId);
         var response = await _mediator.Send(query);
         if (response.Value == null) return NotFound();
         return View(new DeleteSectionViewModel()
         {
             Title = response.Value.Title,
             SectionId = sectionId,
-            FormVersionId = formVerisonId
+            FormVersionId = formVersionId
         });
     }
 
     [HttpPost, ActionName("Delete")]
+    [Route("forms/{formVersionId}/sections/{sectionId}/delete")]
     public async Task<IActionResult> DeleteConfirmed(DeleteSectionViewModel model)
     {
         var command = new DeleteSectionCommand()
@@ -124,8 +126,7 @@ public class SectionsController : Controller
             SectionId = model.SectionId
         };
         var deleteResponse = await _mediator.Send(command);
-        return RedirectToAction("Edit", "Form", new { id = model.FormVersionId });
-
+        return RedirectToAction("Edit", "Forms", new { formVersionId = model.FormVersionId });
     }
     #endregion
 }

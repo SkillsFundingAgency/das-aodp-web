@@ -7,19 +7,31 @@
 <h1 class="govuk-heading-l">Delete Section?</h1>
 
 <form asp-action="Delete" method="post">
-    @Html.HiddenFor(m => m.FormVersionId);
-    @Html.HiddenFor(m => m.SectionId);
+    @Html.HiddenFor(m => m.FormVersionId)
+    @Html.HiddenFor(m => m.SectionId)
     <govuk-warning-text icon-fallback-text="Warning">
         Are you sure you want to delete the section "@Model.Title"?
     </govuk-warning-text>
 
+    <p class="govuk-body">
+        @Model.Title.ToString()
+    </p>
+
     <div class="govuk-button-group">
-        <govuk-button class="govuk-button--warning" type="submit">Delete</govuk-button>
+
+        <govuk-button class="govuk-button--warning" type="submit"
+            asp-action="Delete" asp-controller="Sections"
+            asp-route-formVersionId="@Model.FormVersionId"
+            asp-route-sectionId="@Model.SectionId">
+            Delete
+        </govuk-button>
+
         <a class="govuk-button govuk-button--secondary"
            asp-action="Edit"
            asp-controller="Forms"
            asp-route-formVersionId="@Model.FormVersionId">
             Cancel
         </a>
+
     </div>
 </form>
