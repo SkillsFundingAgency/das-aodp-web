@@ -87,7 +87,7 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
             //Assert
             Assert.True(expectedResponse.Success); // Assert.That(expectedResponse.Success, Is.EqualTo(true));
             Assert.IsType<RedirectToActionResult>(result); // Assert.That(result, Is.InstanceOf<RedirectToActionResult>());
-            Assert.Equal("Index", okResult.ActionName); // Assert.That(okResult.ActionName, Is.EqualTo("Index"));
+            Assert.Equal("Edit", okResult.ActionName); // Assert.That(okResult.ActionName, Is.EqualTo("Index"));
         }
 
         [Fact]
