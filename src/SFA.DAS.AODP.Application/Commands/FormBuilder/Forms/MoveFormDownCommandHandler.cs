@@ -20,7 +20,7 @@ public class MoveFormDownCommandHandler : IRequestHandler<MoveFormDownCommand, B
 
         try
         {
-            var apiRequest = new MoveFormDownApiRequest(request.FormVersionId);
+            var apiRequest = new MoveFormDownApiRequest(request.FormId);
             await _apiClient.Put(apiRequest);
             response.Success = true;
         }

@@ -51,13 +51,13 @@
                         asp-route-formVersionId="@Model.FormVersionId">
                             @(Model.Editable ? "Edit" : "View")
                         </a>
-                        @if (i != 0)
+                        @if (i != 0 && Model.Editable)
                         {
                             <button class="govuk-button govuk-button--secondary" type="submit" value="@item.Id" name="AdditionalActions[MoveUp]">
                                 Move Up
                             </button>
                         }
-                        @if (i != Model.Pages.Count() - 1)
+                        @if (i != Model.Pages.Count() - 1 && Model.Editable)
                         {
                             <button class="govuk-button govuk-button--secondary" type="submit" value="@item.Id" name="AdditionalActions[MoveDown]">
                                 Move Down

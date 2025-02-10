@@ -33,7 +33,7 @@ namespace SFA.DAS.AODP.Application.Tests.Commands.FormBuilder.Forms
 
             // Assert
             _apiClient
-                .Verify(a => a.Put(It.Is<UnpublishFormVersionApiRequest>(r => r.FormVersionId == request.FormVersionId)));
+                .Verify(a => a.Put(It.Is<UnpublishFormVersionApiRequest>(r => r.FormVersionId == request.FormId)));
 
             Assert.NotNull(response);
             Assert.True(response.Success);

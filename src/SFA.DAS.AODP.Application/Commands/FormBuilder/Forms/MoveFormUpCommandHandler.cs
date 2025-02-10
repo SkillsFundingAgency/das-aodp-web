@@ -20,7 +20,7 @@ public class MoveFormUpCommandHandler : IRequestHandler<MoveFormUpCommand, BaseM
 
         try
         {
-            var apiRequest = new MoveFormUpApiRequest(request.FormVersionId);
+            var apiRequest = new MoveFormUpApiRequest(request.FormId);
             await _apiClient.Put(apiRequest);
             response.Success = true;
         }
