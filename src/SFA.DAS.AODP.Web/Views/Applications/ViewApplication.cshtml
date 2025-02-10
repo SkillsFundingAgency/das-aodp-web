@@ -61,7 +61,7 @@
                            asp-route-organisationId="@Model.OrganisationId"
                            asp-route-applicationId="@Model.ApplicationId">@sectionInfo.Title</a>
 
-                        @if (sectionInfo.PagesRemaining.HasValue && sectionInfo.PagesRemaining > 0)
+                        @if (sectionInfo.PagesRemaining > 0)
                         {
                             <div class="govuk-task-list__hint">
                                 @sectionInfo.PagesRemaining @(sectionInfo.PagesRemaining == 1 ? "page" : "pages") remaining
@@ -70,7 +70,7 @@
 
                     </div>
                     <div class="govuk-task-list__status">
-                        @(!sectionInfo.PagesRemaining.HasValue || sectionInfo.PagesRemaining.Value == 0 ? "Completed" : "In progress")
+                        @(sectionInfo.PagesRemaining == 0 ? "Completed" : "In progress")
                     </div>
                 </li>
             }
