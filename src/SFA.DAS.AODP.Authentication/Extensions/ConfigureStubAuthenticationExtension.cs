@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,7 +16,10 @@ namespace SFA.DAS.AODP.Authentication.Extensions
             services
                 .AddAuthentication(sharedOptions =>
                     {
-                        sharedOptions.DefaultSignOutScheme = OpenIdConnectDefaults.AuthenticationScheme;
+                        sharedOptions.DefaultSignOutScheme = OpenIdConnectDefaults.AuthenticationScheme;                        
+                        sharedOptions.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                        sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                        sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;                                                 
                     })
                 .AddScheme<AuthenticationSchemeOptions, StubAuthHandler>(authenticationCookieName, _ => { })
                 .AddCookie(OpenIdConnectDefaults.AuthenticationScheme, options =>
