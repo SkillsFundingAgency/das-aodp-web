@@ -70,7 +70,7 @@ public class PagesController : Controller
                 FormVersionId = model.FormVersionId,
                 SectionId = model.SectionId,
                 PageId = model.PageId,
-                QuestionId = model.AdditionalFormActions.MoveDown ?? Guid.Empty
+                QuestionId = model.AdditionalFormActions.MoveUp ?? Guid.Empty
             };
             var response = await _mediator.Send(command);
             return await Edit(model.PageId, model.SectionId, model.FormVersionId);

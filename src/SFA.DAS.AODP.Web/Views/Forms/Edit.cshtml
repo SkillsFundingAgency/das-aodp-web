@@ -94,13 +94,13 @@
                         </a>
                         @if (i != 0 && !disableEditing)
                         {
-                            <button class="govuk-button govuk-button--secondary" type="submit" value="@item.Id" name="AdditionalActions[MoveUp]">
+                            <button class="govuk-button govuk-button--secondary" type="submit" value="@item.Id" name="AdditionalFormActions[MoveUp]">
                                 Move Up
                             </button>
                         }
                         @if (i != Model.Sections.Count() - 1 && !disableEditing)
                         {
-                            <button class="govuk-button govuk-button--secondary" type="submit" value="@item.Id" name="AdditionalActions[MoveDown]">
+                            <button class="govuk-button govuk-button--secondary" type="submit" value="@item.Id" name="AdditionalFormActions[MoveDown]">
                                 Move Down
                             </button>
                         }
