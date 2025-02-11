@@ -23,6 +23,7 @@ public class FormsController : Controller
     {
         var query = new GetAllFormVersionsQuery();
         var response = await _mediator.Send(query);
+        if(!response.Success) return Ok(response);
 
         var viewModel = FormVersionListViewModel.Map(response.Value);
 
