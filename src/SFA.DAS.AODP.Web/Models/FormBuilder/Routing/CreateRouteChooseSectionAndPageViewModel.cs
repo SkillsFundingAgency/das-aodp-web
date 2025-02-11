@@ -19,6 +19,8 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Routing
 
         public List<SectionInformation> Sections { get; set; } = new();
 
+        public bool AreSectionsEmpty => !Sections.Any();
+
         public class SectionInformation
         {
             public Guid Id { get; set; }
