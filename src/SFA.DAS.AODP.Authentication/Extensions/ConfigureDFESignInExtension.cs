@@ -89,7 +89,7 @@ namespace SFA.DAS.AODP.Authentication.Extensions
                         return Task.CompletedTask;
                     };
                 })
-                .AddAuthenticationCookie(authenticationCookieName, signedOutCallbackPath, configuration["ResourceEnvironmentName"]);
+                .AddAuthenticationCookie(authenticationCookieName, signedOutCallbackPath, configuration["DfEOidcConfiguration:ResourceEnvironmentName"]);
             services
                 .AddOptions<OpenIdConnectOptions>(OpenIdConnectDefaults.AuthenticationScheme)
                 .Configure<IDfESignInService, IOptions<DfEOidcConfiguration>, ITicketStore>(
