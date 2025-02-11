@@ -8,5 +8,5 @@ public class GetPagePreviewByIdApiRequest : IGetApiRequest
     public Guid FormVersionId { get; set; }
     public Guid SectionId { get; set; }
 
-    public string GetUrl => $"/api/forms/{FormVersionId}/sections/{SectionId}/Pages/{PageId}/Preview";
+    public string GetUrl => $"api/forms/{FormVersionId}/sections/{SectionId}/Pages/{PageId}/Preview";
 }

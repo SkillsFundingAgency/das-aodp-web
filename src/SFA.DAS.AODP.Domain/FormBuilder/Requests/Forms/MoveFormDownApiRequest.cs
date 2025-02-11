@@ -14,5 +14,5 @@ public class UnpublishFormVersionApiRequest : IPutApiRequest
 
     public object Data { get; set; }
 
-    public string PutUrl => $"/api/forms/{FormVersionId}/unpublish";
+    public string PutUrl => $"api/forms/{FormVersionId}/unpublish";
 }

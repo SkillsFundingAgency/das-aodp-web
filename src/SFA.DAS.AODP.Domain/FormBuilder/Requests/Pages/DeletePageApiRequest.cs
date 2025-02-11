@@ -10,5 +10,5 @@ public class DeletePageApiRequest : IDeleteApiRequest
 
 
 
-    public string DeleteUrl => $"/api/forms/{FormVersionId}/sections/{SectionId}/Pages/{PageId}";
+    public string DeleteUrl => $"api/forms/{FormVersionId}/sections/{SectionId}/Pages/{PageId}";
 }

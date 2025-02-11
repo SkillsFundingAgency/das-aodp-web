@@ -10,5 +10,5 @@ public class GetRoutingInformationForQuestionApiRequest : IGetApiRequest
     public Guid QuestionId { get; set; }
 
 
-    public string GetUrl => $"/api/routes/forms/{FormVersionId}/sections/{SectionId}/pages/{PageId}/questions/{QuestionId}";
+    public string GetUrl => $"api/routes/forms/{FormVersionId}/sections/{SectionId}/pages/{PageId}/questions/{QuestionId}";
 }

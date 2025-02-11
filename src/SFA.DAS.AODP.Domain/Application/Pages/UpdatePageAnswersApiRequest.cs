@@ -7,7 +7,7 @@ public class UpdatePageAnswersApiRequest(Guid applicationId, Guid pageId, Guid f
     public Guid SectionId { get; set; } = sectionId;
     public Guid ApplicationId { get; set; } = applicationId;
 
-    public string PutUrl => $"/api/applications/{ApplicationId}/forms/{FormVersionId}/sections/{SectionId}/Pages/{PageId}";
+    public string PutUrl => $"api/applications/{ApplicationId}/forms/{FormVersionId}/sections/{SectionId}/Pages/{PageId}";
 
     public object Data { get; set; }
 

@@ -6,6 +6,6 @@ public class DeleteQuestionApiRequest(Guid questionId, Guid pageId, Guid formVer
     public Guid FormVersionId { get; set; } = formVersionId;
     public Guid SectionId { get; set; } = sectionId;
     public Guid QuestionId { get; set; } = questionId;
-    public string DeleteUrl => $"/api/forms/{FormVersionId}/sections/{SectionId}/Pages/{PageId}/Questions/{QuestionId}";
+    public string DeleteUrl => $"api/forms/{FormVersionId}/sections/{SectionId}/Pages/{PageId}/Questions/{QuestionId}";
     public object Data { get; set; }
 }

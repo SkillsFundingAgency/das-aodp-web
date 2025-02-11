@@ -14,5 +14,5 @@ public class MoveFormUpApiRequest : IPutApiRequest
 
     public object Data { get; set; }
 
-    public string PutUrl => $"/api/forms/{FormVersionId}/MoveUp";
+    public string PutUrl => $"api/forms/{FormVersionId}/MoveUp";
 }

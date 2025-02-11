@@ -14,5 +14,5 @@ public class PublishFormVersionApiRequest : IPutApiRequest
 
     public object Data { get; set; }
 
-    public string PutUrl => $"/api/forms/{FormVersionId}/publish";
+    public string PutUrl => $"api/forms/{FormVersionId}/publish";
 }
