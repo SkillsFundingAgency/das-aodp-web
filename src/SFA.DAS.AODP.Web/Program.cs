@@ -64,9 +64,7 @@ internal class Program
             config.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
         });
 
-        builder.Logging.AddApplicationInsights();
-        builder.Logging.AddFilter<ApplicationInsightsLoggerProvider>("SFA.DAS", LogLevel.Information);
-        builder.Logging.AddFilter<ApplicationInsightsLoggerProvider>("Microsoft", LogLevel.Warning);
+        builder.Services.AddApplicationInsightsTelemetry();
 
         var app = builder.Build();
 
