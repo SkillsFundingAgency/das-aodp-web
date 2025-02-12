@@ -6,7 +6,7 @@ public class CreateSectionApiRequest : IPostApiRequest
 {
     public Guid FormVersionId { get; set; }
 
-    public string PostUrl => $"/api/forms/{FormVersionId}/sections";
+    public string PostUrl => $"api/forms/{FormVersionId}/sections";
 
     public object Data { get; set; }
 }

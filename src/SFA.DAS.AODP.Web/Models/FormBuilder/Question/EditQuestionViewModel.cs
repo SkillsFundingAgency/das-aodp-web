@@ -50,7 +50,7 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
             public class RadioOptionItem
             {
                 public Guid Id { get; set; }
-                public string Value { get; set; }
+                public string Value { get; set; } = string.Empty;
                 public int Order { get; set; }
             }
         }
@@ -127,7 +127,7 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
                     command.RadioOptions.Add(new()
                     {
                         Id = option.Id,
-                        Value = option.Value,
+                        Value = option.Value ?? string.Empty,
                     });
                 }
             }

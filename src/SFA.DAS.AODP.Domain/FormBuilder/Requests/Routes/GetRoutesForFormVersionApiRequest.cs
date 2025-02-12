@@ -7,5 +7,5 @@ public class GetRoutesForFormVersionApiRequest : IGetApiRequest
     public Guid FormVersionId { get; set; }
 
 
-    public string GetUrl => $"/api/routes/forms/{FormVersionId}";
+    public string GetUrl => $"api/routes/forms/{FormVersionId}";
 }

@@ -9,6 +9,6 @@ public class MovePageDownApiRequest : IPutApiRequest
     public Guid FormVersionId { get; set; }
     public Guid SectionId { get; set; }
 
-    public string PutUrl => $"/api/forms/{FormVersionId}/sections/{SectionId}/Pages/{PageId}/MoveDown";
+    public string PutUrl => $"api/forms/{FormVersionId}/sections/{SectionId}/Pages/{PageId}/MoveDown";
     public object Data { get; set; }
 }

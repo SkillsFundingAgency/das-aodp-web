@@ -4,6 +4,7 @@
 @{
     ViewData["Title"] = "Start application";
 }
+<govuk-back-link asp-controller="Applications" asp-action="Index" asp-route-organisationId="@Model.OrganisationId">Back to view all applications</govuk-back-link>
 
 
 <h1 class="govuk-heading-l">Start application for: @Model.FormTitle</h1>

@@ -2,6 +2,7 @@ using GovUk.Frontend.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging.ApplicationInsights;
 using SFA.DAS.AODP.Authentication.Enums;
 using SFA.DAS.AODP.Authentication.Extensions;
 using SFA.DAS.AODP.Authentication.Interfaces;
@@ -27,7 +28,8 @@ internal class Program
             .AddAuthorization(options =>
                 options.FallbackPolicy = new AuthorizationPolicyBuilder()
                         .RequireAuthenticatedUser()
-                        .Build())
+                        .Build()
+            )
             .AddGovUkFrontend()
             .AddLogging()
             .AddDataProtectionKeys("das-aodp-web", configuration, builder.Environment.IsDevelopment())
@@ -76,14 +78,10 @@ internal class Program
             config.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
         });
 
+        builder.Services.AddApplicationInsightsTelemetry();
+
         var app = builder.Build();
 
-        //// Seed the data
-        //using (var scope = app.Services.CreateScope())
-        //{
-        //    var cacheManager = scope.ServiceProvider.GetRequiredService<ICacheManager>();
-        //    DataSeeder.Seed(cacheManager);
-        //}
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {

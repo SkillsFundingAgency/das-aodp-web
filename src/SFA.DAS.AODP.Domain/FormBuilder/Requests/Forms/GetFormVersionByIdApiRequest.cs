@@ -10,5 +10,5 @@ public class GetFormVersionByIdApiRequest : IGetApiRequest
         _formVersionId = formVersionId;
     }
 
-    public string GetUrl => $"/api/forms/{_formVersionId}";
+    public string GetUrl => $"api/forms/{_formVersionId}";
 }

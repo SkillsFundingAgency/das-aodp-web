@@ -7,5 +7,5 @@ public class GetAvailableSectionsAndPagesForRoutingApiRequest : IGetApiRequest
     public Guid FormVersionId { get; set; }
 
 
-    public string GetUrl => $"/api/routes/forms/{FormVersionId}/available-sections";
+    public string GetUrl => $"api/routes/forms/{FormVersionId}/available-sections";
 }

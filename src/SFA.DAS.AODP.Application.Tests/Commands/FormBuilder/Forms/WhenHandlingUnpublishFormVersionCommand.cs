@@ -1,5 +1,6 @@
 ﻿using AutoFixture;
 using Moq;
+using SFA.DAS.AODP.Application.Commands.FormBuilder;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
 using SFA.DAS.AODP.Domain.FormBuilder.Requests.Forms;
 using SFA.DAS.AODP.Domain.Interfaces;
@@ -10,7 +11,7 @@ namespace SFA.DAS.AODP.Application.Tests.Commands.FormBuilder.Forms
     {
         private readonly Fixture _fixture = new();
         private readonly Mock<IApiClient> _apiClient = new();
-        private readonly UnpublishFormVersionCommandHandler _handler;
+        private readonly MoveFormDownCommandHandler _handler;
 
 
         public WhenHandlingUnpublishFormVersionCommand()
@@ -22,8 +23,8 @@ namespace SFA.DAS.AODP.Application.Tests.Commands.FormBuilder.Forms
         public async Task Then_The_CommandResult_Is_Returned_As_Expected()
         {
             // Arrange
-            var expectedResponse = _fixture.Create<UnpublishFormVersionCommandResponse>();
-            var request = _fixture.Create<UnpublishFormVersionCommand>();
+            var expectedResponse = _fixture.Create<MoveFormDownCommandResponse>();
+            var request = _fixture.Create<MoveFormDownCommand>();
             _apiClient
                 .Setup(a => a.Put(It.IsAny<UnpublishFormVersionApiRequest>()));
 
@@ -32,7 +33,7 @@ namespace SFA.DAS.AODP.Application.Tests.Commands.FormBuilder.Forms
 
             // Assert
             _apiClient
-                .Verify(a => a.Put(It.Is<UnpublishFormVersionApiRequest>(r => r.FormVersionId == request.FormVersionId)));
+                .Verify(a => a.Put(It.Is<UnpublishFormVersionApiRequest>(r => r.FormVersionId == request.FormId)));
 
             Assert.NotNull(response);
             Assert.True(response.Success);
@@ -45,7 +46,7 @@ namespace SFA.DAS.AODP.Application.Tests.Commands.FormBuilder.Forms
         {
             // Arrange
             var expectedException = _fixture.Create<Exception>();
-            var request = _fixture.Create<UnpublishFormVersionCommand>();
+            var request = _fixture.Create<MoveFormDownCommand>();
             _apiClient
                 .Setup(a => a.Put(It.IsAny<UnpublishFormVersionApiRequest>()))
                 .ThrowsAsync(expectedException);

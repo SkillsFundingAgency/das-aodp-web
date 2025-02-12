@@ -4,5 +4,5 @@ public class GetApplicationFormByIdApiRequest : IGetApiRequest
 {
     public Guid FormVersionId { get; set; }
 
-    public string GetUrl => $"/api/applications/forms/{FormVersionId}";
+    public string GetUrl => $"api/applications/forms/{FormVersionId}";
 }

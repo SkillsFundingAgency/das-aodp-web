@@ -9,7 +9,7 @@ public class UpdateQuestionApiRequest(Guid questionId, Guid pageId, Guid formVer
     public Guid SectionId { get; set; } = sectionId;
     public Guid QuestionId { get; set; } = questionId;
 
-    public string PutUrl => $"/api/forms/{FormVersionId}/sections/{SectionId}/Pages/{PageId}/Questions/{QuestionId}";
+    public string PutUrl => $"api/forms/{FormVersionId}/sections/{SectionId}/Pages/{PageId}/Questions/{QuestionId}";
 
     public object Data { get; set; }
 

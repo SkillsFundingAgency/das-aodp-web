@@ -8,5 +8,5 @@ public class GetPageByIdApiRequest : IGetApiRequest
     public Guid FormVersionId { get; set; }
     public Guid SectionId { get; set; }
 
-    public string GetUrl => $"/api/forms/{FormVersionId}/sections/{SectionId}/Pages/{PageId}";
+    public string GetUrl => $"api/forms/{FormVersionId}/sections/{SectionId}/Pages/{PageId}";
 }

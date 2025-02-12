@@ -16,7 +16,7 @@
             </tr>
         </thead>
         <tbody class="govuk-table__body">
-            @foreach (var item in Model.FormVersions.OrderBy(o => o.Order))
+            @foreach (var (item, i) in Model.FormVersions.OrderBy(o => o.Order).Select((v, i) => (v, i)))
             {
                 <tr class="govuk-table__row">
                     <td>@item.Title</td>
@@ -36,6 +36,18 @@
                         {
                             <button data-prevent-double-click="true" class="govuk-button govuk-button--secondary" type="submit" value="@item.FormId" name="AdditionalActions[CreateDraft]">
                                 Create draft version
+                            </button>
+                        }
+                        @if (i != 0)
+                        {
+                            <button class="govuk-button govuk-button--secondary" type="submit" value="@item.FormId.Value" name="AdditionalActions[MoveUp]">
+                                Move Up
+                            </button>
+                        }
+                        @if (i != Model.FormVersions.Count() - 1)
+                        {
+                            <button class="govuk-button govuk-button--secondary" type="submit" value="@item.FormId.Value" name="AdditionalActions[MoveDown]">
+                                Move Down
                             </button>
                         }
                     </td>

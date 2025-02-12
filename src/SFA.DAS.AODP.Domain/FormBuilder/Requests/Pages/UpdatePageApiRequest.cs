@@ -8,7 +8,7 @@ public class UpdatePageApiRequest : IPutApiRequest
     public Guid FormVersionId { get; set; }
     public Guid SectionId { get; set; }
 
-    public string PutUrl => $"/api/forms/{FormVersionId}/sections/{SectionId}/Pages/{PageId}";
+    public string PutUrl => $"api/forms/{FormVersionId}/sections/{SectionId}/Pages/{PageId}";
 
     public object Data { get; set; }
 }

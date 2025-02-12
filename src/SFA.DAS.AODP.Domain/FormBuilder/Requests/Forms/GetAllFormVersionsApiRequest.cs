@@ -4,5 +4,5 @@ namespace SFA.DAS.AODP.Domain.FormBuilder.Requests.Forms;
 
 public class GetAllFormVersionsApiRequest : IGetApiRequest
 {
-    public string GetUrl => "/api/forms";
+    public string GetUrl => "api/forms";
 }

@@ -7,5 +7,5 @@ public class UpdateFormVersionApiRequest : IPutApiRequest
     public Guid FormVersionId { get; set; }
     public object Data { get; set; }
 
-    public string PutUrl => $"/api/forms/{FormVersionId}";
+    public string PutUrl => $"api/forms/{FormVersionId}";
 }

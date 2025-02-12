@@ -51,29 +51,29 @@
                         asp-route-formVersionId="@Model.FormVersionId">
                             @(Model.Editable ? "Edit" : "View")
                         </a>
-                        @if (i != 0)
+                        @if (i != 0 && Model.Editable)
                         {
                             <button class="govuk-button govuk-button--secondary" type="submit" value="@item.Id" name="AdditionalActions[MoveUp]">
                                 Move Up
                             </button>
                         }
-                        @if (i != Model.Pages.Count() - 1)
+                        @if (i != Model.Pages.Count() - 1 && Model.Editable)
                         {
                             <button class="govuk-button govuk-button--secondary" type="submit" value="@item.Id" name="AdditionalActions[MoveDown]">
                                 Move Down
                             </button>
                         }
-                          @if (Model.Editable)
-                    {
-                      <a class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init=""
-                            asp-action="Delete"
-                            asp-controller="Pages"
-                            asp-route-formVersionId="@Model.FormVersionId"
-                            asp-route-sectionId="@Model.SectionId"
-                            asp-route-pageId="@item.Id">
-                        Delete
-                    </a>
-                    }
+                        @if (Model.Editable)
+                        {
+                            <a class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init=""
+                                asp-action="Delete"
+                                asp-controller="Pages"
+                                asp-route-formVersionId="@Model.FormVersionId"
+                                asp-route-sectionId="@Model.SectionId"
+                                asp-route-pageId="@item.Id">
+                                Delete
+                            </a>
+                        }
 
                     </td>
                 </tr>
