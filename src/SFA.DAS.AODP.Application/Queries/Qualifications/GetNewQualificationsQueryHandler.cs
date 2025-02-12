@@ -5,7 +5,7 @@ using SFA.DAS.AODP.Domain.Qualifications.Requests;
 
 namespace SFA.DAS.AODP.Application.Queries.Test
 {
-    public class GetNewQualificationsQueryHandler : IRequestHandler<GetNewQualificationsQuery, GetNewQualificationsQueryResponse>
+    public class GetNewQualificationsQueryHandler : IRequestHandler<GetNewQualificationsQuery, BaseMediatrResponse<GetNewQualificationsQueryResponse>>
     {
         private readonly IApiClient _apiClient;
 
@@ -14,11 +14,26 @@ namespace SFA.DAS.AODP.Application.Queries.Test
             _apiClient = apiClient;
         }
 
-        public async Task<GetNewQualificationsQueryResponse> Handle(GetNewQualificationsQuery request, CancellationToken cancellationToken)
+        public async Task<BaseMediatrResponse<GetNewQualificationsQueryResponse>> Handle(GetNewQualificationsQuery request, CancellationToken cancellationToken)
         {
-            return await _apiClient.Get<GetNewQualificationsQueryResponse>(
-                new GetNewQualificationsApiRequest())
-                ?? new GetNewQualificationsQueryResponse { Success = false };
+            var response = new BaseMediatrResponse<GetNewQualificationsQueryResponse>();
+            response.Success = false;
+            try
+            {
+                var result = await _apiClient.Get<GetNewQualificationsQueryResponse>(new GetNewQualificationsApiRequest());
+                if (result != null && result.Value != null)
+                {
+                    response.Value = result;
+                    response.Success = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                response.ErrorMessage = ex.Message;
+            }
+
+            return response;
         }
     }
 }
+

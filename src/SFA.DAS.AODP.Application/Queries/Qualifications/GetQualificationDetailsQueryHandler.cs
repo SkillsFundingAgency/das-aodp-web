@@ -4,7 +4,7 @@ using SFA.DAS.AODP.Domain.Qualifications.Requests;
 
 namespace SFA.DAS.AODP.Application.Queries.Qualifications
 {
-    public class GetQualificationDetailsQueryHandler : IRequestHandler<GetQualificationDetailsQuery, GetQualificationDetailsQueryResponse>
+    public class GetQualificationDetailsQueryHandler : IRequestHandler<GetQualificationDetailsQuery, BaseMediatrResponse<GetQualificationDetailsQueryResponse>>
     {
         private readonly IApiClient _apiClient;
 
@@ -13,11 +13,22 @@ namespace SFA.DAS.AODP.Application.Queries.Qualifications
             _apiClient = apiClient;
         }
 
-        public async Task<GetQualificationDetailsQueryResponse> Handle(GetQualificationDetailsQuery request, CancellationToken cancellationToken)
+        public async Task<BaseMediatrResponse<GetQualificationDetailsQueryResponse>> Handle(GetQualificationDetailsQuery request, CancellationToken cancellationToken)
         {
-            return await _apiClient.Get<GetQualificationDetailsQueryResponse>(
-                new GetQualificationDetailsApiRequest(request.QualificationReference))
-                ?? new GetQualificationDetailsQueryResponse { Success = false };
+            var response = new BaseMediatrResponse<GetQualificationDetailsQueryResponse>();
+            response.Success = false;
+            try
+            {
+                var result = await _apiClient.Get<GetQualificationDetailsQueryResponse>(new GetQualificationDetailsApiRequest(request.QualificationReference));
+                response.Value = result;
+                response.Success = true;
+            }
+            catch (Exception ex)
+            {
+                response.ErrorMessage = ex.Message;
+            }
+
+            return response;
         }
     }
 }

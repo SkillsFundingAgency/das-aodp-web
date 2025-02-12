@@ -3,7 +3,7 @@ using SFA.DAS.AODP.Application.Queries.Qualifications;
 
 namespace SFA.DAS.AODP.Application.Queries.Test
 {
-    public class GetNewQualificationsQuery : IRequest<GetNewQualificationsQueryResponse>
+    public class GetNewQualificationsQuery : IRequest<BaseMediatrResponse<GetNewQualificationsQueryResponse>>
     {
         public int Id { get; set; }
         public string? Title { get; set; }
