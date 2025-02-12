@@ -1,9 +1,11 @@
 using GovUk.Frontend.AspNetCore;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Authentication.Enums;
 using SFA.DAS.AODP.Authentication.Extensions;
 using SFA.DAS.AODP.Authentication.Interfaces;
+using SFA.DAS.AODP.Authentication.Services;
 using SFA.DAS.AODP.Web.Extensions;
 using System.Reflection;
 public class CustomServiceRole : ICustomServiceRole
@@ -11,9 +13,9 @@ public class CustomServiceRole : ICustomServiceRole
     public string RoleClaimType => "http://schemas.portal.com/service";
     public CustomServiceRoleValueType RoleValueType => CustomServiceRoleValueType.Code;
 }
-internal class Program
-{
 
+internal class Program
+{    
     private static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
@@ -22,17 +24,29 @@ internal class Program
 
         builder.Services
             .AddServiceRegistrations(configuration)
-        .AddAuthorization(options =>
-        options.FallbackPolicy = new AuthorizationPolicyBuilder()
-                .RequireAuthenticatedUser()
-                .Build())
+            .AddAuthorization(options =>
+                options.FallbackPolicy = new AuthorizationPolicyBuilder()
+                        .RequireAuthenticatedUser()
+                        .Build())
             .AddGovUkFrontend()
             .AddLogging()
             .AddDataProtectionKeys("das-aodp-web", configuration, builder.Environment.IsDevelopment())
             .AddHttpContextAccessor()
             .AddHealthChecks();
 
-        builder.Services.AddAndConfigureDfESignInAuthentication(configuration, "SFA.DAS.AODP.Web", typeof(CustomServiceRole), "/signout", "signins");
+        var cookieName = "SFA.DAS.AODP.Web";
+        var signoutCallbackPath = "/signout";
+        var stubAuth = configuration["StubAuth"] ?? "false";
+        if (stubAuth.Equals("true", StringComparison.CurrentCultureIgnoreCase))
+        {
+            var resourceEnvironmentName = configuration["DfEOidcConfiguration:ResourceEnvironmentName"] ?? "local";
+            builder.Services.AddStubAuthentication(cookieName, signoutCallbackPath, resourceEnvironmentName);            
+        }
+        else
+        {
+            builder.Services.AddAndConfigureDfESignInAuthentication(configuration, cookieName, typeof(CustomServiceRole), signoutCallbackPath, "signins");
+        }
+
         builder.Services.AddSession(options =>
         {
             options.IdleTimeout = TimeSpan.FromMinutes(10);
