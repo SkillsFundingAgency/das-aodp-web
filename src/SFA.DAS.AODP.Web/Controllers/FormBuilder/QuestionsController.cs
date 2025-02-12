@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Questions;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Questions;
+using SFA.DAS.AODP.Application.Queries.FormBuilder.Routes;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Question;
 
 namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
@@ -112,6 +113,20 @@ public class QuestionsController : Controller
     [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/questions/{questionId}/delete")]
     public async Task<IActionResult> Delete(Guid formVersionId, Guid sectionId, Guid pageId, Guid questionId)
     {
+        var routesQuery = new GetRoutingInformationForQuestionQuery()
+        {
+            FormVersionId = formVersionId,
+            PageId = pageId,
+            QuestionId = questionId,
+            SectionId = sectionId
+        };
+        var routesResponse = await _mediator.Send(routesQuery);
+        if (routesResponse.Value.Routes.Any())
+        {
+            ModelState.AddModelError("", "There are routes associated with this question");
+        }
+
+        // Instead of the above, add Routes to the GetQuestionByIdQueryResponse???
         var query = new GetQuestionByIdQuery()
         {
             PageId = pageId,

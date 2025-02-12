@@ -9,7 +9,7 @@ public class UpdateQuestionCommand : IRequest<BaseMediatrResponse<UpdateQuestion
     public Guid SectionId { get; set; }
     public Guid PageId { get; set; }
     public string Title { get; set; }
-    public string Hint { get; set; }
+    public string? Hint { get; set; }
     public bool Required { get; set; }
     public TextInputOptions TextInput { get; set; } = new();
     public List<RadioOptionItem> RadioOptions { get; set; } = new();
