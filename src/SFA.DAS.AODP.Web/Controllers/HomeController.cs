@@ -48,9 +48,15 @@ namespace SFA.DAS.AODP.Web.Controllers
         [Authorize]
         [HttpGet]
         [Route("signin", Name = "provider-signin")]
-        public async Task SignIn()
+        public async Task<IActionResult> SignIn()
         {
-            await HttpContext.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme, new AuthenticationProperties { RedirectUri="/dashboard"});
+            // When using Stub Auth dont redirect to the login challenge, as it doesnt exist. User Auth already configured so no need.            
+            if (!User.Identity.IsAuthenticated)
+            {
+                await HttpContext.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme, new AuthenticationProperties { RedirectUri = "/dashboard" });
+            }
+
+            return RedirectToAction("Index", "Dashboard");
         }
     }
 }
