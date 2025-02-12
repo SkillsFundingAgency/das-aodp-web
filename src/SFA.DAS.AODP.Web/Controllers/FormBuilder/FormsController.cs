@@ -8,7 +8,6 @@ using SFA.DAS.AODP.Web.Models.FormBuilder.Form;
 
 namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
 
-[AllowAnonymous]
 public class FormsController : Controller
 {
     private readonly IMediator _mediator;
