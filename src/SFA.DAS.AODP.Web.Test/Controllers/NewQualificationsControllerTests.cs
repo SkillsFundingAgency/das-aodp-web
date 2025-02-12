@@ -1,40 +1,40 @@
-﻿using Moq;
-using SFA.DAS.AODP.Application.Queries.Qualifications;
-using SFA.DAS.AODP.Web.Controllers;
-using SFA.DAS.AODP.Web.Models.Qualifications;
+﻿using AutoFixture;
+using AutoFixture.AutoMoq;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using MediatR;
+using Moq;
+using SFA.DAS.AODP.Application;
+using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Application.Queries.Test;
+using SFA.DAS.AODP.Web.Controllers;
+using SFA.DAS.AODP.Web.Models.Qualifications;
 
 namespace SFA.DAS.AODP.Web.Test.Controllers;
 
 public class NewQualificationsControllerTests
 {
+    private readonly IFixture _fixture;
     private readonly Mock<ILogger<NewQualificationsController>> _loggerMock;
     private readonly Mock<IMediator> _mediatorMock;
     private readonly NewQualificationsController _controller;
 
     public NewQualificationsControllerTests()
     {
-        _loggerMock = new Mock<ILogger<NewQualificationsController>>();
-        _mediatorMock = new Mock<IMediator>();
-        _controller = new NewQualificationsController(_loggerMock.Object, _mediatorMock.Object);
+        _fixture = new Fixture().Customize(new AutoMoqCustomization());
+        _loggerMock = _fixture.Freeze<Mock<ILogger<NewQualificationsController>>>();
+        _mediatorMock = _fixture.Freeze<Mock<IMediator>>();
+        _controller = _fixture.Create<NewQualificationsController>();
     }
 
     [Fact]
     public async Task Index_ReturnsViewResult_WithListOfNewQualifications()
     {
         // Arrange
-        var queryResponse = new GetNewQualificationsQueryResponse
-        {
-            Success = true,
-            NewQualifications = new List<NewQualification>
-            {
-                new NewQualification { Id = 1, Title = "Qualification 1", Reference = "Ref 1", AwardingOrganisation = "AO 1", Status = "Status 1" },
-                new NewQualification { Id = 2, Title = "Qualification 2", Reference = "Ref 2", AwardingOrganisation = "AO 2", Status = "Status 2" }
-            }
-        };
+        var queryResponse = _fixture.Create<BaseMediatrResponse<GetNewQualificationsQueryResponse>>();
+        queryResponse.Success = true;
+        queryResponse.Value.Value.NewQualifications = _fixture.CreateMany<NewQualification>(2).ToList();
+
         _mediatorMock.Setup(m => m.Send(It.IsAny<GetNewQualificationsQuery>(), default))
                      .ReturnsAsync(queryResponse);
 
@@ -45,17 +45,19 @@ public class NewQualificationsControllerTests
         var viewResult = Assert.IsType<ViewResult>(result);
         var model = Assert.IsAssignableFrom<List<NewQualificationsViewModel>>(viewResult.ViewData.Model);
         Assert.Equal(2, model.Count);
-        Assert.Equal("Qualification 1", model[0].Title);
-        Assert.Equal("Ref 1", model[0].Reference);
-        Assert.Equal("AO 1", model[0].AwardingOrganisation);
-        Assert.Equal("Status 1", model[0].Status);
+        Assert.Equal(queryResponse.Value.Value.NewQualifications[0].Title, model[0].Title);
+        Assert.Equal(queryResponse.Value.Value.NewQualifications[0].Reference, model[0].Reference);
+        Assert.Equal(queryResponse.Value.Value.NewQualifications[0].AwardingOrganisation, model[0].AwardingOrganisation);
+        Assert.Equal(queryResponse.Value.Value.NewQualifications[0].Status, model[0].Status);
     }
 
     [Fact]
     public async Task Index_ReturnsNotFound_WhenQueryFails()
     {
         // Arrange
-        var queryResponse = new GetNewQualificationsQueryResponse { Success = false };
+        var queryResponse = _fixture.Create<BaseMediatrResponse<GetNewQualificationsQueryResponse>>();
+        queryResponse.Success = false;
+
         _mediatorMock.Setup(m => m.Send(It.IsAny<GetNewQualificationsQuery>(), default))
                      .ReturnsAsync(queryResponse);
 
@@ -71,25 +73,9 @@ public class NewQualificationsControllerTests
     public async Task QualificationDetails_ReturnsViewResult_WithQualificationDetails()
     {
         // Arrange
-        var queryResponse = new GetQualificationDetailsQueryResponse
-        {
-            Success = true,
-            Id = 1,
-            Status = "Active",
-            Priority = "High",
-            Changes = "None",
-            QualificationReference = "Ref123",
-            AwardingOrganisation = "Org1",
-            Title = "Qualification 1",
-            QualificationType = "Type1",
-            Level = "Level1",
-            ProposedChanges = "None",
-            AgeGroup = "18+",
-            Category = "Category1",
-            Subject = "Subject1",
-            SectorSubjectArea = "Area1",
-            Comments = "No comments"
-        };
+        var queryResponse = _fixture.Create<BaseMediatrResponse<GetQualificationDetailsQueryResponse>>();
+        queryResponse.Success = true;
+
         _mediatorMock.Setup(m => m.Send(It.IsAny<GetQualificationDetailsQuery>(), default))
                      .ReturnsAsync(queryResponse);
 
@@ -99,15 +85,17 @@ public class NewQualificationsControllerTests
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
         var model = Assert.IsAssignableFrom<QualificationDetailsViewModel>(viewResult.ViewData.Model);
-        Assert.Equal(1, model.Id);
-        Assert.Equal("Active", model.Status);
+        Assert.Equal(queryResponse.Value.Value.Id, model.Id);
+        Assert.Equal(queryResponse.Value.Value.Status, model.Status);
     }
 
     [Fact]
     public async Task QualificationDetails_ReturnsNotFound_WhenQueryFails()
     {
         // Arrange
-        var queryResponse = new GetQualificationDetailsQueryResponse { Success = false };
+        var queryResponse = _fixture.Create<BaseMediatrResponse<GetQualificationDetailsQueryResponse>>();
+        queryResponse.Success = false;
+
         _mediatorMock.Setup(m => m.Send(It.IsAny<GetQualificationDetailsQuery>(), default))
                      .ReturnsAsync(queryResponse);
 
@@ -117,5 +105,4 @@ public class NewQualificationsControllerTests
         // Assert
         Assert.IsType<NotFoundResult>(result);
     }
-
 }
