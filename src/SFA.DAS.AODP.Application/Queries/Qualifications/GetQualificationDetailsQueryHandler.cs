@@ -20,8 +20,11 @@ namespace SFA.DAS.AODP.Application.Queries.Qualifications
             try
             {
                 var result = await _apiClient.Get<GetQualificationDetailsQueryResponse>(new GetQualificationDetailsApiRequest(request.QualificationReference));
-                response.Value = result;
-                response.Success = true;
+                if (result != null)
+                {
+                    response.Value = result;
+                    response.Success = true;
+                }
             }
             catch (Exception ex)
             {
@@ -30,5 +33,6 @@ namespace SFA.DAS.AODP.Application.Queries.Qualifications
 
             return response;
         }
+
     }
 }
