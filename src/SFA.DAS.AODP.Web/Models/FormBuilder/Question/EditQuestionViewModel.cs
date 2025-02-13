@@ -52,6 +52,7 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
                 public Guid Id { get; set; }
                 public string Value { get; set; } = string.Empty;
                 public int Order { get; set; }
+                public bool DoesHaveAssociatedRoutes { get; set; } = false;
             }
         }
 
@@ -90,7 +91,9 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
                     {
                         Id = option.Id,
                         Value = option.Value,
-                        Order = option.Order
+                        Order = option.Order,
+                        DoesHaveAssociatedRoutes = response.Routes.Any(r => r.Option.Value == option.Value && 
+                                                                      (r.NextPage?.Id != Guid.Empty || r.NextSection?.Id != Guid.Empty || r.EndForm == true || r.EndSection == true))
                     });
                 }
             }

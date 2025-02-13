@@ -94,7 +94,14 @@ public class QuestionsController : Controller
             int indexToRemove = model.RadioButton.AdditionalFormActions.RemoveOptionIndex.Value;
             if (indexToRemove >= 0 && indexToRemove < model.RadioButton.MultiChoice.Count)
             {
-                model.RadioButton.MultiChoice.RemoveAt(indexToRemove);
+                if (model.RadioButton.MultiChoice[indexToRemove].DoesHaveAssociatedRoutes)
+                {
+                   ModelState.AddModelError($"RadioButton.MultiChoice[{indexToRemove}]", "You cannot remove this option because it has associated routes.");
+                }
+                else
+                {
+                    model.RadioButton.MultiChoice.RemoveAt(indexToRemove);
+                }
             }
             return View(model);
         }

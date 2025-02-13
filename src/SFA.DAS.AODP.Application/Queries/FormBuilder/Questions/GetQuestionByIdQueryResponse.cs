@@ -52,6 +52,5 @@ public class GetQuestionByIdQueryResponse
         public Guid Id { get; set; }
         public string Title { get; set; }
         public int Order { get; set; }
-        //public Question Quesiton { get; set; } = new();
     }
 }

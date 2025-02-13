@@ -7,20 +7,30 @@
         @for (int i = 0; i < Model.MultiChoice.Count; i++)
         {
             <li class="app-select-options__list-item" style="display: flex; align-items: flex-end;">
-
                 <div class="govuk-form-group" style="width:80%">
                     <label class="govuk-label"
                            for="RadioButton[MultiChoice][@i][Value]">Option @(i + 1)</label>
-
                     <input type="hidden" name="RadioButton[MultiChoice][@i][Id]" value="@Model.MultiChoice[i].Id" />
+                    @{
+                        var key = $"RadioButton.MultiChoice[{i}]";
+                        if (ViewData.ModelState[key]?.Errors.Count > 0)
+                        {
+                            <p id="radio-option-@i-error" class="govuk-error-message govuk-form-group--error">
+                                <span class="govuk-visually-hidden">Error:</span>
+                                @ViewData.ModelState[key].Errors[0].ErrorMessage
+                            </p>
+                        }
+
+                    }
                     <input type="text"
                            name="RadioButton[MultiChoice][@i][Value]"
                            class="govuk-input govuk-input--width-50"
                            value="@Model.MultiChoice[i].Value" />
                 </div>
-
                 @if (ViewBag.IsEditable)
                 {
+                    <input type="hidden" name="RadioButton[MultiChoice][@i][DoesHaveAssociatedRoutes]" value="@Model.MultiChoice[i].DoesHaveAssociatedRoutes.ToString().ToLowerInvariant()" />
+                    <input type="hidden" name="RadioButton[MultiChoice][@i][Order]" value=@Model.MultiChoice[i].Order />
                     <button type="submit"
                             class="govuk-button govuk-button--warning"
                             data-module="govuk-button"
