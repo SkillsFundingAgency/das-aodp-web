@@ -84,9 +84,9 @@ internal class Program
 
         app
             .UseHealthChecks("/ping")
+            .UseCookiePolicy()
             .UseHttpsRedirection()
             .UseStaticFiles()
-            .UseCookiePolicy(new CookiePolicyOptions {Secure = CookieSecurePolicy.Always, MinimumSameSitePolicy=SameSiteMode.None})
             .UseRouting()
             .UseAuthentication()
             .UseAuthorization()
