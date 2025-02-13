@@ -1,0 +1,27 @@
+﻿@model CreatePageViewModel
+
+<a class="govuk-back-link" asp-action="Edit" asp-controller="Sections" asp-route-formVersionId="@Model.FormVersionId" asp-route-sectionId="@Model.SectionId">
+    Back to Section
+</a>
+
+<h1 class="govuk-heading-l">Create Page</h1>
+
+<form asp-action="Create" method="post">
+    <input type="hidden" name="FormVersionId" value="@Model.FormVersionId" />
+    <div class="govuk-form-group">
+        <govuk-input asp-for="@Model.Title" input-class="govuk-input--width-50" inputmode="text" pattern="[0-9]*" spellcheck="false">
+            <govuk-input-label is-page-heading="false" class="govuk-label--s">Name</govuk-input-label>
+        </govuk-input>
+    </div>
+
+    <div class="govuk-button-group">
+        <govuk-button type="submit">Save</govuk-button>
+        <a class="govuk-button govuk-button--secondary"
+           asp-action="Edit"
+           asp-controller="Sections"
+           asp-route-formVersionId="@Model.FormVersionId"
+           asp-route-sectionId="@Model.SectionId">
+            Cancel
+        </a>
+    </div>
+</form>

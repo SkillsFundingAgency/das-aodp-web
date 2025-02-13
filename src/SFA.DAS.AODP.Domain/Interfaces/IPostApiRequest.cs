@@ -1,6 +1,6 @@
-﻿using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
-namespace SFA.DAS.FAA.Domain.Interfaces;
+namespace SFA.DAS.AODP.Domain.Interfaces;
 
 public interface IPostApiRequest
 {

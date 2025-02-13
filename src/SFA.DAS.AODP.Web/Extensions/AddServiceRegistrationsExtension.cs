@@ -1,8 +1,6 @@
-﻿using Microsoft.Extensions.Options;
-using SFA.DAS.AODP.Application.Queries.Test;
-using SFA.DAS.AODP.Infrastructure.Api;
-using SFA.DAS.AODP.Models.Settings;
-using SFA.DAS.FAA.Domain.Interfaces;
+﻿using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
+using SFA.DAS.AODP.Domain.Interfaces;
+using SFA.DAS.AODP.Infrastructure.ApiClient;
 using System.Diagnostics.CodeAnalysis;
 
 namespace SFA.DAS.AODP.Web.Extensions;
@@ -12,13 +10,15 @@ public static class AddServiceRegistrationsExtension
 {
     public static IServiceCollection AddServiceRegistrations(this IServiceCollection services, IConfigurationRoot configuration)
     {
+        services.AddConfigurationOptions(configuration);
+
         services.AddSingleton(configuration);
 
-        services.AddSingleton(configuration.GetRequiredSection(nameof(AodpOuterApiSettings)).Get<AodpOuterApiSettings>()!);
+        services.AddMediatR(configuration => configuration.RegisterServicesFromAssembly(typeof(GetFormVersionByIdQuery).Assembly));
+
         services.AddHttpClient<IApiClient, ApiClient>();
 
-        services.AddMediatR(configuration => configuration.RegisterServicesFromAssembly(typeof(TestQuery).Assembly));
-
+        services.AddValidators();
 
         return services;
     }

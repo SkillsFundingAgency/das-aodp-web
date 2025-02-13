@@ -1,0 +1,45 @@
+﻿@using SFA.DAS.AODP.Models.Forms
+@using SFA.DAS.AODP.Web.Models.Application
+@model GetPagePreviewByIdQueryResponse.Question
+
+<div class="govuk-form-group">
+
+    <h1 class="govuk-label-wrapper">
+        <label class="govuk-label govuk-label--l" for="question-@Model.Id">
+            @Model.Title @(Model.Required ? "" : "(optional)")
+        </label>
+    </h1>
+
+    <div id="question-@Model.Id-hint" class="govuk-hint">
+        @Model.Hint
+    </div>
+
+    @{
+        string htmlId = $"question-{Model.Id}";
+    }
+
+    @if (Model.Type == QuestionType.Text.ToString())
+    {
+        <input class="govuk-input"
+               id="@htmlId"
+               name="Questions[@(Model.Order - 1)][Answer][TextValue]"
+               type="text"
+               aria-describedby="question-@Model.Id-hint question-@Model.Id-error">
+    }
+
+    else if (Model.Type == QuestionType.Radio.ToString())
+    {
+        <div class="govuk-radios" data-module="govuk-radios">
+
+            @foreach (var option in Model.RadioButton.MultiChoice)
+            {
+                <div class="govuk-radios__item" id="@htmlId">
+                    <input class="govuk-radios__input" id="@htmlId-@option.Id" name="Questions[@(Model.Order - 1)][Answer][RadioChoiceValue]" type="radio" value="@option.Id">
+                    <label class="govuk-label govuk-radios__label" for="@htmlId-@option.Id">
+                        @option.Value
+                    </label>
+                </div>
+            }
+        </div>
+    }
+</div>

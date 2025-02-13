@@ -1,0 +1,74 @@
+﻿@using SFA.DAS.AODP.Web.Models.FormBuilder.Routing
+
+@model ListRoutesViewModel
+
+<a class="govuk-back-link" asp-action="Edit" asp-controller="Forms" asp-route-formVersionId="@Model.FormVersionId">
+    Back to Form
+</a>
+
+<h1 class="govuk-heading-l">Routes</h1>
+
+@foreach (var sectionInfo in Model.Response.Sections.OrderBy(o => o.Order))
+{
+    <h2 class="govuk-heading-m">Section @(sectionInfo.Order). @sectionInfo.Title</h2>
+
+    foreach (var pageInfo in sectionInfo.Pages.OrderBy(o => o.Order))
+    {
+        <h3 class="govuk-heading-s">Page @(pageInfo.Order). @pageInfo.Title</h3>
+        <govuk-summary-card>
+            <govuk-summary-card-title>Routes for Question @pageInfo.Quesiton.Order: @pageInfo.Quesiton.Title</govuk-summary-card-title>
+            <govuk-summary-card-actions>
+                <govuk-summary-card-action>
+                    <a class="govuk-button" asp-action="Configure" asp-controller="Routes" asp-route-questionId="@pageInfo.Quesiton.Id" asp-route-pageId="@pageInfo.Id" asp-route-sectionId="@sectionInfo.Id" asp-route-formVersionId="@Model.FormVersionId">@(Model.Response.Editable ? "Edit" : "View")</a>
+                </govuk-summary-card-action>
+            </govuk-summary-card-actions>
+            <govuk-summary-list>
+
+                @foreach (var option in pageInfo.Quesiton.Routes.OrderBy(o => o.Option.Order))
+                {
+                    <govuk-summary-list-row>
+                        <govuk-summary-list-row-key>
+                            If the answer is @option.Option.Value
+                        </govuk-summary-list-row-key>
+                        <govuk-summary-list-row-value>
+                            <ul class="govuk-list">
+                                @if (option.NextPage?.Title != null)
+                                {
+                                    <li>The next page is: <strong>@(option.NextPage.Order). @option.NextPage.Title</strong></li>
+                                }
+                                else if (option.EndSection)
+                                {
+                                    <li>Go to end of current section.</li>
+                                }
+                                else
+                                {
+                                    <li>Go to default next page.</li>
+                                }
+
+                                @if (option.NextSection?.Title != null)
+                                {
+                                    <li>The next section is: <strong>@(option.NextSection.Order). @option.NextSection.Title</strong></li>
+                                }
+                                else if (option.EndSection)
+                                {
+                                    <li>Go to end of form.</li>
+                                }
+                                else
+                                {
+                                    <li>Go to default next section.</li>
+                                }
+                            </ul>
+                        </govuk-summary-list-row-value>
+                    </govuk-summary-list-row>
+                }
+
+            </govuk-summary-list>
+        </govuk-summary-card>
+    }
+}
+@if (Model.Response.Editable)
+{
+    <a class="govuk-button" asp-action="ChooseSection" asp-controller="Routes" asp-route-formVersionId="@Model.FormVersionId">Create New Route</a>
+}
+
+

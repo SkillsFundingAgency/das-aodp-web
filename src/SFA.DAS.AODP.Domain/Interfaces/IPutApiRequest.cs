@@ -1,6 +1,7 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
-namespace SFA.DAS.FAA.Domain.Interfaces;
+namespace SFA.DAS.AODP.Domain.Interfaces;
+
 public interface IPutApiRequest
 {
     [JsonIgnore]
