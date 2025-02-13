@@ -1,0 +1,38 @@
+﻿@using static SFA.DAS.AODP.Web.Models.FormBuilder.Question.EditQuestionViewModel
+@model NumberInputOptions
+
+<div class="govuk-form-group">
+    <govuk-input disabled="@(!ViewBag.IsEditable)"
+                 name="NumberInput[GreaterThanOrEqualTo]"
+                 type="number"
+                 asp-for="GreaterThanOrEqualTo"
+                 input-class="govuk-input--width-3"
+                 inputmode="numeric" pattern="[0-9]*"
+                 spellcheck="false">
+        <govuk-input-label is-page-heading="false" class="govuk-label--s">What is the minimum, inclusive, input value? (optional)</govuk-input-label>
+    </govuk-input>
+</div>
+
+<div class="govuk-form-group">
+    <govuk-input disabled="@(!ViewBag.IsEditable)"
+                 name="NumberInput[LessThanOrEqualTo]"
+                 type="number"
+                 asp-for="LessThanOrEqualTo"
+                 input-class="govuk-input--width-3"
+                 inputmode="numeric" pattern="[0-9]*"
+                 spellcheck="false">
+        <govuk-input-label is-page-heading="false" class="govuk-label--s">What is the maximum, inclusive, input value? (optional)</govuk-input-label>
+    </govuk-input>
+</div>
+
+<div class="govuk-form-group">
+    <govuk-input disabled="@(!ViewBag.IsEditable)"
+                 name="NumberInput[NotEqualTo]"
+                 type="number"
+                 asp-for="NotEqualTo"
+                 input-class="govuk-input--width-3"
+                 inputmode="numeric" pattern="[0-9]*"
+                 spellcheck="false">
+        <govuk-input-label is-page-heading="false" class="govuk-label--s">What input value is not allowed? (optional)</govuk-input-label>
+    </govuk-input>
+</div>

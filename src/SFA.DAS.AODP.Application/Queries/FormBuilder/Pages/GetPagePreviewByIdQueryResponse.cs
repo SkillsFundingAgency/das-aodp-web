@@ -1,4 +1,6 @@
-﻿namespace SFA.DAS.AODP.Application.Queries.FormBuilder.Pages;
+﻿using static SFA.DAS.AODP.Application.Queries.FormBuilder.Questions.GetQuestionByIdQueryResponse;
+
+namespace SFA.DAS.AODP.Application.Queries.FormBuilder.Pages;
 
 public class GetPagePreviewByIdQueryResponse
 {
@@ -18,8 +20,9 @@ public class GetPagePreviewByIdQueryResponse
         public int Order { get; set; }
 
         public TextInputOptions TextInput { get; set; } = new();
-        public RadioOptions RadioButton { get; set; } = new();
-
+        public NumberInputOptions NumberInput { get; set; } = new();
+        public CheckboxOptions Checkbox { get; set; } = new();
+        public List<Option> Options { get; set; } = new();
     }
 
     public class TextInputOptions
@@ -28,16 +31,24 @@ public class GetPagePreviewByIdQueryResponse
         public int? MaxLength { get; set; }
 
     }
-
-    public class RadioOptions
+    public class CheckboxOptions
     {
-        public List<RadioOptionItem> MultiChoice { get; set; } = new();
+        public int? MinNumberOfOptions { get; set; }
+        public int? MaxNumberOfOptions { get; set; }
+    }
 
-        public class RadioOptionItem
-        {
-            public Guid Id { get; set; }
-            public string Value { get; set; }
-            public int Order { get; set; }
-        }
+    public class NumberInputOptions
+    {
+        public int? GreaterThanOrEqualTo { get; set; }
+        public int? LessThanOrEqualTo { get; set; }
+        public int? NotEqualTo { get; set; }
+    }
+
+
+    public class Option
+    {
+        public Guid Id { get; set; }
+        public string Value { get; set; }
+        public int Order { get; set; }
     }
 }

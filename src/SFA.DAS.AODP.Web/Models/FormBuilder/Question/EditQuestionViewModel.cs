@@ -1,4 +1,5 @@
-﻿using SFA.DAS.AODP.Application.Commands.FormBuilder.Questions;
+﻿using Azure;
+using SFA.DAS.AODP.Application.Commands.FormBuilder.Questions;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Questions;
 using SFA.DAS.AODP.Models.Forms;
 using System.ComponentModel.DataAnnotations;
@@ -25,7 +26,9 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
 
 
         public TextInputOptions TextInput { get; set; } = new();
-        public RadioOptions RadioButton { get; set; } = new();
+        public Option Options { get; set; } = new();
+        public CheckboxOptions Checkbox { get; set; } = new();
+        public NumberInputOptions NumberInput { get; set; } = new();
         public bool Editable { get; set; }
 
         public class TextInputOptions
@@ -35,9 +38,9 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
 
         }
 
-        public class RadioOptions
+        public class Option
         {
-            public List<RadioOptionItem> MultiChoice { get; set; } = new();
+            public List<OptionItem> Options { get; set; } = new();
             public AdditionalActions AdditionalFormActions { get; set; } = new();
 
             public class AdditionalActions
@@ -47,12 +50,25 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
 
             }
 
-            public class RadioOptionItem
+            public class OptionItem
             {
                 public Guid Id { get; set; }
                 public string Value { get; set; } = string.Empty;
                 public int Order { get; set; }
             }
+        }
+
+        public class CheckboxOptions
+        {
+            public int? MinNumberOfOptions { get; set; }
+            public int? MaxNumberOfOptions { get; set; }
+        }
+
+        public class NumberInputOptions
+        {
+            public int? GreaterThanOrEqualTo { get; set; }
+            public int? LessThanOrEqualTo { get; set; }
+            public int? NotEqualTo { get; set; }
         }
 
         public static EditQuestionViewModel MapToViewModel(GetQuestionByIdQueryResponse response, Guid formVersionId, Guid sectionId)
@@ -72,7 +88,7 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
                 Editable = response.Editable,
             };
 
-            if (type == QuestionType.Text)
+            if (type == QuestionType.Text || type == QuestionType.TextArea)
             {
                 model.TextInput = new()
                 {
@@ -80,19 +96,36 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
                     MaxLength = response.TextInput.MaxLength,
                 };
             }
-            else if (type == QuestionType.Radio)
+            else if (type == QuestionType.Radio || type == QuestionType.MultiChoice)
             {
-                response.RadioOptions = response.RadioOptions.OrderBy(o => o.Order).ToList();
-                model.RadioButton.MultiChoice = new();
-                foreach (var option in response.RadioOptions)
+                response.Options = response.Options.OrderBy(o => o.Order).ToList();
+                foreach (var option in response.Options)
                 {
-                    model.RadioButton.MultiChoice.Add(new()
+                    model.Options.Options.Add(new()
                     {
                         Id = option.Id,
                         Value = option.Value,
                         Order = option.Order
                     });
                 }
+
+                if (type == QuestionType.MultiChoice)
+                {
+                    model.Checkbox = new()
+                    {
+                        MaxNumberOfOptions = response.Checkbox?.MaxNumberOfOptions ?? 0,
+                        MinNumberOfOptions = response.Checkbox?.MinNumberOfOptions ?? 0,
+                    };
+                }
+            }
+            else if (type == QuestionType.Number)
+            {
+                model.NumberInput = new()
+                {
+                    GreaterThanOrEqualTo = response.NumberInput.GreaterThanOrEqualTo,
+                    LessThanOrEqualTo = response.NumberInput.LessThanOrEqualTo,
+                    NotEqualTo = response.NumberInput.NotEqualTo,
+                };
             }
             return model;
         }
@@ -111,7 +144,7 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
 
             };
 
-            if (model.Type == QuestionType.Text)
+            if (model.Type == QuestionType.Text || model.Type == QuestionType.TextArea)
             {
                 command.TextInput = new()
                 {
@@ -119,22 +152,38 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
                     MaxLength = model.TextInput.MaxLength,
                 };
             }
-            else if (model.Type == QuestionType.Radio)
+            else if (model.Type == QuestionType.Radio || model.Type == QuestionType.MultiChoice)
             {
-                command.RadioOptions = new();
-                foreach (var option in model.RadioButton.MultiChoice)
+                command.Options = new();
+                foreach (var option in model.Options.Options.OrderBy(o => o.Order))
                 {
-                    command.RadioOptions.Add(new()
+                    command.Options.Add(new()
                     {
                         Id = option.Id,
                         Value = option.Value ?? string.Empty,
                     });
                 }
+
+                if (model.Type == QuestionType.MultiChoice)
+                {
+                    command.Checkbox = new()
+                    {
+                        MinNumberOfOptions = model.Checkbox.MinNumberOfOptions,
+                        MaxNumberOfOptions = model.Checkbox.MaxNumberOfOptions,
+                    };
+                }
+            }
+            else if (model.Type == QuestionType.Number)
+            {
+                command.NumberInput = new()
+                {
+                    GreaterThanOrEqualTo = model.NumberInput.GreaterThanOrEqualTo,
+                    LessThanOrEqualTo = model.NumberInput.LessThanOrEqualTo,
+                    NotEqualTo = model.NumberInput.NotEqualTo,
+                };
             }
 
             return command;
         }
-
-
     }
 }

@@ -120,6 +120,7 @@ public class PagesController : Controller
         });
     }
     #endregion
+
     #region Delete
     [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/delete")]
     public async Task<IActionResult> Delete(Guid formVersionId, Guid sectionId, Guid pageId)

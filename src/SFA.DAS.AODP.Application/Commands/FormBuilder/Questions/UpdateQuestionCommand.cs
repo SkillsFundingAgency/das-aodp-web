@@ -2,7 +2,7 @@
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Questions;
 
-public class UpdateQuestionCommand : IRequest<BaseMediatrResponse<UpdateQuestionCommandResponse>>
+public class UpdateQuestionCommand : IRequest<BaseMediatrResponse<EmptyResponse>>
 {
     public Guid Id { get; set; }
     public Guid FormVersionId { get; set; }
@@ -12,16 +12,31 @@ public class UpdateQuestionCommand : IRequest<BaseMediatrResponse<UpdateQuestion
     public string Hint { get; set; }
     public bool Required { get; set; }
     public TextInputOptions TextInput { get; set; } = new();
-    public List<RadioOptionItem> RadioOptions { get; set; } = new();
+    public NumberInputOptions NumberInput { get; set; } = new();
+    public CheckboxOptions Checkbox { get; set; } = new();
+    public List<OptionItem> Options { get; set; } = new();
     public class TextInputOptions
     {
         public int? MinLength { get; set; }
         public int? MaxLength { get; set; }
     }
 
-    public class RadioOptionItem
+    public class OptionItem
     {
         public Guid Id { get; set; }
         public string Value { get; set; }
+    }
+
+    public class CheckboxOptions
+    {
+        public int? MinNumberOfOptions { get; set; }
+        public int? MaxNumberOfOptions { get; set; }
+    }
+
+    public class NumberInputOptions
+    {
+        public int? GreaterThanOrEqualTo { get; set; }
+        public int? LessThanOrEqualTo { get; set; }
+        public int? NotEqualTo { get; set; }
     }
 }

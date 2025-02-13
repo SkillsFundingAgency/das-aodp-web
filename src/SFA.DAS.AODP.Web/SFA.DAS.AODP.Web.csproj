@@ -57,14 +57,14 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Content Update="Views\Shared\FormBuilder\QuestionEdit\_RadioInput.cshtml">
+	  <Content Update="Views\Shared\FormBuilder\QuestionEdit\_Options.cshtml">
 	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
 	  </Content>
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Content Update="Views\Shared\FormBuilder\QuestionEdit\_RadioInput.cshtml">
+	  <Content Update="Views\Shared\FormBuilder\QuestionEdit\_Options.cshtml">
 	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
 	  </Content>
