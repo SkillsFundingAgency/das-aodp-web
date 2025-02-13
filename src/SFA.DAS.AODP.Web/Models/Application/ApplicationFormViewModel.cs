@@ -46,8 +46,12 @@ namespace SFA.DAS.AODP.Web.Models.Application
                     Order = section.Order,
                     Title = section.Title,
                     Id = section.Id,
-                    PagesRemaining = statusResponse.Sections.FirstOrDefault(s => s.SectionId == section.Id)?.PagesRemaining
+                    PagesRemaining = statusResponse.Sections.First(s => s.SectionId == section.Id).PagesRemaining,
+                    SkippedPages = statusResponse.Sections.First(s => s.SectionId == section.Id).SkippedPages,
+                    TotalPages = statusResponse.Sections.First(s => s.SectionId == section.Id).TotalPages
                 };
+
+                if (modelSection.SkippedPages == modelSection.TotalPages) continue;
 
 
                 model.Sections.Add(modelSection);
@@ -61,7 +65,9 @@ namespace SFA.DAS.AODP.Web.Models.Application
             public Guid Id { get; set; }
             public string Title { get; set; }
             public int Order { get; set; }
-            public int? PagesRemaining { get; set; }
+            public int PagesRemaining { get; set; }
+            public int SkippedPages { get; set; }
+            public int TotalPages { get; set; }
         }
     }
 }

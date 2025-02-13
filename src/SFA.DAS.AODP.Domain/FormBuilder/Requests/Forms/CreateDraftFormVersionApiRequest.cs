@@ -14,5 +14,5 @@ public class CreateDraftFormVersionApiRequest : IPutApiRequest
 
     public object Data { get; set; }
 
-    public string PutUrl => $"/api/forms/{FormId}/new-version";
+    public string PutUrl => $"api/forms/{FormId}/new-version";
 }

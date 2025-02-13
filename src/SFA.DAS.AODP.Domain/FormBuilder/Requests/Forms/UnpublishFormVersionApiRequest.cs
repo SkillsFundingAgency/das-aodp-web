@@ -2,11 +2,11 @@
 
 namespace SFA.DAS.AODP.Domain.FormBuilder.Requests.Forms;
 
-public class UnpublishFormVersionApiRequest : IPutApiRequest
+public class MoveFormDownApiRequest : IPutApiRequest
 {
     public readonly Guid FormVersionId;
 
-    public UnpublishFormVersionApiRequest(Guid formVersionId)
+    public MoveFormDownApiRequest(Guid formVersionId)
     {
         FormVersionId = formVersionId;
         Data = new object(); //Unused
@@ -14,5 +14,5 @@ public class UnpublishFormVersionApiRequest : IPutApiRequest
 
     public object Data { get; set; }
 
-    public string PutUrl => $"/api/forms/{FormVersionId}/unpublish";
+    public string PutUrl => $"api/forms/{FormVersionId}/MoveDown";
 }

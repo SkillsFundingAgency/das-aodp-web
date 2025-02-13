@@ -9,7 +9,7 @@ public class ConfigureRoutingForQuestionApiRequest(Guid questionId, Guid pageId,
     public Guid SectionId { get; set; } = sectionId;
     public Guid QuestionId { get; set; } = questionId;
 
-    public string PutUrl => $"/api/routes/forms/{FormVersionId}/sections/{SectionId}/Pages/{PageId}/Questions/{QuestionId}";
+    public string PutUrl => $"api/routes/forms/{FormVersionId}/sections/{SectionId}/Pages/{PageId}/Questions/{QuestionId}";
 
     public object Data { get; set; }
 

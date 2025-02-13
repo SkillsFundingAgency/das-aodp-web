@@ -11,5 +11,5 @@ public class DeleteFormVersionApiRequest : IDeleteApiRequest
         FormVersionId = formVersionId;
     }
 
-    public string DeleteUrl => $"/api/forms/{FormVersionId}";
+    public string DeleteUrl => $"api/forms/{FormVersionId}";
 }

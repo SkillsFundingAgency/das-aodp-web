@@ -19,7 +19,7 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
 
         [HttpGet]
         [Route("organisations/{organisationId}")]
-        public async Task<IActionResult> IndexAsync(Guid organisationId)
+        public async Task<IActionResult> Index(Guid organisationId)
         {
             var applications = await _mediator.Send(new GetApplicationsByOrganisationIdQuery(organisationId));
             ListApplicationsViewModel model = ListApplicationsViewModel.Map(applications.Value, organisationId);

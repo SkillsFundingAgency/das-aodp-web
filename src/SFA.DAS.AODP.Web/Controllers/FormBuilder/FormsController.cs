@@ -1,10 +1,9 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
-using SFA.DAS.AODP.Application.Commands.FormBuilder.Questions;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
-using SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Form;
 
 namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
@@ -23,6 +22,7 @@ public class FormsController : Controller
     {
         var query = new GetAllFormVersionsQuery();
         var response = await _mediator.Send(query);
+        if(!response.Success) return Ok(response);
 
         var viewModel = FormVersionListViewModel.Map(response.Value);
 
@@ -40,6 +40,16 @@ public class FormsController : Controller
 
             return RedirectToAction(nameof(Edit), new { formVersionId = response.Value.FormVersionId });
 
+        }
+        else if (model.AdditionalActions.MoveDown.HasValue)
+        {
+            var command = new MoveFormDownCommand(model.AdditionalActions.MoveDown.Value);
+            var response = await _mediator.Send(command);
+        }
+        else if (model.AdditionalActions.MoveUp.HasValue)
+        {
+            var command = new MoveFormUpCommand(model.AdditionalActions.MoveUp.Value);
+            var response = await _mediator.Send(command);
         }
 
         return RedirectToAction(nameof(Index));
@@ -99,18 +109,7 @@ public class FormsController : Controller
             var command = new UnpublishFormVersionCommand(editFormVersionViewModel.Id);
             var response = await _mediator.Send(command);
         }
-        else
-        {
-            var command = new UpdateFormVersionCommand()
-            {
-                FormVersionId = editFormVersionViewModel.Id,
-                Description = editFormVersionViewModel.Description,
-                Order = editFormVersionViewModel.Order,
-                Name = editFormVersionViewModel.Title
-            };
-            var response = await _mediator.Send(command);
-        }
-        if (editFormVersionViewModel.AdditionalFormActions.MoveUp != default)
+        else if (editFormVersionViewModel.AdditionalFormActions.MoveUp != default)
         {
             var command = new MoveSectionUpCommand()
             {
@@ -119,7 +118,7 @@ public class FormsController : Controller
             };
             var response = await _mediator.Send(command);
         }
-        if (editFormVersionViewModel.AdditionalFormActions.MoveDown != default)
+        else if (editFormVersionViewModel.AdditionalFormActions.MoveDown != default)
         {
             var command = new MoveSectionDownCommand()
             {

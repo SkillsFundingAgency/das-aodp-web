@@ -2,5 +2,5 @@
 
 public class GetApplicationFormsApiRequest : IGetApiRequest
 {
-    public string GetUrl => $"/api/applications/forms";
+    public string GetUrl => $"api/applications/forms";
 }

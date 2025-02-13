@@ -13,5 +13,5 @@ public class GetSectionByIdApiRequest : IGetApiRequest
         _formVersionId = formVersionId;
     }
 
-    public string GetUrl => $"/api/forms/{_formVersionId}/sections/{_sectionId}";
+    public string GetUrl => $"api/forms/{_formVersionId}/sections/{_sectionId}";
 }
