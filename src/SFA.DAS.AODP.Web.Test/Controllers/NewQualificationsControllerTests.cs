@@ -92,6 +92,32 @@ public class NewQualificationsControllerTests
     }
 
     [Fact]
+    public async Task Index_ReturnsNotFound_WhenMediatorReturnsNull()
+    {
+        // Arrange
+        var queryResponse = _fixture.Create<BaseMediatrResponse<GetNewQualificationsQueryResponse>>();
+        queryResponse.Success = true;
+        queryResponse.Value = null;
+
+        _mediatorMock.Setup(m => m.Send(It.IsAny<GetNewQualificationsQuery>(), default))
+                     .ReturnsAsync(queryResponse);
+
+        // Act
+        var result = await _controller.Index();
+
+        // Assert
+        var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
+        Assert.Equal("Error", notFoundResult.Value);
+
+        _loggerMock.Verify(logger => logger.Log(
+            LogLevel.Warning,
+            It.IsAny<EventId>(),
+            It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("No new qualifications found")),
+            null,
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()), Times.Once);
+    }
+
+    [Fact]
     public async Task QualificationDetails_ReturnsViewResult_WithQualificationDetails()
     {
         // Arrange

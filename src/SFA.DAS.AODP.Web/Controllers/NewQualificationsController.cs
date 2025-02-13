@@ -24,7 +24,7 @@ namespace SFA.DAS.AODP.Web.Controllers
 
             var result = await _mediator.Send(new GetNewQualificationsQuery());
 
-            if (!result.Success)
+            if (!result.Success || result.Value == null)
             {
                 _logger.LogWarning("No new qualifications found");
                 return NotFound("Error"); // Handle errors properly
