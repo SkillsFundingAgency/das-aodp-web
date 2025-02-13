@@ -23,6 +23,7 @@ internal class Program
 
         var configuration = builder.Configuration.LoadConfiguration(builder.Services, builder.Environment.IsDevelopment());
 
+
         builder.Services
             .AddServiceRegistrations(configuration)
             .AddAuthorization(options =>
