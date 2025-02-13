@@ -99,7 +99,6 @@ internal class Program
             .UseHealthChecks("/ping")
             .UseHttpsRedirection()
             .UseStaticFiles()
-            .UseCookiePolicy()
             .UseRouting()
             .UseAuthentication()
             .UseAuthorization()

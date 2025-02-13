@@ -22,9 +22,9 @@ namespace SFA.DAS.AODP.Authentication.Extensions
                 options.Cookie.IsEssential = true;
                 options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                 options.SlidingExpiration = true;
-                options.Cookie.SameSite = SameSiteMode.None;
                 options.CookieManager = new ChunkingCookieManager { ChunkSize = 3000 };
                 options.LogoutPath = new PathString(signedOutCallbackPath);
+                options.Cookie.Domain = "at-qualification-funding.apprenticeships.education.gov.uk";
             });
         }
     }
