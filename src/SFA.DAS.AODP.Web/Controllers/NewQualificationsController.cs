@@ -17,14 +17,20 @@ namespace SFA.DAS.AODP.Web.Controllers
             _logger = logger;
             _mediator = mediator;
         }
+
         public async Task<IActionResult> Index()
         {
+            _logger.LogInformation("Getting all new qualifications");
+
             var result = await _mediator.Send(new GetNewQualificationsQuery());
 
             if (!result.Success)
             {
+                _logger.LogWarning("No new qualifications found");
                 return NotFound("Error"); // Handle errors properly
             }
+
+            _logger.LogInformation("Successfully retrieved new qualifications");
 
             var viewModel = result.Value.Value.NewQualifications.Select(q => new NewQualificationsViewModel
             {
@@ -41,12 +47,23 @@ namespace SFA.DAS.AODP.Web.Controllers
 
         public async Task<IActionResult> QualificationDetails([FromQuery] string qualificationReference)
         {
+            if (string.IsNullOrWhiteSpace(qualificationReference))
+            {
+                _logger.LogWarning("Qualification reference is empty");
+                return BadRequest(new { message = "Qualification reference cannot be empty" });
+            }
+
+            _logger.LogInformation("Getting details for qualification reference: {QualificationReference}", qualificationReference);
+
             var result = await _mediator.Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });
 
             if (!result.Success || result.Value == null)
             {
+                _logger.LogWarning("No details found for qualification reference: {QualificationReference}", qualificationReference);
                 return NotFound();
             }
+
+            _logger.LogInformation("Successfully retrieved details for qualification reference: {QualificationReference}", qualificationReference);
 
             var viewModel = MapToViewModel(result.Value);
 
