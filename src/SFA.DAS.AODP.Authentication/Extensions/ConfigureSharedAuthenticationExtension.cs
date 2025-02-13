@@ -25,6 +25,8 @@ namespace SFA.DAS.AODP.Authentication.Extensions
                 options.Cookie.SameSite = SameSiteMode.None;
                 options.CookieManager = new ChunkingCookieManager { ChunkSize = 3000 };
                 options.LogoutPath = new PathString(signedOutCallbackPath);
+                options.Cookie.Domain = "at-qualification-funding.apprenticeships.education.gov.uk";
+
             });
         }
     }

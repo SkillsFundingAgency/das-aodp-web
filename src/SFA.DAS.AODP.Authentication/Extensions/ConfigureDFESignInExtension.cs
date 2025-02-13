@@ -92,12 +92,7 @@ namespace SFA.DAS.AODP.Authentication.Extensions
                 .AddAuthenticationCookie(authenticationCookieName, signedOutCallbackPath, configuration["ResourceEnvironmentName"]);
 
             services
-                .AddOptions<OpenIdConnectOptions>(OpenIdConnectDefaults.AuthenticationScheme)
-                .Configure<IDfESignInService, IOptions<DfEOidcConfiguration>, ITicketStore>(
-                    (options, dfeSignInService, config, ticketStore) =>
-                    {
-                        options.Events.OnTokenValidated = async ctx => await dfeSignInService.PopulateAccountClaims(ctx);
-                    });
+                .AddOptions<OpenIdConnectOptions>(OpenIdConnectDefaults.AuthenticationScheme);
             services
                 .AddOptions<CookieAuthenticationOptions>(CookieAuthenticationDefaults.AuthenticationScheme)
                 .Configure<ITicketStore, DfEOidcConfiguration>((options, ticketStore, config) =>
