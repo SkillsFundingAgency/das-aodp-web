@@ -1,11 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using MediatR;
-using SFA.DAS.AODP.Application.Queries.Test;
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Application.Queries.Test;
 using SFA.DAS.AODP.Web.Models.Qualifications;
-using Azure;
 
-namespace SFA.DAS.AODP.Web.Controllers
+namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 {
     public class NewQualificationsController : Controller
     {
@@ -32,7 +31,7 @@ namespace SFA.DAS.AODP.Web.Controllers
 
             _logger.LogInformation("Successfully retrieved new qualifications");
 
-            var viewModel = result.Value.Value.NewQualifications.Select(q => new NewQualificationsViewModel
+            var viewModel = result.Value.NewQualifications.Select(q => new NewQualificationsViewModel
             {
                 Id = q.Id,
                 Title = q.Title,
@@ -59,7 +58,7 @@ namespace SFA.DAS.AODP.Web.Controllers
 
             if (!result.Success || result.Value == null)
             {
-                _logger.LogWarning("No details found for qualification reference: {QualificationReference}", qualificationReference);
+                _logger.LogWarning(result.ErrorMessage);
                 return NotFound();
             }
 
@@ -72,28 +71,28 @@ namespace SFA.DAS.AODP.Web.Controllers
 
         private static QualificationDetailsViewModel MapToViewModel(GetQualificationDetailsQueryResponse response)
         {
-            if (response == null || response.Value == null)
+            if (response == null)
             {
                 return null;
             }
 
             return new QualificationDetailsViewModel
             {
-                Id = response.Value.Id,
-                Status = response.Value.Status,
-                Priority = response.Value.Priority,
-                Changes = response.Value.Changes,
-                QualificationReference = response.Value.QualificationReference,
-                AwardingOrganisation = response.Value.AwardingOrganisation,
-                Title = response.Value.Title,
-                QualificationType = response.Value.QualificationType,
-                Level = response.Value.Level,
-                ProposedChanges = response.Value.ProposedChanges,
-                AgeGroup = response.Value.AgeGroup,
-                Category = response.Value.Category,
-                Subject = response.Value.Subject,
-                SectorSubjectArea = response.Value.SectorSubjectArea,
-                Comments = response.Value.Comments
+                Id = response.Id,
+                Status = response.Status,
+                Priority = response.Priority,
+                Changes = response.Changes,
+                QualificationReference = response.QualificationReference,
+                AwardingOrganisation = response.AwardingOrganisation,
+                Title = response.Title,
+                QualificationType = response.QualificationType,
+                Level = response.Level,
+                ProposedChanges = response.ProposedChanges,
+                AgeGroup = response.AgeGroup,
+                Category = response.Category,
+                Subject = response.Subject,
+                SectorSubjectArea = response.SectorSubjectArea,
+                Comments = response.Comments
             };
         }
     }
