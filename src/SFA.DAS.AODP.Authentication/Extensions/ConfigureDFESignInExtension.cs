@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Http;
@@ -48,8 +49,58 @@ namespace SFA.DAS.AODP.Authentication.Extensions
                     }
                     options.SaveTokens = true;
 
+                    options.TokenValidationParameters = new TokenValidationParameters { RoleClaimType = "roleName" };
+                    // This was updated 
+                    options.TokenHandler = new JsonWebTokenHandler()
+                    {
+                        InboundClaimTypeMap = new Dictionary<string, string>(),
+                        TokenLifetimeInMinutes = 90,
+                        SetDefaultTimesOnTokenCreation = true
+                    };
+                    options.ProtocolValidator = new OpenIdConnectProtocolValidator
+                    {
+                        RequireSub = true,
+                        RequireStateValidation = false,
+                        NonceLifetime = TimeSpan.FromMinutes(60)
+                    };
+
+                    options.Events.OnRemoteFailure = c =>
+                    {
+                        if (c.Failure != null && c.Failure.Message.Contains("Correlation failed"))
+                        {
+                            c.Response.Redirect(redirectUrl);
+                            c.HandleResponse();
+                        }
+
+                        return Task.CompletedTask;
+                    };
+
+                    options.Events.OnSignedOutCallbackRedirect = c =>
+                    {
+                        c.Response.Cookies.Delete(authenticationCookieName); // delete the client cookie by given cookie name.
+                        c.Response.Redirect(c.Options.SignedOutRedirectUri); // the path the authentication provider posts back after signing out.
+                        c.HandleResponse();
+                        return Task.CompletedTask;
+                    };
                 })
-                 .AddAuthenticationCookie(authenticationCookieName, signedOutCallbackPath, configuration["DfEOidcConfiguration:ResourceEnvironmentName"]);
+                .AddAuthenticationCookie(authenticationCookieName, signedOutCallbackPath, configuration["ResourceEnvironmentName"]);
+
+            services
+                .AddOptions<OpenIdConnectOptions>(OpenIdConnectDefaults.AuthenticationScheme)
+                .Configure<IDfESignInService, IOptions<DfEOidcConfiguration>, ITicketStore>(
+                    (options, dfeSignInService, config, ticketStore) =>
+                    {
+                        options.Events.OnTokenValidated = async ctx => await dfeSignInService.PopulateAccountClaims(ctx);
+                    });
+            services
+                .AddOptions<CookieAuthenticationOptions>(CookieAuthenticationDefaults.AuthenticationScheme)
+                .Configure<ITicketStore, DfEOidcConfiguration>((options, ticketStore, config) =>
+                {
+                    options.ExpireTimeSpan = TimeSpan.FromMinutes(config.LoginSlidingExpiryTimeOutInMinutes);
+                    options.SlidingExpiration = true;
+                    options.SessionStore = ticketStore;
+                });
         }
+
     }
 }
