@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using SFA.DAS.AODP.Authentication.Configuration;
@@ -52,13 +53,12 @@ namespace SFA.DAS.AODP.Authentication.Extensions
                     options.TokenValidationParameters = new TokenValidationParameters { RoleClaimType = "roleName" };
                     // This was updated 
 
-                    options.SecurityTokenValidator = new JwtSecurityTokenHandler()
+                    options.TokenHandler = new JsonWebTokenHandler()
                     {
                         InboundClaimTypeMap = new Dictionary<string, string>(),
                         TokenLifetimeInMinutes = 90,
                         SetDefaultTimesOnTokenCreation = true
                     };
-                    options.UseSecurityTokenValidator = true;
                     options.ProtocolValidator = new OpenIdConnectProtocolValidator
                     {
                         RequireSub = true,
