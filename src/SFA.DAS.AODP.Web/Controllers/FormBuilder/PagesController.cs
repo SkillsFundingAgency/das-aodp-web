@@ -54,7 +54,7 @@ public class PagesController : Controller
     {
         var query = new GetPageByIdQuery(pageId, sectionId, formVersionId);
         var response = await _mediator.Send(query);
-        if (response.Value == null) return NotFound();
+        if (response.Value == null || !response.Success) return Redirect("/Home/Error");
 
         return View(EditPageViewModel.Map(response.Value, formVersionId));
     }
@@ -73,6 +73,11 @@ public class PagesController : Controller
                 QuestionId = model.AdditionalFormActions.MoveUp ?? Guid.Empty
             };
             var response = await _mediator.Send(command);
+            if (!response.Success)
+            {
+                ViewBag.InternalServerError = true;
+                return View(model);
+            }
             return await Edit(model.PageId, model.SectionId, model.FormVersionId);
         }
         else if (model.AdditionalFormActions.MoveDown != default)
@@ -85,6 +90,11 @@ public class PagesController : Controller
                 QuestionId = model.AdditionalFormActions.MoveDown ?? Guid.Empty
             };
             var response = await _mediator.Send(command);
+            if (!response.Success)
+            {
+                ViewBag.InternalServerError = true;
+                return View(model);
+            }
             return await Edit(model.PageId, model.SectionId, model.FormVersionId);
         }
         else
@@ -98,6 +108,11 @@ public class PagesController : Controller
             };
 
             var response = await _mediator.Send(command);
+            if (!response.Success)
+            {
+                ViewBag.InternalServerError = true;
+                return View(model);
+            }
             return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId, pageId = model.PageId });
         }
     }
@@ -109,7 +124,7 @@ public class PagesController : Controller
     {
         var query = new GetPagePreviewByIdQuery(pageId, sectionId, formVersionId);
         var response = await _mediator.Send(query);
-        if (response.Value == null) return NotFound();
+        if (response.Value == null || !response.Success) return Redirect("/Home/Error");
 
         return View(new PreviewPageViewModel()
         {
@@ -126,7 +141,7 @@ public class PagesController : Controller
     {
         var query = new GetPageByIdQuery(pageId, sectionId, formVersionId);
         var response = await _mediator.Send(query);
-        if (response.Value == null) return NotFound();
+        if (response.Value == null || !response.Success) return Redirect("/Home/Error");
         return View(new DeletePageViewModel()
         {
             PageId = pageId,
@@ -148,6 +163,11 @@ public class PagesController : Controller
         };
 
         var deleteResponse = await _mediator.Send(command);
+        if (!deleteResponse.Success)
+        {
+            ViewBag.InternalServerError = true;
+            return View(model);
+        }
         return RedirectToAction("Edit", "Sections", new { formVersionId = model.FormVersionId, sectionId = model.SectionId });
 
     }

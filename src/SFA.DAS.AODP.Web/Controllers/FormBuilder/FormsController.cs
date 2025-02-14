@@ -5,6 +5,7 @@ using SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Form;
+using System.Reflection;
 
 namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
 
@@ -22,7 +23,10 @@ public class FormsController : Controller
     {
         var query = new GetAllFormVersionsQuery();
         var response = await _mediator.Send(query);
-        if(!response.Success) return Ok(response);
+        if(!response.Success)
+        {
+            return Redirect("/Home/Error");
+        }
 
         var viewModel = FormVersionListViewModel.Map(response.Value);
 
@@ -36,20 +40,32 @@ public class FormsController : Controller
         {
             var command = new CreateDraftFormVersionCommand(model.AdditionalActions.CreateDraft.Value);
             var response = await _mediator.Send(command);
-            if (!response.Success) return StatusCode(StatusCodes.Status500InternalServerError);
-
-            return RedirectToAction(nameof(Edit), new { formVersionId = response.Value.FormVersionId });
-
+            if (response.Success)
+            {
+                return RedirectToAction(nameof(Edit), new { formVersionId = response.Value.FormVersionId });
+            }
+            ViewBag.InternalServerError = true;
+            return View(model);
         }
         else if (model.AdditionalActions.MoveDown.HasValue)
         {
             var command = new MoveFormDownCommand(model.AdditionalActions.MoveDown.Value);
             var response = await _mediator.Send(command);
+            if (!response.Success)
+            {
+                ViewBag.InternalServerError = true;
+                return View(model);
+            }
         }
         else if (model.AdditionalActions.MoveUp.HasValue)
         {
             var command = new MoveFormUpCommand(model.AdditionalActions.MoveUp.Value);
             var response = await _mediator.Send(command);
+            if (!response.Success)
+            {
+                ViewBag.InternalServerError = true;
+                return View(model);
+            }
         }
 
         return RedirectToAction(nameof(Index));
@@ -75,7 +91,11 @@ public class FormsController : Controller
         };
 
         var response = await _mediator.Send(command);
-        if (!response.Success) return View(viewModel);
+        if (!response.Success)
+        {
+            ViewBag.InternalServerError = true;
+            return View(viewModel);
+        }
         return RedirectToAction(nameof(Edit), new { formVersionId = response.Value.Id });
     }
     #endregion
@@ -87,7 +107,7 @@ public class FormsController : Controller
     {
         var formVersionQuery = new GetFormVersionByIdQuery(formVersionId);
         var response = await _mediator.Send(formVersionQuery);
-        if (!response.Success) return NotFound();
+        if (!response.Success) return Redirect("Error");
 
         var viewModel = EditFormVersionViewModel.Map(response.Value);
 
@@ -103,11 +123,21 @@ public class FormsController : Controller
         {
             var command = new PublishFormVersionCommand(editFormVersionViewModel.Id);
             var response = await _mediator.Send(command);
+            if (!response.Success)
+            {
+                ViewBag.InternalServerError = true;
+                return View(editFormVersionViewModel);
+            }
         }
         else if (editFormVersionViewModel.AdditionalFormActions.UnPublish != default)
         {
             var command = new UnpublishFormVersionCommand(editFormVersionViewModel.Id);
             var response = await _mediator.Send(command);
+            if (!response.Success)
+            {
+                ViewBag.InternalServerError = true;
+                return View(editFormVersionViewModel);
+            }
         }
         else if (editFormVersionViewModel.AdditionalFormActions.MoveUp != default)
         {
@@ -117,6 +147,11 @@ public class FormsController : Controller
                 SectionId = editFormVersionViewModel.AdditionalFormActions.MoveUp ?? Guid.Empty,
             };
             var response = await _mediator.Send(command);
+            if (!response.Success)
+            {
+                ViewBag.InternalServerError = true;
+                return View(editFormVersionViewModel);
+            }
         }
         else if (editFormVersionViewModel.AdditionalFormActions.MoveDown != default)
         {
@@ -126,6 +161,11 @@ public class FormsController : Controller
                 SectionId = editFormVersionViewModel.AdditionalFormActions.MoveDown ?? Guid.Empty,
             };
             var response = await _mediator.Send(command);
+            if (!response.Success)
+            {
+                ViewBag.InternalServerError = true;
+                return View(editFormVersionViewModel);
+            }
         }
         else
         {
@@ -137,6 +177,11 @@ public class FormsController : Controller
                 Name = editFormVersionViewModel.Title
             };
             var response = await _mediator.Send(command);
+            if (!response.Success)
+            {
+                ViewBag.InternalServerError = true;
+                return View(editFormVersionViewModel);
+            }
         }
         return RedirectToAction(nameof(Edit), new { formVersionId = editFormVersionViewModel.Id });
     }
@@ -148,7 +193,7 @@ public class FormsController : Controller
     {
         var query = new GetFormVersionByIdQuery(formVersionId);
         var response = await _mediator.Send(query);
-        if (response.Value == null) return NotFound();
+        if (response.Value == null || !response.Success) return Redirect("/Home/Error");
         return View(new DeleteFormViewModel()
         {
             FormVersionId = formVersionId,
@@ -162,6 +207,11 @@ public class FormsController : Controller
     {
         var command = new DeleteFormVersionCommand(model.FormVersionId);
         var deleteResponse = await _mediator.Send(command);
+        if (!deleteResponse.Success)
+        {
+            ViewBag.InternalServerError = true;
+            return View(model);
+        }
         return RedirectToAction(nameof(Index));
     }
     #endregion

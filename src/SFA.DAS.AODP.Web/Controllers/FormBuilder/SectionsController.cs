@@ -5,6 +5,7 @@ using SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Section;
+using Azure;
 
 namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
 
@@ -39,6 +40,7 @@ public class SectionsController : Controller
         {
             return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = response.Value.Id });
         }
+        ViewBag.InternalServerError = true;
         return View(model);
     }
     #endregion
@@ -49,7 +51,7 @@ public class SectionsController : Controller
     {
         var sectionQuery = new GetSectionByIdQuery(sectionId, formVersionId);
         var response = await _mediator.Send(sectionQuery);
-        if (response.Value == null) return NotFound();
+        if (response.Value == null) return Redirect("/Home/Error");
 
         return View(EditSectionViewModel.Map(response.Value));
     }
@@ -67,6 +69,11 @@ public class SectionsController : Controller
                 PageId = model.AdditionalActions.MoveUp ?? Guid.Empty,
             };
             var response = await _mediator.Send(command);
+            if (!response.Success)
+            {
+                ViewBag.InternalServerError = true;
+                return View(model);
+            }
             return await Edit(model.FormVersionId, model.SectionId);
         }
         else if (model.AdditionalActions.MoveDown != default)
@@ -78,6 +85,11 @@ public class SectionsController : Controller
                 PageId = model.AdditionalActions.MoveDown ?? Guid.Empty,
             };
             var response = await _mediator.Send(command);
+            if (!response.Success)
+            {
+                ViewBag.InternalServerError = true;
+                return View(model);
+            }
             return await Edit(model.FormVersionId, model.SectionId);
         }
         else
@@ -94,6 +106,7 @@ public class SectionsController : Controller
             {
                 return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId });
             }
+            ViewBag.InternalServerError = true;
             return View(model);
         }
 
@@ -107,7 +120,7 @@ public class SectionsController : Controller
     {
         var query = new GetSectionByIdQuery(sectionId, formVersionId);
         var response = await _mediator.Send(query);
-        if (response.Value == null) return NotFound();
+        if (response.Value == null || !response.Success) return Redirect("/Home/Error");
         return View(new DeleteSectionViewModel()
         {
             Title = response.Value.Title,
@@ -126,6 +139,11 @@ public class SectionsController : Controller
             SectionId = model.SectionId
         };
         var deleteResponse = await _mediator.Send(command);
+        if (!deleteResponse.Success)
+        {
+            ViewBag.InternalServerError = true;
+            return View(model);
+        }
         return RedirectToAction("Edit", "Forms", new { formVersionId = model.FormVersionId });
     }
     #endregion

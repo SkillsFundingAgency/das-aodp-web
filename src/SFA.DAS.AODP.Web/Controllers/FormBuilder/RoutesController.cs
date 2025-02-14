@@ -28,7 +28,7 @@ public class RoutesController : Controller
             SectionId = sectionId
         };
         var response = await _mediator.Send(query);
-        if (!response.Success) return NotFound();
+        if (!response.Success) return Redirect("/Home/Error");
 
 
         return View(CreateRouteViewModel.MapToViewModel(response.Value, formVersionId, sectionId, pageId));
@@ -41,7 +41,11 @@ public class RoutesController : Controller
         var command = CreateRouteViewModel.MapToCommand(model);
 
         var response = await _mediator.Send(command);
-        if (!response.Success) return NotFound();
+        if (!response.Success)
+        {
+            ViewBag.InternalServerError = true;
+            return View(model);
+        }
         return RedirectToAction(nameof(List), new { formVersionId = model.FormVersionId });
     }
     [HttpGet()]
@@ -53,7 +57,7 @@ public class RoutesController : Controller
             FormVersionId = formVersionId
         };
         var response = await _mediator.Send(query);
-        if (!response.Success) return NotFound();
+        if (!response.Success) return Redirect("/Home/Error");
         return View(CreateRouteChooseSectionAndPageViewModel.MapToViewModel(response.Value, formVersionId));
     }
 
@@ -90,7 +94,7 @@ public class RoutesController : Controller
             PageId = pageId
         };
         var response = await _mediator.Send(query);
-        if (!response.Success) return NotFound();
+        if (!response.Success) return Redirect("/Home/Error");
 
         return View(CreateRouteChooseQuestionViewModel.MapToViewModel(response.Value, formVersionId, sectionId, pageId));
     }
@@ -108,6 +112,11 @@ public class RoutesController : Controller
                 PageId = model.PageId
             };
             var response = await _mediator.Send(query);
+            if (!response.Success)
+            {
+                ViewBag.InternalServerError = true;
+                return View(model);
+            }
             return View(CreateRouteChooseQuestionViewModel.MapToViewModel(response.Value, model.FormVersionId, model.SectionId, model.PageId));
         }
 
@@ -125,7 +134,7 @@ public class RoutesController : Controller
 
         };
         var response = await _mediator.Send(query);
-        if (!response.Success) return NotFound();
+        if (!response.Success) return Redirect("/Home/Error");
 
         return View(new ListRoutesViewModel()
         {

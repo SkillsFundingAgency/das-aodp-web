@@ -1,8 +1,10 @@
-﻿using MediatR;
+﻿using Azure;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Web.Models.Application;
 using SFA.DAS.AODP.Web.Validators;
+using System.Reflection;
 
 namespace SFA.DAS.AODP.Web.Controllers.Application
 {
@@ -21,8 +23,9 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
         [Route("organisations/{organisationId}")]
         public async Task<IActionResult> Index(Guid organisationId)
         {
-            var applications = await _mediator.Send(new GetApplicationsByOrganisationIdQuery(organisationId));
-            ListApplicationsViewModel model = ListApplicationsViewModel.Map(applications.Value, organisationId);
+            var response = await _mediator.Send(new GetApplicationsByOrganisationIdQuery(organisationId));
+            if (!response.Success) return Redirect("/Home/Error");
+            ListApplicationsViewModel model = ListApplicationsViewModel.Map(response.Value, organisationId);
             return View(model);
         }
 
@@ -31,6 +34,7 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
         public async Task<IActionResult> AvailableFormsAsync(Guid organisationId)
         {
             var formsResponse = await _mediator.Send(new GetApplicationFormsQuery());
+            if (!formsResponse.Success) return Redirect("/Home/Error");
             ListAvailableFormsViewModel model = ListAvailableFormsViewModel.Map(formsResponse.Value, organisationId);
             return View(model);
         }
@@ -40,7 +44,7 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
         public async Task<IActionResult> Create(Guid organisationId, Guid formVersionId)
         {
             var formVersion = await _mediator.Send(new GetFormVersionByIdQuery(formVersionId));
-            if (!formVersion.Success) return StatusCode(StatusCodes.Status500InternalServerError);
+            if (!formVersion.Success) return Redirect("/Home/Error");
 
             return View(new CreateApplicationViewModel()
             {
@@ -69,7 +73,11 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
 
             var response = await _mediator.Send(request);
 
-            if (!response.Success) return NotFound();
+            if (!response.Success)
+            {
+                ViewBag.InternalServerError = true;
+                return View(createApplicationViewModel);
+            }
 
             return RedirectToAction(nameof(ViewApplication), new { organisationId = createApplicationViewModel.OrganisationId, applicationId = response.Value.Id, formVersionId = createApplicationViewModel.FormVersionId });
         }
@@ -82,6 +90,8 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
             var formsResponse = await _mediator.Send(new GetApplicationFormByIdQuery(formVersionId));
 
             var statusResponse = await _mediator.Send(new GetApplicationFormStatusByApplicationIdQuery(formVersionId, applicationId));
+
+            if (!formsResponse.Success || !statusResponse.Success) return Redirect("/Home/Error");
 
             ApplicationFormViewModel model = ApplicationFormViewModel.Map(formsResponse.Value, statusResponse.Value, formVersionId, organisationId, applicationId);
 
@@ -97,6 +107,8 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
             var sectionResponse = await _mediator.Send(new GetApplicationSectionByIdQuery(sectionId, formVersionId));
 
             var sectionStatus = await _mediator.Send(new GetApplicationSectionStatusByApplicationIdQuery(sectionId, formVersionId, applicationId));
+
+            if (!sectionResponse.Success || !sectionStatus.Success) return Redirect("/Home/Error");
 
             ApplicationSectionViewModel model = ApplicationSectionViewModel.Map(sectionResponse.Value, sectionStatus.Value, organisationId, formVersionId, sectionId, applicationId);
 
@@ -115,10 +127,10 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
             };
 
             var response = await _mediator.Send(request);
-            if (!response.Success) return NotFound();
+            if (!response.Success) return Redirect("/Home/Error");
 
             var answers = await _mediator.Send(new GetApplicationPageAnswersByPageIdQuery(applicationId, response.Value.Id, sectionId, formVersionId));
-            if (!answers.Success) return NotFound();
+            if (!answers.Success) return Redirect("/Home/Error");
 
             ApplicationPageViewModel viewModel = ApplicationPageViewModel.MapToViewModel(response.Value, applicationId, formVersionId, sectionId, organisationId, answers.Value);
 
@@ -136,8 +148,12 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
                 SectionId = model.SectionId,
             };
 
-            var response = await _mediator.Send(request);
-            if (!response.Success) return NotFound();
+            var response = await _mediator.Send(request); 
+            if (!response.Success)
+            {
+                ViewBag.InternalServerError = true;
+                return View(model);
+            }
 
             _validator.ValidateApplicationPageAnswers(ModelState, response.Value, model);
 
@@ -151,7 +167,11 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
 
             var commandResponse = await _mediator.Send(command);
 
-            if (!commandResponse.Success) return NotFound();
+            if (!commandResponse.Success)
+            {
+                ViewBag.InternalServerError = true;
+                return View(model);
+            }
 
             bool endSection = command.Routing?.EndSection == true || response.Value.TotalSectionPages == response.Value.Order;
             if (endSection) return RedirectToAction(nameof(ViewApplicationSection), new { organisationId = model.OrganisationId, applicationId = model.ApplicationId, sectionId = model.SectionId, formVersionId = model.FormVersionId });

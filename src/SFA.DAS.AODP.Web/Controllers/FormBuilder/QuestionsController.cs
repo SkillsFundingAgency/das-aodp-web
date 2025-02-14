@@ -1,8 +1,10 @@
-﻿using MediatR;
+﻿using Azure;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Questions;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Questions;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Question;
+using System.Reflection;
 
 namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
 
@@ -48,6 +50,11 @@ public class QuestionsController : Controller
         };
 
         var response = await _mediator.Send(command);
+        if (!response.Success)
+        {
+            ViewBag.InternalServerError = true;
+            return View(model);
+        }
         return RedirectToAction(nameof(Edit), new
         {
             formVersionId = model.FormVersionId,
@@ -72,7 +79,7 @@ public class QuestionsController : Controller
             QuestionId = questionId
         };
         var response = await _mediator.Send(query);
-        if (response.Value == null) return NotFound();
+        if (response.Value == null || !response.Success) return Redirect("/Home/Error");
 
         var map = EditQuestionViewModel.MapToViewModel(response.Value, formVersionId, sectionId);
         return View(map);
@@ -101,7 +108,11 @@ public class QuestionsController : Controller
 
         var command = EditQuestionViewModel.MapToCommand(model);
         var response = await _mediator.Send(command);
-
+        if (!response.Success)
+        {
+            ViewBag.InternalServerError = true;
+            return View(model);
+        }
         return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId, pageId = model.PageId, questionId = model.Id });
     }
     #endregion
@@ -122,7 +133,7 @@ public class QuestionsController : Controller
 
         var response = await _mediator.Send(query);
 
-        if (response.Value == null) return NotFound();
+        if (response.Value == null || !response.Success) return Redirect("/Home/Error");
 
         var vm = DeleteQuestionViewModel.MapToViewModel(response.Value, formVersionId, sectionId);
 
@@ -132,7 +143,7 @@ public class QuestionsController : Controller
     [HttpPost()]
     [ValidateAntiForgeryToken]
     [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/questions/{questionId}/delete")]
-    public async Task<IActionResult> DeleteConfirmed(Guid formVersionId, Guid sectionId, Guid pageId, Guid questionId)
+    public async Task<IActionResult> DeleteConfirmed(Guid formVersionId, Guid sectionId, Guid pageId, Guid questionId, [FromBody] EditQuestionViewModel model)
     {
         var command = new DeleteQuestionCommand
         {
@@ -143,6 +154,11 @@ public class QuestionsController : Controller
         };
 
         var deleteQuestionResponse = await _mediator.Send(command);
+        if (!deleteQuestionResponse.Success)
+        {
+            ViewBag.InternalServerError = true;
+            return View(model);
+        }
 
         return RedirectToAction("Edit", "Pages", new { formVersionId = formVersionId, sectionId = sectionId, pageId = pageId });
     }
