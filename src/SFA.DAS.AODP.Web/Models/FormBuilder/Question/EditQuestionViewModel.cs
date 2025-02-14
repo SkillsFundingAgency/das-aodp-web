@@ -29,6 +29,9 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
         public Option Options { get; set; } = new();
         public CheckboxOptions Checkbox { get; set; } = new();
         public NumberInputOptions NumberInput { get; set; } = new();
+        public DateInputOptions DateInput { get; set; } = new();
+
+
         public bool Editable { get; set; }
 
         public class TextInputOptions
@@ -69,6 +72,14 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
             public int? GreaterThanOrEqualTo { get; set; }
             public int? LessThanOrEqualTo { get; set; }
             public int? NotEqualTo { get; set; }
+        }
+
+        public class DateInputOptions
+        {
+            public DateOnly? GreaterThanOrEqualTo { get; set; }
+            public DateOnly? LessThanOrEqualTo { get; set; }
+            public RelativeDateValidation DateValidation { get; set; }
+            public enum RelativeDateValidation { MustBeInFuture, MustBeInPast, NotApplicable };
         }
 
         public static EditQuestionViewModel MapToViewModel(GetQuestionByIdQueryResponse response, Guid formVersionId, Guid sectionId)
@@ -127,6 +138,24 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
                     NotEqualTo = response.NumberInput.NotEqualTo,
                 };
             }
+            else if (type == QuestionType.Date)
+            {
+                model.DateInput = new()
+                {
+                    GreaterThanOrEqualTo = response.DateInput.GreaterThanOrEqualTo,
+                    LessThanOrEqualTo = response.DateInput.LessThanOrEqualTo,
+                    DateValidation = DateInputOptions.RelativeDateValidation.NotApplicable
+                };
+
+                if (response.DateInput.MustBeInFuture == true)
+                {
+                    model.DateInput.DateValidation = DateInputOptions.RelativeDateValidation.MustBeInFuture;
+                }
+                else if (response.DateInput.MustBeInPast == true)
+                {
+                    model.DateInput.DateValidation = DateInputOptions.RelativeDateValidation.MustBeInPast;
+                }
+            }
             return model;
         }
 
@@ -180,6 +209,16 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
                     GreaterThanOrEqualTo = model.NumberInput.GreaterThanOrEqualTo,
                     LessThanOrEqualTo = model.NumberInput.LessThanOrEqualTo,
                     NotEqualTo = model.NumberInput.NotEqualTo,
+                };
+            }
+            else if (model.Type == QuestionType.Date)
+            {
+                command.DateInput = new()
+                {
+                    GreaterThanOrEqualTo = model.DateInput.GreaterThanOrEqualTo,
+                    LessThanOrEqualTo = model.DateInput.LessThanOrEqualTo,
+                    MustBeInFuture = model.DateInput.DateValidation == DateInputOptions.RelativeDateValidation.MustBeInFuture,
+                    MustBeInPast = model.DateInput.DateValidation == DateInputOptions.RelativeDateValidation.MustBeInPast,
                 };
             }
 

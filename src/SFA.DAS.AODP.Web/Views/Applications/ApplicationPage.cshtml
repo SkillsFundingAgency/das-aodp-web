@@ -9,12 +9,12 @@
     <div class="govuk-grid-column-two-thirds">
 
         <govuk-back-link class="govuk-link govuk-task-list__link"
-           asp-action="ViewApplicationSection"
-           asp-route-sectionId="@Model.SectionId"
-           asp-controller="Applications"
-           asp-route-formVersionId="@Model.FormVersionId"
-           asp-route-organisationId="@Model.OrganisationId"
-           asp-route-applicationId="@Model.ApplicationId">Back to view section</govuk-back-link>
+                         asp-action="ViewApplicationSection"
+                         asp-route-sectionId="@Model.SectionId"
+                         asp-controller="Applications"
+                         asp-route-formVersionId="@Model.FormVersionId"
+                         asp-route-organisationId="@Model.OrganisationId"
+                         asp-route-applicationId="@Model.ApplicationId">Back to view section</govuk-back-link>
 
         @if (!ViewContext.ModelState.IsValid)
         {
@@ -28,12 +28,35 @@
 
                             @foreach (var error in ViewContext.ModelState)
                             {
-                                var question = Model.Questions.FirstOrDefault(q => q.Id.ToString() == error.Key);
                                 var errorMsg = @error.Value.Errors.FirstOrDefault()?.ErrorMessage;
+                                if (string.IsNullOrEmpty(errorMsg)) continue;
+
+                                var question = Model.Questions.FirstOrDefault(q => q.Id.ToString() == error.Key);
+                                if (question == null)
+                                {
+                                    try
+                                    {
+                                        int startIndex = error.Key.IndexOf("[") + 1;
+                                        int len = error.Key.LastIndexOf("]") - startIndex;
+                                        string orderStr = error.Key.Substring(startIndex, len);
+                                        if (int.TryParse(orderStr, out int order))
+                                        {
+                                            question = Model.Questions.First(q => q.Order - 1 == order);
+                                        }
+
+                                    }
+                                    catch { }
+                                }
                                 if (question != null)
                                 {
+                                    string href = $"#question-{question.Id}";
+
+                                    if (question.Type == SFA.DAS.AODP.Models.Forms.QuestionType.Date)
+                                    {
+                                        href = $"#Questions[{question.Order - 1}][Answer][DateValue.Day]";
+                                    }
                                     <li>
-                                        <a href="#question-@question.Id">Question @(question.Order). @errorMsg</a>
+                                        <a href="@href">Question @(question.Order). @errorMsg</a>
                                     </li>
                                 }
                                 else

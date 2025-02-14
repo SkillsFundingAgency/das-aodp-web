@@ -1,4 +1,5 @@
 ﻿using SFA.DAS.AODP.Models.Forms;
+using System.ComponentModel;
 
 namespace SFA.DAS.AODP.Web.Models.Application
 {
@@ -28,9 +29,6 @@ namespace SFA.DAS.AODP.Web.Models.Application
             public int Order { get; set; }
             public Answer? Answer { get; set; } = new();
 
-            public TextInputOptions TextInput { get; set; } = new();
-            public NumberInputOptions NumberInput { get; set; } = new();
-            public CheckboxOptions Checkbox { get; set; } = new();
             public List<Option> Options { get; set; } = new();
 
         }
@@ -39,7 +37,9 @@ namespace SFA.DAS.AODP.Web.Models.Application
         {
             public string? TextValue { get; set; }
             public decimal? NumberValue { get; set; }
-            public DateTime? DateValue { get; set; }
+
+            [DisplayName("Date")]
+            public DateOnly? DateValue { get; set; }
             public List<string>? MultipleChoiceValues { get; set; }
             public string? RadioChoiceValue { get; set; }
         }
@@ -73,6 +73,15 @@ namespace SFA.DAS.AODP.Web.Models.Application
             public string Value { get; set; }
             public int Order { get; set; }
         }
+
+        public class DateInputOptions
+        {
+            public DateOnly? GreaterThanOrEqualTo { get; set; }
+            public DateOnly? LessThanOrEqualTo { get; set; }
+            public bool? MustBeInFuture { get; set; }
+            public bool? MustBeInPast { get; set; }
+        }
+
 
         public static ApplicationPageViewModel MapToViewModel
         (
@@ -119,10 +128,10 @@ namespace SFA.DAS.AODP.Web.Models.Application
             model.Order = value.Order;
             model.Questions ??= new();
 
-            foreach (var question in value.Questions ?? [])
+            foreach (var responseQuestion in value.Questions ?? [])
             {
-                Enum.TryParse(question.Type, out QuestionType type);
-                var questionModel = model.Questions.FirstOrDefault(x => x.Id == question.Id);
+                Enum.TryParse(responseQuestion.Type, out QuestionType type);
+                var questionModel = model.Questions.FirstOrDefault(x => x.Id == responseQuestion.Id);
 
                 if (questionModel == null)
                 {
@@ -131,39 +140,20 @@ namespace SFA.DAS.AODP.Web.Models.Application
 
                 }
 
-
-                questionModel.Id = question.Id;
-                questionModel.Order = question.Order;
-                questionModel.Hint = question.Hint;
-                questionModel.Required = question.Required;
+                questionModel.Id = responseQuestion.Id;
+                questionModel.Order = responseQuestion.Order;
+                questionModel.Hint = responseQuestion.Hint;
+                questionModel.Required = responseQuestion.Required;
                 questionModel.Type = type;
-                questionModel.Title = question.Title;
+                questionModel.Title = responseQuestion.Title;
 
 
-                if (type == QuestionType.Text || type == QuestionType.TextArea)
+                if (type == QuestionType.Radio || type == QuestionType.MultiChoice)
                 {
-                    questionModel.TextInput = new()
-                    {
-                        MinLength = question.TextInput.MinLength,
-                        MaxLength = question.TextInput.MaxLength,
-                    };
-
-                }
-                else if (type == QuestionType.Number)
-                {
-                    questionModel.NumberInput = new()
-                    {
-                        GreaterThanOrEqualTo = question.NumberInput.GreaterThanOrEqualTo,
-                        LessThanOrEqualTo = question.NumberInput.LessThanOrEqualTo,
-                        NotEqualTo = question.NumberInput.NotEqualTo
-                    };
-                }
-                else if (type == QuestionType.Radio || type == QuestionType.MultiChoice)
-                {
-                    question.Options = question?.Options?.OrderBy(o => o.Order)?.ToList() ?? [];
+                    responseQuestion.Options = responseQuestion?.Options?.OrderBy(o => o.Order)?.ToList() ?? [];
                     questionModel.Options = new();
 
-                    foreach (var option in question?.Options ?? [])
+                    foreach (var option in responseQuestion?.Options ?? [])
                     {
                         questionModel.Options.Add(new()
                         {
@@ -204,6 +194,10 @@ namespace SFA.DAS.AODP.Web.Models.Application
                 else if (question.Type == QuestionType.Number)
                 {
                     question.Answer!.NumberValue = answer?.NumberValue;
+                }
+                else if (question.Type == QuestionType.Date)
+                {
+                    question.Answer!.DateValue = answer?.DateValue;
                 }
             }
 
@@ -264,6 +258,10 @@ namespace SFA.DAS.AODP.Web.Models.Application
                 else if (question.Type == QuestionType.Number)
                 {
                     commandQuestion.Answer.NumberValue = question.Answer.NumberValue;
+                }
+                else if (question.Type == QuestionType.Date)
+                {
+                    commandQuestion.Answer.DateValue = question.Answer.DateValue;
                 }
 
                 command.Questions.Add(commandQuestion);

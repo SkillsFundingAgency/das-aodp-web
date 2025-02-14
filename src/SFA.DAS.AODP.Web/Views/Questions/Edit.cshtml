@@ -89,6 +89,10 @@
     {
         await Html.RenderPartialAsync("FormBuilder/QuestionEdit/_NumberInput", Model.NumberInput);
     }
+    else if (Model.Type == QuestionType.Date)
+    {
+        await Html.RenderPartialAsync("FormBuilder/QuestionEdit/_DateInput", Model.DateInput);
+    }
     <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
 
     @if (Model.Editable)

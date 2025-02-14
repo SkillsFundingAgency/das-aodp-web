@@ -1,5 +1,6 @@
 ﻿@using SFA.DAS.AODP.Models.Forms
 @using SFA.DAS.AODP.Web.Models.Application
+@using SFA.DAS.AODP.Web.Models.GdsComponents
 @model GetPagePreviewByIdQueryResponse.Question
 
 <div class="govuk-form-group">
@@ -71,5 +72,20 @@
             }
         </div>
     }
+    else if (Model.Type == QuestionType.Date.ToString())
+    {
+
+        var dateInputModel = new GdsDateInputViewModel()
+        {
+            Id = Model.Id.ToString(),
+        };
+
+
+        await Html.RenderPartialAsync("GdsComponents/_GdsDateInput", dateInputModel);
+
+    }
+
+
+
 
 </div>

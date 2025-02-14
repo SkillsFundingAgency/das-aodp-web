@@ -14,6 +14,8 @@ public class UpdateQuestionCommand : IRequest<BaseMediatrResponse<EmptyResponse>
     public TextInputOptions TextInput { get; set; } = new();
     public NumberInputOptions NumberInput { get; set; } = new();
     public CheckboxOptions Checkbox { get; set; } = new();
+    public DateInputOptions DateInput { get; set; } = new();
+
     public List<OptionItem> Options { get; set; } = new();
     public class TextInputOptions
     {
@@ -38,5 +40,13 @@ public class UpdateQuestionCommand : IRequest<BaseMediatrResponse<EmptyResponse>
         public int? GreaterThanOrEqualTo { get; set; }
         public int? LessThanOrEqualTo { get; set; }
         public int? NotEqualTo { get; set; }
+    }
+
+    public class DateInputOptions
+    {
+        public DateOnly? GreaterThanOrEqualTo { get; set; }
+        public DateOnly? LessThanOrEqualTo { get; set; }
+        public bool? MustBeInFuture { get; set; }
+        public bool? MustBeInPast { get; set; }
     }
 }

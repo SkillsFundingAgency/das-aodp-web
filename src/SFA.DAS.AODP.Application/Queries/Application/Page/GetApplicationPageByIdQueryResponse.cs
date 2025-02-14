@@ -1,6 +1,5 @@
 ﻿public class GetApplicationPageByIdQueryResponse
 {
-
     public Guid Id { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
@@ -21,6 +20,7 @@
         public NumberInputOptions NumberInput { get; set; } = new();
         public CheckboxOptions Checkbox { get; set; } = new();
         public List<Option> Options { get; set; } = new();
+        public DateInputOptions DateInput { get; set; } = new();
 
         public List<RouteInformation> Routes { get; set; } = new();
 
@@ -72,4 +72,13 @@
         public string Value { get; set; }
         public int Order { get; set; }
     }
+
+    public class DateInputOptions
+    {
+        public DateOnly? GreaterThanOrEqualTo { get; set; }
+        public DateOnly? LessThanOrEqualTo { get; set; }
+        public bool? MustBeInFuture { get; set; }
+        public bool? MustBeInPast { get; set; }
+    }
+
 }

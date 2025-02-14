@@ -15,6 +15,7 @@ public class GetQuestionByIdQueryResponse
     public TextInputOptions TextInput { get; set; } = new();
     public NumberInputOptions NumberInput { get; set; } = new();
     public CheckboxOptions Checkbox { get; set; } = new();
+    public DateInputOptions DateInput { get; set; } = new();
     public List<Option> Options { get; set; } = new();
     public bool Editable { get; set; }
 
@@ -44,5 +45,11 @@ public class GetQuestionByIdQueryResponse
         public int? NotEqualTo { get; set; }
     }
 
-
+    public class DateInputOptions
+    {
+        public DateOnly? GreaterThanOrEqualTo { get; set; }
+        public DateOnly? LessThanOrEqualTo { get; set; }
+        public bool? MustBeInFuture { get; set; }
+        public bool? MustBeInPast { get; set; }
+    }
 }

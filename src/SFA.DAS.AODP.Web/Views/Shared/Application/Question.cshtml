@@ -1,5 +1,6 @@
 ﻿@using SFA.DAS.AODP.Models.Forms
 @using SFA.DAS.AODP.Web.Models.Application
+@using SFA.DAS.AODP.Web.Models.GdsComponents
 @model ApplicationPageViewModel.Question
 
 
@@ -106,5 +107,16 @@
                 </div>
             }
         </div>
+    }
+    else if (Model.Type == QuestionType.Date)
+    {
+
+        var dateInputModel = new GdsDateInputViewModel()
+        {
+            Id = questionHtmlId,
+            Name = $"Questions[{(Model.Order - 1)}][Answer][DateValue]",
+            Value = Model.Answer?.DateValue
+        };
+        await Html.RenderPartialAsync("GdsComponents/_GdsDateInput", dateInputModel);
     }
 </div>
