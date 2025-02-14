@@ -91,13 +91,13 @@ namespace SFA.DAS.AODP.Authentication.Extensions
                             c.Response.Cookies.Delete(authenticationCookieName); // delete the client cookie by given cookie name.
                             c.Response.Redirect(c.Options.SignedOutRedirectUri); // the path the authentication provider posts back after signing out.
                             c.HandleResponse();
-                            return Task.CompletedTask;
                         }
                         catch (Exception ex)
                         {
                             var logger = new LoggerFactory().CreateLogger("Onsignedoutcallback");
                             logger.LogError($"error occured :{ex.GetBaseException().Message}");
                         }
+                        return Task.CompletedTask;
                     };
                 })
                 .AddAuthenticationCookie(authenticationCookieName, signedOutCallbackPath, configuration["ResourceEnvironmentName"]);
