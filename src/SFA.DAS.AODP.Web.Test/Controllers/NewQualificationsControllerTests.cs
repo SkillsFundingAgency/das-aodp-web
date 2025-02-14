@@ -7,7 +7,7 @@ using Moq;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Application.Queries.Test;
-using SFA.DAS.AODP.Web.Controllers;
+using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 using Xunit;
 
@@ -34,7 +34,7 @@ public class NewQualificationsControllerTests
         // Arrange
         var queryResponse = _fixture.Create<BaseMediatrResponse<GetNewQualificationsQueryResponse>>();
         queryResponse.Success = true;
-        queryResponse.Value.Value.NewQualifications = _fixture.CreateMany<NewQualification>(2).ToList();
+        queryResponse.Value.NewQualifications = _fixture.CreateMany<NewQualification>(2).ToList();
 
         _mediatorMock.Setup(m => m.Send(It.IsAny<GetNewQualificationsQuery>(), default))
                      .ReturnsAsync(queryResponse);
@@ -46,10 +46,10 @@ public class NewQualificationsControllerTests
         var viewResult = Assert.IsType<ViewResult>(result);
         var model = Assert.IsAssignableFrom<List<NewQualificationsViewModel>>(viewResult.ViewData.Model);
         Assert.Equal(2, model.Count);
-        Assert.Equal(queryResponse.Value.Value.NewQualifications[0].Title, model[0].Title);
-        Assert.Equal(queryResponse.Value.Value.NewQualifications[0].Reference, model[0].Reference);
-        Assert.Equal(queryResponse.Value.Value.NewQualifications[0].AwardingOrganisation, model[0].AwardingOrganisation);
-        Assert.Equal(queryResponse.Value.Value.NewQualifications[0].Status, model[0].Status);
+        Assert.Equal(queryResponse.Value.NewQualifications[0].Title, model[0].Title);
+        Assert.Equal(queryResponse.Value.NewQualifications[0].Reference, model[0].Reference);
+        Assert.Equal(queryResponse.Value.NewQualifications[0].AwardingOrganisation, model[0].AwardingOrganisation);
+        Assert.Equal(queryResponse.Value.NewQualifications[0].Status, model[0].Status);
 
         _loggerMock.Verify(logger => logger.Log(
             LogLevel.Information,
@@ -133,8 +133,8 @@ public class NewQualificationsControllerTests
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
         var model = Assert.IsAssignableFrom<QualificationDetailsViewModel>(viewResult.ViewData.Model);
-        Assert.Equal(queryResponse.Value.Value.Id, model.Id);
-        Assert.Equal(queryResponse.Value.Value.Status, model.Status);
+        Assert.Equal(queryResponse.Value.Id, model.Id);
+        Assert.Equal(queryResponse.Value.Status, model.Status);
 
         _loggerMock.Verify(logger => logger.Log(
             LogLevel.Information,
@@ -157,6 +157,7 @@ public class NewQualificationsControllerTests
         // Arrange
         var queryResponse = _fixture.Create<BaseMediatrResponse<GetQualificationDetailsQueryResponse>>();
         queryResponse.Success = false;
+        queryResponse.ErrorMessage = "No details found for qualification reference: Ref123";
 
         _mediatorMock.Setup(m => m.Send(It.IsAny<GetQualificationDetailsQuery>(), default))
                      .ReturnsAsync(queryResponse);
@@ -183,7 +184,7 @@ public class NewQualificationsControllerTests
 
         // Assert
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-        var badRequestValue = badRequestResult.Value.GetType().GetProperty("message")?.GetValue(badRequestResult.Value, null);
+        var badRequestValue = badRequestResult.Value?.GetType().GetProperty("message")?.GetValue(badRequestResult.Value, null);
         Assert.Equal("Qualification reference cannot be empty", badRequestValue);
 
         _loggerMock.Verify(logger => logger.Log(
@@ -193,6 +194,6 @@ public class NewQualificationsControllerTests
             null,
             It.IsAny<Func<It.IsAnyType, Exception?, string>>()), Times.Once);
     }
-
-
 }
+
+
