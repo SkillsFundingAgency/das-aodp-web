@@ -51,7 +51,8 @@ namespace SFA.DAS.AODP.Authentication.Extensions
 
                     options.TokenValidationParameters = new TokenValidationParameters { RoleClaimType = "roleName" };
                     // This was updated 
-                    options.TokenHandler = new JsonWebTokenHandler()
+
+                    options.SecurityTokenValidator = new JwtSecurityTokenHandler()
                     {
                         InboundClaimTypeMap = new Dictionary<string, string>(),
                         TokenLifetimeInMinutes = 90,
