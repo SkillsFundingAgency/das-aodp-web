@@ -83,17 +83,17 @@ public class QuestionsController : Controller
     [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/questions/{questionId}")]
     public async Task<IActionResult> Edit(EditQuestionViewModel model)
     {
-        if (model.RadioButton.AdditionalFormActions.AddOption)
+        if (model.Options.AdditionalFormActions.AddOption)
         {
-            model.RadioButton.MultiChoice.Add(new());
+            model.Options.Options.Add(new());
             return View(model);
         }
-        else if (model.RadioButton.AdditionalFormActions.RemoveOptionIndex.HasValue)
+        else if (model.Options.AdditionalFormActions.RemoveOptionIndex.HasValue)
         {
-            int indexToRemove = model.RadioButton.AdditionalFormActions.RemoveOptionIndex.Value;
-            if (indexToRemove >= 0 && indexToRemove < model.RadioButton.MultiChoice.Count)
+            int indexToRemove = model.Options.AdditionalFormActions.RemoveOptionIndex.Value;
+            if (indexToRemove >= 0 && indexToRemove < model.Options.Options.Count)
             {
-                model.RadioButton.MultiChoice.RemoveAt(indexToRemove);
+                model.Options.Options.RemoveAt(indexToRemove);
             }
             return View(model);
         }
