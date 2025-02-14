@@ -9,6 +9,7 @@ using SFA.DAS.AODP.Authentication.DfeSignInApi.Models;
 using SFA.DAS.AODP.Authentication.Enums;
 using SFA.DAS.AODP.Authentication.Extensions;
 using SFA.DAS.AODP.Authentication.Interfaces;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
 
@@ -37,27 +38,34 @@ namespace SFA.DAS.AODP.Authentication.Services
 
         public async Task PopulateAccountClaims(TokenValidatedContext ctx)
         {
-            var userOrganisation = JsonConvert.DeserializeObject<Organisation>
-            (
-                ctx.Principal.GetClaimValue(ClaimName.Organisation)
-            );
-
-            if (userOrganisation != null && ctx.Principal != null)
+            try
             {
-                var userId = ctx.Principal.GetClaimValue(ClaimName.Sub);
-                var ukPrn = userOrganisation.UkPrn?.ToString() ?? "0";
+                var userOrganisation = JsonConvert.DeserializeObject<Organisation>
+                (
+                    ctx.Principal.GetClaimValue(ClaimName.Organisation)
+                );
 
-                if (userId != null)
-                    await PopulateUserAccessClaims(ctx, userId, Convert.ToString(userOrganisation.Id));
+                if (userOrganisation != null && ctx.Principal != null)
+                {
+                    var userId = ctx.Principal.GetClaimValue(ClaimName.Sub);
+                    var ukPrn = userOrganisation.UkPrn?.ToString() ?? "0";
 
-                var displayName = $"{ctx.Principal.GetClaimValue(ClaimName.GivenName)} {ctx.Principal.GetClaimValue(ClaimName.FamilyName)}";
+                    if (userId != null)
+                        await PopulateUserAccessClaims(ctx, userId, Convert.ToString(userOrganisation.Id));
 
-                ctx.HttpContext.Items.Add(ClaimsIdentity.DefaultNameClaimType, userId);
-                ctx.HttpContext.Items.Add(CustomClaimsIdentity.DisplayName, displayName);
+                    var displayName = $"{ctx.Principal.GetClaimValue(ClaimName.GivenName)} {ctx.Principal.GetClaimValue(ClaimName.FamilyName)}";
 
-                ctx.Principal.Identities.First().AddClaim(new Claim(ClaimsIdentity.DefaultNameClaimType, displayName));
-                ctx.Principal.Identities.First().AddClaim(new Claim(CustomClaimsIdentity.DisplayName, displayName));
-                ctx.Principal.Identities.First().AddClaim(new Claim(CustomClaimsIdentity.UkPrn, ukPrn));
+                    ctx.HttpContext.Items.Add(ClaimsIdentity.DefaultNameClaimType, userId);
+                    ctx.HttpContext.Items.Add(CustomClaimsIdentity.DisplayName, displayName);
+
+                    ctx.Principal.Identities.First().AddClaim(new Claim(ClaimsIdentity.DefaultNameClaimType, displayName));
+                    ctx.Principal.Identities.First().AddClaim(new Claim(CustomClaimsIdentity.DisplayName, displayName));
+                    ctx.Principal.Identities.First().AddClaim(new Claim(CustomClaimsIdentity.UkPrn, ukPrn));
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"{ex.GetBaseException().Message}");
             }
         }
 
@@ -103,7 +111,6 @@ namespace SFA.DAS.AODP.Authentication.Services
             {
                 _logger.LogError(ex.Message, "Error adding claims for user from DFE API");
             }
-            
         }
     }
 }

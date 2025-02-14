@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using SFA.DAS.AODP.Authentication.Configuration;
@@ -58,6 +58,7 @@ namespace SFA.DAS.AODP.Authentication.Extensions
                         TokenLifetimeInMinutes = 90,
                         SetDefaultTimesOnTokenCreation = true
                     };
+                    options.UseSecurityTokenValidator = true;
                     options.ProtocolValidator = new OpenIdConnectProtocolValidator
                     {
                         RequireSub = true,
@@ -67,21 +68,36 @@ namespace SFA.DAS.AODP.Authentication.Extensions
 
                     options.Events.OnRemoteFailure = c =>
                     {
-                        if (c.Failure != null && c.Failure.Message.Contains("Correlation failed"))
+                        try
                         {
-                            c.Response.Redirect(redirectUrl);
-                            c.HandleResponse();
+                            if (c.Failure != null && c.Failure.Message.Contains("Correlation failed"))
+                            {
+                                c.Response.Redirect(redirectUrl);
+                                c.HandleResponse();
+                            }
                         }
-
+                        catch (Exception ex)
+                        {
+                            var logger = new LoggerFactory().CreateLogger("OnRemoteFailure");
+                            logger.LogError($"error occured :{ex.GetBaseException().Message}");
+                        }
                         return Task.CompletedTask;
                     };
 
                     options.Events.OnSignedOutCallbackRedirect = c =>
                     {
-                        c.Response.Cookies.Delete(authenticationCookieName); // delete the client cookie by given cookie name.
-                        c.Response.Redirect(c.Options.SignedOutRedirectUri); // the path the authentication provider posts back after signing out.
-                        c.HandleResponse();
-                        return Task.CompletedTask;
+                        try
+                        {
+                            c.Response.Cookies.Delete(authenticationCookieName); // delete the client cookie by given cookie name.
+                            c.Response.Redirect(c.Options.SignedOutRedirectUri); // the path the authentication provider posts back after signing out.
+                            c.HandleResponse();
+                            return Task.CompletedTask;
+                        }
+                        catch (Exception ex)
+                        {
+                            var logger = new LoggerFactory().CreateLogger("Onsignedoutcallback");
+                            logger.LogError($"error occured :{ex.GetBaseException().Message}");
+                        }
                     };
                 })
                 .AddAuthenticationCookie(authenticationCookieName, signedOutCallbackPath, configuration["ResourceEnvironmentName"]);
@@ -91,7 +107,7 @@ namespace SFA.DAS.AODP.Authentication.Extensions
                 .Configure<IDfESignInService, IOptions<DfEOidcConfiguration>, ITicketStore>(
                     (options, dfeSignInService, config, ticketStore) =>
                     {
-                        options.Events.OnTokenValidated = async ctx => await dfeSignInService.PopulateAccountClaims(ctx);
+                            options.Events.OnTokenValidated = async ctx => await dfeSignInService.PopulateAccountClaims(ctx);
                     });
             services
                 .AddOptions<CookieAuthenticationOptions>(CookieAuthenticationDefaults.AuthenticationScheme)
