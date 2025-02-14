@@ -108,7 +108,7 @@ namespace SFA.DAS.AODP.Authentication.Extensions
                 .Configure<IDfESignInService, IOptions<DfEOidcConfiguration>, ITicketStore>(
                     (options, dfeSignInService, config, ticketStore) =>
                     {
-                            options.Events.OnTokenValidated = async ctx => await dfeSignInService.PopulateAccountClaims(ctx);
+                         //   options.Events.OnTokenValidated = async ctx => await dfeSignInService.PopulateAccountClaims(ctx);
                     });
             services
                 .AddOptions<CookieAuthenticationOptions>(CookieAuthenticationDefaults.AuthenticationScheme)
