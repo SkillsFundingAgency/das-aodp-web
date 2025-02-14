@@ -50,7 +50,6 @@ namespace SFA.DAS.AODP.Authentication.Extensions
                     }
                     options.SaveTokens = true;
 
-                    options.TokenValidationParameters = new TokenValidationParameters { RoleClaimType = "roleName" };
                     // This was updated 
 
                     options.SecurityTokenValidator = new JwtSecurityTokenHandler()
@@ -60,12 +59,6 @@ namespace SFA.DAS.AODP.Authentication.Extensions
                         SetDefaultTimesOnTokenCreation = true
                     };
                     options.UseSecurityTokenValidator = true;
-                    options.ProtocolValidator = new OpenIdConnectProtocolValidator
-                    {
-                        RequireSub = true,
-                        RequireStateValidation = false,
-                        NonceLifetime = TimeSpan.FromMinutes(60)
-                    };
 
                     options.Events.OnRemoteFailure = c =>
                     {
@@ -108,7 +101,7 @@ namespace SFA.DAS.AODP.Authentication.Extensions
                 .Configure<IDfESignInService, IOptions<DfEOidcConfiguration>, ITicketStore>(
                     (options, dfeSignInService, config, ticketStore) =>
                     {
-                         //   options.Events.OnTokenValidated = async ctx => await dfeSignInService.PopulateAccountClaims(ctx);
+                            options.Events.OnTokenValidated = async ctx => await dfeSignInService.PopulateAccountClaims(ctx);
                     });
             services
                 .AddOptions<CookieAuthenticationOptions>(CookieAuthenticationDefaults.AuthenticationScheme)
