@@ -32,76 +32,24 @@ namespace SFA.DAS.AODP.Authentication.Extensions
                 })
                 .AddOpenIdConnect(options =>
                 {
+                    options.Authority = configuration["DfEOidcConfiguration:BaseUrl"];
                     options.ClientId = configuration[$"DfEOidcConfiguration:ClientId"];
                     options.ClientSecret = configuration[$"DfEOidcConfiguration:Secret"];
-                    options.MetadataAddress = $"{configuration["DfEOidcConfiguration:BaseUrl"]}/.well-known/openid-configuration";
-                    options.ResponseType = "code";
-                    options.AuthenticationMethod = OpenIdConnectRedirectBehavior.RedirectGet;
+                    options.GetClaimsFromUserInfoEndpoint = true;
                     options.SignedOutRedirectUri = redirectUrl;
                     options.SignedOutCallbackPath = new PathString(RoutePath.OidcSignOut); // the path the authentication provider posts back after signing out.
                     options.CallbackPath = new PathString(RoutePath.OidcSignIn); // the path the authentication provider posts back when authenticating.
-                    options.SaveTokens = true;
-                    options.GetClaimsFromUserInfoEndpoint = true;
-                    options.ResponseMode = string.Empty;
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        AuthenticationType = OpenIdConnectDefaults.AuthenticationScheme
-                    };
-
+                    options.ResponseType = "code";
                     var scopes = configuration["DfEOidcConfiguration:Scopes"].Split(' ');
                     options.Scope.Clear();
                     foreach (var scope in scopes)
                     {
                         options.Scope.Add(scope);
                     }
+                    options.SaveTokens = true;
 
-                    options.TokenValidationParameters = new TokenValidationParameters { RoleClaimType = "roleName" };
-                    // This was updated 
-                    options.TokenHandler = new JsonWebTokenHandler()
-                    {
-                        InboundClaimTypeMap = new Dictionary<string, string>(),
-                        TokenLifetimeInMinutes = 90,
-                        SetDefaultTimesOnTokenCreation = true
-                    };
-                    options.ProtocolValidator = new OpenIdConnectProtocolValidator
-                    {
-                        RequireSub = true,
-                        RequireStateValidation = false,
-                        NonceLifetime = TimeSpan.FromMinutes(60)
-                    };
-
-                    options.Events.OnRemoteFailure = c =>
-                    {
-                        if (c.Failure != null && c.Failure.Message.Contains("Correlation failed"))
-                        {
-                            c.Response.Redirect(redirectUrl);
-                            c.HandleResponse();
-                        }
-
-                        return Task.CompletedTask;
-                    };
-
-                    options.Events.OnSignedOutCallbackRedirect = c =>
-                    {
-                        c.Response.Cookies.Delete(authenticationCookieName); // delete the client cookie by given cookie name.
-                        c.Response.Redirect(c.Options.SignedOutRedirectUri); // the path the authentication provider posts back after signing out.
-                        c.HandleResponse();
-                        return Task.CompletedTask;
-                    };
                 })
-                .AddAuthenticationCookie(authenticationCookieName, signedOutCallbackPath, configuration["ResourceEnvironmentName"]);
-
-            services
-                .AddOptions<OpenIdConnectOptions>(OpenIdConnectDefaults.AuthenticationScheme);
-            services
-                .AddOptions<CookieAuthenticationOptions>(CookieAuthenticationDefaults.AuthenticationScheme)
-                .Configure<ITicketStore, DfEOidcConfiguration>((options, ticketStore, config) =>
-                {
-                    options.ExpireTimeSpan = TimeSpan.FromMinutes(config.LoginSlidingExpiryTimeOutInMinutes);
-                    options.SlidingExpiration = true;
-                    options.SessionStore = ticketStore;
-                });
+                 .AddAuthenticationCookie(authenticationCookieName, signedOutCallbackPath, configuration["DfEOidcConfiguration:ResourceEnvironmentName"]);
         }
-
     }
 }
