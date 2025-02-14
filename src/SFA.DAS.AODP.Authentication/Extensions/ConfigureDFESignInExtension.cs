@@ -53,12 +53,13 @@ namespace SFA.DAS.AODP.Authentication.Extensions
                     options.TokenValidationParameters = new TokenValidationParameters { RoleClaimType = "roleName" };
                     // This was updated 
 
-                    options.TokenHandler = new JsonWebTokenHandler()
+                    options.SecurityTokenValidator = new JwtSecurityTokenHandler()
                     {
                         InboundClaimTypeMap = new Dictionary<string, string>(),
                         TokenLifetimeInMinutes = 90,
                         SetDefaultTimesOnTokenCreation = true
                     };
+                    options.UseSecurityTokenValidator = true;
                     options.ProtocolValidator = new OpenIdConnectProtocolValidator
                     {
                         RequireSub = true,
