@@ -1,0 +1,45 @@
+﻿@using SFA.DAS.AODP.Web.Models.GdsComponents
+@using static SFA.DAS.AODP.Web.Models.FormBuilder.Question.EditQuestionViewModel.DateInputOptions
+@using static SFA.DAS.AODP.Web.Models.FormBuilder.Question.EditQuestionViewModel
+@model DateInputOptions
+
+@{
+    var greaterThanOrEqualTo = new GdsDateInputViewModel()
+            {
+                Id = "DateInput[GreaterThanOrEqualTo]",
+                Name = "DateInput[GreaterThanOrEqualTo]",
+                Value = Model.GreaterThanOrEqualTo,
+                Title = "What is the minimum, inclusive, date allowed? (optional)"
+            };
+
+    var lessThanOrEqualTo = new GdsDateInputViewModel()
+            {
+                Id = "DateInput[LessThanOrEqualTo]",
+                Name = "DateInput[LessThanOrEqualTo]",
+                Value = Model.LessThanOrEqualTo,
+                Title = "What is the maximum, inclusive, date allowed? (optional)"
+            };
+}
+@{
+    await Html.RenderPartialAsync("GdsComponents/_GdsDateInput", greaterThanOrEqualTo);
+    await Html.RenderPartialAsync("GdsComponents/_GdsDateInput", lessThanOrEqualTo);
+}
+
+
+
+
+<div class="govuk-form-group">
+    <govuk-radios asp-for="DateValidation" name="DateInput[DateValidation]">
+        <govuk-radios-fieldset>
+            <govuk-radios-fieldset-legend is-page-heading="false" class="govuk-fieldset__legend--s">
+                Should the date be in the past or future? (optional)
+            </govuk-radios-fieldset-legend>
+
+            <govuk-radios-item checked="@(Model.DateValidation == RelativeDateValidation.MustBeInPast)" value="@RelativeDateValidation.MustBeInPast">Date must be in the past.</govuk-radios-item>
+            <govuk-radios-item checked="@(Model.DateValidation == RelativeDateValidation.MustBeInFuture)" value="@RelativeDateValidation.MustBeInFuture">Date must be in the future.</govuk-radios-item>
+            <govuk-radios-item checked="@(Model.DateValidation == RelativeDateValidation.NotApplicable)" value="@RelativeDateValidation.NotApplicable">Not applicable.</govuk-radios-item>
+
+        </govuk-radios-fieldset>
+    </govuk-radios>
+</div>
+
