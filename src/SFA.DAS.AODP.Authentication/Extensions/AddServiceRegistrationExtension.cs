@@ -43,8 +43,6 @@ namespace SFA.DAS.AODP.Authentication.Extensions
             services.AddTransient<ITokenDataSerializer, TokenDataSerializer>();
             services.AddTransient<ITokenBuilder, TokenBuilder>();
             services.AddSingleton<ITicketStore, AuthenticationTicketStore>();
-
-            var connection = configuration.GetSection(nameof(DfEOidcConfiguration)).Get<DfEOidcConfiguration>();
         }
 
         private static IAsyncPolicy<HttpResponseMessage> HttpClientRetryPolicy()
