@@ -1,7 +1,5 @@
 ﻿using MediatR;
-using SFA.DAS.AODP.Application.Queries.Qualifications;
-
-namespace SFA.DAS.AODP.Application.Queries.Test
+namespace SFA.DAS.AODP.Application.Queries.Qualifications
 {
     public class GetNewQualificationsQuery : IRequest<BaseMediatrResponse<GetNewQualificationsQueryResponse>>
     {

@@ -25,7 +25,7 @@
                 <td class="govuk-table__cell">@qualification.AwardingOrganisation</td>
                 <td class="govuk-table__cell">@qualification.Status</td>
                 <td class="govuk-table__cell">
-                    <a class="govuk-link" href="@Url.Action("QualificationDetails", "NewQualifications", new { QualificationReference = qualification.Reference })">
+                    <a class="govuk-link" href="@Url.Action("QualificationDetails", "Qualifications", new { area = "Review", qualificationReference = qualification.Reference })">
                         View Details
                     </a>
                 </td>

@@ -1,35 +1,73 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
-using SFA.DAS.AODP.Application.Queries.Test;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 {
-    public class NewQualificationsController : Controller
+    [Area("Review")]
+    [Route("review/[controller]")]
+    public class QualificationsController : Controller
     {
-        private readonly ILogger<NewQualificationsController> _logger;
+        private readonly ILogger<QualificationsController> _logger;
         private readonly IMediator _mediator;
 
-        public NewQualificationsController(ILogger<NewQualificationsController> logger, IMediator mediator)
+        public QualificationsController(ILogger<QualificationsController> logger, IMediator mediator)
         {
             _logger = logger;
             _mediator = mediator;
         }
 
-        public async Task<IActionResult> Index()
+        [HttpGet("")]
+        public async Task<IActionResult> Index([FromQuery] string status)
         {
-            _logger.LogInformation("Getting all new qualifications");
+            status = status?.Trim().ToLower();
 
-            var result = await _mediator.Send(new GetNewQualificationsQuery());
+            if (string.IsNullOrEmpty(status))
+            {
+                _logger.LogWarning("Qualification status is missing.");
+                return BadRequest(new { message = "Qualification status cannot be empty." });
+            }
+
+            IActionResult response = status switch
+            {
+                "new" => await HandleNewQualifications(),
+                _ => BadRequest(new { message = $"Invalid status: {status}" })
+            };
+
+            return response;
+        }
+
+        [HttpGet("qualificationdetails/{qualificationReference}")]
+        public async Task<IActionResult> QualificationDetails([FromRoute] string qualificationReference)
+        {
+            if (string.IsNullOrWhiteSpace(qualificationReference))
+            {
+                _logger.LogWarning("Qualification reference is empty");
+                return BadRequest(new { message = "Qualification reference cannot be empty" });
+            }
+
+            var result = await _mediator.Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });
 
             if (!result.Success || result.Value == null)
             {
-                _logger.LogWarning("No new qualifications found");
-                return NotFound("Error"); // Handle errors properly
+                _logger.LogWarning(result.ErrorMessage);
+                return NotFound(); //handle error
             }
 
-            _logger.LogInformation("Successfully retrieved new qualifications");
+            var viewModel = MapToViewModel(result.Value);
+            return View(viewModel);
+        }
+
+        private async Task<IActionResult> HandleNewQualifications()
+        {
+            var result = await _mediator.Send(new GetNewQualificationsQuery());
+
+            if (result == null || !result.Success || result.Value == null)
+            {
+                _logger.LogWarning("No new qualifications found.");
+                return NotFound(new { message = "No new qualifications found" });
+            }
 
             var viewModel = result.Value.NewQualifications.Select(q => new NewQualificationsViewModel
             {
@@ -38,33 +76,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 AwardingOrganisation = q.AwardingOrganisation,
                 Reference = q.Reference,
                 Status = q.Status
-
             }).ToList();
-
-            return View(viewModel);
-        }
-
-        public async Task<IActionResult> QualificationDetails([FromQuery] string qualificationReference)
-        {
-            if (string.IsNullOrWhiteSpace(qualificationReference))
-            {
-                _logger.LogWarning("Qualification reference is empty");
-                return BadRequest(new { message = "Qualification reference cannot be empty" });
-            }
-
-            _logger.LogInformation("Getting details for qualification reference: {QualificationReference}", qualificationReference);
-
-            var result = await _mediator.Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });
-
-            if (!result.Success || result.Value == null)
-            {
-                _logger.LogWarning(result.ErrorMessage);
-                return NotFound();
-            }
-
-            _logger.LogInformation("Successfully retrieved details for qualification reference: {QualificationReference}", qualificationReference);
-
-            var viewModel = MapToViewModel(result.Value);
 
             return View(viewModel);
         }
