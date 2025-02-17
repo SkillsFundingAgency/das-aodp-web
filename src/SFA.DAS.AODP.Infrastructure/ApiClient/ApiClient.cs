@@ -81,6 +81,7 @@ namespace SFA.DAS.AODP.Infrastructure.ApiClient
             AddAuthenticationHeader(requestMessage);
 
             var response = await _httpClient.SendAsync(requestMessage).ConfigureAwait(false);
+            var content = await response.Content.ReadAsStringAsync();
             response.EnsureSuccessStatusCode();
         }
 

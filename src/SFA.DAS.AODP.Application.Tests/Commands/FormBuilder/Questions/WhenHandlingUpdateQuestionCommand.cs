@@ -1,8 +1,6 @@
 ﻿using AutoFixture;
 using Moq;
-using SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Questions;
-using SFA.DAS.AODP.Domain.FormBuilder.Requests.Forms;
 using SFA.DAS.AODP.Domain.FormBuilder.Requests.Questions;
 using SFA.DAS.AODP.Domain.Interfaces;
 
@@ -24,8 +22,8 @@ namespace SFA.DAS.AODP.Application.Tests.Commands.FormBuilder.Questions
         public async Task Then_The_CommandResult_Is_Returned_As_Expected()
         {
             // Arrange
-            var expectedResponse = _fixture.Create<UpdateQuestionCommandResponse>();
-            var request = _fixture.Create<UpdateQuestionCommand>();
+            var expectedResponse = _fixture.Create<EmptyResponse>();
+            var request = new UpdateQuestionCommand();
             _apiClient
                 .Setup(a => a.Put(It.IsAny<UpdateQuestionApiRequest>()));
 
@@ -47,7 +45,7 @@ namespace SFA.DAS.AODP.Application.Tests.Commands.FormBuilder.Questions
         {
             // Arrange
             var expectedException = _fixture.Create<Exception>();
-            var request = _fixture.Create<UpdateQuestionCommand>();
+            var request = new UpdateQuestionCommand();
             _apiClient
                 .Setup(a => a.Put(It.IsAny<UpdateQuestionApiRequest>()))
                 .ThrowsAsync(expectedException);

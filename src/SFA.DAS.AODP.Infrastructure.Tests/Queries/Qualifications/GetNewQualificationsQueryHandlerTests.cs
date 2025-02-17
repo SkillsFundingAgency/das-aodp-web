@@ -1,10 +1,12 @@
 ﻿using AutoFixture;
 using AutoFixture.AutoMoq;
 using Moq;
+using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Application.Queries.Test;
 using SFA.DAS.AODP.Domain.Interfaces;
 using SFA.DAS.AODP.Domain.Qualifications.Requests;
+using Xunit;
 
 namespace SFA.DAS.AODP.Infrastructure.Tests.Queries.Qualifications;
 
@@ -26,20 +28,20 @@ public class GetNewQualificationsQueryHandlerTests
     {
         // Arrange
         var query = _fixture.Create<GetNewQualificationsQuery>();
-        var response = _fixture.Create<GetNewQualificationsQueryResponse>();
+        var response = _fixture.Create<BaseMediatrResponse<GetNewQualificationsQueryResponse>>();
         response.Success = true;
         response.Value.NewQualifications = _fixture.CreateMany<NewQualification>(2).ToList();
 
-        _apiClientMock.Setup(x => x.Get<GetNewQualificationsQueryResponse>(It.IsAny<GetNewQualificationsApiRequest>()))
+        _apiClientMock.Setup(x => x.Get<BaseMediatrResponse<GetNewQualificationsQueryResponse>>(It.IsAny<GetNewQualificationsApiRequest>()))
                       .ReturnsAsync(response);
 
         // Act
         var result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        _apiClientMock.Verify(x => x.Get<GetNewQualificationsQueryResponse>(It.IsAny<GetNewQualificationsApiRequest>()), Times.Once);
+        _apiClientMock.Verify(x => x.Get<BaseMediatrResponse<GetNewQualificationsQueryResponse>>(It.IsAny<GetNewQualificationsApiRequest>()), Times.Once);
         Assert.True(result.Success);
-        Assert.Equal(2, result.Value.Value.NewQualifications.Count);
+        Assert.Equal(2, result.Value.NewQualifications.Count);
     }
 
     [Fact]
@@ -47,15 +49,20 @@ public class GetNewQualificationsQueryHandlerTests
     {
         // Arrange
         var query = _fixture.Create<GetNewQualificationsQuery>();
-        _apiClientMock.Setup(x => x.Get<GetNewQualificationsQueryResponse?>(It.IsAny<GetNewQualificationsApiRequest>()))
-                      .ReturnsAsync((GetNewQualificationsQueryResponse?)null);
+        var response = _fixture.Create<BaseMediatrResponse<GetNewQualificationsQueryResponse>>();
+        response.Success = false;
+        response.Value = null;
+
+        _apiClientMock.Setup(x => x.Get<BaseMediatrResponse<GetNewQualificationsQueryResponse>>(It.IsAny<GetNewQualificationsApiRequest>()))
+                      .ReturnsAsync(response);
 
         // Act
         var result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        _apiClientMock.Verify(x => x.Get<GetNewQualificationsQueryResponse>(It.IsAny<GetNewQualificationsApiRequest>()), Times.Once);
+        _apiClientMock.Verify(x => x.Get<BaseMediatrResponse<GetNewQualificationsQueryResponse>>(It.IsAny<GetNewQualificationsApiRequest>()), Times.Once);
         Assert.False(result.Success);
+        Assert.Equal("No new qualifications found.", result.ErrorMessage);
     }
 
     [Fact]
@@ -64,15 +71,17 @@ public class GetNewQualificationsQueryHandlerTests
         // Arrange
         var query = _fixture.Create<GetNewQualificationsQuery>();
         var exceptionMessage = "An error occurred";
-        _apiClientMock.Setup(x => x.Get<GetNewQualificationsQueryResponse>(It.IsAny<GetNewQualificationsApiRequest>()))
+        _apiClientMock.Setup(x => x.Get<BaseMediatrResponse<GetNewQualificationsQueryResponse>>(It.IsAny<GetNewQualificationsApiRequest>()))
                       .ThrowsAsync(new Exception(exceptionMessage));
 
         // Act
         var result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        _apiClientMock.Verify(x => x.Get<GetNewQualificationsQueryResponse>(It.IsAny<GetNewQualificationsApiRequest>()), Times.Once);
+        _apiClientMock.Verify(x => x.Get<BaseMediatrResponse<GetNewQualificationsQueryResponse>>(It.IsAny<GetNewQualificationsApiRequest>()), Times.Once);
         Assert.False(result.Success);
         Assert.Equal(exceptionMessage, result.ErrorMessage);
     }
 }
+
+

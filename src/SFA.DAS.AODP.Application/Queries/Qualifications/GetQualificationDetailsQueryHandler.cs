@@ -16,23 +16,28 @@ namespace SFA.DAS.AODP.Application.Queries.Qualifications
         public async Task<BaseMediatrResponse<GetQualificationDetailsQueryResponse>> Handle(GetQualificationDetailsQuery request, CancellationToken cancellationToken)
         {
             var response = new BaseMediatrResponse<GetQualificationDetailsQueryResponse>();
-            response.Success = false;
             try
             {
-                var result = await _apiClient.Get<GetQualificationDetailsQueryResponse>(new GetQualificationDetailsApiRequest(request.QualificationReference));
-                if (result != null)
+                var result = await _apiClient.Get<BaseMediatrResponse<GetQualificationDetailsQueryResponse>>(new GetQualificationDetailsApiRequest(request.QualificationReference));
+                if (result != null && result.Value != null)
                 {
-                    response.Value = result;
+                    response.Value = result.Value;
                     response.Success = true;
+                }
+                else
+                {
+                    response.Success = false;
+                    response.ErrorMessage = $"No details found for qualification reference: {request.QualificationReference}";
                 }
             }
             catch (Exception ex)
             {
+                response.Success = false;
                 response.ErrorMessage = ex.Message;
             }
 
             return response;
         }
-
     }
 }
+

@@ -75,15 +75,25 @@
 
         </govuk-input>
     </div>
-    @if (Model.Type == QuestionType.Text)
+    @if (Model.Type == QuestionType.Text || Model.Type == QuestionType.TextArea)
     {
         await Html.RenderPartialAsync("FormBuilder/QuestionEdit/_TextInput", Model.TextInput);
-
     }
-    else if (Model.Type == QuestionType.Radio)
+    else if (Model.Type == QuestionType.Radio || Model.Type == QuestionType.MultiChoice)
     {
-        await Html.RenderPartialAsync("FormBuilder/QuestionEdit/_RadioInput", Model.RadioButton);
-
+        await Html.RenderPartialAsync("FormBuilder/QuestionEdit/_Options", Model.Options);
+        if (Model.Type == QuestionType.MultiChoice)
+        {
+            await Html.RenderPartialAsync("FormBuilder/QuestionEdit/_Checkbox", Model.Checkbox);
+        }
+    }
+    else if (Model.Type == QuestionType.Number)
+    {
+        await Html.RenderPartialAsync("FormBuilder/QuestionEdit/_NumberInput", Model.NumberInput);
+    }
+    else if (Model.Type == QuestionType.Date)
+    {
+        await Html.RenderPartialAsync("FormBuilder/QuestionEdit/_DateInput", Model.DateInput);
     }
     <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
 
@@ -111,15 +121,15 @@
 
         <ul class="govuk-list govuk-list--spaced">
             <li>
-             <a class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init=""
-                    asp-action="Delete"
-                    asp-controller="Questions"
-                    asp-route-formVersionId="@Model.FormVersionId"
-                    asp-route-sectionId="@Model.SectionId"
-                    asp-route-pageId="@Model.PageId"
-                    asp-route-questionId="@Model.Id">
-                Delete question
-            </a>
+                <a class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init=""
+                   asp-action="Delete"
+                   asp-controller="Questions"
+                   asp-route-formVersionId="@Model.FormVersionId"
+                   asp-route-sectionId="@Model.SectionId"
+                   asp-route-pageId="@Model.PageId"
+                   asp-route-questionId="@Model.Id">
+                    Delete question
+                </a>
             </li>
             <li>
                 <a class="govuk-link" asp-action="Edit" asp-controller="Pages" asp-route-formVersionId="@Model.FormVersionId" asp-route-pageId="@Model.PageId" asp-route-sectionId="@Model.SectionId">
