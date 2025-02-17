@@ -60,6 +60,12 @@ namespace SFA.DAS.AODP.Authentication.Extensions
                     };
                     options.UseSecurityTokenValidator = true;
 
+                    options.ProtocolValidator = new OpenIdConnectProtocolValidator
+                    {
+                        RequireSub = true,
+                        RequireStateValidation = false,
+                        NonceLifetime = TimeSpan.FromMinutes(60)
+                    };
                     options.Events.OnRemoteFailure = c =>
                     {
                         try
@@ -109,7 +115,7 @@ namespace SFA.DAS.AODP.Authentication.Extensions
                 {
                     options.ExpireTimeSpan = TimeSpan.FromMinutes(config.LoginSlidingExpiryTimeOutInMinutes);
                     options.SlidingExpiration = true;
-                    options.SessionStore = ticketStore;
+                    //options.SessionStore = ticketStore;
                 });
         }
 
