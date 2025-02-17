@@ -1,3 +1,4 @@
+using Authentication;
 using GovUk.Frontend.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
