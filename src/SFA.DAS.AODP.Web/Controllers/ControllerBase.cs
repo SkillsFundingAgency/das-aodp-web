@@ -4,9 +4,10 @@ using SFA.DAS.AODP.Application;
 
 namespace SFA.DAS.AODP.Web.Controllers;
 
-public class ControllerBase(IMediator mediator) : Controller
+public class ControllerBase(IMediator mediator, ILogger logger) : Controller
 {
     protected readonly IMediator _mediator = mediator;
+    protected readonly ILogger _logger = logger;
 
     public async Task<TResponse> Send<TResponse>(IRequest<BaseMediatrResponse<TResponse>> request) where TResponse : class, new()
     {
@@ -14,7 +15,9 @@ public class ControllerBase(IMediator mediator) : Controller
         if (!response.Success)
         {
             ViewBag.InternalServerError = true;
-            throw new Exception();
+            _logger.LogError(response.ErrorMessage);
+
+            throw new Exception(response.ErrorMessage);
         }
         return response.Value;
     }

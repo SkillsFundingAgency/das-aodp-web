@@ -1,17 +1,15 @@
-﻿using Azure;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Questions;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Questions;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Question;
-using System.Reflection;
 
 namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
 
 public class QuestionsController : ControllerBase
 {
 
-    public QuestionsController(IMediator mediator) : base(mediator)
+    public QuestionsController(IMediator mediator, ILogger<FormsController> logger) : base(mediator, logger)
     {
     }
 

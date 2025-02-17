@@ -12,7 +12,7 @@ namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
 
 public class FormsController : ControllerBase
 {
-    public FormsController(IMediator mediator) : base(mediator)
+    public FormsController(IMediator mediator, ILogger<FormsController> logger) : base(mediator, logger)
     {
 
     }

@@ -1,12 +1,9 @@
 using GovUk.Frontend.AspNetCore;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging.ApplicationInsights;
 using SFA.DAS.AODP.Authentication.Enums;
 using SFA.DAS.AODP.Authentication.Extensions;
 using SFA.DAS.AODP.Authentication.Interfaces;
-using SFA.DAS.AODP.Authentication.Services;
 using SFA.DAS.AODP.Web.Extensions;
 using System.Reflection;
 public class CustomServiceRole : ICustomServiceRole
@@ -65,14 +62,6 @@ internal class Program
                  options.Filters.Add<AutoValidateAntiforgeryTokenAttribute>();
              });
 
-        //builder.Services.AddMemoryCache(options =>
-        //{
-        //    options.SizeLimit = 1024 * 1024 * 100; // Limit memory to 100 MB
-        //    options.ExpirationScanFrequency = TimeSpan.FromMinutes(5); // Frequency to scan expired items
-        //});
-
-        //builder.Services.AddScoped<ICacheManager, CacheManager>();
-        //builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(CachedGenericRepository<>));
 
         builder.Services.AddMediatR(config =>
         {

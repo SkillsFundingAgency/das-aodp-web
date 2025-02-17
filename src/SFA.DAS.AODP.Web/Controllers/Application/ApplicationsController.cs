@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
+using SFA.DAS.AODP.Web.Controllers.FormBuilder;
 using SFA.DAS.AODP.Web.Models.Application;
 using SFA.DAS.AODP.Web.Validators;
 using System.Reflection;
@@ -12,7 +13,7 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
     {
         private readonly IApplicationAnswersValidator _validator;
 
-        public ApplicationsController(IMediator mediator, IApplicationAnswersValidator validator) : base(mediator)
+        public ApplicationsController(IMediator mediator, IApplicationAnswersValidator validator, ILogger<FormsController> logger) : base(mediator, logger)
         {
             _validator = validator;
         }

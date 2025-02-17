@@ -9,7 +9,7 @@ namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
 
 public class PagesController : ControllerBase
 {
-    public PagesController(IMediator mediator) : base(mediator)
+    public PagesController(IMediator mediator, ILogger<FormsController> logger) : base(mediator, logger)
     {
     }
 
