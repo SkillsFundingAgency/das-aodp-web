@@ -16,7 +16,6 @@ public static class AddDataProtectionExtensions
                 .AddDataProtection()
                 .SetApplicationName(applicationName)
                 .PersistKeysToFileSystem(new DirectoryInfo(Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "keys")));
-            services.AddDistributedMemoryCache();
         }
         else
         {
@@ -28,7 +27,6 @@ public static class AddDataProtectionExtensions
 
             var redis = ConnectionMultiplexer
                 .Connect($"{redisConnectionString},{dataProtectionKeysDatabase}");
-
 
             services
                 .AddDataProtection()
