@@ -4,7 +4,6 @@ namespace SFA.DAS.AODP.Domain.Qualifications.Requests
 {
     public class GetNewQualificationsApiRequest : IGetApiRequest
     {
-        public string GetUrl => "api/new-qualifications";
+        public string GetUrl => "api/qualifications?status=new";
     }
-
 }
