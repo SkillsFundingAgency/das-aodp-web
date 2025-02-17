@@ -1,6 +1,8 @@
 using AutoFixture;
+using Castle.Core.Logging;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Moq;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
@@ -15,10 +17,11 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
         private Mock<IMediator> _mediatorMock = new();
         private FormsController _controller;
         private readonly Fixture _fixture = new();
+        private readonly Mock<ILogger<FormsController>> _loggerMock = new();
 
         public FormsControllerTests()
         {
-            _controller = new FormsController(_mediatorMock.Object);
+            _controller = new FormsController(_mediatorMock.Object, _loggerMock.Object);
         }
 
         [Fact]

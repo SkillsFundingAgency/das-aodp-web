@@ -1,5 +1,6 @@
 using GovUk.Frontend.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Authentication.Enums;
 using SFA.DAS.AODP.Authentication.Extensions;
@@ -69,6 +70,12 @@ internal class Program
         });
 
         builder.Services.AddApplicationInsightsTelemetry();
+
+        builder.Services.Configure<FormOptions>(options =>
+        {
+            // Set the limit to 256 MB
+            options.MultipartBodyLengthLimit = 268435456;
+        });
 
         var app = builder.Build();
 

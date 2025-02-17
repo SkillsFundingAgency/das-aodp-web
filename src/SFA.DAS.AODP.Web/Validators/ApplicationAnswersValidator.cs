@@ -26,7 +26,7 @@ namespace SFA.DAS.AODP.Web.Validators
                     var validator = _validators.FirstOrDefault(v => v.QuestionTypes.Any(c => c.ToString() == question.Type))
                         ?? throw new NotImplementedException($"Unable to validate the answer for question type {question.Type}");
 
-                    validator.Validate(question, questionAnswer.Answer);
+                    validator.Validate(question, questionAnswer.Answer, viewModel);
                 }
                 catch (QuestionValidationFailedException ex)
                 {

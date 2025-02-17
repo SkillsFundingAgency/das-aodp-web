@@ -100,7 +100,7 @@ public class QuestionsController : ControllerBase
     {
         try
         {
-            ValidateEditeQuestionViewModel(model);
+            ValidateEditQuestionViewModel(model);
             if (!ModelState.IsValid)
             {
                 if (model.FileUpload != null) model.FileUpload.FileTypes = _formBuilderSettings.UploadFileTypesAllowed;
@@ -190,7 +190,7 @@ public class QuestionsController : ControllerBase
     #endregion
 
     #region Validation
-    private void ValidateEditeQuestionViewModel(EditQuestionViewModel editQuestionViewModel)
+    private void ValidateEditQuestionViewModel(EditQuestionViewModel editQuestionViewModel)
     {
         if (editQuestionViewModel.Type == AODP.Models.Forms.QuestionType.File)
         {

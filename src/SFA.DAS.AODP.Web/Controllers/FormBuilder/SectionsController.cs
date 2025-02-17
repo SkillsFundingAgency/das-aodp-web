@@ -3,15 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
-using SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Section;
-using Azure;
 
 namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
 
 public class SectionsController : ControllerBase
 {
-    public SectionsController(IMediator mediator) : base(mediator)
+    public SectionsController(IMediator mediator, ILogger<SectionsController> logger) : base(mediator, logger)
     {
     }
 

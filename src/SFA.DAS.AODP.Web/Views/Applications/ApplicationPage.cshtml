@@ -75,7 +75,7 @@
         }
 
 
-        <form asp-controller="Applications" asp-action="ApplicationPage" method="post">
+        <form asp-controller="Applications" asp-action="ApplicationPage" method="post" enctype="multipart/form-data">
 
             @Html.HiddenFor(m => m.OrganisationId)
             @Html.HiddenFor(m => m.PageId)

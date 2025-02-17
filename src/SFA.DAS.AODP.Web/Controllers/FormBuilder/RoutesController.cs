@@ -9,7 +9,7 @@ namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
 
 public class RoutesController : ControllerBase
 {
-    public RoutesController(IMediator mediator) : base(mediator)
+    public RoutesController(IMediator mediator, ILogger<RoutesController> logger) : base(mediator, logger)
     {
     }
 
