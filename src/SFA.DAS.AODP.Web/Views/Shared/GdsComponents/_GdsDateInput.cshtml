@@ -21,9 +21,15 @@
 }
 
 @{
+    var errored = !string.IsNullOrEmpty(Model.ErrorMessage);
+    var formGroupErrorClass = errored ? "govuk-form-group--error" : "";
+    var inputErrorClass = errored ? "govuk-input--error" : "";
+}
+
+@{
     void RenderDateInput()
     {
-        <div class="govuk-date-input" id="@Model.Id">
+        <div class="govuk-date-input @inputErrorClass" id="@Model.Id">
             <div class="govuk-date-input__item">
                 <div class="govuk-form-group">
                     <label class="govuk-label govuk-date-input__label" for="@day">
@@ -71,7 +77,7 @@
     }
 }
 
-<div class="govuk-form-group">
+<div class="govuk-form-group @formGroupErrorClass">
     @if (!string.IsNullOrEmpty(Model.Title))
     {
         <fieldset class="govuk-fieldset" role="group" aria-describedby="@(Model.Id)-hint">

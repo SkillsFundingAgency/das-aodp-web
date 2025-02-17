@@ -1,6 +1,7 @@
 ﻿using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Domain.Interfaces;
 using SFA.DAS.AODP.Infrastructure.ApiClient;
+using SFA.DAS.AODP.Infrastructure.Extensions;
 using System.Diagnostics.CodeAnalysis;
 
 namespace SFA.DAS.AODP.Web.Extensions;
@@ -19,6 +20,8 @@ public static class AddServiceRegistrationsExtension
         services.AddHttpClient<IApiClient, ApiClient>();
 
         services.AddValidators();
+
+        services.AddFileService(configuration);
 
         return services;
     }

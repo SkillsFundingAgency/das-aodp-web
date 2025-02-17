@@ -17,31 +17,8 @@ public class GetPagePreviewByIdQueryResponse
         public string? Hint { get; set; } = string.Empty;
         public int Order { get; set; }
 
-        public TextInputOptions TextInput { get; set; } = new();
-        public NumberInputOptions NumberInput { get; set; } = new();
-        public CheckboxOptions Checkbox { get; set; } = new();
         public List<Option> Options { get; set; } = new();
-        public DateInputOptions DateInput { get; set; } = new();
 
-    }
-
-    public class TextInputOptions
-    {
-        public int? MinLength { get; set; }
-        public int? MaxLength { get; set; }
-
-    }
-    public class CheckboxOptions
-    {
-        public int? MinNumberOfOptions { get; set; }
-        public int? MaxNumberOfOptions { get; set; }
-    }
-
-    public class NumberInputOptions
-    {
-        public int? GreaterThanOrEqualTo { get; set; }
-        public int? LessThanOrEqualTo { get; set; }
-        public int? NotEqualTo { get; set; }
     }
 
 
@@ -50,13 +27,5 @@ public class GetPagePreviewByIdQueryResponse
         public Guid Id { get; set; }
         public string Value { get; set; }
         public int Order { get; set; }
-    }
-
-    public class DateInputOptions
-    {
-        public DateOnly? GreaterThanOrEqualTo { get; set; }
-        public DateOnly? LessThanOrEqualTo { get; set; }
-        public bool? MustBeInFuture { get; set; }
-        public bool? MustBeInPast { get; set; }
     }
 }

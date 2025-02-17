@@ -6,6 +6,7 @@
         public string Hint { get; set; }
         public string Name { get; set; }
         public string Id { get; set; }
+        public string? ErrorMessage { get; set; }
         public DateOnly? Value { get; set; }
     }
 }

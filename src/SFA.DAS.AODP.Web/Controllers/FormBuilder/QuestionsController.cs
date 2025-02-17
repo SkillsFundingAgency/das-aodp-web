@@ -1,16 +1,20 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Questions;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Questions;
+using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Question;
 
 namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
 
 public class QuestionsController : ControllerBase
 {
+    private readonly FormBuilderSettings _formBuilderSettings;
 
-    public QuestionsController(IMediator mediator, ILogger<FormsController> logger) : base(mediator, logger)
+    public QuestionsController(IMediator mediator, ILogger<FormsController> logger, IOptions<FormBuilderSettings> formBuilderSettings) : base(mediator, logger)
     {
+        _formBuilderSettings = formBuilderSettings.Value;
     }
 
     #region Create
@@ -80,9 +84,10 @@ public class QuestionsController : ControllerBase
             };
             var response = await Send(query);
 
-            var map = EditQuestionViewModel.MapToViewModel(response, formVersionId, sectionId);
+            var map = EditQuestionViewModel.MapToViewModel(response, formVersionId, sectionId, _formBuilderSettings);
             return View(map);
         }
+
         catch
         {
             return Redirect("/Home/Error");
@@ -95,6 +100,13 @@ public class QuestionsController : ControllerBase
     {
         try
         {
+            ValidateEditeQuestionViewModel(model);
+            if (!ModelState.IsValid)
+            {
+                if (model.FileUpload != null) model.FileUpload.FileTypes = _formBuilderSettings.UploadFileTypesAllowed;
+                return View(model);
+            }
+
             if (model.Options.AdditionalFormActions.AddOption)
             {
                 model.Options.Options.Add(new());
@@ -109,8 +121,11 @@ public class QuestionsController : ControllerBase
                 }
                 return View(model);
             }
+
+
             var command = EditQuestionViewModel.MapToCommand(model);
-            var response = await Send(command);
+            var response = await _mediator.Send(command);
+
             return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId, pageId = model.PageId, questionId = model.Id });
         }
         catch
@@ -170,6 +185,23 @@ public class QuestionsController : ControllerBase
         catch
         {
             return View(model);
+        }
+    }
+    #endregion
+
+    #region Validation
+    private void ValidateEditeQuestionViewModel(EditQuestionViewModel editQuestionViewModel)
+    {
+        if (editQuestionViewModel.Type == AODP.Models.Forms.QuestionType.File)
+        {
+            if (editQuestionViewModel.FileUpload.MaxSize > _formBuilderSettings.MaxUploadFileSize)
+            {
+                ModelState.AddModelError("FileUpload.MaxSize", $"The file upload size cannot be greater than {_formBuilderSettings.MaxUploadFileSize}");
+            }
+            if (editQuestionViewModel.FileUpload.NumberOfFiles > _formBuilderSettings.MaxUploadNumberOfFiles)
+            {
+                ModelState.AddModelError("FileUpload.NumberOfFiles", $"The number of files cannot be greater than {_formBuilderSettings.MaxUploadNumberOfFiles}");
+            }
         }
     }
     #endregion

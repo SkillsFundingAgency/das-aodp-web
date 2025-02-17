@@ -1,0 +1,59 @@
+﻿@using static SFA.DAS.AODP.Web.Models.FormBuilder.Question.EditQuestionViewModel
+@model FileUploadOptions
+
+<div class="govuk-form-group">
+    <govuk-input disabled="@(!ViewBag.IsEditable)"
+                 name="FileUpload[FileNamePrefix]"
+                 type="text"
+                 asp-for="FileNamePrefix"
+                 input-class="govuk-input--width-30"
+                 spellcheck="false">
+        <govuk-input-label is-page-heading="false" class="govuk-label--s">What is the file naming prefix shown to admins reviewing the applications? (optional)</govuk-input-label>
+    </govuk-input>
+</div>
+
+<div class="govuk-form-group">
+    <govuk-input disabled="@(!ViewBag.IsEditable)"
+                 id="FileUpload.MaxSize"
+                 name="FileUpload[MaxSize]"
+                 type="number"
+                 asp-for="MaxSize"
+                 input-class="govuk-input--width-3"
+                 inputmode="numeric" pattern="[0-9]*"
+                 spellcheck="false">
+        <govuk-input-label is-page-heading="false" class="govuk-label--s">What is the maximum, inclusive, individual file size allowed in megabytes(mb)?</govuk-input-label>
+    </govuk-input>
+</div>
+
+<div class="govuk-form-group">
+    <govuk-input disabled="@(!ViewBag.IsEditable)"
+                 id="FileUpload.NumberOfFiles"
+                 name="FileUpload[NumberOfFiles]"
+                 type="number"
+                 asp-for="NumberOfFiles"
+                 input-class="govuk-input--width-3"
+                 inputmode="numeric" pattern="[0-9]*"
+                 spellcheck="false">
+        <govuk-input-label is-page-heading="false" class="govuk-label--s">What is the maximum, inclusive, number of files allowed?</govuk-input-label>
+    </govuk-input>
+</div>
+
+
+<govuk-details>
+    <govuk-details-summary>
+        Allowed file types
+    </govuk-details-summary>
+    <govuk-details-text>
+        The system currently allowes for the following fie types to be uploaded:
+        <br />
+        <ul>
+            @foreach (var fileType in Model.FileTypes ?? [])
+            {
+                <li>@fileType</li>
+            }
+        </ul>
+        <br/>
+
+        Please raise a system development request to allow for additional file types.
+    </govuk-details-text>
+</govuk-details>

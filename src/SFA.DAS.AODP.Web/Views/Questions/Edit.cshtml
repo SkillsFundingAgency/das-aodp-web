@@ -7,13 +7,39 @@
 
 <partial name="~/Views/Shared/_InternalErrorPartial.cshtml" />
 
+@if (!ViewContext.ModelState.IsValid)
+{
+    <div class="govuk-error-summary" data-module="govuk-error-summary">
+        <div role="alert">
+            <h2 class="govuk-error-summary__title">
+                There is a problem
+            </h2>
+            <div class="govuk-error-summary__body">
+                <ul class="govuk-list govuk-error-summary__list">
+
+                    @foreach (var ms in ViewContext.ModelState)
+                    {
+                        var error = @ms.Value.Errors.FirstOrDefault();
+                        if (error == null) continue;
+
+                        <li>
+                            <a href="#@ms.Key">@error.ErrorMessage</a>
+                        </li>
+                    }
+
+                </ul>
+            </div>
+        </div>
+    </div>
+}
+
 <h1 class="govuk-heading-l">Edit Question</h1>
 
 @{
     ViewBag.IsEditable = Model.Editable;
 }
 
-<form asp-controller="Questions" asp-action="Edit" method="post">
+<form asp-controller="Questions" asp-action="Edit" method="post" gfa-prepend-error-summary="false">
     @Html.HiddenFor(m => m.Id)
     @Html.HiddenFor(m => m.PageId)
     @Html.HiddenFor(m => m.SectionId)
@@ -94,6 +120,10 @@
     else if (Model.Type == QuestionType.Date)
     {
         await Html.RenderPartialAsync("FormBuilder/QuestionEdit/_DateInput", Model.DateInput);
+    }
+    else if (Model.Type == QuestionType.File)
+    {
+        await Html.RenderPartialAsync("FormBuilder/QuestionEdit/_File", Model.FileUpload);
     }
     <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
 

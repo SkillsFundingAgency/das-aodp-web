@@ -119,4 +119,8 @@
         };
         await Html.RenderPartialAsync("GdsComponents/_GdsDateInput", dateInputModel);
     }
+    else if (Model.Type == QuestionType.File)
+    {
+        <input class="govuk-file-upload" id="@questionHtmlId" type="file">
+    }
 </div>
