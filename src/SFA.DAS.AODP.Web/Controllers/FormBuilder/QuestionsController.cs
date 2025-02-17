@@ -8,13 +8,11 @@ using System.Reflection;
 
 namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
 
-public class QuestionsController : Controller
+public class QuestionsController : ControllerBase
 {
-    private readonly IMediator _mediator;
 
-    public QuestionsController(IMediator mediator)
+    public QuestionsController(IMediator mediator) : base(mediator)
     {
-        _mediator = mediator;
     }
 
     #region Create
@@ -35,33 +33,35 @@ public class QuestionsController : Controller
     [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/add-question")]
     public async Task<IActionResult> Create(CreateQuestionViewModel model)
     {
-        if (!ModelState.IsValid)
+        try
         {
-            return View(model);
-        }
-        var command = new CreateQuestionCommand()
-        {
-            SectionId = model.SectionId,
-            FormVersionId = model.FormVersionId,
-            Required = model.Required,
-            Title = model.Title,
-            PageId = model.PageId,
-            Type = model.QuestionType.ToString()
-        };
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+            var command = new CreateQuestionCommand()
+            {
+                SectionId = model.SectionId,
+                FormVersionId = model.FormVersionId,
+                Required = model.Required,
+                Title = model.Title,
+                PageId = model.PageId,
+                Type = model.QuestionType.ToString()
+            };
 
-        var response = await _mediator.Send(command);
-        if (!response.Success)
+            var response = await Send(command);
+            return RedirectToAction(nameof(Edit), new
+            {
+                formVersionId = model.FormVersionId,
+                sectionId = model.SectionId,
+                pageId = model.PageId,
+                questionId = response.Id
+            });
+        }
+        catch
         {
-            ViewBag.InternalServerError = true;
             return View(model);
         }
-        return RedirectToAction(nameof(Edit), new
-        {
-            formVersionId = model.FormVersionId,
-            sectionId = model.SectionId,
-            pageId = model.PageId,
-            questionId = response.Value.Id
-        });
     }
     #endregion
 
@@ -71,49 +71,56 @@ public class QuestionsController : Controller
     [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/questions/{questionId}")]
     public async Task<IActionResult> Edit(Guid formVersionId, Guid sectionId, Guid pageId, Guid questionId)
     {
-        var query = new GetQuestionByIdQuery()
+        try
         {
-            PageId = pageId,
-            SectionId = sectionId,
-            FormVersionId = formVersionId,
-            QuestionId = questionId
-        };
-        var response = await _mediator.Send(query);
-        if (response.Value == null || !response.Success) return Redirect("/Home/Error");
+            var query = new GetQuestionByIdQuery()
+            {
+                PageId = pageId,
+                SectionId = sectionId,
+                FormVersionId = formVersionId,
+                QuestionId = questionId
+            };
+            var response = await Send(query);
 
-        var map = EditQuestionViewModel.MapToViewModel(response.Value, formVersionId, sectionId);
-        return View(map);
-
+            var map = EditQuestionViewModel.MapToViewModel(response, formVersionId, sectionId);
+            return View(map);
+        }
+        catch
+        {
+            return Redirect("/Home/Error");
+        }
     }
 
     [HttpPost()]
     [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/questions/{questionId}")]
     public async Task<IActionResult> Edit(EditQuestionViewModel model)
     {
-        if (model.RadioButton.AdditionalFormActions.AddOption)
+        try
         {
-            model.RadioButton.MultiChoice.Add(new());
-            return View(model);
-        }
-        else if (model.RadioButton.AdditionalFormActions.RemoveOptionIndex.HasValue)
-        {
-            int indexToRemove = model.RadioButton.AdditionalFormActions.RemoveOptionIndex.Value;
-            if (indexToRemove >= 0 && indexToRemove < model.RadioButton.MultiChoice.Count)
+            if (model.RadioButton.AdditionalFormActions.AddOption)
             {
-                model.RadioButton.MultiChoice.RemoveAt(indexToRemove);
+                model.RadioButton.MultiChoice.Add(new());
+                return View(model);
             }
-            return View(model);
+            else if (model.RadioButton.AdditionalFormActions.RemoveOptionIndex.HasValue)
+            {
+                int indexToRemove = model.RadioButton.AdditionalFormActions.RemoveOptionIndex.Value;
+                if (indexToRemove >= 0 && indexToRemove < model.RadioButton.MultiChoice.Count)
+                {
+                    model.RadioButton.MultiChoice.RemoveAt(indexToRemove);
+                }
+                return View(model);
+            }
+
+
+            var command = EditQuestionViewModel.MapToCommand(model);
+            var response = await Send(command);
+            return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId, pageId = model.PageId, questionId = model.Id });
         }
-
-
-        var command = EditQuestionViewModel.MapToCommand(model);
-        var response = await _mediator.Send(command);
-        if (!response.Success)
+        catch
         {
-            ViewBag.InternalServerError = true;
             return View(model);
         }
-        return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId, pageId = model.PageId, questionId = model.Id });
     }
     #endregion
 
@@ -123,21 +130,26 @@ public class QuestionsController : Controller
     [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/questions/{questionId}/delete")]
     public async Task<IActionResult> Delete(Guid formVersionId, Guid sectionId, Guid pageId, Guid questionId)
     {
-        var query = new GetQuestionByIdQuery()
+        try
         {
-            PageId = pageId,
-            SectionId = sectionId,
-            FormVersionId = formVersionId,
-            QuestionId = questionId
-        };
+            var query = new GetQuestionByIdQuery()
+            {
+                PageId = pageId,
+                SectionId = sectionId,
+                FormVersionId = formVersionId,
+                QuestionId = questionId
+            };
 
-        var response = await _mediator.Send(query);
+            var response = await Send(query);
 
-        if (response.Value == null || !response.Success) return Redirect("/Home/Error");
+            var vm = DeleteQuestionViewModel.MapToViewModel(response, formVersionId, sectionId);
 
-        var vm = DeleteQuestionViewModel.MapToViewModel(response.Value, formVersionId, sectionId);
-
-        return View(vm);
+            return View(vm);
+        }
+        catch
+        {
+            return Redirect("/Home/Error");
+        }
     }
 
     [HttpPost()]
@@ -145,22 +157,24 @@ public class QuestionsController : Controller
     [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/questions/{questionId}/delete")]
     public async Task<IActionResult> DeleteConfirmed(Guid formVersionId, Guid sectionId, Guid pageId, Guid questionId, [FromBody] EditQuestionViewModel model)
     {
-        var command = new DeleteQuestionCommand
+        try
         {
-            PageId = pageId,
-            SectionId = sectionId,
-            FormVersionId = formVersionId,
-            QuestionId = questionId
-        };
+            var command = new DeleteQuestionCommand
+            {
+                PageId = pageId,
+                SectionId = sectionId,
+                FormVersionId = formVersionId,
+                QuestionId = questionId
+            };
 
-        var deleteQuestionResponse = await _mediator.Send(command);
-        if (!deleteQuestionResponse.Success)
+            await Send(command);
+
+            return RedirectToAction("Edit", "Pages", new { formVersionId = formVersionId, sectionId = sectionId, pageId = pageId });
+        }
+        catch
         {
-            ViewBag.InternalServerError = true;
             return View(model);
         }
-
-        return RedirectToAction("Edit", "Pages", new { formVersionId = formVersionId, sectionId = sectionId, pageId = pageId });
     }
     #endregion
 }

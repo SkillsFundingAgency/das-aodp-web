@@ -9,13 +9,10 @@ using Azure;
 
 namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
 
-public class SectionsController : Controller
+public class SectionsController : ControllerBase
 {
-    public IMediator _mediator { get; }
-
-    public SectionsController(IMediator mediator)
+    public SectionsController(IMediator mediator) : base(mediator)
     {
-        _mediator = mediator;
     }
 
     #region Create
@@ -29,19 +26,21 @@ public class SectionsController : Controller
     [Route("forms/{formVersionId}/sections/create")]
     public async Task<IActionResult> Create(CreateSectionViewModel model)
     {
-        var command = new CreateSectionCommand()
+        try
         {
-            FormVersionId = model.FormVersionId,
-            Title = model.Title
-        };
+            var command = new CreateSectionCommand()
+            {
+                FormVersionId = model.FormVersionId,
+                Title = model.Title
+            };
 
-        var response = await _mediator.Send(command);
-        if (response.Success)
-        {
-            return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = response.Value.Id });
+            var response = await Send(command);
+            return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = response.Id });
         }
-        ViewBag.InternalServerError = true;
-        return View(model);
+        catch
+        {
+            return View(model);
+        }
     }
     #endregion
 
@@ -49,67 +48,64 @@ public class SectionsController : Controller
     [Route("forms/{formVersionId}/sections/{sectionId}")]
     public async Task<IActionResult> Edit(Guid formVersionId, Guid sectionId)
     {
-        var sectionQuery = new GetSectionByIdQuery(sectionId, formVersionId);
-        var response = await _mediator.Send(sectionQuery);
-        if (response.Value == null) return Redirect("/Home/Error");
+        try
+        {
+            var sectionQuery = new GetSectionByIdQuery(sectionId, formVersionId);
+            var response = await Send(sectionQuery);
 
-        return View(EditSectionViewModel.Map(response.Value));
+            return View(EditSectionViewModel.Map(response));
+        }
+        catch
+        {
+            return Redirect("/Home/Error");
+        }
     }
 
     [HttpPost]
     [Route("forms/{formVersionId}/sections/{sectionId}")]
     public async Task<IActionResult> Edit(EditSectionViewModel model)
     {
-        if (model.AdditionalActions.MoveUp != default)
+        try
         {
-            var command = new MovePageUpCommand()
+            if (model.AdditionalActions.MoveUp != default)
             {
-                FormVersionId = model.FormVersionId,
-                SectionId = model.SectionId,
-                PageId = model.AdditionalActions.MoveUp ?? Guid.Empty,
-            };
-            var response = await _mediator.Send(command);
-            if (!response.Success)
-            {
-                ViewBag.InternalServerError = true;
-                return View(model);
+                var command = new MovePageUpCommand()
+                {
+                    FormVersionId = model.FormVersionId,
+                    SectionId = model.SectionId,
+                    PageId = model.AdditionalActions.MoveUp ?? Guid.Empty,
+                };
+                await Send(command);
+                return await Edit(model.FormVersionId, model.SectionId);
             }
-            return await Edit(model.FormVersionId, model.SectionId);
-        }
-        else if (model.AdditionalActions.MoveDown != default)
-        {
-            var command = new MovePageDownCommand()
+            else if (model.AdditionalActions.MoveDown != default)
             {
-                FormVersionId = model.FormVersionId,
-                SectionId = model.SectionId,
-                PageId = model.AdditionalActions.MoveDown ?? Guid.Empty,
-            };
-            var response = await _mediator.Send(command);
-            if (!response.Success)
-            {
-                ViewBag.InternalServerError = true;
-                return View(model);
+                var command = new MovePageDownCommand()
+                {
+                    FormVersionId = model.FormVersionId,
+                    SectionId = model.SectionId,
+                    PageId = model.AdditionalActions.MoveDown ?? Guid.Empty,
+                };
+                await _mediator.Send(command);
+                return await Edit(model.FormVersionId, model.SectionId);
             }
-            return await Edit(model.FormVersionId, model.SectionId);
-        }
-        else
-        {
-            var command = new UpdateSectionCommand()
+            else
             {
-                FormVersionId = model.FormVersionId,
-                Title = model.Title,
-                Id = model.SectionId
-            };
+                var command = new UpdateSectionCommand()
+                {
+                    FormVersionId = model.FormVersionId,
+                    Title = model.Title,
+                    Id = model.SectionId
+                };
 
-            var response = await _mediator.Send(command);
-            if (response.Success)
-            {
+                var response = await _mediator.Send(command);
                 return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId });
             }
-            ViewBag.InternalServerError = true;
+        }
+        catch
+        {
             return View(model);
         }
-
     }
     #endregion
 
@@ -118,33 +114,41 @@ public class SectionsController : Controller
     [Route("forms/{formVersionId}/sections/{sectionId}/delete")]
     public async Task<IActionResult> Delete(Guid sectionId, Guid formVersionId)
     {
-        var query = new GetSectionByIdQuery(sectionId, formVersionId);
-        var response = await _mediator.Send(query);
-        if (response.Value == null || !response.Success) return Redirect("/Home/Error");
-        return View(new DeleteSectionViewModel()
+        try
         {
-            Title = response.Value.Title,
-            SectionId = sectionId,
-            FormVersionId = formVersionId
-        });
+            var query = new GetSectionByIdQuery(sectionId, formVersionId);
+            var response = await Send(query);
+            return View(new DeleteSectionViewModel()
+            {
+                Title = response.Title,
+                SectionId = sectionId,
+                FormVersionId = formVersionId
+            });
+        }
+        catch
+        {
+            return Redirect("/Home/Error");
+        }
     }
 
     [HttpPost, ActionName("Delete")]
     [Route("forms/{formVersionId}/sections/{sectionId}/delete")]
     public async Task<IActionResult> DeleteConfirmed(DeleteSectionViewModel model)
     {
-        var command = new DeleteSectionCommand()
+        try
         {
-            FormVersionId = model.FormVersionId,
-            SectionId = model.SectionId
-        };
-        var deleteResponse = await _mediator.Send(command);
-        if (!deleteResponse.Success)
+            var command = new DeleteSectionCommand()
+            {
+                FormVersionId = model.FormVersionId,
+                SectionId = model.SectionId
+            };
+            var deleteResponse = await _mediator.Send(command);
+            return RedirectToAction("Edit", "Forms", new { formVersionId = model.FormVersionId });
+        }
+        catch
         {
-            ViewBag.InternalServerError = true;
             return View(model);
         }
-        return RedirectToAction("Edit", "Forms", new { formVersionId = model.FormVersionId });
     }
     #endregion
 }

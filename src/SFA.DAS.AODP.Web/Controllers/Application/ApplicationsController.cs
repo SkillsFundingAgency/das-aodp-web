@@ -8,14 +8,12 @@ using System.Reflection;
 
 namespace SFA.DAS.AODP.Web.Controllers.Application
 {
-    public class ApplicationsController : Controller
+    public class ApplicationsController : ControllerBase
     {
-        private readonly IMediator _mediator;
         private readonly IApplicationAnswersValidator _validator;
 
-        public ApplicationsController(IMediator mediator, IApplicationAnswersValidator validator)
+        public ApplicationsController(IMediator mediator, IApplicationAnswersValidator validator) : base(mediator)
         {
-            _mediator = mediator;
             _validator = validator;
         }
 
@@ -23,35 +21,53 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
         [Route("organisations/{organisationId}")]
         public async Task<IActionResult> Index(Guid organisationId)
         {
-            var response = await _mediator.Send(new GetApplicationsByOrganisationIdQuery(organisationId));
-            if (!response.Success) return Redirect("/Home/Error");
-            ListApplicationsViewModel model = ListApplicationsViewModel.Map(response.Value, organisationId);
-            return View(model);
+            try
+            {
+                var response = await Send(new GetApplicationsByOrganisationIdQuery(organisationId));
+                ListApplicationsViewModel model = ListApplicationsViewModel.Map(response, organisationId);
+                return View(model);
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
         }
 
         [HttpGet]
         [Route("organisations/{organisationId}/forms")]
         public async Task<IActionResult> AvailableFormsAsync(Guid organisationId)
         {
-            var formsResponse = await _mediator.Send(new GetApplicationFormsQuery());
-            if (!formsResponse.Success) return Redirect("/Home/Error");
-            ListAvailableFormsViewModel model = ListAvailableFormsViewModel.Map(formsResponse.Value, organisationId);
-            return View(model);
+            try
+            {
+                var formsResponse = await Send(new GetApplicationFormsQuery());
+                ListAvailableFormsViewModel model = ListAvailableFormsViewModel.Map(formsResponse, organisationId);
+                return View(model);
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
         }
 
         [HttpGet]
         [Route("organisations/{organisationId}/forms/{formVersionId}/Create")]
         public async Task<IActionResult> Create(Guid organisationId, Guid formVersionId)
         {
-            var formVersion = await _mediator.Send(new GetFormVersionByIdQuery(formVersionId));
-            if (!formVersion.Success) return Redirect("/Home/Error");
-
-            return View(new CreateApplicationViewModel()
+            try
             {
-                OrganisationId = organisationId,
-                FormVersionId = formVersionId,
-                FormTitle = formVersion.Value.Title
-            });
+                var formVersion = await Send(new GetFormVersionByIdQuery(formVersionId));
+
+                return View(new CreateApplicationViewModel()
+                {
+                    OrganisationId = organisationId,
+                    FormVersionId = formVersionId,
+                    FormTitle = formVersion.Title
+                });
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
         }
 
 
@@ -71,15 +87,16 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
                 Owner = createApplicationViewModel.Owner,
             };
 
-            var response = await _mediator.Send(request);
-
-            if (!response.Success)
+            try
             {
-                ViewBag.InternalServerError = true;
+                var response = await Send(request);
+
+                return RedirectToAction(nameof(ViewApplication), new { organisationId = createApplicationViewModel.OrganisationId, applicationId = response.Id, formVersionId = createApplicationViewModel.FormVersionId });
+            }
+            catch
+            {
                 return View(createApplicationViewModel);
             }
-
-            return RedirectToAction(nameof(ViewApplication), new { organisationId = createApplicationViewModel.OrganisationId, applicationId = response.Value.Id, formVersionId = createApplicationViewModel.FormVersionId });
         }
 
 
@@ -87,16 +104,20 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
         [Route("organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}")]
         public async Task<IActionResult> ViewApplication(Guid organisationId, Guid applicationId, Guid formVersionId)
         {
-            var formsResponse = await _mediator.Send(new GetApplicationFormByIdQuery(formVersionId));
+            try
+            {
+                var formsResponse = await Send(new GetApplicationFormByIdQuery(formVersionId));
 
-            var statusResponse = await _mediator.Send(new GetApplicationFormStatusByApplicationIdQuery(formVersionId, applicationId));
+                var statusResponse = await Send(new GetApplicationFormStatusByApplicationIdQuery(formVersionId, applicationId));
 
-            if (!formsResponse.Success || !statusResponse.Success) return Redirect("/Home/Error");
+                ApplicationFormViewModel model = ApplicationFormViewModel.Map(formsResponse, statusResponse, formVersionId, organisationId, applicationId);
 
-            ApplicationFormViewModel model = ApplicationFormViewModel.Map(formsResponse.Value, statusResponse.Value, formVersionId, organisationId, applicationId);
-
-            return View(model);
-
+                return View(model);
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
         }
 
 
@@ -104,88 +125,94 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
         [Route("organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/sections/{sectionId}")]
         public async Task<IActionResult> ViewApplicationSection(Guid organisationId, Guid applicationId, Guid sectionId, Guid formVersionId)
         {
-            var sectionResponse = await _mediator.Send(new GetApplicationSectionByIdQuery(sectionId, formVersionId));
+            try
+            {
+                var sectionResponse = await Send(new GetApplicationSectionByIdQuery(sectionId, formVersionId));
 
-            var sectionStatus = await _mediator.Send(new GetApplicationSectionStatusByApplicationIdQuery(sectionId, formVersionId, applicationId));
+                var sectionStatus = await Send(new GetApplicationSectionStatusByApplicationIdQuery(sectionId, formVersionId, applicationId));
 
-            if (!sectionResponse.Success || !sectionStatus.Success) return Redirect("/Home/Error");
+                ApplicationSectionViewModel model = ApplicationSectionViewModel.Map(sectionResponse, sectionStatus, organisationId, formVersionId, sectionId, applicationId);
 
-            ApplicationSectionViewModel model = ApplicationSectionViewModel.Map(sectionResponse.Value, sectionStatus.Value, organisationId, formVersionId, sectionId, applicationId);
-
-            return View(model);
+                return View(model);
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
         }
 
         [HttpGet]
         [Route("organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/sections/{sectionId}/pages/{pageOrder}")]
         public async Task<IActionResult> ApplicationPage(Guid organisationId, Guid applicationId, Guid sectionId, int pageOrder, Guid formVersionId)
         {
-            var request = new GetApplicationPageByIdQuery()
+            try
             {
-                FormVersionId = formVersionId,
-                PageOrder = pageOrder,
-                SectionId = sectionId,
-            };
+                var request = new GetApplicationPageByIdQuery()
+                {
+                    FormVersionId = formVersionId,
+                    PageOrder = pageOrder,
+                    SectionId = sectionId,
+                };
 
-            var response = await _mediator.Send(request);
-            if (!response.Success) return Redirect("/Home/Error");
+                var response = await Send(request);
 
-            var answers = await _mediator.Send(new GetApplicationPageAnswersByPageIdQuery(applicationId, response.Value.Id, sectionId, formVersionId));
-            if (!answers.Success) return Redirect("/Home/Error");
+                var answers = await Send(new GetApplicationPageAnswersByPageIdQuery(applicationId, response.Id, sectionId, formVersionId));
 
-            ApplicationPageViewModel viewModel = ApplicationPageViewModel.MapToViewModel(response.Value, applicationId, formVersionId, sectionId, organisationId, answers.Value);
+                ApplicationPageViewModel viewModel = ApplicationPageViewModel.MapToViewModel(response, applicationId, formVersionId, sectionId, organisationId, answers);
 
-            return View(viewModel);
+                return View(viewModel);
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
         }
 
         [HttpPost]
         [Route("organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/sections/{sectionId}/pages/{pageOrder}")]
         public async Task<IActionResult> ApplicationPageAsync(ApplicationPageViewModel model)
         {
-            var request = new GetApplicationPageByIdQuery()
+            try
             {
-                FormVersionId = model.FormVersionId,
-                PageOrder = model.Order,
-                SectionId = model.SectionId,
-            };
-
-            var response = await _mediator.Send(request); 
-            if (!response.Success)
-            {
-                ViewBag.InternalServerError = true;
-                return View(model);
-            }
-
-            _validator.ValidateApplicationPageAnswers(ModelState, response.Value, model);
-
-            if (!ModelState.IsValid)
-            {
-                model = ApplicationPageViewModel.RepopulatePageDataOnViewModel(response.Value, model);
-                return View(model);
-            }
-
-            var command = ApplicationPageViewModel.MapToCommand(model, response.Value);
-
-            var commandResponse = await _mediator.Send(command);
-
-            if (!commandResponse.Success)
-            {
-                ViewBag.InternalServerError = true;
-                return View(model);
-            }
-
-            bool endSection = command.Routing?.EndSection == true || response.Value.TotalSectionPages == response.Value.Order;
-            if (endSection) return RedirectToAction(nameof(ViewApplicationSection), new { organisationId = model.OrganisationId, applicationId = model.ApplicationId, sectionId = model.SectionId, formVersionId = model.FormVersionId });
-
-
-            return RedirectToAction(nameof(ApplicationPage),
-                new
+                var request = new GetApplicationPageByIdQuery()
                 {
-                    organisationId = model.OrganisationId,
-                    applicationId = model.ApplicationId,
-                    sectionId = model.SectionId,
-                    pageOrder = command.Routing?.NextPageOrder ?? response.Value.Order + 1,
-                    formVersionId = model.FormVersionId
-                });
+                    FormVersionId = model.FormVersionId,
+                    PageOrder = model.Order,
+                    SectionId = model.SectionId,
+                };
+
+                var response = await Send(request);
+
+                _validator.ValidateApplicationPageAnswers(ModelState, response, model);
+
+                if (!ModelState.IsValid)
+                {
+                    model = ApplicationPageViewModel.RepopulatePageDataOnViewModel(response, model);
+                    return View(model);
+                }
+
+                var command = ApplicationPageViewModel.MapToCommand(model, response);
+
+                var commandResponse = await Send(command);
+
+                bool endSection = command.Routing?.EndSection == true || response.TotalSectionPages == response.Order;
+                if (endSection) return RedirectToAction(nameof(ViewApplicationSection), new { organisationId = model.OrganisationId, applicationId = model.ApplicationId, sectionId = model.SectionId, formVersionId = model.FormVersionId });
+
+
+                return RedirectToAction(nameof(ApplicationPage),
+                    new
+                    {
+                        organisationId = model.OrganisationId,
+                        applicationId = model.ApplicationId,
+                        sectionId = model.SectionId,
+                        pageOrder = command.Routing?.NextPageOrder ?? response.Order + 1,
+                        formVersionId = model.FormVersionId
+                    });
+            }
+            catch
+            {
+                return View(model);
+            }
         }
 
     }

@@ -7,13 +7,10 @@ using SFA.DAS.AODP.Web.Models.FormBuilder.Page;
 
 namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
 
-public class PagesController : Controller
+public class PagesController : ControllerBase
 {
-    private readonly IMediator _mediator;
-
-    public PagesController(IMediator mediator)
+    public PagesController(IMediator mediator) : base(mediator)
     {
-        _mediator = mediator;
     }
 
     #region Create
@@ -52,68 +49,66 @@ public class PagesController : Controller
     [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}")]
     public async Task<IActionResult> Edit(Guid pageId, Guid sectionId, Guid formVersionId)
     {
-        var query = new GetPageByIdQuery(pageId, sectionId, formVersionId);
-        var response = await _mediator.Send(query);
-        if (response.Value == null || !response.Success) return Redirect("/Home/Error");
+        try
+        {
+            var query = new GetPageByIdQuery(pageId, sectionId, formVersionId);
+            var response = await Send(query);
 
-        return View(EditPageViewModel.Map(response.Value, formVersionId));
+            return View(EditPageViewModel.Map(response, formVersionId));
+        }
+        catch
+        {
+            return Redirect("/Home/Error");
+        }
     }
 
     [HttpPost]
     [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}")]
     public async Task<IActionResult> Edit(EditPageViewModel model)
     {
-        if (model.AdditionalFormActions.MoveUp != default)
+        try
         {
-            var command = new MoveQuestionUpCommand()
+            if (model.AdditionalFormActions.MoveUp != default)
             {
-                FormVersionId = model.FormVersionId,
-                SectionId = model.SectionId,
-                PageId = model.PageId,
-                QuestionId = model.AdditionalFormActions.MoveUp ?? Guid.Empty
-            };
-            var response = await _mediator.Send(command);
-            if (!response.Success)
-            {
-                ViewBag.InternalServerError = true;
-                return View(model);
+                var command = new MoveQuestionUpCommand()
+                {
+                    FormVersionId = model.FormVersionId,
+                    SectionId = model.SectionId,
+                    PageId = model.PageId,
+                    QuestionId = model.AdditionalFormActions.MoveUp ?? Guid.Empty
+                };
+                await Send(command);
+                return await Edit(model.PageId, model.SectionId, model.FormVersionId);
             }
-            return await Edit(model.PageId, model.SectionId, model.FormVersionId);
-        }
-        else if (model.AdditionalFormActions.MoveDown != default)
-        {
-            var command = new MoveQuestionDownCommand()
+            else if (model.AdditionalFormActions.MoveDown != default)
             {
-                FormVersionId = model.FormVersionId,
-                SectionId = model.SectionId,
-                PageId = model.PageId,
-                QuestionId = model.AdditionalFormActions.MoveDown ?? Guid.Empty
-            };
-            var response = await _mediator.Send(command);
-            if (!response.Success)
-            {
-                ViewBag.InternalServerError = true;
-                return View(model);
+                var command = new MoveQuestionDownCommand()
+                {
+                    FormVersionId = model.FormVersionId,
+                    SectionId = model.SectionId,
+                    PageId = model.PageId,
+                    QuestionId = model.AdditionalFormActions.MoveDown ?? Guid.Empty
+                };
+                await Send(command);
+                return await Edit(model.PageId, model.SectionId, model.FormVersionId);
             }
-            return await Edit(model.PageId, model.SectionId, model.FormVersionId);
-        }
-        else
-        {
-            var command = new UpdatePageCommand()
+            else
             {
-                Title = model.Title,
-                SectionId = model.SectionId,
-                FormVersionId = model.FormVersionId,
-                Id = model.PageId
-            };
+                var command = new UpdatePageCommand()
+                {
+                    Title = model.Title,
+                    SectionId = model.SectionId,
+                    FormVersionId = model.FormVersionId,
+                    Id = model.PageId
+                };
 
-            var response = await _mediator.Send(command);
-            if (!response.Success)
-            {
-                ViewBag.InternalServerError = true;
-                return View(model);
+                await Send(command);
+                return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId, pageId = model.PageId });
             }
-            return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId, pageId = model.PageId });
+        }
+        catch
+        {
+            return View(model);
         }
     }
     #endregion
@@ -122,53 +117,67 @@ public class PagesController : Controller
     [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/preview")]
     public async Task<IActionResult> Preview(Guid pageId, Guid sectionId, Guid formVersionId)
     {
-        var query = new GetPagePreviewByIdQuery(pageId, sectionId, formVersionId);
-        var response = await _mediator.Send(query);
-        if (response.Value == null || !response.Success) return Redirect("/Home/Error");
-
-        return View(new PreviewPageViewModel()
+        try
         {
-            PageId = pageId,
-            SectionId = sectionId,
-            FormVersionId = formVersionId,
-            Value = response.Value
-        });
+            var query = new GetPagePreviewByIdQuery(pageId, sectionId, formVersionId);
+            var response = await Send(query);
+
+            return View(new PreviewPageViewModel()
+            {
+                PageId = pageId,
+                SectionId = sectionId,
+                FormVersionId = formVersionId,
+                Value = response
+            });
+        }
+        catch
+        {
+            return Redirect("/Home/Error");
+        }
     }
     #endregion
     #region Delete
     [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/delete")]
     public async Task<IActionResult> Delete(Guid formVersionId, Guid sectionId, Guid pageId)
     {
-        var query = new GetPageByIdQuery(pageId, sectionId, formVersionId);
-        var response = await _mediator.Send(query);
-        if (response.Value == null || !response.Success) return Redirect("/Home/Error");
-        return View(new DeletePageViewModel()
+        try
         {
-            PageId = pageId,
-            SectionId = sectionId,
-            FormVersionId = formVersionId,
-            Title = response.Value.Title
-        });
+            var query = new GetPageByIdQuery(pageId, sectionId, formVersionId);
+            var response = await Send(query);
+            return View(new DeletePageViewModel()
+            {
+                PageId = pageId,
+                SectionId = sectionId,
+                FormVersionId = formVersionId,
+                Title = response.Title
+            });
+        }
+        catch
+        {
+            return Redirect("/Home/Error");
+        }
     }
 
     [HttpPost]
     [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/delete")]
     public async Task<IActionResult> DeleteConfirmed(DeletePageViewModel model)
     {
-        var command = new DeletePageCommand()
+        try
         {
-            PageId = model.PageId,
-            SectionId = model.SectionId,
-            FormVersionId = model.FormVersionId
-        };
+            var command = new DeletePageCommand()
+            {
+                PageId = model.PageId,
+                SectionId = model.SectionId,
+                FormVersionId = model.FormVersionId
+            };
 
-        var deleteResponse = await _mediator.Send(command);
-        if (!deleteResponse.Success)
+            await Send(command);
+            return RedirectToAction("Edit", "Sections", new { formVersionId = model.FormVersionId, sectionId = model.SectionId });
+        }
+        catch
         {
-            ViewBag.InternalServerError = true;
             return View(model);
         }
-        return RedirectToAction("Edit", "Sections", new { formVersionId = model.FormVersionId, sectionId = model.SectionId });
 
     }
     #endregion

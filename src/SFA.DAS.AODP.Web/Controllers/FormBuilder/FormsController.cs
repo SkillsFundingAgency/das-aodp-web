@@ -5,70 +5,63 @@ using SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Form;
+using SFA.DAS.AODP.Web.Controllers;
 using System.Reflection;
 
 namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
 
-public class FormsController : Controller
+public class FormsController : ControllerBase
 {
-    private readonly IMediator _mediator;
-
-    public FormsController(IMediator mediator)
+    public FormsController(IMediator mediator) : base(mediator)
     {
-        _mediator = mediator;
+
     }
 
     #region Main
     public async Task<IActionResult> Index()
     {
-        var query = new GetAllFormVersionsQuery();
-        var response = await _mediator.Send(query);
-        if(!response.Success)
+        try
+        {
+            var query = new GetAllFormVersionsQuery();
+            var response = await Send(query);
+
+            var viewModel = FormVersionListViewModel.Map(response);
+
+            return View(viewModel);
+        }
+        catch
         {
             return Redirect("/Home/Error");
         }
-
-        var viewModel = FormVersionListViewModel.Map(response.Value);
-
-        return View(viewModel);
     }
 
     [HttpPost]
     public async Task<IActionResult> Index(FormVersionListViewModel model)
     {
-        if (model.AdditionalActions.CreateDraft.HasValue)
+        try
         {
-            var command = new CreateDraftFormVersionCommand(model.AdditionalActions.CreateDraft.Value);
-            var response = await _mediator.Send(command);
-            if (response.Success)
+            if (model.AdditionalActions.CreateDraft.HasValue)
             {
-                return RedirectToAction(nameof(Edit), new { formVersionId = response.Value.FormVersionId });
+                var command = new CreateDraftFormVersionCommand(model.AdditionalActions.CreateDraft.Value);
+                var response = await _mediator.Send(command);
             }
-            ViewBag.InternalServerError = true;
+            else if (model.AdditionalActions.MoveDown.HasValue)
+            {
+                var command = new MoveFormDownCommand(model.AdditionalActions.MoveDown.Value);
+                var response = await _mediator.Send(command);
+            }
+            else if (model.AdditionalActions.MoveUp.HasValue)
+            {
+                var command = new MoveFormUpCommand(model.AdditionalActions.MoveUp.Value);
+                var response = await _mediator.Send(command);
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+        catch
+        {
             return View(model);
         }
-        else if (model.AdditionalActions.MoveDown.HasValue)
-        {
-            var command = new MoveFormDownCommand(model.AdditionalActions.MoveDown.Value);
-            var response = await _mediator.Send(command);
-            if (!response.Success)
-            {
-                ViewBag.InternalServerError = true;
-                return View(model);
-            }
-        }
-        else if (model.AdditionalActions.MoveUp.HasValue)
-        {
-            var command = new MoveFormUpCommand(model.AdditionalActions.MoveUp.Value);
-            var response = await _mediator.Send(command);
-            if (!response.Success)
-            {
-                ViewBag.InternalServerError = true;
-                return View(model);
-            }
-        }
-
-        return RedirectToAction(nameof(Index));
     }
     #endregion
 
@@ -84,19 +77,21 @@ public class FormsController : Controller
     [Route("forms/create")]
     public async Task<IActionResult> Create(CreateFormVersionViewModel viewModel)
     {
-        var command = new CreateFormVersionCommand
+        try
         {
-            Title = viewModel.Name,
-            Description = viewModel.Description,
-        };
+            var command = new CreateFormVersionCommand
+            {
+                Title = viewModel.Name,
+                Description = viewModel.Description,
+            };
 
-        var response = await _mediator.Send(command);
-        if (!response.Success)
+            var response = await Send(command);
+            return RedirectToAction(nameof(Edit), new { formVersionId = response.Id });
+        }
+        catch
         {
-            ViewBag.InternalServerError = true;
             return View(viewModel);
         }
-        return RedirectToAction(nameof(Edit), new { formVersionId = response.Value.Id });
     }
     #endregion
 
@@ -105,85 +100,73 @@ public class FormsController : Controller
     [Route("forms/{formVersionId}")]
     public async Task<IActionResult> Edit(Guid formVersionId)
     {
-        var formVersionQuery = new GetFormVersionByIdQuery(formVersionId);
-        var response = await _mediator.Send(formVersionQuery);
-        if (!response.Success) return Redirect("Error");
+        try
+        {
+            var formVersionQuery = new GetFormVersionByIdQuery(formVersionId);
+            var response = await Send(formVersionQuery);
 
-        var viewModel = EditFormVersionViewModel.Map(response.Value);
+            var viewModel = EditFormVersionViewModel.Map(response);
 
-
-        return View(viewModel);
+            return View(viewModel);
+        }
+        catch
+        {
+            return Redirect("Error");
+        } 
+        
     }
 
     [HttpPost]
     [Route("forms/{formVersionId}")]
     public async Task<IActionResult> Edit(EditFormVersionViewModel editFormVersionViewModel)
     {
-        if (editFormVersionViewModel.AdditionalFormActions.Publish != default)
+        try
         {
-            var command = new PublishFormVersionCommand(editFormVersionViewModel.Id);
-            var response = await _mediator.Send(command);
-            if (!response.Success)
+            if (editFormVersionViewModel.AdditionalFormActions.Publish != default)
             {
-                ViewBag.InternalServerError = true;
-                return View(editFormVersionViewModel);
+                var command = new PublishFormVersionCommand(editFormVersionViewModel.Id);
+                await Send(command);
             }
+            else if (editFormVersionViewModel.AdditionalFormActions.UnPublish != default)
+            {
+                var command = new UnpublishFormVersionCommand(editFormVersionViewModel.Id);
+                await Send(command);
+            }
+            else if (editFormVersionViewModel.AdditionalFormActions.MoveUp != default)
+            {
+                var command = new MoveSectionUpCommand()
+                {
+                    FormVersionId = editFormVersionViewModel.Id,
+                    SectionId = editFormVersionViewModel.AdditionalFormActions.MoveUp ?? Guid.Empty,
+                };
+                await Send(command);
+            }
+            else if (editFormVersionViewModel.AdditionalFormActions.MoveDown != default)
+            {
+                var command = new MoveSectionDownCommand()
+                {
+                    FormVersionId = editFormVersionViewModel.Id,
+                    SectionId = editFormVersionViewModel.AdditionalFormActions.MoveDown ?? Guid.Empty,
+                };
+                await Send(command);
+            }
+            else
+            {
+                var command = new UpdateFormVersionCommand()
+                {
+                    FormVersionId = editFormVersionViewModel.Id,
+                    Description = editFormVersionViewModel.Description,
+                    Order = editFormVersionViewModel.Order,
+                    Name = editFormVersionViewModel.Title
+                };
+                await Send(command);
+            }
+            return RedirectToAction(nameof(Edit), new { formVersionId = editFormVersionViewModel.Id });
         }
-        else if (editFormVersionViewModel.AdditionalFormActions.UnPublish != default)
+        catch
         {
-            var command = new UnpublishFormVersionCommand(editFormVersionViewModel.Id);
-            var response = await _mediator.Send(command);
-            if (!response.Success)
-            {
-                ViewBag.InternalServerError = true;
-                return View(editFormVersionViewModel);
-            }
+            return View(editFormVersionViewModel);
         }
-        else if (editFormVersionViewModel.AdditionalFormActions.MoveUp != default)
-        {
-            var command = new MoveSectionUpCommand()
-            {
-                FormVersionId = editFormVersionViewModel.Id,
-                SectionId = editFormVersionViewModel.AdditionalFormActions.MoveUp ?? Guid.Empty,
-            };
-            var response = await _mediator.Send(command);
-            if (!response.Success)
-            {
-                ViewBag.InternalServerError = true;
-                return View(editFormVersionViewModel);
-            }
-        }
-        else if (editFormVersionViewModel.AdditionalFormActions.MoveDown != default)
-        {
-            var command = new MoveSectionDownCommand()
-            {
-                FormVersionId = editFormVersionViewModel.Id,
-                SectionId = editFormVersionViewModel.AdditionalFormActions.MoveDown ?? Guid.Empty,
-            };
-            var response = await _mediator.Send(command);
-            if (!response.Success)
-            {
-                ViewBag.InternalServerError = true;
-                return View(editFormVersionViewModel);
-            }
-        }
-        else
-        {
-            var command = new UpdateFormVersionCommand()
-            {
-                FormVersionId = editFormVersionViewModel.Id,
-                Description = editFormVersionViewModel.Description,
-                Order = editFormVersionViewModel.Order,
-                Name = editFormVersionViewModel.Title
-            };
-            var response = await _mediator.Send(command);
-            if (!response.Success)
-            {
-                ViewBag.InternalServerError = true;
-                return View(editFormVersionViewModel);
-            }
-        }
-        return RedirectToAction(nameof(Edit), new { formVersionId = editFormVersionViewModel.Id });
     }
     #endregion
 
@@ -191,28 +174,36 @@ public class FormsController : Controller
     [Route("forms/{formVersionId}/delete")]
     public async Task<IActionResult> Delete(Guid formVersionId)
     {
-        var query = new GetFormVersionByIdQuery(formVersionId);
-        var response = await _mediator.Send(query);
-        if (response.Value == null || !response.Success) return Redirect("/Home/Error");
-        return View(new DeleteFormViewModel()
+        try
         {
-            FormVersionId = formVersionId,
-            Title = response.Value.Title
-        });
+            var query = new GetFormVersionByIdQuery(formVersionId);
+            var response = await Send(query);
+            return View(new DeleteFormViewModel()
+            {
+                FormVersionId = formVersionId,
+                Title = response.Title
+            });
+        }
+        catch
+        {
+            return Redirect("/Home/Error");
+        }
     }
 
     [HttpPost]
     [Route("forms/{formVersionId}/delete")]
     public async Task<IActionResult> DeleteConfirmed(DeleteFormViewModel model)
     {
-        var command = new DeleteFormVersionCommand(model.FormVersionId);
-        var deleteResponse = await _mediator.Send(command);
-        if (!deleteResponse.Success)
+        try
         {
-            ViewBag.InternalServerError = true;
+            var command = new DeleteFormVersionCommand(model.FormVersionId);
+            await Send(command);
+            return RedirectToAction(nameof(Index));
+        }
+        catch
+        {
             return View(model);
         }
-        return RedirectToAction(nameof(Index));
     }
     #endregion
 }
