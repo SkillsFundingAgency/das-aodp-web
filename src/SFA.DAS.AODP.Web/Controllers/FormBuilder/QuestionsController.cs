@@ -75,6 +75,14 @@ public class QuestionsController : Controller
         var response = await _mediator.Send(query);
         if (response.Value == null) return NotFound();
 
+        for (int i = 0; i < response.Value.Options.Count; i++)
+        {
+            if (TempData.TryGetValue($"MultiChoiceError_{i}", out var error))
+            {
+                ModelState.AddModelError($"RadioButton.MultiChoice[{i}]", error?.ToString() ?? string.Empty);
+            }
+        }
+
         var map = EditQuestionViewModel.MapToViewModel(response.Value, formVersionId, sectionId);
         return View(map);
 
@@ -96,14 +104,15 @@ public class QuestionsController : Controller
             {
                 if (model.Options.Options[indexToRemove].DoesHaveAssociatedRoutes)
                 {
-                    ModelState.AddModelError($"RadioButton.MultiChoice[{indexToRemove}]", "You cannot remove this option because it has associated routes.");
+                    TempData[$"MultiChoiceError_{indexToRemove}"] = "You cannot remove this option because it has associated routes.";
                 }
                 else
                 {
                     model.Options.Options.RemoveAt(indexToRemove);
+                    return View(model);
                 }
             }
-            return View(model);
+            return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId, pageId = model.PageId, questionId = model.Id });
         }
 
         var command = EditQuestionViewModel.MapToCommand(model);
