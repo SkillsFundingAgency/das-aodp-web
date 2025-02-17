@@ -15,7 +15,6 @@ namespace SFA.DAS.AODP.Web.Validators
 
         public void ValidateApplicationPageAnswers(ModelStateDictionary modelState, GetApplicationPageByIdQueryResponse page, ApplicationPageViewModel viewModel)
         {
-            return;
             foreach (var question in page.Questions)
             {
                 var questionAnswer = viewModel.Questions.First(q => q.Id == question.Id);

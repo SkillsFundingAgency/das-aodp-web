@@ -9,6 +9,9 @@ public static class AnswerValidatorExtensions
         services.AddTransient<IApplicationAnswersValidator, ApplicationAnswersValidator>();
         services.AddTransient<IAnswerValidator, TextValidator>();
         services.AddTransient<IAnswerValidator, RadioValidator>();
+        services.AddTransient<IAnswerValidator, DateValidator>();
+        services.AddTransient<IAnswerValidator, CheckboxValidator>();
+        services.AddTransient<IAnswerValidator, NumberValidator>();
 
         return services;
     }

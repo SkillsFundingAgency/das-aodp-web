@@ -18,10 +18,10 @@ namespace SFA.DAS.AODP.Web.Validators
             if (required && (answer == null || String.IsNullOrEmpty(answer.TextValue)))
                 throw new QuestionValidationFailedException(question.Id, question.Title, $"Please provide a value.");
 
-            if (minLength is not null && (String.IsNullOrEmpty(answer!.TextValue) || minLength > answer.TextValue.Length))
+            if (minLength is not null && minLength > answer.TextValue?.Length)
                 throw new QuestionValidationFailedException(question.Id, question.Title, $"The value must be greater than {minLength} characters long.");
 
-            if (maxLength is not null && (String.IsNullOrEmpty(answer!.TextValue) && maxLength < answer.TextValue?.Length))
+            if (maxLength is not null && maxLength < answer.TextValue?.Length)
                 throw new QuestionValidationFailedException(question.Id, question.Title, $"The value must be less than {maxLength} characters long.");
         }
     }
