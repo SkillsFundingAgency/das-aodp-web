@@ -30,8 +30,6 @@ namespace SFA.DAS.AODP.Authentication.Extensions
 
             services.Configure<DfEOidcConfiguration>(configuration.GetSection(nameof(DfEOidcConfiguration)));
 
-
-
             services.AddSingleton(cfg => cfg.GetService<IOptions<DfEOidcConfiguration>>().Value);
             services.AddTransient(typeof(ICustomServiceRole), customServiceRole);
             services.AddTransient<IDfESignInService, DfESignInService>();
@@ -41,26 +39,10 @@ namespace SFA.DAS.AODP.Authentication.Extensions
                 )
                 .SetHandlerLifetime(TimeSpan.FromMinutes(10))
                 .AddPolicyHandler(HttpClientRetryPolicy());
+            
             services.AddTransient<ITokenDataSerializer, TokenDataSerializer>();
             services.AddTransient<ITokenBuilder, TokenBuilder>();
             services.AddSingleton<ITicketStore, AuthenticationTicketStore>();
-
-            var connection = configuration.GetSection(nameof(DfEOidcConfiguration)).Get<DfEOidcConfiguration>();
-            if (string.IsNullOrEmpty(connection.DfELoginSessionConnectionString))
-            {
-#if NETSTANDARD2_0
-                services.AddMemoryCache();
-#else
-                services.AddDistributedMemoryCache();
-#endif
-            }
-            else
-            {
-                services.AddStackExchangeRedisCache(options =>
-                {
-                    options.Configuration = connection.DfELoginSessionConnectionString;
-                });
-            }
         }
 
         private static IAsyncPolicy<HttpResponseMessage> HttpClientRetryPolicy()
