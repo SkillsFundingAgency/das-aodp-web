@@ -1,7 +1,8 @@
-﻿using Azure;
-using SFA.DAS.AODP.Application.Commands.FormBuilder.Questions;
+﻿using SFA.DAS.AODP.Application.Commands.FormBuilder.Questions;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Questions;
 using SFA.DAS.AODP.Models.Forms;
+using SFA.DAS.AODP.Models.Settings;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
@@ -30,7 +31,7 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
         public CheckboxOptions Checkbox { get; set; } = new();
         public NumberInputOptions NumberInput { get; set; } = new();
         public DateInputOptions DateInput { get; set; } = new();
-
+        public FileUploadOptions FileUpload { get; set; } = new();
 
         public bool Editable { get; set; }
 
@@ -56,7 +57,7 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
             public class OptionItem
             {
                 public Guid Id { get; set; }
-                public string Value { get; set; } = string.Empty;
+                public string? Value { get; set; } = string.Empty;
                 public int Order { get; set; }
                 public bool DoesHaveAssociatedRoutes { get; set; } = false;
             }
@@ -77,13 +78,23 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
 
         public class DateInputOptions
         {
+            [DisplayName("Minimum date")]
             public DateOnly? GreaterThanOrEqualTo { get; set; }
+            [DisplayName("Maximum date")]
             public DateOnly? LessThanOrEqualTo { get; set; }
             public RelativeDateValidation DateValidation { get; set; }
             public enum RelativeDateValidation { MustBeInFuture, MustBeInPast, NotApplicable };
         }
 
-        public static EditQuestionViewModel MapToViewModel(GetQuestionByIdQueryResponse response, Guid formVersionId, Guid sectionId)
+        public class FileUploadOptions
+        {
+            public List<string>? FileTypes { get; set; } = new();
+            public int MaxSize { get; set; }
+            public string? FileNamePrefix { get; set; }
+            public int NumberOfFiles { get; set; }
+        }
+
+        public static EditQuestionViewModel MapToViewModel(GetQuestionByIdQueryResponse response, Guid formVersionId, Guid sectionId, FormBuilderSettings settings)
         {
             Enum.TryParse(response.Type, out QuestionType type);
             EditQuestionViewModel model = new()
@@ -159,6 +170,16 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
                     model.DateInput.DateValidation = DateInputOptions.RelativeDateValidation.MustBeInPast;
                 }
             }
+            else if (type == QuestionType.File)
+            {
+                model.FileUpload = new()
+                {
+                    FileTypes = settings.UploadFileTypesAllowed,
+                    FileNamePrefix = response.FileUpload?.FileNamePrefix,
+                    MaxSize = response.FileUpload?.MaxSize ?? settings.MaxUploadFileSize,
+                    NumberOfFiles = response.FileUpload?.NumberOfFiles ?? settings.MaxUploadNumberOfFiles,
+                };
+            }
             return model;
         }
 
@@ -222,6 +243,15 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
                     LessThanOrEqualTo = model.DateInput.LessThanOrEqualTo,
                     MustBeInFuture = model.DateInput.DateValidation == DateInputOptions.RelativeDateValidation.MustBeInFuture,
                     MustBeInPast = model.DateInput.DateValidation == DateInputOptions.RelativeDateValidation.MustBeInPast,
+                };
+            }
+            else if (model.Type == QuestionType.File)
+            {
+                command.FileUpload = new()
+                {
+                    FileNamePrefix = model.FileUpload.FileNamePrefix,
+                    NumberOfFiles = model.FileUpload.NumberOfFiles,
+                    MaxSize = model.FileUpload.MaxSize,
                 };
             }
 

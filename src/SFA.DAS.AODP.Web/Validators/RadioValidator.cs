@@ -6,9 +6,11 @@ namespace SFA.DAS.AODP.Web.Validators
 {
     public class RadioValidator : IAnswerValidator
     {
+
+
         public List<QuestionType> QuestionTypes => [QuestionType.Radio];
 
-        public void Validate(GetApplicationPageByIdQueryResponse.Question question, ApplicationPageViewModel.Answer? answer)
+        public void Validate(GetApplicationPageByIdQueryResponse.Question question, ApplicationPageViewModel.Answer? answer, ApplicationPageViewModel model)
         {
             var required = question.Required;
 

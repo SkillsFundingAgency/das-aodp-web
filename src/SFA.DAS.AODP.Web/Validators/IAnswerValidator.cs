@@ -6,6 +6,6 @@ namespace SFA.DAS.AODP.Web.Validators
     public interface IAnswerValidator
     {
         public List<QuestionType> QuestionTypes { get; }
-        public void Validate(GetApplicationPageByIdQueryResponse.Question question, ApplicationPageViewModel.Answer? answer);
+        public void Validate(GetApplicationPageByIdQueryResponse.Question question, ApplicationPageViewModel.Answer answer, ApplicationPageViewModel model);
     }
 }

@@ -1,4 +1,5 @@
 ﻿@using SFA.DAS.AODP.Models.Forms
+@using SFA.DAS.AODP.Web.Helpers.ApplicationPageViewHelpers
 @using SFA.DAS.AODP.Web.Models.Application
 @using SFA.DAS.AODP.Web.Models.GdsComponents
 @model ApplicationPageViewModel.Question
@@ -6,7 +7,10 @@
 
 
 @{
-    var errored = ViewContext.ModelState.Any(k => k.Key == Model.Id.ToString());
+
+    var errored = ViewContext.ModelState.Any(
+        k => k.Value.ValidationState == Microsoft.AspNetCore.Mvc.ModelBinding.ModelValidationState.Invalid
+        && (k.Key == Model.Id.ToString() || ApplicationPageErrorHelper.ExtractOrderFromErrorKey(k.Key) == Model.Order - 1));
     var formGroupErrorClass = errored ? "govuk-form-group--error" : "";
     var inputErrorClass = errored ? "govuk-input--error" : "";
 }
@@ -112,11 +116,44 @@
     {
 
         var dateInputModel = new GdsDateInputViewModel()
-        {
-            Id = questionHtmlId,
-            Name = $"Questions[{(Model.Order - 1)}][Answer][DateValue]",
-            Value = Model.Answer?.DateValue
-        };
+                {
+                    Id = questionHtmlId,
+                    Name = $"Questions[{(Model.Order - 1)}][Answer][DateValue]",
+                    Value = Model.Answer?.DateValue
+                };
         await Html.RenderPartialAsync("GdsComponents/_GdsDateInput", dateInputModel);
+    }
+
+    else if (Model.Type == QuestionType.File)
+    {
+        <input class="govuk-file-upload"
+               name="Questions[@(Model.Order - 1)].Answer.FormFiles"
+               id="@questionHtmlId"
+               type="file"
+               multiple>
+
+        @if (Model.UploadedFiles.Any())
+        {
+            <p class="govuk-body govuk-!-static-margin-top-1"><strong>Note that clicking 'Remove file' will immediately remove the file from the system.</strong></p>
+
+            <p class="govuk-body govuk-!-static-margin-top-1">Uploaded files:</p>
+            <ul class="govuk-list govuk-list--bullet">
+                @foreach (var file in Model.UploadedFiles)
+                {
+                    <li>
+                        @file.DisplayName
+                        <button type="submit"
+                                class="govuk-button govuk-button--warning"
+                                data-module="govuk-button"
+                                data-prevent-double-click="true"
+                                value="@file.FullPath"
+                                name="RemoveFile">
+                            Remove file
+                        </button>
+                    </li>
+                }
+            </ul>
+        }
+
     }
 </div>

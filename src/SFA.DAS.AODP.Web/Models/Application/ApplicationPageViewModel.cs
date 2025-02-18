@@ -1,4 +1,5 @@
 ﻿using SFA.DAS.AODP.Models.Forms;
+using System;
 using System.ComponentModel;
 
 namespace SFA.DAS.AODP.Web.Models.Application
@@ -16,6 +17,7 @@ namespace SFA.DAS.AODP.Web.Models.Application
         public string Description { get; set; } = string.Empty;
         public int Order { get; set; }
 
+        public string? RemoveFile { get; set; }
 
         public List<Question> Questions { get; set; } = new();
 
@@ -31,17 +33,20 @@ namespace SFA.DAS.AODP.Web.Models.Application
 
             public List<Option> Options { get; set; } = new();
 
+            public List<UploadedFile> UploadedFiles { get; set; } = new();
+
         }
 
         public class Answer
         {
             public string? TextValue { get; set; }
             public decimal? NumberValue { get; set; }
-
             [DisplayName("Date")]
             public DateOnly? DateValue { get; set; }
             public List<string>? MultipleChoiceValues { get; set; }
             public string? RadioChoiceValue { get; set; }
+            public List<IFormFile>? FormFiles { get; set; }
+
         }
 
 
@@ -82,6 +87,11 @@ namespace SFA.DAS.AODP.Web.Models.Application
             public bool? MustBeInPast { get; set; }
         }
 
+        public class UploadedFile
+        {
+            public string FullPath { get; set; }
+            public string DisplayName { get; set; }
+        }
 
         public static ApplicationPageViewModel MapToViewModel
         (
@@ -90,8 +100,8 @@ namespace SFA.DAS.AODP.Web.Models.Application
             Guid formVersionId,
             Guid sectionId,
             Guid organisationId,
-            GetApplicationPageAnswersByPageIdQueryResponse answers
-        )
+            GetApplicationPageAnswersByPageIdQueryResponse answers,
+            Func<string, List<Infrastructure.File.UploadedBlob>> fetchBlobFunc)
         {
             ApplicationPageViewModel model = new ApplicationPageViewModel()
             {
@@ -102,16 +112,17 @@ namespace SFA.DAS.AODP.Web.Models.Application
                 OrganisationId = organisationId,
             };
 
-            return PopulateViewModel(model, value, answers);
+            return PopulateViewModel(model, value, fetchBlobFunc, answers);
         }
 
         public static ApplicationPageViewModel RepopulatePageDataOnViewModel
-       (
-           GetApplicationPageByIdQueryResponse value,
-           ApplicationPageViewModel viewModel
-       )
+        (
+            GetApplicationPageByIdQueryResponse value,
+            ApplicationPageViewModel viewModel,
+            Func<string, List<Infrastructure.File.UploadedBlob>> fetchBlobFunc
+        )
         {
-            return PopulateViewModel(viewModel, value);
+            return PopulateViewModel(viewModel, value, fetchBlobFunc);
 
         }
 
@@ -119,7 +130,7 @@ namespace SFA.DAS.AODP.Web.Models.Application
         (
             ApplicationPageViewModel model,
             GetApplicationPageByIdQueryResponse value,
-
+            Func<string, List<Infrastructure.File.UploadedBlob>> fetchBlobFunc,
             GetApplicationPageAnswersByPageIdQueryResponse? answers = null
         )
         {
@@ -163,6 +174,20 @@ namespace SFA.DAS.AODP.Web.Models.Application
                         });
                     }
                 }
+                else if (questionModel.Type == QuestionType.File)
+                {
+                    var blobs = fetchBlobFunc($"{model.ApplicationId}/{questionModel.Id}");
+                    foreach (var blob in blobs)
+                    {
+                        questionModel.UploadedFiles.Add(new()
+                        {
+                            FullPath = blob.FullPath,
+                            DisplayName = blob.FileName
+                        });
+                    }
+                    continue;
+                }
+
             }
 
             model.Questions = model.Questions.OrderBy(o => o.Order).ToList();
@@ -171,7 +196,7 @@ namespace SFA.DAS.AODP.Web.Models.Application
             return model;
         }
 
-        private static void PopulateExistingAnswers(List<Question> questions, GetApplicationPageAnswersByPageIdQueryResponse answers)
+        private static async void PopulateExistingAnswers(List<Question> questions, GetApplicationPageAnswersByPageIdQueryResponse answers)
         {
             foreach (var question in questions ?? [])
             {
@@ -199,8 +224,8 @@ namespace SFA.DAS.AODP.Web.Models.Application
                 {
                     question.Answer!.DateValue = answer?.DateValue;
                 }
-            }
 
+            }
         }
 
         public static UpdatePageAnswersCommand MapToCommand(ApplicationPageViewModel model, GetApplicationPageByIdQueryResponse page)

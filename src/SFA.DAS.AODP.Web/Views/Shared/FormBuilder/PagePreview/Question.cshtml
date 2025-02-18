@@ -76,13 +76,15 @@
     {
 
         var dateInputModel = new GdsDateInputViewModel()
-        {
-            Id = Model.Id.ToString(),
-        };
-
+                {
+                    Id = Model.Id.ToString(),
+                };
 
         await Html.RenderPartialAsync("GdsComponents/_GdsDateInput", dateInputModel);
-
+    }
+    else if (Model.Type == QuestionType.File.ToString())
+    {
+        <input class="govuk-file-upload" id="@htmlId" type="file">
     }
 
 

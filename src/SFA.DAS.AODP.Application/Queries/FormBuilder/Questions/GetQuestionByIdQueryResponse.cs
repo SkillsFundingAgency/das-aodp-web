@@ -17,6 +17,8 @@ public class GetQuestionByIdQueryResponse
     public NumberInputOptions NumberInput { get; set; } = new();
     public CheckboxOptions Checkbox { get; set; } = new();
     public DateInputOptions DateInput { get; set; } = new();
+    public FileUploadOptions FileUpload { get; set; } = new();
+
     public List<Option> Options { get; set; } = new();
     public bool Editable { get; set; }
 
@@ -52,6 +54,13 @@ public class GetQuestionByIdQueryResponse
         public DateOnly? LessThanOrEqualTo { get; set; }
         public bool? MustBeInFuture { get; set; }
         public bool? MustBeInPast { get; set; }
+    }
+    public class FileUploadOptions
+    {
+        public List<string> FileTypes { get; set; }
+        public int? MaxSize { get; set; }
+        public string? FileNamePrefix { get; set; }
+        public int? NumberOfFiles { get; set; }
     }
     public class RouteInformation
     {

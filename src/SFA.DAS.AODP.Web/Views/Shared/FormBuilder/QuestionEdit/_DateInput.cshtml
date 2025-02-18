@@ -6,19 +6,23 @@
 @{
     var greaterThanOrEqualTo = new GdsDateInputViewModel()
             {
-                Id = "DateInput[GreaterThanOrEqualTo]",
+                Id = "DateInput.GreaterThanOrEqualTo",
                 Name = "DateInput[GreaterThanOrEqualTo]",
                 Value = Model.GreaterThanOrEqualTo,
                 Title = "What is the minimum, inclusive, date allowed? (optional)"
             };
+    var greaterThanOrEqualToError = ViewContext.ModelState.FirstOrDefault(k => k.Key == greaterThanOrEqualTo.Id).Value?.Errors;
+    if (greaterThanOrEqualToError != null) greaterThanOrEqualTo.ErrorMessage = greaterThanOrEqualToError.FirstOrDefault()?.ErrorMessage;
 
     var lessThanOrEqualTo = new GdsDateInputViewModel()
             {
-                Id = "DateInput[LessThanOrEqualTo]",
+                Id = "DateInput.LessThanOrEqualTo",
                 Name = "DateInput[LessThanOrEqualTo]",
                 Value = Model.LessThanOrEqualTo,
                 Title = "What is the maximum, inclusive, date allowed? (optional)"
             };
+    var lessThanOrEqualToError = ViewContext.ModelState.FirstOrDefault(k => k.Key == lessThanOrEqualTo.Id).Value?.Errors;
+    if (lessThanOrEqualToError != null) lessThanOrEqualTo.ErrorMessage = lessThanOrEqualToError.FirstOrDefault()?.ErrorMessage;
 }
 @{
     await Html.RenderPartialAsync("GdsComponents/_GdsDateInput", greaterThanOrEqualTo);

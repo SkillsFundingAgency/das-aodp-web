@@ -14,5 +14,7 @@ namespace SFA.DAS.AODP.Web.Models.Application
         [Required]
         public string Owner { get; set; }
 
+        public string? QualificationNumber { get; set; }
+
     }
 }

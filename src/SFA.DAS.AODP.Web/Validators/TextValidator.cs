@@ -8,7 +8,7 @@ namespace SFA.DAS.AODP.Web.Validators
     {
         public List<QuestionType> QuestionTypes => [QuestionType.TextArea, QuestionType.Text];
 
-        public void Validate(GetApplicationPageByIdQueryResponse.Question question, ApplicationPageViewModel.Answer? answer)
+        public void Validate(GetApplicationPageByIdQueryResponse.Question question, ApplicationPageViewModel.Answer? answer, ApplicationPageViewModel model)
         {
             var required = question.Required;
 
