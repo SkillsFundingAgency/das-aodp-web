@@ -152,7 +152,7 @@ public class PagesController : ControllerBase
                 SectionId = sectionId,
                 FormVersionId = formVersionId,
                 Title = response.Title,
-                HasAssociatedRoutes = response.HasAssociatedRoutes            
+                HasAssociatedRoutes = response.HasAssociatedRoutes
             });
         }
         catch

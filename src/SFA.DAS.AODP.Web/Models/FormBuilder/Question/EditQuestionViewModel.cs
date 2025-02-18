@@ -57,7 +57,7 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
             public class OptionItem
             {
                 public Guid Id { get; set; }
-                public string Value { get; set; } = string.Empty;
+                public string? Value { get; set; } = string.Empty;
                 public int Order { get; set; }
                 public bool DoesHaveAssociatedRoutes { get; set; } = false;
             }
