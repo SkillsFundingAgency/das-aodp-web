@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Questions;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Questions;
+using SFA.DAS.AODP.Application.Queries.FormBuilder.Routes;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Question;
 
 namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
@@ -74,6 +75,14 @@ public class QuestionsController : Controller
         var response = await _mediator.Send(query);
         if (response.Value == null) return NotFound();
 
+        for (int i = 0; i < response.Value.Options.Count; i++)
+        {
+            if (TempData.TryGetValue($"MultiChoiceError_{i}", out var error))
+            {
+                ModelState.AddModelError($"RadioButton.MultiChoice[{i}]", error?.ToString() ?? string.Empty);
+            }
+        }
+
         var map = EditQuestionViewModel.MapToViewModel(response.Value, formVersionId, sectionId);
         return View(map);
 
@@ -93,14 +102,22 @@ public class QuestionsController : Controller
             int indexToRemove = model.Options.AdditionalFormActions.RemoveOptionIndex.Value;
             if (indexToRemove >= 0 && indexToRemove < model.Options.Options.Count)
             {
-                model.Options.Options.RemoveAt(indexToRemove);
+                if (model.Options.Options[indexToRemove].DoesHaveAssociatedRoutes)
+                {
+                    TempData[$"MultiChoiceError_{indexToRemove}"] = "You cannot remove this option because it has associated routes.";
+                }
+                else
+                {
+                    model.Options.Options.RemoveAt(indexToRemove);
+                    return View(model);
+                }
             }
-            return View(model);
+            return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId, pageId = model.PageId, questionId = model.Id });
         }
-
 
         var command = EditQuestionViewModel.MapToCommand(model);
         var response = await _mediator.Send(command);
+
 
         return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId, pageId = model.PageId, questionId = model.Id });
     }
@@ -112,6 +129,20 @@ public class QuestionsController : Controller
     [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/questions/{questionId}/delete")]
     public async Task<IActionResult> Delete(Guid formVersionId, Guid sectionId, Guid pageId, Guid questionId)
     {
+        var routesQuery = new GetRoutingInformationForQuestionQuery()
+        {
+            FormVersionId = formVersionId,
+            PageId = pageId,
+            QuestionId = questionId,
+            SectionId = sectionId
+        };
+        var routesResponse = await _mediator.Send(routesQuery);
+        if (routesResponse.Value.Routes.Any())
+        {
+            ModelState.AddModelError("", "There are routes associated with this question");
+        }
+
+        // Instead of the above, add Routes to the GetQuestionByIdQueryResponse???
         var query = new GetQuestionByIdQuery()
         {
             PageId = pageId,
