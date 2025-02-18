@@ -31,8 +31,8 @@
 
                 @if (ViewBag.IsEditable)
                 {
-                    <input type="hidden" name="RadioButton[MultiChoice][@i][DoesHaveAssociatedRoutes]" value="@Model.Options[i].DoesHaveAssociatedRoutes.ToString().ToLowerInvariant()" />
-                    <input type="hidden" name="RadioButton[MultiChoice][@i][Order]" value=@Model.Options[i].Order />
+                    <input type="hidden" name="Options[Options][@i][DoesHaveAssociatedRoutes]" value="@Model.Options[i].DoesHaveAssociatedRoutes.ToString().ToLowerInvariant()" />
+                    <input type="hidden" name="Options[Options][@i][Order]" value=@Model.Options[i].Order />
                     <button type="submit"
                             class="govuk-button govuk-button--warning"
                             data-module="govuk-button"
