@@ -13,11 +13,14 @@ namespace SFA.DAS.AODP.Web.Extensions
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddEnvironmentVariables();
 
-#if DEBUG
-            configBuilder
-                .AddJsonFile("appsettings.json", true)
-                .AddJsonFile("appsettings.Development.json", true);
-#endif
+            if (configuration["EnvironmentName"] == "LOCAL")
+            {
+                configBuilder
+                   .AddJsonFile("appsettings.json", true)
+                   .AddJsonFile("appsettings.Development.json", true);
+            }
+
+
 
             configBuilder.AddAzureTableStorage(options =>
             {
