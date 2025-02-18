@@ -31,6 +31,15 @@
         </govuk-input>
     </div>
 
+    <div class="govuk-form-group">
+        <govuk-input asp-for="@Model.QualificationNumber" input-class="govuk-input--width-50" inputmode="number" pattern="[0-9]*" spellcheck="false">
+            <govuk-input-label is-page-heading="false" class="govuk-label--s">Qualification number (optional)</govuk-input-label>
+            <govuk-input-hint>Please provide the qualification number,if you have it.</govuk-input-hint>
+            @Html.RenderPartialAsync("Validation/_TextInputValidationPartial", nameof(Model.QualificationNumber))
+        </govuk-input>
+    </div>
+
+
     <div class="govuk-button-group">
         <button class="govuk-button" type="submit">Save</button>
         <a class="govuk-button govuk-button--secondary" asp-action="Index" asp-controller="Applications" asp-route-organisationId="@Model.OrganisationId">Cancel</a>

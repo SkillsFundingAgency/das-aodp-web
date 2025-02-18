@@ -1,15 +1,15 @@
-﻿using Azure;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Web.Controllers.FormBuilder;
+using SFA.DAS.AODP.Web.Filters;
 using SFA.DAS.AODP.Web.Models.Application;
 using SFA.DAS.AODP.Web.Validators;
-using System.Reflection;
 
 namespace SFA.DAS.AODP.Web.Controllers.Application
 {
+    [ValidateOrganisation]
     public class ApplicationsController : ControllerBase
     {
         private readonly IApplicationAnswersValidator _validator;
@@ -88,6 +88,8 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
                 Title = createApplicationViewModel.Name,
                 FormVersionId = createApplicationViewModel.FormVersionId,
                 Owner = createApplicationViewModel.Owner,
+                OrganisationId = createApplicationViewModel.OrganisationId,
+                QualificationNumber = createApplicationViewModel.QualificationNumber,
             };
 
             try
@@ -103,6 +105,7 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
         }
 
 
+        [ValidateApplication]
         [HttpGet]
         [Route("organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}")]
         public async Task<IActionResult> ViewApplication(Guid organisationId, Guid applicationId, Guid formVersionId)
@@ -123,7 +126,7 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
             }
         }
 
-
+        [ValidateApplication]
         [HttpGet]
         [Route("organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/sections/{sectionId}")]
         public async Task<IActionResult> ViewApplicationSection(Guid organisationId, Guid applicationId, Guid sectionId, Guid formVersionId)
@@ -144,7 +147,7 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
             }
         }
 
-
+        [ValidateApplication]
         [HttpGet]
         [Route("organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/sections/{sectionId}/pages/{pageOrder}")]
         public async Task<IActionResult> ApplicationPage(Guid organisationId, Guid applicationId, Guid sectionId, int pageOrder, Guid formVersionId)
@@ -174,11 +177,12 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
             }
         }
 
+        [ValidateApplication]
         [HttpPost]
         [Route("organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/sections/{sectionId}/pages/{pageOrder}")]
         public async Task<IActionResult> ApplicationPageAsync([FromForm] ApplicationPageViewModel model)
         {
-            Func<string, List<UploadedBlob>> fetchBlobFunc = path =>  _fileService.ListBlobs(path);
+            Func<string, List<UploadedBlob>> fetchBlobFunc = path => _fileService.ListBlobs(path);
 
             var request = new GetApplicationPageByIdQuery()
             {
