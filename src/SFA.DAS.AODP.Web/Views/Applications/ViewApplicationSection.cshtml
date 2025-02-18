@@ -1,6 +1,10 @@
 ﻿@using SFA.DAS.AODP.Web.Models.Application
 @model ApplicationSectionViewModel
 
+@{
+    ViewData["Title"] = Model.SectionTitle;
+}
+
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
         <govuk-back-link class="govuk-link"

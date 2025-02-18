@@ -1,5 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
-using SFA.DAS.AODP.Models.Forms;
+﻿using SFA.DAS.AODP.Models.Forms;
+using System.ComponentModel;
 
 namespace SFA.DAS.AODP.Web.Models.Application
 {
@@ -13,7 +13,6 @@ namespace SFA.DAS.AODP.Web.Models.Application
         public bool IsSubmitted { get; set; }
 
         public string Title { get; set; } = string.Empty;
-
         public string Description { get; set; } = string.Empty;
         public int Order { get; set; }
 
@@ -30,17 +29,18 @@ namespace SFA.DAS.AODP.Web.Models.Application
             public int Order { get; set; }
             public Answer? Answer { get; set; } = new();
 
-            public TextInputOptions TextInput { get; set; } = new();
-            public RadioOptions RadioButton { get; set; } = new();
+            public List<Option> Options { get; set; } = new();
 
         }
 
         public class Answer
         {
             public string? TextValue { get; set; }
-            public double? NumberValue { get; set; }
-            public DateTime? DateValue { get; set; }
-            public List<string>? MultipleChoiceValue { get; set; }
+            public decimal? NumberValue { get; set; }
+
+            [DisplayName("Date")]
+            public DateOnly? DateValue { get; set; }
+            public List<string>? MultipleChoiceValues { get; set; }
             public string? RadioChoiceValue { get; set; }
         }
 
@@ -52,17 +52,36 @@ namespace SFA.DAS.AODP.Web.Models.Application
 
         }
 
-        public class RadioOptions
-        {
-            public List<RadioOptionItem> MultiChoice { get; set; } = new();
 
-            public class RadioOptionItem
-            {
-                public Guid Id { get; set; }
-                public string Value { get; set; }
-                public int Order { get; set; }
-            }
+        public class CheckboxOptions
+        {
+            public int? MinNumberOfOptions { get; set; }
+            public int? MaxNumberOfOptions { get; set; }
         }
+
+        public class NumberInputOptions
+        {
+            public int? GreaterThanOrEqualTo { get; set; }
+            public int? LessThanOrEqualTo { get; set; }
+            public int? NotEqualTo { get; set; }
+        }
+
+
+        public class Option
+        {
+            public Guid Id { get; set; }
+            public string Value { get; set; }
+            public int Order { get; set; }
+        }
+
+        public class DateInputOptions
+        {
+            public DateOnly? GreaterThanOrEqualTo { get; set; }
+            public DateOnly? LessThanOrEqualTo { get; set; }
+            public bool? MustBeInFuture { get; set; }
+            public bool? MustBeInPast { get; set; }
+        }
+
 
         public static ApplicationPageViewModel MapToViewModel
         (
@@ -109,10 +128,10 @@ namespace SFA.DAS.AODP.Web.Models.Application
             model.Order = value.Order;
             model.Questions ??= new();
 
-            foreach (var question in value.Questions ?? [])
+            foreach (var responseQuestion in value.Questions ?? [])
             {
-                Enum.TryParse(question.Type, out QuestionType type);
-                var questionModel = model.Questions.FirstOrDefault(x => x.Id == question.Id);
+                Enum.TryParse(responseQuestion.Type, out QuestionType type);
+                var questionModel = model.Questions.FirstOrDefault(x => x.Id == responseQuestion.Id);
 
                 if (questionModel == null)
                 {
@@ -121,31 +140,22 @@ namespace SFA.DAS.AODP.Web.Models.Application
 
                 }
 
-
-                questionModel.Id = question.Id;
-                questionModel.Order = question.Order;
-                questionModel.Hint = question.Hint;
-                questionModel.Required = question.Required;
+                questionModel.Id = responseQuestion.Id;
+                questionModel.Order = responseQuestion.Order;
+                questionModel.Hint = responseQuestion.Hint;
+                questionModel.Required = responseQuestion.Required;
                 questionModel.Type = type;
-                questionModel.Title = question.Title;
+                questionModel.Title = responseQuestion.Title;
 
 
-                if (type == QuestionType.Text)
+                if (type == QuestionType.Radio || type == QuestionType.MultiChoice)
                 {
-                    questionModel.TextInput = new()
-                    {
-                        MinLength = question.TextInput.MinLength,
-                        MaxLength = question.TextInput.MaxLength,
-                    };
+                    responseQuestion.Options = responseQuestion?.Options?.OrderBy(o => o.Order)?.ToList() ?? [];
+                    questionModel.Options = new();
 
-                }
-                else if (type == QuestionType.Radio)
-                {
-                    question.RadioButton.MultiChoice = question.RadioButton.MultiChoice.OrderBy(o => o.Order).ToList();
-                    questionModel.RadioButton.MultiChoice = new();
-                    foreach (var option in question.RadioButton.MultiChoice ?? [])
+                    foreach (var option in responseQuestion?.Options ?? [])
                     {
-                        questionModel.RadioButton.MultiChoice.Add(new()
+                        questionModel.Options.Add(new()
                         {
                             Id = option.Id,
                             Value = option.Value,
@@ -153,7 +163,6 @@ namespace SFA.DAS.AODP.Web.Models.Application
                         });
                     }
                 }
-
             }
 
             model.Questions = model.Questions.OrderBy(o => o.Order).ToList();
@@ -167,14 +176,28 @@ namespace SFA.DAS.AODP.Web.Models.Application
             foreach (var question in questions ?? [])
             {
                 var answer = answers.Questions.FirstOrDefault(a => a.QuestionId == question.Id)?.Answer;
-                if (question.Type == QuestionType.Text)
+                if (answer == null) continue;
+
+                if (question.Type == QuestionType.Text || question.Type == QuestionType.TextArea)
                 {
-                    question.Answer.TextValue = answer?.TextValue;
+                    question.Answer!.TextValue = answer?.TextValue;
 
                 }
                 else if (question.Type == QuestionType.Radio)
                 {
-                    question.Answer.RadioChoiceValue = answer?.RadioChoiceValue;
+                    question.Answer!.RadioChoiceValue = answer?.RadioChoiceValue;
+                }
+                else if (question.Type == QuestionType.MultiChoice)
+                {
+                    question.Answer!.MultipleChoiceValues = answer?.MultipleChoiceValue;
+                }
+                else if (question.Type == QuestionType.Number)
+                {
+                    question.Answer!.NumberValue = answer?.NumberValue;
+                }
+                else if (question.Type == QuestionType.Date)
+                {
+                    question.Answer!.DateValue = answer?.DateValue;
                 }
             }
 
@@ -200,7 +223,7 @@ namespace SFA.DAS.AODP.Web.Models.Application
                     Answer = new()
                 };
 
-                if (question.Type == QuestionType.Text)
+                if (question.Type == QuestionType.Text || question.Type == QuestionType.TextArea)
                 {
                     commandQuestion.Answer.TextValue = question.Answer.TextValue;
                 }
@@ -228,13 +251,23 @@ namespace SFA.DAS.AODP.Web.Models.Application
                     }
 
                 }
+                else if (question.Type == QuestionType.MultiChoice)
+                {
+                    commandQuestion.Answer.MultipleChoiceValue = question.Answer.MultipleChoiceValues;
+                }
+                else if (question.Type == QuestionType.Number)
+                {
+                    commandQuestion.Answer.NumberValue = question.Answer.NumberValue;
+                }
+                else if (question.Type == QuestionType.Date)
+                {
+                    commandQuestion.Answer.DateValue = question.Answer.DateValue;
+                }
 
                 command.Questions.Add(commandQuestion);
             }
 
             return command;
-
-
         }
     }
 }

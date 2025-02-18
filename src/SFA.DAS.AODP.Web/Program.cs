@@ -94,6 +94,11 @@ internal class Program
                 .UseHsts()
                 .UseExceptionHandler("/Home/Error");
         }
+        app.Use(async (context, next) =>
+        {
+            Console.WriteLine($"Incoming Request: {context.Request.Method} {context.Request.Path}{context.Request.QueryString}");
+            await next.Invoke();
+        });
 
         app
             .UseHealthChecks("/ping")
@@ -110,7 +115,17 @@ internal class Program
                     "default",
                     "{controller=Home}/{action=Index}/{id?}");
                 endpoints.MapControllerRoute(name: "areas", pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+
+                // Debugging route info
+                endpoints.MapGet("/debug/routes", async context =>
+                {
+                    var routeEndpointDataSource = context.RequestServices.GetRequiredService<EndpointDataSource>();
+                    var routes = routeEndpointDataSource.Endpoints.Select(e => e.DisplayName);
+                    await context.Response.WriteAsync(string.Join("\n", routes));
+                });
             });
         app.Run();
+
+
     }
 }

@@ -1,0 +1,95 @@
+﻿@using SFA.DAS.AODP.Web.Models.GdsComponents
+@model GdsDateInputViewModel
+
+@{
+    string AppendPropertyToName(string name, string property)
+    {
+        if (name == null) return property;
+        if (name.EndsWith("]"))
+        {
+            return name.Insert(name.Length - 1, $".{property}");
+        }
+        else
+        {
+            return $"{name}.{property}";
+        }
+    }
+
+    var day = AppendPropertyToName(Model.Name, "Day");
+    var month = AppendPropertyToName(Model.Name, "Month");
+    var year = AppendPropertyToName(Model.Name, "Year");
+}
+
+@{
+    void RenderDateInput()
+    {
+        <div class="govuk-date-input" id="@Model.Id">
+            <div class="govuk-date-input__item">
+                <div class="govuk-form-group">
+                    <label class="govuk-label govuk-date-input__label" for="@day">
+                        Day
+                    </label>
+                    <input class="govuk-input govuk-date-input__input govuk-input--width-2"
+                           id="@day"
+                           name="@day"
+                           type="text"
+                           value="@Model.Value?.Day"
+                           inputmode="numeric">
+                </div>
+            </div>
+
+            <div class="govuk-date-input__item">
+                <div class="govuk-form-group">
+                    <label class="govuk-label govuk-date-input__label" for="@day">
+                        Month
+                    </label>
+                    <input class="govuk-input govuk-date-input__input govuk-input--width-2"
+                           id="@month"
+                           name="@month"
+                           type="text"
+                           value="@Model.Value?.Month"
+                           inputmode="numeric">
+                </div>
+            </div>
+
+            <div class="govuk-date-input__item">
+                <div class="govuk-form-group">
+                    <label class="govuk-label govuk-date-input__label" for="@day">
+                        Year
+                    </label>
+                    <input class="govuk-input govuk-date-input__input govuk-input--width-4"
+                           id="@year"
+                           name="@year"
+                           type="text"
+                           value="@Model.Value?.Year"
+                           inputmode="numeric">
+                </div>
+            </div>
+
+        </div>
+
+    }
+}
+
+<div class="govuk-form-group">
+    @if (!string.IsNullOrEmpty(Model.Title))
+    {
+        <fieldset class="govuk-fieldset" role="group" aria-describedby="@(Model.Id)-hint">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">
+                @Model.Title
+            </legend>
+            <div id="@(Model.Id)-hint" class="govuk-hint">
+                @Model.Hint
+            </div>
+            @{
+                RenderDateInput();
+            }
+        </fieldset>
+    }
+    else
+    {
+        RenderDateInput();
+    }
+
+</div>
+
