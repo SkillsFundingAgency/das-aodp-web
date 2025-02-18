@@ -31,7 +31,7 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
         public CheckboxOptions Checkbox { get; set; } = new();
         public NumberInputOptions NumberInput { get; set; } = new();
         public DateInputOptions DateInput { get; set; } = new();
-        public FileUploadOptions FileUpload { get; set; }
+        public FileUploadOptions FileUpload { get; set; } = new();
 
         public bool Editable { get; set; }
 

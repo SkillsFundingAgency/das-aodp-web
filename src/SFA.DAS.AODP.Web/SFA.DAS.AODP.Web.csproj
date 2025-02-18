@@ -85,7 +85,7 @@
 	</ItemGroup>
 
 	<PropertyGroup>
-		<PrepareForBuildDependsOn>BundleMinify;$(PrepareForBuildDependsOn)</PrepareForBuildDependsOn>
+		<PrepareForBuildDependsOn>$(PrepareForBuildDependsOn)</PrepareForBuildDependsOn>
 	</PropertyGroup>
 
 

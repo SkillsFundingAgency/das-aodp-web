@@ -1,4 +1,5 @@
 ﻿@using SFA.DAS.AODP.Models.Forms
+@using SFA.DAS.AODP.Web.Helpers.ApplicationPageViewHelpers
 @using SFA.DAS.AODP.Web.Models.Application
 @using SFA.DAS.AODP.Web.Models.GdsComponents
 @model ApplicationPageViewModel.Question
@@ -6,7 +7,10 @@
 
 
 @{
-    var errored = ViewContext.ModelState.Any(k => k.Key == Model.Id.ToString());
+
+    var errored = ViewContext.ModelState.Any(
+        k => k.Value.ValidationState == Microsoft.AspNetCore.Mvc.ModelBinding.ModelValidationState.Invalid
+        && (k.Key == Model.Id.ToString() || ApplicationPageErrorHelper.ExtractOrderFromErrorKey(k.Key) == Model.Order - 1));
     var formGroupErrorClass = errored ? "govuk-form-group--error" : "";
     var inputErrorClass = errored ? "govuk-input--error" : "";
 }
@@ -131,7 +135,7 @@
         @if (Model.UploadedFiles.Any())
         {
             <p class="govuk-body govuk-!-static-margin-top-1"><strong>Note that clicking 'Remove file' will immediately remove the file from the system.</strong></p>
-          
+
             <p class="govuk-body govuk-!-static-margin-top-1">Uploaded files:</p>
             <ul class="govuk-list govuk-list--bullet">
                 @foreach (var file in Model.UploadedFiles)

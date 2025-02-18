@@ -174,8 +174,6 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
             }
         }
 
-        // Handle requests up to 256 MB
-        [RequestSizeLimit(268435456)]
         [HttpPost]
         [Route("organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/sections/{sectionId}/pages/{pageOrder}")]
         public async Task<IActionResult> ApplicationPageAsync([FromForm] ApplicationPageViewModel model)
