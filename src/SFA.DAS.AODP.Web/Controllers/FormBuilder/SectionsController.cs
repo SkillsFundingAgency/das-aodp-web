@@ -112,7 +112,8 @@ public class SectionsController : Controller
         {
             Title = response.Value.Title,
             SectionId = sectionId,
-            FormVersionId = formVersionId
+            FormVersionId = formVersionId,
+            HasAssociatedRoutes = response.Value.HasAssociatedRoutes
         });
     }
 
