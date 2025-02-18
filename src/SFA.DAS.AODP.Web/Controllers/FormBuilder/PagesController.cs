@@ -138,6 +138,7 @@ public class PagesController : ControllerBase
     #endregion
 
     #region Delete
+    [HttpGet]
     [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/delete")]
     public async Task<IActionResult> Delete(Guid formVersionId, Guid sectionId, Guid pageId)
     {
@@ -150,7 +151,8 @@ public class PagesController : ControllerBase
                 PageId = pageId,
                 SectionId = sectionId,
                 FormVersionId = formVersionId,
-                Title = response.Title
+                Title = response.Value.Title,
+                HasAssociatedRoutes = response.Value.HasAssociatedRoutes            
             });
         }
         catch

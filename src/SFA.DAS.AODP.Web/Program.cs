@@ -1,3 +1,4 @@
+using Authentication;
 using GovUk.Frontend.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Features;
@@ -7,20 +8,14 @@ using SFA.DAS.AODP.Authentication.Extensions;
 using SFA.DAS.AODP.Authentication.Interfaces;
 using SFA.DAS.AODP.Web.Extensions;
 using System.Reflection;
-public class CustomServiceRole : ICustomServiceRole
-{
-    public string RoleClaimType => "http://schemas.portal.com/service";
-    public CustomServiceRoleValueType RoleValueType => CustomServiceRoleValueType.Code;
-}
 
 internal class Program
-{    
+{
     private static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
 
         var configuration = builder.Configuration.LoadConfiguration(builder.Services, builder.Environment.IsDevelopment());
-
 
         builder.Services
             .AddServiceRegistrations(configuration)
@@ -31,22 +26,12 @@ internal class Program
             )
             .AddGovUkFrontend()
             .AddLogging()
+            .AddDistributedCache(configuration, builder.Environment.IsDevelopment())
             .AddDataProtectionKeys("das-aodp-web", configuration, builder.Environment.IsDevelopment())
             .AddHttpContextAccessor()
             .AddHealthChecks();
 
-        var cookieName = "SFA.DAS.AODP.Web";
-        var signoutCallbackPath = "/signout";
-        var stubAuth = configuration["StubAuth"] ?? "false";
-        if (stubAuth.Equals("true", StringComparison.CurrentCultureIgnoreCase))
-        {
-            var resourceEnvironmentName = configuration["DfEOidcConfiguration:ResourceEnvironmentName"] ?? "local";
-            builder.Services.AddStubAuthentication(cookieName, signoutCallbackPath, resourceEnvironmentName);            
-        }
-        else
-        {
-            builder.Services.AddAndConfigureDfESignInAuthentication(configuration, cookieName, typeof(CustomServiceRole), signoutCallbackPath, "signins");
-        }
+        builder.Services.AddDfeSignIn(configuration, "SFA.DAS.AODP.Web", typeof(CustomServiceRole), "/signout", "signins");
 
         builder.Services.AddSession(options =>
         {
@@ -62,7 +47,6 @@ internal class Program
              {
                  options.Filters.Add<AutoValidateAntiforgeryTokenAttribute>();
              });
-
 
         builder.Services.AddMediatR(config =>
         {
@@ -90,6 +74,11 @@ internal class Program
                 .UseHsts()
                 .UseExceptionHandler("/Home/Error");
         }
+        app.Use(async (context, next) =>
+        {
+            Console.WriteLine($"Incoming Request: {context.Request.Method} {context.Request.Path}{context.Request.QueryString}");
+            await next.Invoke();
+        });
 
         app
             .UseHealthChecks("/ping")
@@ -106,7 +95,17 @@ internal class Program
                     "default",
                     "{controller=Home}/{action=Index}/{id?}");
                 endpoints.MapControllerRoute(name: "areas", pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+
+                // Debugging route info
+                endpoints.MapGet("/debug/routes", async context =>
+                {
+                    var routeEndpointDataSource = context.RequestServices.GetRequiredService<EndpointDataSource>();
+                    var routes = routeEndpointDataSource.Endpoints.Select(e => e.DisplayName);
+                    await context.Response.WriteAsync(string.Join("\n", routes));
+                });
             });
         app.Run();
+
+
     }
 }
