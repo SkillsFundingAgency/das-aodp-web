@@ -7,13 +7,10 @@ using SFA.DAS.AODP.Web.Models.FormBuilder.Page;
 
 namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
 
-public class PagesController : Controller
+public class PagesController : ControllerBase
 {
-    private readonly IMediator _mediator;
-
-    public PagesController(IMediator mediator)
+    public PagesController(IMediator mediator, ILogger<FormsController> logger) : base(mediator, logger)
     {
-        _mediator = mediator;
     }
 
     #region Create
@@ -52,53 +49,66 @@ public class PagesController : Controller
     [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}")]
     public async Task<IActionResult> Edit(Guid pageId, Guid sectionId, Guid formVersionId)
     {
-        var query = new GetPageByIdQuery(pageId, sectionId, formVersionId);
-        var response = await _mediator.Send(query);
-        if (response.Value == null) return NotFound();
+        try
+        {
+            var query = new GetPageByIdQuery(pageId, sectionId, formVersionId);
+            var response = await Send(query);
 
-        return View(EditPageViewModel.Map(response.Value, formVersionId));
+            return View(EditPageViewModel.Map(response, formVersionId));
+        }
+        catch
+        {
+            return Redirect("/Home/Error");
+        }
     }
 
     [HttpPost]
     [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}")]
     public async Task<IActionResult> Edit(EditPageViewModel model)
     {
-        if (model.AdditionalFormActions.MoveUp != default)
+        try
         {
-            var command = new MoveQuestionUpCommand()
+            if (model.AdditionalFormActions.MoveUp != default)
             {
-                FormVersionId = model.FormVersionId,
-                SectionId = model.SectionId,
-                PageId = model.PageId,
-                QuestionId = model.AdditionalFormActions.MoveUp ?? Guid.Empty
-            };
-            var response = await _mediator.Send(command);
-            return await Edit(model.PageId, model.SectionId, model.FormVersionId);
-        }
-        else if (model.AdditionalFormActions.MoveDown != default)
-        {
-            var command = new MoveQuestionDownCommand()
+                var command = new MoveQuestionUpCommand()
+                {
+                    FormVersionId = model.FormVersionId,
+                    SectionId = model.SectionId,
+                    PageId = model.PageId,
+                    QuestionId = model.AdditionalFormActions.MoveUp ?? Guid.Empty
+                };
+                await Send(command);
+                return await Edit(model.PageId, model.SectionId, model.FormVersionId);
+            }
+            else if (model.AdditionalFormActions.MoveDown != default)
             {
-                FormVersionId = model.FormVersionId,
-                SectionId = model.SectionId,
-                PageId = model.PageId,
-                QuestionId = model.AdditionalFormActions.MoveDown ?? Guid.Empty
-            };
-            var response = await _mediator.Send(command);
-            return await Edit(model.PageId, model.SectionId, model.FormVersionId);
-        }
-        else
-        {
-            var command = new UpdatePageCommand()
+                var command = new MoveQuestionDownCommand()
+                {
+                    FormVersionId = model.FormVersionId,
+                    SectionId = model.SectionId,
+                    PageId = model.PageId,
+                    QuestionId = model.AdditionalFormActions.MoveDown ?? Guid.Empty
+                };
+                await Send(command);
+                return await Edit(model.PageId, model.SectionId, model.FormVersionId);
+            }
+            else
             {
-                Title = model.Title,
-                SectionId = model.SectionId,
-                FormVersionId = model.FormVersionId,
-                Id = model.PageId
-            };
+                var command = new UpdatePageCommand()
+                {
+                    Title = model.Title,
+                    SectionId = model.SectionId,
+                    FormVersionId = model.FormVersionId,
+                    Id = model.PageId
+                };
 
-            var response = await _mediator.Send(command);
-            return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId, pageId = model.PageId });
+                await Send(command);
+                return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId, pageId = model.PageId });
+            }
+        }
+        catch
+        {
+            return View(model);
         }
     }
     #endregion
@@ -107,17 +117,23 @@ public class PagesController : Controller
     [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/preview")]
     public async Task<IActionResult> Preview(Guid pageId, Guid sectionId, Guid formVersionId)
     {
-        var query = new GetPagePreviewByIdQuery(pageId, sectionId, formVersionId);
-        var response = await _mediator.Send(query);
-        if (response.Value == null) return NotFound();
-
-        return View(new PreviewPageViewModel()
+        try
         {
-            PageId = pageId,
-            SectionId = sectionId,
-            FormVersionId = formVersionId,
-            Value = response.Value
-        });
+            var query = new GetPagePreviewByIdQuery(pageId, sectionId, formVersionId);
+            var response = await Send(query);
+
+            return View(new PreviewPageViewModel()
+            {
+                PageId = pageId,
+                SectionId = sectionId,
+                FormVersionId = formVersionId,
+                Value = response
+            });
+        }
+        catch
+        {
+            return Redirect("/Home/Error");
+        }
     }
     #endregion
 
@@ -126,32 +142,45 @@ public class PagesController : Controller
     [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/delete")]
     public async Task<IActionResult> Delete(Guid formVersionId, Guid sectionId, Guid pageId)
     {
-        var query = new GetPageByIdQuery(pageId, sectionId, formVersionId);
-        var response = await _mediator.Send(query);
-        if (response.Value == null) return NotFound();
-        return View(new DeletePageViewModel()
+        try
         {
-            PageId = pageId,
-            SectionId = sectionId,
-            FormVersionId = formVersionId,
-            Title = response.Value.Title,
-            HasAssociatedRoutes = response.Value.HasAssociatedRoutes
-        });
+            var query = new GetPageByIdQuery(pageId, sectionId, formVersionId);
+            var response = await Send(query);
+            return View(new DeletePageViewModel()
+            {
+                PageId = pageId,
+                SectionId = sectionId,
+                FormVersionId = formVersionId,
+                Title = response.Title,
+                HasAssociatedRoutes = response.HasAssociatedRoutes
+            });
+        }
+        catch
+        {
+            return Redirect("/Home/Error");
+        }
     }
 
     [HttpPost]
     [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/delete")]
     public async Task<IActionResult> DeleteConfirmed(DeletePageViewModel model)
     {
-        var command = new DeletePageCommand()
+        try
         {
-            PageId = model.PageId,
-            SectionId = model.SectionId,
-            FormVersionId = model.FormVersionId
-        };
+            var command = new DeletePageCommand()
+            {
+                PageId = model.PageId,
+                SectionId = model.SectionId,
+                FormVersionId = model.FormVersionId
+            };
 
-        var deleteResponse = await _mediator.Send(command);
-        return RedirectToAction("Edit", "Sections", new { formVersionId = model.FormVersionId, sectionId = model.SectionId });
+            await Send(command);
+            return RedirectToAction("Edit", "Sections", new { formVersionId = model.FormVersionId, sectionId = model.SectionId });
+        }
+        catch
+        {
+            return View(model);
+        }
 
     }
     #endregion

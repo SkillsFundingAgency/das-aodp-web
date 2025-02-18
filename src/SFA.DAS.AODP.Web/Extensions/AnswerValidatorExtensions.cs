@@ -12,6 +12,7 @@ public static class AnswerValidatorExtensions
         services.AddTransient<IAnswerValidator, DateValidator>();
         services.AddTransient<IAnswerValidator, CheckboxValidator>();
         services.AddTransient<IAnswerValidator, NumberValidator>();
+        services.AddTransient<IAnswerValidator, FileValidator>();
 
         return services;
     }

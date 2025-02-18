@@ -21,6 +21,7 @@
         public CheckboxOptions Checkbox { get; set; } = new();
         public List<Option> Options { get; set; } = new();
         public DateInputOptions DateInput { get; set; } = new();
+        public FileUploadOptions FileUpload { get; set; } = new();
 
         public List<RouteInformation> Routes { get; set; } = new();
 
@@ -69,7 +70,7 @@
     public class Option
     {
         public Guid Id { get; set; }
-        public string Value { get; set; }
+        public string? Value { get; set; }
         public int Order { get; set; }
     }
 
@@ -79,6 +80,13 @@
         public DateOnly? LessThanOrEqualTo { get; set; }
         public bool? MustBeInFuture { get; set; }
         public bool? MustBeInPast { get; set; }
+    }
+
+    public class FileUploadOptions
+    {
+        public int? MaxSize { get; set; }
+        public string? FileNamePrefix { get; set; }
+        public int? NumberOfFiles { get; set; }
     }
 
 }

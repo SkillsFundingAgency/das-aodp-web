@@ -1,4 +1,5 @@
-﻿@using SFA.DAS.AODP.Web.Models.Application
+﻿@using SFA.DAS.AODP.Web.Helpers.ApplicationPageViewHelpers
+@using SFA.DAS.AODP.Web.Models.Application
 @model ApplicationPageViewModel
 
 @{
@@ -16,6 +17,8 @@
                          asp-route-organisationId="@Model.OrganisationId"
                          asp-route-applicationId="@Model.ApplicationId">Back to view section</govuk-back-link>
 
+        <partial name="~/Views/Shared/_InternalErrorPartial.cshtml" />
+
         @if (!ViewContext.ModelState.IsValid)
         {
             <div class="govuk-error-summary" data-module="govuk-error-summary">
@@ -31,22 +34,7 @@
                                 var errorMsg = @error.Value.Errors.FirstOrDefault()?.ErrorMessage;
                                 if (string.IsNullOrEmpty(errorMsg)) continue;
 
-                                var question = Model.Questions.FirstOrDefault(q => q.Id.ToString() == error.Key);
-                                if (question == null)
-                                {
-                                    try
-                                    {
-                                        int startIndex = error.Key.IndexOf("[") + 1;
-                                        int len = error.Key.LastIndexOf("]") - startIndex;
-                                        string orderStr = error.Key.Substring(startIndex, len);
-                                        if (int.TryParse(orderStr, out int order))
-                                        {
-                                            question = Model.Questions.First(q => q.Order - 1 == order);
-                                        }
-
-                                    }
-                                    catch { }
-                                }
+                                var question = ApplicationPageErrorHelper.GetQuestionByErrorKey(Model.Questions, error.Key);
                                 if (question != null)
                                 {
                                     string href = $"#question-{question.Id}";
@@ -73,7 +61,7 @@
         }
 
 
-        <form asp-controller="Applications" asp-action="ApplicationPage" method="post">
+        <form asp-controller="Applications" asp-action="ApplicationPage" method="post" enctype="multipart/form-data">
 
             @Html.HiddenFor(m => m.OrganisationId)
             @Html.HiddenFor(m => m.PageId)

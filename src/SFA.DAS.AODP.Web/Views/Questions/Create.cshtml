@@ -5,6 +5,8 @@
     Back to Page
 </a>
 
+<partial name="~/Views/Shared/_InternalErrorPartial.cshtml" />
+
 <h1 class="govuk-heading-l">Create Question</h1>
 
 <form asp-controller="Questions" asp-action="Create" method="post">
@@ -36,6 +38,7 @@
                 <govuk-radios-item value="@QuestionType.Date">Date</govuk-radios-item>
                 <govuk-radios-item value="@QuestionType.Radio">User selects single option from a list of options</govuk-radios-item>
                 <govuk-radios-item value="@QuestionType.MultiChoice">User selects one or more options from a list of options</govuk-radios-item>
+                <govuk-radios-item value="@QuestionType.File">File upload</govuk-radios-item>
             </govuk-radios-fieldset>
         </govuk-radios>
     </div>

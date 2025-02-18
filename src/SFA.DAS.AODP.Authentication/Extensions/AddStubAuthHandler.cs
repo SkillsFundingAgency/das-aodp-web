@@ -31,7 +31,7 @@ namespace SFA.DAS.AODP.Authentication.Extensions
                 new Claim(CustomClaimsIdentity.DisplayName, "DfE Staff User"),
                 new Claim(CustomClaimsIdentity.Service, "QFAdmin"),
                 new Claim(CustomClaimsIdentity.UkPrn, "10000001"),
-                new Claim("organisation", "\"id\":\"71A7429D-1875-4CDD-8FEF-A89676E661A8\""),
+                new Claim("organisation", "{\"id\":\"71A7429D-1875-4CDD-8FEF-A89676E661A8\"}"),
                 new Claim("roleName", "Reviewer"),
                 new Claim("roleName", "Admin"),
                 new Claim("rolenumericid", "22328"),

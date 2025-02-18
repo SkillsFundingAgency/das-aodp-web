@@ -13,7 +13,6 @@ namespace SFA.DAS.AODP.Authentication.Extensions
             string signedOutCallbackPath = "/signed-out",
             string redirectUrl = "")
         {
-            services.AddServiceRegistration(configuration, customServiceRole);
             var stubAuth = configuration["StubAuth"] ?? "false";
             if (stubAuth.Equals("true", StringComparison.CurrentCultureIgnoreCase))
             {
@@ -21,6 +20,7 @@ namespace SFA.DAS.AODP.Authentication.Extensions
             }
             else
             {
+                services.AddServiceRegistration(configuration, customServiceRole);
                 services.ConfigureDfESignInAuthentication(configuration, authenticationCookieName, signedOutCallbackPath, "/");
             }
         }
