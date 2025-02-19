@@ -118,9 +118,10 @@ public class SectionsController : ControllerBase
             var response = await Send(query);
             return View(new DeleteSectionViewModel()
             {
-                Title = response.Title,
-                SectionId = sectionId,
-                FormVersionId = formVersionId
+              Title = response.Title,
+              SectionId = sectionId,
+              FormVersionId = formVersionId,
+              HasAssociatedRoutes = response.HasAssociatedRoutes
             });
         }
         catch
