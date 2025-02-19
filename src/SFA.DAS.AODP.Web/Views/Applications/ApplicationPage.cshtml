@@ -17,7 +17,7 @@
                          asp-route-organisationId="@Model.OrganisationId"
                          asp-route-applicationId="@Model.ApplicationId">Back to view section</govuk-back-link>
 
-        <partial name="~/Views/Shared/_InternalErrorPartial.cshtml" />
+        <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
         @if (!ViewContext.ModelState.IsValid)
         {
