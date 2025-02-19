@@ -12,6 +12,8 @@ public class GetQuestionByIdQueryResponse
     public bool Required { get; set; }
     public string Type { get; set; }
     public List<RouteInformation> Routes { get; set; } = new();
+    public string? Helper { get; set; }
+    public string? HelperHTML { get; set; }
 
     public TextInputOptions TextInput { get; set; } = new();
     public NumberInputOptions NumberInput { get; set; } = new();

@@ -101,6 +101,20 @@
 
         </govuk-input>
     </div>
+    <div class="govuk-form-group">
+        <govuk-textarea disabled="@(!Model.Editable)" asp-for="@Model.Helper">
+            <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Helper (optional)</govuk-textarea-label>
+        </govuk-textarea>
+        <partial name="~/Views/Shared/FormBuilder/Helper/_MarkdownHelper.cshtml" />
+        @if (!string.IsNullOrEmpty(Model.HelperHTML))
+        {
+            <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible" />
+            <div class="govuk-label govuk-label--s">Helper Preview</div>
+            <div class="govuk-inset-text">
+                @Html.Raw(Model.HelperHTML)
+            </div>
+        }
+    </div>
     @if (Model.Type == QuestionType.Text || Model.Type == QuestionType.TextArea)
     {
         await Html.RenderPartialAsync("FormBuilder/QuestionEdit/_TextInput", Model.TextInput);
