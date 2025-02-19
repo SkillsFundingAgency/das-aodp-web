@@ -197,7 +197,7 @@ public class QuestionsController : ControllerBase
     [HttpPost()]
     [ValidateAntiForgeryToken]
     [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/questions/{questionId}/delete")]
-    public async Task<IActionResult> DeleteConfirmed(Guid formVersionId, Guid sectionId, Guid pageId, Guid questionId, [FromBody] DeleteQuestionViewModel model)
+    public async Task<IActionResult> DeleteConfirmed(Guid formVersionId, Guid sectionId, Guid pageId, Guid questionId, DeleteQuestionViewModel model)
     {
         try
         {
