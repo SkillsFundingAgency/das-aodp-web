@@ -24,13 +24,9 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
         public bool Required { get; set; }
 
         public string? Hint { get; set; } = string.Empty;
-<<<<<<< Updated upstream
         public bool DoesHaveAssociatedRoutes { get; set; } = false;
-=======
         public string? Helper { get; set; }
         public string? HelperHTML { get; set; }
-
->>>>>>> Stashed changes
 
         public TextInputOptions TextInput { get; set; } = new();
         public Option Options { get; set; } = new();
