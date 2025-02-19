@@ -1,14 +1,16 @@
 ﻿using MediatR;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Domain.Interfaces;
+using SFA.DAS.AODP.Infrastructure.Cache;
 
 public class GetApplicationMetadataByIdQueryHandler : IRequestHandler<GetApplicationMetadataByIdQuery, BaseMediatrResponse<GetApplicationMetadataByIdQueryResponse>>
 {
     private readonly IApiClient _apiClient;
-
-    public GetApplicationMetadataByIdQueryHandler(IApiClient apiClient)
+    private readonly ICacheService _cacheService;
+    public GetApplicationMetadataByIdQueryHandler(IApiClient apiClient, ICacheService cacheService)
     {
         _apiClient = apiClient;
+        _cacheService = cacheService;
     }
 
     public async Task<BaseMediatrResponse<GetApplicationMetadataByIdQueryResponse>> Handle(GetApplicationMetadataByIdQuery request, CancellationToken cancellationToken)
@@ -17,10 +19,14 @@ public class GetApplicationMetadataByIdQueryHandler : IRequestHandler<GetApplica
         response.Success = false;
         try
         {
-            var result = await _apiClient.Get<GetApplicationMetadataByIdQueryResponse>(new GetApplicationMetadataByIdRequest()
+            var cacheKey = $"{nameof(GetApplicationMetadataByIdQueryResponse)}_{request.ApplicationId}";
+
+            var fetchFunc = async () => await _apiClient.Get<GetApplicationMetadataByIdQueryResponse>(new GetApplicationMetadataByIdRequest()
             {
                 ApplicationId = request.ApplicationId,
             });
+
+            var result = await _cacheService.GetAsync(cacheKey, fetchFunc);
             response.Value = result;
             response.Success = true;
         }
@@ -31,4 +37,5 @@ public class GetApplicationMetadataByIdQueryHandler : IRequestHandler<GetApplica
 
         return response;
     }
+
 }
