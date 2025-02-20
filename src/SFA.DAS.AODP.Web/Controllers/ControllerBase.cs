@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application;
+using SFA.DAS.AODP.Web.Constants;
 
 namespace SFA.DAS.AODP.Web.Controllers;
 
@@ -14,11 +15,20 @@ public class ControllerBase(IMediator mediator, ILogger logger) : Controller
         var response = await _mediator.Send(request);
         if (!response.Success)
         {
-            ViewBag.InternalServerError = true;
+            ViewBag.NotificationType = ViewNotificationMessageType.Error;
             _logger.LogError(response.ErrorMessage);
 
             throw new Exception(response.ErrorMessage);
         }
         return response.Value;
+    }
+
+    protected void ShowNotificationIfKeyExists(string key, ViewNotificationMessageType type, string? message = null)
+    {
+        if (TempData[key] != null)
+        {
+            ViewBag.NotificationType = type;
+            ViewBag.NotificationMessage = message;
+        }
     }
 }

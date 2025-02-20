@@ -1,10 +1,13 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Infrastructure.File;
+using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Controllers.FormBuilder;
 using SFA.DAS.AODP.Web.Filters;
 using SFA.DAS.AODP.Web.Models.Application;
+using SFA.DAS.AODP.Web.Models.FormBuilder.Form;
 using SFA.DAS.AODP.Web.Validators;
 
 namespace SFA.DAS.AODP.Web.Controllers.Application
@@ -12,6 +15,8 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
     [ValidateOrganisation]
     public class ApplicationsController : ControllerBase
     {
+        private const string ApplicationDeletedKey = nameof(ApplicationDeletedKey);
+
         private readonly IApplicationAnswersValidator _validator;
         private readonly IFileService _fileService;
         public ApplicationsController(IMediator mediator, IApplicationAnswersValidator validator, ILogger<FormsController> logger, IFileService fileService) : base(mediator, logger)
@@ -28,6 +33,9 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
             {
                 var response = await Send(new GetApplicationsByOrganisationIdQuery(organisationId));
                 ListApplicationsViewModel model = ListApplicationsViewModel.Map(response, organisationId);
+
+                ShowNotificationIfKeyExists(ApplicationDeletedKey, ViewNotificationMessageType.Success, "The application has been deleted.");
+
                 return View(model);
             }
             catch
@@ -101,6 +109,68 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
             catch
             {
                 return View(createApplicationViewModel);
+            }
+        }
+
+        [ValidateApplication]
+        [HttpGet]
+        [Route("organisations/{organisationId}/applications/{applicationId}/Edit")]
+        public async Task<IActionResult> Edit(Guid organisationId, Guid applicationId)
+        {
+            try
+            {
+                var application = await Send(new GetApplicationByIdQuery(applicationId));
+
+                return View(new EditApplicationViewModel()
+                {
+                    OrganisationId = organisationId,
+                    FormVersionId = application.FormVersionId,
+                    Name = application.Name,
+                    ApplicationId = applicationId,
+                    Owner = application.Owner,
+                    QualificationNumber = application.QualificationNumber
+                });
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
+        }
+
+
+        [ValidateApplication]
+        [HttpPost]
+        [Route("organisations/{organisationId}/applications/{applicationId}/Edit")]
+        public async Task<IActionResult> Edit(EditApplicationViewModel editApplicationViewModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(editApplicationViewModel);
+            }
+
+            var request = new EditApplicationCommand()
+            {
+                Title = editApplicationViewModel.Name,
+                ApplicationId = editApplicationViewModel.ApplicationId,
+                Owner = editApplicationViewModel.Owner,
+                QualificationNumber = editApplicationViewModel.QualificationNumber,
+                
+            };
+
+            try
+            {
+                var response = await Send(request);
+
+                return RedirectToAction(nameof(ViewApplication), new
+                {
+                    organisationId = editApplicationViewModel.OrganisationId,
+                    applicationId = editApplicationViewModel.ApplicationId,
+                    formVersionId = editApplicationViewModel.FormVersionId
+                });
+            }
+            catch
+            {
+                return View(editApplicationViewModel);
             }
         }
 
@@ -243,11 +313,54 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
         }
 
 
+        #region Delete
+        [ValidateApplication]
+        [Route("organisations/{organisationId}/applications/{applicationId}/delete")]
+        public async Task<IActionResult> Delete(Guid applicationId)
+        {
+            try
+            {
+                var query = new GetApplicationByIdQuery(applicationId);
+                var response = await Send(query);
+                return View(new DeleteApplicationViewModel()
+                {
+                    ApplicationId = applicationId,
+                    ApplicationReference = response.Reference,
+                    OrganisationId = response.OrganisationId,
+                    ApplicationName = response.Name
+                });
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
+        }
+
+        [ValidateApplication]
+        [HttpPost]
+        [Route("organisations/{organisationId}/applications/{applicationId}/delete")]
+        public async Task<IActionResult> Delete(DeleteApplicationViewModel model)
+        {
+            try
+            {
+                var command = new DeleteApplicationCommand(model.ApplicationId);
+                await Send(command);
+
+                TempData[ApplicationDeletedKey] = true;
+                return RedirectToAction(nameof(Index), new { organisationId = model.OrganisationId });
+            }
+            catch
+            {
+                return View(model);
+            }
+        }
+        #endregion
+
         private async Task HandleFileUploads(ApplicationPageViewModel viewModel)
         {
             foreach (var question in viewModel.Questions?.Where(q => q.Type == AODP.Models.Forms.QuestionType.File) ?? [])
             {
-                foreach (var file in question.Answer.FormFiles ?? [])
+                foreach (var file in question.Answer?.FormFiles ?? [])
                 {
                     using var stream = file.OpenReadStream();
                     await _fileService.UploadFileAsync($"{viewModel.ApplicationId}/{question.Id}", file.FileName, stream, file.ContentType);

@@ -1,4 +1,5 @@
-﻿using SFA.DAS.AODP.Models.Settings;
+﻿using SFA.DAS.AODP.Infrastructure.Cache;
+using SFA.DAS.AODP.Models.Settings;
 using System.Diagnostics.CodeAnalysis;
 
 namespace SFA.DAS.AODP.Web.Extensions;
@@ -21,6 +22,8 @@ public static class AddDistributedCacheExtension
                 options.Configuration = redisConfiguration.RedisConnectionString;
             });
         }
+
+        services.AddTransient<ICacheService, CacheService>();
         return services;
     }
 }

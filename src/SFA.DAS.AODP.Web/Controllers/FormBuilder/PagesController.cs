@@ -3,12 +3,15 @@ using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Questions;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Pages;
+using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Page;
 
 namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
 
 public class PagesController : ControllerBase
 {
+    private const string PageUpdatedKey = nameof(PageUpdatedKey);
+
     public PagesController(IMediator mediator, ILogger<FormsController> logger) : base(mediator, logger)
     {
     }
@@ -53,6 +56,8 @@ public class PagesController : ControllerBase
         {
             var query = new GetPageByIdQuery(pageId, sectionId, formVersionId);
             var response = await Send(query);
+
+            ShowNotificationIfKeyExists(PageUpdatedKey, ViewNotificationMessageType.Success, "The page has been updated.");
 
             return View(EditPageViewModel.Map(response, formVersionId));
         }
@@ -103,6 +108,9 @@ public class PagesController : ControllerBase
                 };
 
                 await Send(command);
+
+                TempData[PageUpdatedKey] = true;
+
                 return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId, pageId = model.PageId });
             }
         }

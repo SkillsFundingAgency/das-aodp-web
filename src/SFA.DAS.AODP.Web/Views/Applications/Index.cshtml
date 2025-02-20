@@ -4,6 +4,7 @@
 @{
     ViewData["Title"] = "View applications";
 }
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
 <a class="govuk-button" asp-action="AvailableForms" asp-route-organisationId="@Model.OrganisationId" asp-controller="Applications">Start new application</a>
 

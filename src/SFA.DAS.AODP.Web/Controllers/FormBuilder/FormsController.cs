@@ -1,9 +1,9 @@
 ﻿using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
+using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Form;
 using SFA.DAS.AODP.Web.Controllers;
 using System.Reflection;
@@ -13,10 +13,10 @@ namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
 
 public class FormsController : ControllerBase
 {
-    public FormsController(IMediator mediator, ILogger<FormsController> logger) : base(mediator, logger)
-    {
+    private const string FormUpdatedKey  = nameof(FormUpdatedKey);
 
-    }
+    public FormsController(IMediator mediator, ILogger<FormsController> logger) : base(mediator, logger)
+    {    }
 
     #region Main
     public async Task<IActionResult> Index()
@@ -44,17 +44,19 @@ public class FormsController : ControllerBase
             if (model.AdditionalActions.CreateDraft.HasValue)
             {
                 var command = new CreateDraftFormVersionCommand(model.AdditionalActions.CreateDraft.Value);
-                var response = await _mediator.Send(command);
+                var response = await Send(command);
+                return RedirectToAction(nameof(Edit), new { formVersionId = response.FormVersionId });
+
             }
             else if (model.AdditionalActions.MoveDown.HasValue)
             {
                 var command = new MoveFormDownCommand(model.AdditionalActions.MoveDown.Value);
-                var response = await _mediator.Send(command);
+                await Send(command);
             }
             else if (model.AdditionalActions.MoveUp.HasValue)
             {
                 var command = new MoveFormUpCommand(model.AdditionalActions.MoveUp.Value);
-                var response = await _mediator.Send(command);
+                await Send(command);
             }
 
             return RedirectToAction(nameof(Index));
@@ -116,13 +118,15 @@ public class FormsController : ControllerBase
 
             var viewModel = EditFormVersionViewModel.Map(response);
 
+            ShowNotificationIfKeyExists(FormUpdatedKey, ViewNotificationMessageType.Success, "The form has been updated.");
+
             return View(viewModel);
         }
         catch
         {
             return Redirect("Error");
-        } 
-        
+        }
+
     }
 
     [HttpPost]
@@ -175,6 +179,8 @@ public class FormsController : ControllerBase
                     Name = editFormVersionViewModel.Title
                 };
                 await Send(command);
+
+                TempData[FormUpdatedKey] = true;
             }
             return RedirectToAction(nameof(Edit), new { formVersionId = editFormVersionViewModel.Id });
         }

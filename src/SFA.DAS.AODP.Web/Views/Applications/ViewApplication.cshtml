@@ -22,10 +22,18 @@
             </govuk-summary-list-row>
             <govuk-summary-list-row>
                 <govuk-summary-list-row-key>
-                    Status
+                    Owner
                 </govuk-summary-list-row-key>
                 <govuk-summary-list-row-value>
-                    @(Model.IsSubmitted ? "Complete" : "In Progress")
+                    @Model.Owner
+                </govuk-summary-list-row-value>
+            </govuk-summary-list-row>
+            <govuk-summary-list-row>
+                <govuk-summary-list-row-key>
+                    Qualification Number
+                </govuk-summary-list-row-key>
+                <govuk-summary-list-row-value>
+                    @Model.QualificationNumber
                 </govuk-summary-list-row-value>
             </govuk-summary-list-row>
             <govuk-summary-list-row>
@@ -38,14 +46,25 @@
             </govuk-summary-list-row>
             <govuk-summary-list-row>
                 <govuk-summary-list-row-key>
-                    Owner
+                    Status
                 </govuk-summary-list-row-key>
                 <govuk-summary-list-row-value>
-                    @Model.Owner
+                    @(Model.IsSubmitted ? "Complete" : "In Progress")
                 </govuk-summary-list-row-value>
             </govuk-summary-list-row>
+
         </govuk-summary-list>
 
+        @if (!Model.IsSubmitted)
+        {
+            <a class="govuk-button" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init=""
+               asp-action="Edit"
+               asp-controller="Applications"
+               asp-route-applicationId="@Model.ApplicationId"
+               asp-route-organisationId="@Model.OrganisationId">
+                Edit application details
+            </a>
+        }
 
         <h2 class="govuk-heading-m">Application progress</h2>
 
@@ -80,5 +99,15 @@
             }
         </ul>
 
+        @if (!Model.IsSubmitted)
+        {
+            <a class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init=""
+               asp-action="Delete"
+               asp-controller="Applications"
+               asp-route-applicationId="@Model.ApplicationId"
+               asp-route-organisationId="@Model.OrganisationId">
+                Delete application
+            </a>
+        }
     </div>
 </div>
