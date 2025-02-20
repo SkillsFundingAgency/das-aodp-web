@@ -19,8 +19,36 @@
 
         <govuk-textarea asp-for="@Model.Description">
             <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Description</govuk-textarea-label>
-            <govuk-textarea-hint>This field will allow for links to be provided in the upcoming sprints.</govuk-textarea-hint>
+            <govuk-textarea-hint>This field will allow for links to be provided in the upcoming sprints. </govuk-textarea-hint>
         </govuk-textarea>
+        <partial name="~/Views/Shared/FormBuilder/Helper/_MarkdownHelper.cshtml" />
+        @if (!string.IsNullOrEmpty(Model.DescriptionPreview))
+        {
+            <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible" />
+            <div class="govuk-label govuk-label--s">Description Preview</div>
+            <div class="govuk-inset-text">
+                @Html.Raw(Model.DescriptionPreview)
+            </div>
+            <button type="submit"
+                    class="govuk-button govuk-button--secondary"
+                    data-module="govuk-button"
+                    data-prevent-double-click="true"
+                    value="true"
+                    name="AdditionalFormActions[UpdateDescriptionPreview]">
+                Update Description Preview
+            </button>
+        }
+        else
+        {
+            <button type="submit"
+                    class="govuk-button govuk-button--secondary"
+                    data-module="govuk-button"
+                    data-prevent-double-click="true"
+                    value="true"
+                    name="AdditionalFormActions[UpdateDescriptionPreview]">
+                Show Description Preview
+            </button>
+        }
     </div>
 
     <div class="govuk-button-group">

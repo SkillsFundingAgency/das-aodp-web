@@ -5,6 +5,9 @@ using SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Form;
+using SFA.DAS.AODP.Web.Controllers;
+using System.Reflection;
+using Markdig;
 
 namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
 
@@ -66,6 +69,7 @@ public class FormsController : ControllerBase
     #endregion
 
     #region Create
+    [HttpGet]
     [Route("forms/create")]
     public IActionResult Create()
     {
@@ -84,6 +88,13 @@ public class FormsController : ControllerBase
                 Title = viewModel.Name,
                 Description = viewModel.Description,
             };
+
+            if (viewModel.AdditionalFormActions.UpdateDescriptionPreview)
+            {
+                viewModel.DescriptionPreview = Markdown.ToHtml(viewModel.Description)
+                    .Replace("<a", "<a class=\"govuk-link\"");
+                return View(viewModel);
+            }
 
             var response = await Send(command);
             return RedirectToAction(nameof(Edit), new { formVersionId = response.Id });
@@ -151,6 +162,12 @@ public class FormsController : ControllerBase
                     SectionId = editFormVersionViewModel.AdditionalFormActions.MoveDown ?? Guid.Empty,
                 };
                 await Send(command);
+            }
+            else if (editFormVersionViewModel.AdditionalFormActions.UpdateDescriptionPreview)
+            {
+                editFormVersionViewModel.DescriptionHTML = Markdown.ToHtml(editFormVersionViewModel.Description)
+                    .Replace("<a", "<a class=\"govuk-link\"");
+                return View(editFormVersionViewModel);
             }
             else
             {
