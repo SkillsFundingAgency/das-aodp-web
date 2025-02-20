@@ -34,11 +34,7 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
                 var response = await Send(new GetApplicationsByOrganisationIdQuery(organisationId));
                 ListApplicationsViewModel model = ListApplicationsViewModel.Map(response, organisationId);
 
-                if (TempData[ApplicationDeletedKey] != null)
-                {
-                    ViewBag.NotificationType = ViewNotificationMessageType.Success;
-                    ViewBag.NotificationMessage = "The application has been deleted";
-                }
+                ShowNotificationIfKeyExists(ApplicationDeletedKey, ViewNotificationMessageType.Success, "The application has been deleted.");
 
                 return View(model);
             }
