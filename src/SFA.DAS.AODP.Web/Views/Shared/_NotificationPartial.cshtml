@@ -1,5 +1,5 @@
 ﻿@using SFA.DAS.AODP.Web.Constants
-@if (ViewBag.NotificationType == ViewNotificationMessageConstants.Error)
+@if (ViewBag.NotificationType == ViewNotificationMessageType.Error)
 {
     <div class="govuk-error-summary" data-module="govuk-error-summary">
         <div role="alert">
@@ -17,7 +17,7 @@
     </div>
 }
 
-@if (ViewBag.NotificationType == ViewNotificationMessageConstants.Success)
+else if (ViewBag.NotificationType == ViewNotificationMessageType.Success)
 {
     <div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
         <div class="govuk-notification-banner__header">

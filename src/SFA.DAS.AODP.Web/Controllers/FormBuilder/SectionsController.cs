@@ -3,12 +3,15 @@ using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
+using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Section;
 
 namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
 
 public class SectionsController : ControllerBase
 {
+    private const string SectionUpdatedKey = nameof(SectionUpdatedKey);
+
     public SectionsController(IMediator mediator, ILogger<SectionsController> logger) : base(mediator, logger)
     {
     }
@@ -50,6 +53,8 @@ public class SectionsController : ControllerBase
         {
             var sectionQuery = new GetSectionByIdQuery(sectionId, formVersionId);
             var response = await Send(sectionQuery);
+
+            ShowNotificationIfKeyExists(SectionUpdatedKey, ViewNotificationMessageType.Success, "The section has been updated.");
 
             return View(EditSectionViewModel.Map(response));
         }
@@ -97,6 +102,7 @@ public class SectionsController : ControllerBase
                 };
 
                 var response = await _mediator.Send(command);
+                TempData[SectionUpdatedKey] = true;
                 return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId });
             }
         }
