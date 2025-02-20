@@ -15,11 +15,20 @@ public class ControllerBase(IMediator mediator, ILogger logger) : Controller
         var response = await _mediator.Send(request);
         if (!response.Success)
         {
-            ViewBag.NotificationType = ViewNotificationMessageConstants.Error;
+            ViewBag.NotificationType = ViewNotificationMessageType.Error;
             _logger.LogError(response.ErrorMessage);
 
             throw new Exception(response.ErrorMessage);
         }
         return response.Value;
+    }
+
+    protected void ShowNotificationIfKeyExists(string key, ViewNotificationMessageType type, string? message = null)
+    {
+        if (TempData[key] != null)
+        {
+            ViewBag.NotificationType = type;
+            ViewBag.NotificationMessage = message;
+        }
     }
 }

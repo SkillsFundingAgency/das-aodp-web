@@ -18,11 +18,13 @@
     @Html.HiddenFor(m => m.OrganisationId)
 
     <govuk-warning-text icon-fallback-text="Warning">
-        Are you sure you want to delete the application?
+        Are you sure you want to delete the application? The application cannot be recovered.
     </govuk-warning-text>
 
     <p class="govuk-body">
-        Reference: @Model.ApplicationReference.ToString().PadLeft(6, '0')
+       Name: @Model.ApplicationName
+       <br/>
+       Reference: @Model.ApplicationReference.ToString().PadLeft(6, '0')
     </p>
 
     <div class="govuk-button-group">
