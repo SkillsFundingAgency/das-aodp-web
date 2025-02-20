@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -6,8 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Web.Models;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 
-namespace SFA.DAS.AODP.Web.Controllers
+namespace SFA.DAS.AODP.Web.Area.Funding.Controllers
 {
+    [Area("Funding")]
     [AllowAnonymous]
     public class HomeController : Controller
     {
@@ -47,15 +48,17 @@ namespace SFA.DAS.AODP.Web.Controllers
 
         }
 
-        public async Task<IActionResult> SignIn()
+        [Authorize]
+        [HttpGet]
+        [Route("signin", Name = "provider-signin")]
+        public async Task SignIn()
         {
             // When using Stub Auth dont redirect to the login challenge, as it doesnt exist. User Auth already configured so no need.            
             if (!User.Identity.IsAuthenticated)
             {
-                await HttpContext.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme, new AuthenticationProperties { RedirectUri = "/RedirectHandler" });
+                await HttpContext.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme, new AuthenticationProperties { RedirectUri = "/Dashboard" });
             }
 
-            return RedirectToAction("Index", "Dashboard");
         }
     }
 }

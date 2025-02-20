@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace SFA.DAS.AODP.Web.Controllers
+namespace SFA.DAS.AODP.Web.Areas.Funding.Controllers
 {
+    [Area("Funding")]
     public class DashBoardController : Controller
     {
         private readonly IAuthorizationService _authorizationService;

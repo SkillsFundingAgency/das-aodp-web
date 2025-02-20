@@ -1,39 +1,39 @@
-using System.Diagnostics;
-using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SFA.DAS.AODP.Web.Models;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 
 namespace SFA.DAS.AODP.Web.Controllers
 {
-    [AllowAnonymous]
-    public class HomeController : Controller
+    public class RedirectHandler: Controller
     {
-        private readonly ILogger<HomeController> _logger;
         private readonly IAuthorizationService _authorizationService;
 
-        public HomeController(ILogger<HomeController> logger, IAuthorizationService authorizationService)
+        public RedirectHandler(IAuthorizationService authorizationService)
         {
-            _logger = logger;
             this._authorizationService = authorizationService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var isQFAU = _authorizationService.AuthorizeAsync(User, "IsDFEUser").Result;
+            if (isQFAU.Succeeded)
+                return RedirectToAction("Index", "DashBoard", new { area = "Review" });
+
+            var isAO =   _authorizationService.AuthorizeAsync(User, "IsFundingUser").Result;
+            if(isAO.Succeeded)
+                return RedirectToAction("Index","DashBoard",new {area="Funding"});
+
+         
+
+            var isIFATE= _authorizationService.AuthorizeAsync(User, "IsExternalReviewUser").Result;
+            if (isIFATE.Succeeded)
+                return RedirectToAction("Index", "DashBoard", new { area= "External-Review" });
+
+            return View("Error");
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
-
-        [Authorize]
-        [HttpGet]
-        [Route("signout", Name = "provider-signout")]
         public async Task<IActionResult> SignOut()
         {
 

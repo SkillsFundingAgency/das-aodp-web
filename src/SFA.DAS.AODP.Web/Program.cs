@@ -2,6 +2,7 @@ using GovUk.Frontend.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.FileSystemGlobbing.Internal.Patterns;
 using Microsoft.Extensions.Logging.ApplicationInsights;
 using SFA.DAS.AODP.Authentication.Enums;
 using SFA.DAS.AODP.Authentication.Extensions;
@@ -16,7 +17,7 @@ public class CustomServiceRole : ICustomServiceRole
 }
 
 internal class Program
-{    
+{
     private static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
@@ -27,9 +28,11 @@ internal class Program
         builder.Services
             .AddServiceRegistrations(configuration)
             .AddAuthorization(options =>
-                options.FallbackPolicy = new AuthorizationPolicyBuilder()
-                        .RequireAuthenticatedUser()
-                        .Build()
+            {
+                options.AddPolicy("IsFundingUser", policy => policy.RequireRole("ao_user", "qfau_admin_data_importer", "qfau_admin_form_editor"));
+                options.AddPolicy("IsExternalReviewerUser", policy => policy.RequireRole("ifate_admin_form_editor", "ofqual_user_reviewer", "qfau_admin_data_importer", "qfau_admin_form_editor"));
+                options.AddPolicy("IsDFEUser", policy => policy.RequireRole("qfau_user_approver", "qfau_admin_data_importer", "qfau_admin_form_editor", "qfau_user_reviewer"));
+            }
             )
             .AddGovUkFrontend()
             .AddLogging()
@@ -43,7 +46,7 @@ internal class Program
         if (stubAuth.Equals("true", StringComparison.CurrentCultureIgnoreCase))
         {
             var resourceEnvironmentName = configuration["DfEOidcConfiguration:ResourceEnvironmentName"] ?? "local";
-            builder.Services.AddStubAuthentication(cookieName, signoutCallbackPath, resourceEnvironmentName);            
+            builder.Services.AddStubAuthentication(cookieName, signoutCallbackPath, resourceEnvironmentName);
         }
         else
         {
@@ -106,10 +109,36 @@ internal class Program
             .UseSession()
             .UseEndpoints(endpoints =>
             {
+                ;
+
+
+
+
+                //app.MapAreaControllerRoute(name: "External-Review",
+                //                       areaName: "External-Review",
+                //                       pattern: "{area:exists}/{controller}/{action}/{id?}").
+                //                       RequireAuthorization("IsExternalReviewerUser");
+                //app.MapAreaControllerRoute(name: "External-ReviewHome",
+                //                   areaName: "External-Review",
+                //                   pattern: "{area:exists}/{controller=Home}/{action=index}").AllowAnonymous();
+
+                //app.MapAreaControllerRoute(name: "FundingHome",
+                //                      areaName: "Funding",
+
+                //            app.MapAreaControllerRoute(name: "ReviewHome",
+                //areaName: "Review",
+                //pattern: "Review/{controller=Home}/{action=index}").AllowAnonymous();
+                //                      pattern: "{area:exists}/{controller=Home}/{action=index}/{id?}").AllowAnonymous();
+                //app.MapAreaControllerRoute(name: "Funding",
+                //                       areaName: "Funding",
+                //                       pattern: "{area:exists}/{controller}/{action}/{id?}").
+                //                       RequireAuthorization("IsFundingUser");
                 endpoints.MapControllerRoute(
-                    "default",
-                    "{controller=Home}/{action=Index}/{id?}");
+                  "default",
+                  "{controller=Home}/{action=Index}/{id?}");
                 endpoints.MapControllerRoute(name: "areas", pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+
+
             });
         app.Run();
     }

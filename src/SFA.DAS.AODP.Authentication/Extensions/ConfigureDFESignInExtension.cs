@@ -55,7 +55,7 @@ namespace SFA.DAS.AODP.Authentication.Extensions
                         options.Scope.Add(scope);
                     }
 
-                    options.TokenValidationParameters = new TokenValidationParameters { RoleClaimType = "roleName" };
+                    options.TokenValidationParameters = new TokenValidationParameters { RoleClaimType = "roleCode" };
                     // This was updated 
                     options.TokenHandler = new JsonWebTokenHandler()
                     {
