@@ -1,4 +1,5 @@
-﻿@model EditSectionViewModel
+﻿@using SFA.DAS.AODP.Web.Helpers.ListHelper
+@model EditSectionViewModel
 
 <a class="govuk-back-link" asp-action="Edit" asp-controller="Forms" asp-route-formVersionId="@Model.FormVersionId">
     Back to Form
@@ -46,33 +47,35 @@
                     <td>@item.Title</td>
                     <td>
                         <a class="govuk-button"
-                        asp-action="Edit"
-                        asp-controller="Pages"
-                        asp-route-pageId="@item.Id"
-                        asp-route-sectionId="@Model.SectionId"
-                        asp-route-formVersionId="@Model.FormVersionId">
+                           asp-action="Edit"
+                           asp-controller="Pages"
+                           asp-route-pageId="@item.Id"
+                           asp-route-sectionId="@Model.SectionId"
+                           asp-route-formVersionId="@Model.FormVersionId">
                             @(Model.Editable ? "Edit" : "View")
                         </a>
                         @if (i != 0 && Model.Editable)
                         {
-                            <button class="govuk-button govuk-button--secondary" type="submit" value="@item.Id" name="AdditionalActions[MoveUp]">
+                            <button @(OrderButtonHelper.ShouldAutoFocus(TempData, OrderButtonHelper.OrderDirection.Up, item.Id, i, Model.Pages.Count) ? "autofocus" : "")
+                                    class="govuk-button govuk-button--secondary" type="submit" value="@item.Id" name="AdditionalActions[MoveUp]">
                                 Move Up
                             </button>
                         }
                         @if (i != Model.Pages.Count() - 1 && Model.Editable)
                         {
-                            <button class="govuk-button govuk-button--secondary" type="submit" value="@item.Id" name="AdditionalActions[MoveDown]">
+                            <button @(OrderButtonHelper.ShouldAutoFocus(TempData, OrderButtonHelper.OrderDirection.Down, item.Id, i, Model.Pages.Count) ? "autofocus" : "")
+                                    class="govuk-button govuk-button--secondary" type="submit" value="@item.Id" name="AdditionalActions[MoveDown]">
                                 Move Down
                             </button>
                         }
                         @if (Model.Editable)
                         {
                             <a class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init=""
-                                asp-action="Delete"
-                                asp-controller="Pages"
-                                asp-route-formVersionId="@Model.FormVersionId"
-                                asp-route-sectionId="@Model.SectionId"
-                                asp-route-pageId="@item.Id">
+                               asp-action="Delete"
+                               asp-controller="Pages"
+                               asp-route-formVersionId="@Model.FormVersionId"
+                               asp-route-sectionId="@Model.SectionId"
+                               asp-route-pageId="@item.Id">
                                 Delete
                             </a>
                         }

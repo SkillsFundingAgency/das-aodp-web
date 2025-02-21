@@ -24,12 +24,13 @@
         <partial name="~/Views/Shared/FormBuilder/Helper/_MarkdownHelper.cshtml" />
         @if (!string.IsNullOrEmpty(Model.DescriptionPreview))
         {
-            <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible" />
             <div class="govuk-label govuk-label--s">Description Preview</div>
             <div class="govuk-inset-text">
                 @Html.Raw(Model.DescriptionPreview)
             </div>
-            <button type="submit"
+            <button 
+                    autofocus
+                    type="submit"
                     class="govuk-button govuk-button--secondary"
                     data-module="govuk-button"
                     data-prevent-double-click="true"
@@ -40,7 +41,8 @@
         }
         else
         {
-            <button type="submit"
+            <button 
+                    type="submit"
                     class="govuk-button govuk-button--secondary"
                     data-module="govuk-button"
                     data-prevent-double-click="true"

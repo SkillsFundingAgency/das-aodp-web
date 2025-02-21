@@ -5,6 +5,7 @@ using SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
 using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Section;
+using static SFA.DAS.AODP.Web.Helpers.ListHelper.OrderButtonHelper;
 
 namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
 
@@ -79,6 +80,10 @@ public class SectionsController : ControllerBase
                     PageId = model.AdditionalActions.MoveUp ?? Guid.Empty,
                 };
                 await Send(command);
+
+                TempData[UpdateTempDataKeys.FocusItemId.ToString()] = command.PageId.ToString();
+                TempData[UpdateTempDataKeys.Directon.ToString()] = OrderDirection.Up.ToString();
+
                 return await Edit(model.FormVersionId, model.SectionId);
             }
             else if (model.AdditionalActions.MoveDown != default)
@@ -90,6 +95,10 @@ public class SectionsController : ControllerBase
                     PageId = model.AdditionalActions.MoveDown ?? Guid.Empty,
                 };
                 await _mediator.Send(command);
+
+                TempData[UpdateTempDataKeys.FocusItemId.ToString()] = command.PageId.ToString();
+                TempData[UpdateTempDataKeys.Directon.ToString()] = OrderDirection.Down.ToString();
+
                 return await Edit(model.FormVersionId, model.SectionId);
             }
             else
