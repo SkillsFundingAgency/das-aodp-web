@@ -17,6 +17,7 @@
                 model.Forms.Add(new()
                 {
                     Description = form.Description,
+                    DescriptionHTML = form.DescriptionHTML,
                     Id = form.Id,
                     Order = form.Order,
                     Title = form.Title,
@@ -33,6 +34,7 @@
             public Guid Id { get; set; }
             public string Title { get; set; }
             public string Description { get; set; }
+            public string DescriptionHTML { get; set; }
             public int Order { get; set; }
         }
     }

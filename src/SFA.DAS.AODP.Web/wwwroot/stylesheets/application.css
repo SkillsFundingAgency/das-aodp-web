@@ -4,10 +4,17 @@
     margin-bottom: 30px;
 }
 
+.helper-details {
+    margin-top: 20px;
+}
+
 
 @media (min-width: 40.0625em) {
     .govuk-main-wrapper {
         padding-top: 20px;
         padding-bottom: 20px;
+    }
+    .helper-details {
+        margin-top: 30px;
     }
 }
