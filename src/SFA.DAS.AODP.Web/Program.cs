@@ -1,11 +1,8 @@
 using Authentication;
 using GovUk.Frontend.AspNetCore;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
-using SFA.DAS.AODP.Authentication.Enums;
 using SFA.DAS.AODP.Authentication.Extensions;
-using SFA.DAS.AODP.Authentication.Interfaces;
 using SFA.DAS.AODP.Web.Extensions;
 using System.Reflection;
 
@@ -20,9 +17,12 @@ internal class Program
         builder.Services
             .AddServiceRegistrations(configuration)
             .AddAuthorization(options =>
-                options.FallbackPolicy = new AuthorizationPolicyBuilder()
-                        .RequireAuthenticatedUser()
-                        .Build()
+            {
+                options.AddPolicy(PolicyConstants.IsReviewUser, policy => policy.RequireRole("qfau_user_approver", "qfau_user_reviewer", "ifate_user_reviewer", "ofqual_user_reviewer"));
+                options.AddPolicy(PolicyConstants.IsApplyUser, policy => policy.RequireRole("ao_user"));
+                options.AddPolicy(PolicyConstants.IsAdminFormsUser, policy => policy.RequireRole("qfau_admin_form_editor", "ifate_admin_form_editor"));
+                options.AddPolicy(PolicyConstants.IsAdminImportUser, policy => policy.RequireRole("qfau_admin_data_importer"));
+            }
             )
             .AddGovUkFrontend()
             .AddLogging()
@@ -88,24 +88,46 @@ internal class Program
             .UseRouting()
             .UseAuthentication()
             .UseAuthorization()
-            .UseSession()
-            .UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllerRoute(
-                    "default",
-                    "{controller=Home}/{action=Index}/{id?}");
-                endpoints.MapControllerRoute(name: "areas", pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
-
-                // Debugging route info
-                endpoints.MapGet("/debug/routes", async context =>
+                .UseEndpoints(endpoints =>
                 {
-                    var routeEndpointDataSource = context.RequestServices.GetRequiredService<EndpointDataSource>();
-                    var routes = routeEndpointDataSource.Endpoints.Select(e => e.DisplayName);
-                    await context.Response.WriteAsync(string.Join("\n", routes));
-                });
-            });
+                    AddRoutes(endpoints);
+
+                })
+            .UseSession();
         app.Run();
+    }
 
+    private static void AddRoutes(IEndpointRouteBuilder endpoints)
+    {
+        endpoints.MapDefaultControllerRoute();
 
+        endpoints.MapControllerRoute(name: "ReviewHomeLandingPage",
+                                     pattern: "Review/Home/{action=Index}/{id?}",
+                                     defaults: new { area = "Review", controller = "Home" });
+
+        endpoints.MapControllerRoute(name: "ReviewDefault",
+                                     pattern: "Review/{action=Index}/{id?}",
+                                     defaults: new { area = "Review", controller = "Review" }).RequireAuthorization("IsReviewUser"); ;
+
+        endpoints.MapAreaControllerRoute(name: "AdminHomeLandingPage",
+                               areaName: "Admin",
+                               pattern: "{area:exists}/Home/{action=Index}/{id?}",
+                                defaults: new { controller = "Home" }).AllowAnonymous();
+
+        endpoints.MapAreaControllerRoute(name: "AdminDefaultForImport",
+                        areaName: "Admin",
+                        pattern: "Admin/Import/{action=Index}/{id?}",
+                        defaults: new { area = "Admin", controller = "Import" }).RequireAuthorization("IsAdminImportUser");
+        endpoints.MapControllerRoute(name: "AdminDefaultForForms",
+                                         pattern: "Admin/{controller=FormsBuilder}/{action=index}/{id?}",
+                                         defaults: new { area = "Admin" }).RequireAuthorization("IsAdminFormsUser");
+
+        endpoints.MapControllerRoute(name: "ApplyHome",
+                                  pattern: "Apply/Home/{action=Index}/{id?}",
+                                  defaults: new { area = "Apply", controller = "Home" }).AllowAnonymous();
+
+        endpoints.MapAreaControllerRoute(name: "Apply",
+                                       areaName: "Apply",
+                                       pattern: "{area:exists}/{controller=Apply}/{action=Index}/{id?}").RequireAuthorization("IsApplyUser");
     }
 }

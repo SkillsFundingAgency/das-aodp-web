@@ -1,13 +1,13 @@
-using System.Diagnostics;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication;
+﻿using System.Diagnostics;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Web.Models;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 
-namespace SFA.DAS.AODP.Web.Controllers
+
+namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
 {
+    [Area("Admin")]
+    [AllowAnonymous]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -27,6 +27,5 @@ namespace SFA.DAS.AODP.Web.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
-
     }
 }

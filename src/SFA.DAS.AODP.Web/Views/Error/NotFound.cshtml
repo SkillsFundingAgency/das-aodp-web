@@ -1,0 +1,35 @@
+﻿@using System.Security.Claims
+@{
+	ViewData["Title"] = "Dashboard";
+}
+
+<div class="govuk-width-container">
+	<main class="govuk-main-wrapper">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<div class="govuk-grid-row">
+					<h1 class="govuk-heading-1">Dashboard</h1>
+				</div>
+				<div class="govuk-grid-row">
+					<label class="govuk-label govuk-label--s">Claims</label>
+				</div>
+				You do not have access to this area . Your roles are
+
+				@if (User.Identity.IsAuthenticated)
+				{
+					<table>
+						@foreach (var item in ((ClaimsIdentity)User.Identity).Claims.Where(i => i.Type == "RoleCode"))
+					{
+					<tr>
+					<tr class="govuk-table__header">
+						<th>Value</th>
+					</tr>
+					<td class="govuk-table__cell">@item.Value</td>
+					</tr>
+					}
+				</table>
+				}
+			</div>
+		</div>
+	</main>
+</div>

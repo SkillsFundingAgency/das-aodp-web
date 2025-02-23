@@ -6,7 +6,6 @@ using SFA.DAS.AODP.Web.Models.Qualifications;
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 {
     [Area("Review")]
-    [Route("review/[controller]")]
     public class QualificationsController : Controller
     {
         private readonly ILogger<QualificationsController> _logger;
@@ -18,8 +17,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             _mediator = mediator;
         }
 
-        [HttpGet("")]
-        public async Task<IActionResult> Index([FromQuery] string status)
+        public async Task<IActionResult> Index(string status)
         {
             status = status?.Trim().ToLower();
 
