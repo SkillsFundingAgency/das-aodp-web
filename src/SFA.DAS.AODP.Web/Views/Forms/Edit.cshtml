@@ -31,15 +31,20 @@
         <div class="govuk-inset-text">
             @Html.Raw(Model.DescriptionHTML)
         </div>
-        <button @(ViewBag.AutoFocusOnUpdateDescriptionButton != null ? "autofocus" : "")
-                type="submit"
-                class="govuk-button govuk-button--secondary"
-                data-module="govuk-button"
-                data-prevent-double-click="true"
-                value="true"
-                name="AdditionalFormActions[UpdateDescriptionPreview]">
-            Update Description Preview
-        </button>
+
+        @if (!disableEditing)
+        {
+            <button @(ViewBag.AutoFocusOnUpdateDescriptionButton != null ? "autofocus" : "")
+                    type="submit"
+                    class="govuk-button govuk-button--secondary"
+                    data-module="govuk-button"
+                    data-prevent-double-click="true"
+                    value="true"
+                    name="AdditionalFormActions[UpdateDescriptionPreview]">
+                Update Description Preview
+            </button>
+        }
+      
     </div>
 
     <div class="govuk-form-group">
@@ -89,9 +94,13 @@
         </button>
     }
 
+    <h2 class="govuk-heading-m">Sections</h2>
+
+
     <table class="govuk-table">
         <thead class="govuk-table__head">
             <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">Order</th>
                 <th scope="col" class="govuk-table__header">Name</th>
                 <th scope="col" class="govuk-table__header">Options</th>
             </tr>
@@ -100,6 +109,7 @@
             @foreach (var (item, i) in Model.Sections.OrderBy(o => o.Order).Select((v, i) => (v, i)))
             {
                 <tr class="govuk-table__row">
+                    <td>@item.Order</td>
                     <td>@item.Title</td>
                     <td>
                         <a class="govuk-button"

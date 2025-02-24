@@ -27,6 +27,7 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
         public bool DoesHaveAssociatedRoutes { get; set; } = false;
         public string? Helper { get; set; }
         public string? HelperHTML { get; set; }
+        public bool? UpdateDescriptionPreview { get; set; }
 
         public TextInputOptions TextInput { get; set; } = new();
         public Option Options { get; set; } = new();
@@ -34,6 +35,7 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
         public NumberInputOptions NumberInput { get; set; } = new();
         public DateInputOptions DateInput { get; set; } = new();
         public FileUploadOptions FileUpload { get; set; } = new();
+
 
         public bool Editable { get; set; }
 

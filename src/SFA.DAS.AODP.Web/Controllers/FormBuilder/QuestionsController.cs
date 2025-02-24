@@ -7,6 +7,9 @@ using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Routes;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Question;
 using SFA.DAS.AODP.Web.Constants;
+using Markdig;
+using SFA.DAS.AODP.Web.Models.FormBuilder.Form;
+using SFA.DAS.AODP.Web.Helpers.Markdown;
 
 namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
 
@@ -115,16 +118,24 @@ public class QuestionsController : ControllerBase
     {
         try
         {
+            if (model.FileUpload != null) model.FileUpload.FileTypes = _formBuilderSettings.UploadFileTypesAllowed;
+
+            if (model.UpdateDescriptionPreview == true)
+            {
+                model.HelperHTML = MarkdownHelper.ToGovUkHtml(model.Helper);
+                ViewBag.AutoFocusOnUpdateDescriptionButton = true;
+                return View(model);
+            }
             ValidateEditQuestionViewModel(model);
             if (!ModelState.IsValid)
             {
-                if (model.FileUpload != null) model.FileUpload.FileTypes = _formBuilderSettings.UploadFileTypesAllowed;
                 return View(model);
             }
 
             if (model.Options.AdditionalFormActions.AddOption)
             {
                 model.Options.Options.Add(new());
+                ViewBag.AutoFocusOnAddOptionButton = true;
                 return View(model);
             }
             else if (model.Options.AdditionalFormActions.RemoveOptionIndex.HasValue)
@@ -139,6 +150,7 @@ public class QuestionsController : ControllerBase
                 else
                 {
                     model.Options.Options.RemoveAt(indexToRemove);
+                    ViewBag.AutoFocusOnAddOptionButton = true;
                     return View(model);
                 }
             }

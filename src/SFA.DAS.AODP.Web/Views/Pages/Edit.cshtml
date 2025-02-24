@@ -38,10 +38,12 @@
     }
     <a class="govuk-button" asp-action="Preview" asp-controller="Pages" asp-route-pageId="@Model.PageId" asp-route-sectionId="@Model.SectionId" asp-route-formVersionId="@Model.FormVersionId">Preview page</a>
 
+    <h2 class="govuk-heading-m">Questions</h2>
 
     <table class="govuk-table">
         <thead class="govuk-table__head">
             <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">Order</th>
                 <th scope="col" class="govuk-table__header">Name</th>
                 <th scope="col" class="govuk-table__header">Options</th>
             </tr>
@@ -50,6 +52,7 @@
             @foreach (var (item, i) in Model.Questions.OrderBy(o => o.Order).Select((v, i) => (v, i)))
             {
                 <tr class="govuk-table__row">
+                    <td>@item.Order</td>
                     <td>@item.Title</td>
                     <td>
                         <a class="govuk-button"

@@ -136,7 +136,6 @@
         {
             <p class="govuk-body govuk-!-static-margin-top-1"><strong>Note that clicking 'Remove file' will immediately remove the file from the system.</strong></p>
 
-            <p class="govuk-body govuk-!-static-margin-top-1">Uploaded files:</p>
             <ul class="govuk-list govuk-list--bullet">
                 @foreach (var file in Model.UploadedFiles)
                 {
@@ -148,7 +147,7 @@
                         data-prevent-double-click="true"
                         value="@file.FullPath"
                         name="RemoveFile">
-                            Remove file
+                            Remove file <span class="govuk-visually-hidden">@file.DisplayName</span>
                         </button>
                     </li>
                 }
