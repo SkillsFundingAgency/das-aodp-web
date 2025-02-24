@@ -18,10 +18,10 @@ internal class Program
             .AddServiceRegistrations(configuration)
             .AddAuthorization(options =>
             {
-                options.AddPolicy(PolicyConstants.IsReviewUser, policy => policy.RequireRole("qfau_user_approver", "qfau_user_reviewer", "ifate_user_reviewer", "ofqual_user_reviewer"));
-                options.AddPolicy(PolicyConstants.IsApplyUser, policy => policy.RequireRole("ao_user"));
-                options.AddPolicy(PolicyConstants.IsAdminFormsUser, policy => policy.RequireRole("qfau_admin_form_editor", "ifate_admin_form_editor"));
-                options.AddPolicy(PolicyConstants.IsAdminImportUser, policy => policy.RequireRole("qfau_admin_data_importer"));
+                options.AddPolicy(PolicyConstants.IsReviewUser, policy => policy.RequireRole(RoleConstants.QFAUApprover, RoleConstants.QFAUReviewer, RoleConstants.IFATEReviewer, RoleConstants.OFQUALReviewer));
+                options.AddPolicy(PolicyConstants.IsApplyUser, policy => policy.RequireRole(RoleConstants.AOApply));
+                options.AddPolicy(PolicyConstants.IsAdminFormsUser, policy => policy.RequireRole(RoleConstants.QFAUFormBuilder, RoleConstants.IFATEFormBuilder));
+                options.AddPolicy(PolicyConstants.IsAdminImportUser, policy => policy.RequireRole(RoleConstants.QFAUImport));
             }
             )
             .AddGovUkFrontend()
