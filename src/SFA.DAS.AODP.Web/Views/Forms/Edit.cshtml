@@ -31,15 +31,20 @@
         <div class="govuk-inset-text">
             @Html.Raw(Model.DescriptionHTML)
         </div>
-        <button @(ViewBag.AutoFocusOnUpdateDescriptionButton != null ? "autofocus" : "")
-                type="submit"
-                class="govuk-button govuk-button--secondary"
-                data-module="govuk-button"
-                data-prevent-double-click="true"
-                value="true"
-                name="AdditionalFormActions[UpdateDescriptionPreview]">
-            Update Description Preview
-        </button>
+
+        @if (!disableEditing)
+        {
+            <button @(ViewBag.AutoFocusOnUpdateDescriptionButton != null ? "autofocus" : "")
+                    type="submit"
+                    class="govuk-button govuk-button--secondary"
+                    data-module="govuk-button"
+                    data-prevent-double-click="true"
+                    value="true"
+                    name="AdditionalFormActions[UpdateDescriptionPreview]">
+                Update Description Preview
+            </button>
+        }
+      
     </div>
 
     <div class="govuk-form-group">

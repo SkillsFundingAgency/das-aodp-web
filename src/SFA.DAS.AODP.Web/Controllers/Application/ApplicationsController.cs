@@ -34,6 +34,12 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
                 var response = await Send(new GetApplicationsByOrganisationIdQuery(organisationId));
                 ListApplicationsViewModel model = ListApplicationsViewModel.Map(response, organisationId);
 
+                if (TempData[ApplicationDeletedKey] != null)
+                {
+                    ViewBag.NotificationType = ViewNotificationMessageConstants.Success;
+                    ViewBag.NotificationMessage = "The application has been deleted";
+                }
+
                 ShowNotificationIfKeyExists(ApplicationDeletedKey, ViewNotificationMessageType.Success, "The application has been deleted.");
 
                 return View(model);
@@ -154,7 +160,7 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
                 ApplicationId = editApplicationViewModel.ApplicationId,
                 Owner = editApplicationViewModel.Owner,
                 QualificationNumber = editApplicationViewModel.QualificationNumber,
-                
+
             };
 
             try
@@ -344,6 +350,8 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
             try
             {
                 var command = new DeleteApplicationCommand(model.ApplicationId);
+
+                await DeleteApplicationFiles(model.ApplicationId);
                 await Send(command);
 
                 TempData[ApplicationDeletedKey] = true;
@@ -365,6 +373,15 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
                     using var stream = file.OpenReadStream();
                     await _fileService.UploadFileAsync($"{viewModel.ApplicationId}/{question.Id}", file.FileName, stream, file.ContentType);
                 }
+            }
+        }
+
+        private async Task DeleteApplicationFiles(Guid applicationId)
+        {
+            var files = _fileService.ListBlobs(applicationId.ToString());
+            foreach (var file in files)
+            {
+                await _fileService.DeleteFileAsync(file.FullPath);
             }
         }
     }
