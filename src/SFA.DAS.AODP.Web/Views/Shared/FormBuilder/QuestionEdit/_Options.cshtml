@@ -50,7 +50,8 @@
     @if (ViewBag.IsEditable)
     {
         <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button"
-                data-prevent-double-click="true" name="Options[AdditionalFormActions][AddOption]" value="true" data-govuk-button-init="" autofocus>
+                data-prevent-double-click="true" name="Options[AdditionalFormActions][AddOption]" value="true" data-govuk-button-init=""
+                @(ViewBag.AutoFocusOnAddOptionButton != null ? "autofocus" : "")>
             Add another option
         </button>
     }
