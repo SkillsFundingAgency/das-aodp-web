@@ -16,10 +16,15 @@ namespace SFA.DAS.AODP.Web.Validators
             var max = question.Checkbox.MaxNumberOfOptions;
 
             if (required && (answer == null || answer.MultipleChoiceValues == null))
+            {
+                if (min == 0) min = 1;
                 throw new QuestionValidationFailedException(question.Id, question.Title, $"Please select at least {min} option{(min == 1 ? "" : "s")}.");
+            }
 
             if (min is not null && min != 0 && (min > answer!.MultipleChoiceValues?.Count))
+            {
                 throw new QuestionValidationFailedException(question.Id, question.Title, $"Please select at least {min} options.");
+            }
 
             if (max is not null && max != 0 && (max < answer!.MultipleChoiceValues?.Count))
                 throw new QuestionValidationFailedException(question.Id, question.Title, $"Please only select up to {max} options.");
