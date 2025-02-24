@@ -1,7 +1,10 @@
-﻿using MediatR;
+﻿using CsvHelper.Configuration;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Web.Models.Qualifications;
+using System.Globalization;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 {
@@ -19,14 +22,16 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         }
 
         [HttpGet("")]
+        [ProducesResponseType(typeof(IActionResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Index([FromQuery] string status)
         {
-            status = status?.Trim().ToLower();
-
-            if (string.IsNullOrEmpty(status))
+            var processedStatus = ProcessAndValidateStatus(status);
+            if (processedStatus is IActionResult badRequestResult)
             {
-                _logger.LogWarning("Qualification status is missing.");
-                return BadRequest(new { message = "Qualification status cannot be empty." });
+                return badRequestResult;
             }
 
             IActionResult response = status switch
@@ -39,6 +44,10 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         }
 
         [HttpGet("qualificationdetails/{qualificationReference}")]
+        [ProducesResponseType(typeof(QualificationDetailsViewModel), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> QualificationDetails([FromRoute] string qualificationReference)
         {
             if (string.IsNullOrWhiteSpace(qualificationReference))
@@ -57,6 +66,51 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
             var viewModel = MapToViewModel(result.Value);
             return View(viewModel);
+        }
+
+        [HttpGet("qualifications/export")]
+        [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetQualificationCSVExportData([FromQuery] string? status)
+        {
+            var processedStatus = ProcessAndValidateStatus(status);
+            if (processedStatus is IActionResult badRequestResult)
+            {
+                return badRequestResult;
+            }
+
+            var result = processedStatus switch
+            {
+                "new" => await HandleNewQualificationCSVExport(),
+                // Add more cases for other statuses
+                _ => BadRequest(new { message = $"Invalid status: {processedStatus}" })
+            };
+
+            if (result is OkObjectResult okResult && okResult.Value is BaseMediatrResponse<GetNewQualificationsCSVExportResponse> response && response.Success)
+            {
+                return WriteCsvToResponse(response.Value.QualificationExports);
+            }
+
+            return result;
+        }
+        private IActionResult WriteCsvToResponse(List<QualificationExport> qualifications)
+        {
+            var csvData = GenerateCsv(qualifications);
+            var bytes = System.Text.Encoding.UTF8.GetBytes(csvData);
+            var fileName = $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}-NewQualificationsExport.csv";
+            return File(bytes, "text/csv", fileName);
+        }
+
+        private string GenerateCsv(List<QualificationExport> qualifications)
+        {
+            using (var writer = new StringWriter())
+            using (var csv = new CsvHelper.CsvWriter(writer, new CsvConfiguration(CultureInfo.InvariantCulture)))
+            {
+                csv.WriteRecords(qualifications);
+                return writer.ToString();
+            }
         }
 
         private async Task<IActionResult> HandleNewQualifications()
@@ -79,6 +133,32 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }).ToList();
 
             return View(viewModel);
+        }
+
+        private async Task<IActionResult> HandleNewQualificationCSVExport()
+        {
+            var result = await _mediator.Send(new GetNewQualificationsCSVExportQuery());
+
+            if (result == null || !result.Success || result.Value == null)
+            {
+                _logger.LogWarning("No new qualification data found for export.");
+                return NotFound(new { message = "No new qualification data found for export" });
+            }
+
+            return Ok(result);
+        }
+
+        private object ProcessAndValidateStatus(string status)
+        {
+            status = status?.Trim().ToLower();
+
+            if (string.IsNullOrEmpty(status))
+            {
+                _logger.LogWarning("Qualification status is missing.");
+                return BadRequest(new { message = "Qualification status cannot be empty." });
+            }
+
+            return status;
         }
 
         private static QualificationDetailsViewModel MapToViewModel(GetQualificationDetailsQueryResponse response)
