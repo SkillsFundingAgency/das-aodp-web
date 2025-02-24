@@ -4,22 +4,22 @@ using SFA.DAS.AODP.Domain.Qualifications.Requests;
 
 namespace SFA.DAS.AODP.Application.Queries.Qualifications
 {
-    class GetNewQualificationsCSVExportHandler : IRequestHandler<GetNewQualificationsCSVExportQuery, BaseMediatrResponse<GetNewQualificationsCSVExportResponse>>
+    class GetNewQualificationsCsvExportHandler : IRequestHandler<GetNewQualificationsCsvExportQuery, BaseMediatrResponse<GetNewQualificationsCsvExportResponse>>
     {
         private readonly IApiClient _apiClient;
 
-        public GetNewQualificationsCSVExportHandler(IApiClient apiClient)
+        public GetNewQualificationsCsvExportHandler(IApiClient apiClient)
         {
             _apiClient = apiClient;
         }
 
-        public async Task<BaseMediatrResponse<GetNewQualificationsCSVExportResponse>> Handle(GetNewQualificationsCSVExportQuery request, CancellationToken cancellationToken)
+        public async Task<BaseMediatrResponse<GetNewQualificationsCsvExportResponse>> Handle(GetNewQualificationsCsvExportQuery request, CancellationToken cancellationToken)
         {
-            var response = new BaseMediatrResponse<GetNewQualificationsCSVExportResponse>();
+            var response = new BaseMediatrResponse<GetNewQualificationsCsvExportResponse>();
             response.Success = false;
             try
             {
-                var result = await _apiClient.Get<BaseMediatrResponse<GetNewQualificationsCSVExportResponse>>(new GetNewQualificationCSVExportApiRequest());
+                var result = await _apiClient.Get<BaseMediatrResponse<GetNewQualificationsCsvExportResponse>>(new GetNewQualificationCsvExportApiRequest());
                 if (result != null && result.Value != null)
                 {
                     response.Value = result.Value;

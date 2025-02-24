@@ -88,14 +88,14 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 _ => BadRequest(new { message = $"Invalid status: {processedStatus}" })
             };
 
-            if (result is OkObjectResult okResult && okResult.Value is BaseMediatrResponse<GetNewQualificationsCSVExportResponse> response && response.Success)
+            if (result is OkObjectResult okResult && okResult.Value is BaseMediatrResponse<GetNewQualificationsCsvExportResponse> response && response.Success)
             {
                 return WriteCsvToResponse(response.Value.QualificationExports);
             }
 
             return result;
         }
-        private IActionResult WriteCsvToResponse(List<QualificationExport> qualifications)
+        private FileContentResult WriteCsvToResponse(List<QualificationExport> qualifications)
         {
             var csvData = GenerateCsv(qualifications);
             var bytes = System.Text.Encoding.UTF8.GetBytes(csvData);
@@ -103,7 +103,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             return File(bytes, "text/csv", fileName);
         }
 
-        private string GenerateCsv(List<QualificationExport> qualifications)
+        private static string GenerateCsv(List<QualificationExport> qualifications)
         {
             using (var writer = new StringWriter())
             using (var csv = new CsvHelper.CsvWriter(writer, new CsvConfiguration(CultureInfo.InvariantCulture)))
@@ -137,7 +137,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
         private async Task<IActionResult> HandleNewQualificationCSVExport()
         {
-            var result = await _mediator.Send(new GetNewQualificationsCSVExportQuery());
+            var result = await _mediator.Send(new GetNewQualificationsCsvExportQuery());
 
             if (result == null || !result.Success || result.Value == null)
             {
@@ -148,7 +148,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             return Ok(result);
         }
 
-        private object ProcessAndValidateStatus(string status)
+        private object ProcessAndValidateStatus(string? status)
         {
             status = status?.Trim().ToLower();
 

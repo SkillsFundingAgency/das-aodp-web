@@ -34,8 +34,8 @@
         }
     </tbody>
 </table>
-<div class="govuk-button-group" style="text-align: right;">
-    <a class="govuk-button" href="@Url.Action("GetQualificationCSVExportData", "Qualifications", new { area = "Review", status = status})" role="button">
+<div class="govuk-button-group">
+    <a class="govuk-button" asp-controller="Qualifications" asp-action="GetQualificationCSVExportData" asp-route-area="Review" asp-route-status="@status">
         Download
     </a>
 </div>
