@@ -6,11 +6,14 @@ using SFA.DAS.AODP.Application.Queries.FormBuilder.Questions;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Routes;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Question;
+using SFA.DAS.AODP.Web.Constants;
 
 namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
 
 public class QuestionsController : ControllerBase
 {
+    private const string QuestionUpdatedKey = nameof(QuestionUpdatedKey);
+
     private readonly FormBuilderSettings _formBuilderSettings;
 
     public QuestionsController(IMediator mediator, ILogger<FormsController> logger, IOptions<FormBuilderSettings> formBuilderSettings) : base(mediator, logger)
@@ -95,6 +98,9 @@ public class QuestionsController : ControllerBase
             }
 
             var map = EditQuestionViewModel.MapToViewModel(response, formVersionId, sectionId, _formBuilderSettings);
+
+            ShowNotificationIfKeyExists(QuestionUpdatedKey, ViewNotificationMessageType.Success, "The question has been updated.");
+
             return View(map);
         }
         catch
@@ -140,6 +146,8 @@ public class QuestionsController : ControllerBase
 
             var command = EditQuestionViewModel.MapToCommand(model);
             var response = await _mediator.Send(command);
+
+            TempData[QuestionUpdatedKey] = true;
 
             return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId, pageId = model.PageId, questionId = model.Id });
         }
@@ -197,7 +205,7 @@ public class QuestionsController : ControllerBase
     [HttpPost()]
     [ValidateAntiForgeryToken]
     [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/questions/{questionId}/delete")]
-    public async Task<IActionResult> DeleteConfirmed(Guid formVersionId, Guid sectionId, Guid pageId, Guid questionId, [FromBody] DeleteQuestionViewModel model)
+    public async Task<IActionResult> DeleteConfirmed(Guid formVersionId, Guid sectionId, Guid pageId, Guid questionId, DeleteQuestionViewModel model)
     {
         try
         {

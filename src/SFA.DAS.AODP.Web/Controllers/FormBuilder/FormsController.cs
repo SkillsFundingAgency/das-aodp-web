@@ -1,21 +1,21 @@
-﻿using MediatR;
-using Microsoft.AspNetCore.Authorization;
+﻿using Markdig;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
+using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Form;
-using SFA.DAS.AODP.Web.Controllers;
-using System.Reflection;
+using static SFA.DAS.AODP.Web.Helpers.ListHelper.OrderButtonHelper;
 
 namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
 
 public class FormsController : ControllerBase
 {
-    public FormsController(IMediator mediator, ILogger<FormsController> logger) : base(mediator, logger)
-    {
+    public enum UpdateKeys { FormUpdated, }
 
-    }
+    public FormsController(IMediator mediator, ILogger<FormsController> logger) : base(mediator, logger)
+    { }
 
     #region Main
     public async Task<IActionResult> Index()
@@ -43,17 +43,23 @@ public class FormsController : ControllerBase
             if (model.AdditionalActions.CreateDraft.HasValue)
             {
                 var command = new CreateDraftFormVersionCommand(model.AdditionalActions.CreateDraft.Value);
-                var response = await _mediator.Send(command);
+                var response = await Send(command);
+                return RedirectToAction(nameof(Edit), new { formVersionId = response.FormVersionId });
+
             }
             else if (model.AdditionalActions.MoveDown.HasValue)
             {
                 var command = new MoveFormDownCommand(model.AdditionalActions.MoveDown.Value);
-                var response = await _mediator.Send(command);
+                TempData[UpdateTempDataKeys.FocusItemId.ToString()] = command.FormId.ToString();
+                TempData[UpdateTempDataKeys.Directon.ToString()] =  OrderDirection.Down.ToString();
+                await Send(command);
             }
             else if (model.AdditionalActions.MoveUp.HasValue)
             {
                 var command = new MoveFormUpCommand(model.AdditionalActions.MoveUp.Value);
-                var response = await _mediator.Send(command);
+                TempData[UpdateTempDataKeys.FocusItemId.ToString()] = command.FormId.ToString();
+                TempData[UpdateTempDataKeys.Directon.ToString()] = OrderDirection.Up.ToString();
+                await Send(command);
             }
 
             return RedirectToAction(nameof(Index));
@@ -66,6 +72,7 @@ public class FormsController : ControllerBase
     #endregion
 
     #region Create
+    [HttpGet]
     [Route("forms/create")]
     public IActionResult Create()
     {
@@ -84,6 +91,13 @@ public class FormsController : ControllerBase
                 Title = viewModel.Name,
                 Description = viewModel.Description,
             };
+
+            if (viewModel.AdditionalFormActions.UpdateDescriptionPreview)
+            {
+                viewModel.DescriptionPreview = Markdown.ToHtml(viewModel.Description)
+                    .Replace("<a", "<a class=\"govuk-link\"");
+                return View(viewModel);
+            }
 
             var response = await Send(command);
             return RedirectToAction(nameof(Edit), new { formVersionId = response.Id });
@@ -107,13 +121,15 @@ public class FormsController : ControllerBase
 
             var viewModel = EditFormVersionViewModel.Map(response);
 
+            ShowNotificationIfKeyExists(UpdateKeys.FormUpdated.ToString(), ViewNotificationMessageType.Success, "The form has been updated.");
+
             return View(viewModel);
         }
         catch
         {
             return Redirect("Error");
-        } 
-        
+        }
+
     }
 
     [HttpPost]
@@ -126,6 +142,7 @@ public class FormsController : ControllerBase
             {
                 var command = new PublishFormVersionCommand(editFormVersionViewModel.Id);
                 await Send(command);
+
             }
             else if (editFormVersionViewModel.AdditionalFormActions.UnPublish != default)
             {
@@ -140,6 +157,10 @@ public class FormsController : ControllerBase
                     SectionId = editFormVersionViewModel.AdditionalFormActions.MoveUp ?? Guid.Empty,
                 };
                 await Send(command);
+
+                TempData[UpdateTempDataKeys.FocusItemId.ToString()] = command.SectionId.ToString();
+                TempData[UpdateTempDataKeys.Directon.ToString()] = OrderDirection.Up.ToString();
+
             }
             else if (editFormVersionViewModel.AdditionalFormActions.MoveDown != default)
             {
@@ -149,6 +170,28 @@ public class FormsController : ControllerBase
                     SectionId = editFormVersionViewModel.AdditionalFormActions.MoveDown ?? Guid.Empty,
                 };
                 await Send(command);
+
+                TempData[UpdateTempDataKeys.FocusItemId.ToString()] = command.SectionId.ToString();
+                TempData[UpdateTempDataKeys.Directon.ToString()] = OrderDirection.Down.ToString();
+
+            }
+            else if (editFormVersionViewModel.AdditionalFormActions.UpdateDescriptionPreview)
+            {
+            
+                var formVersionQuery = new GetFormVersionByIdQuery(editFormVersionViewModel.Id);
+                var response = await Send(formVersionQuery);
+
+                var viewModel = EditFormVersionViewModel.Map(response);
+
+                viewModel.Title = editFormVersionViewModel.Title;
+                viewModel.Description = editFormVersionViewModel.Description;
+                viewModel.DescriptionHTML = Markdown.ToHtml(editFormVersionViewModel.Description)
+                .Replace("<a", "<a class=\"govuk-link\"");
+                ViewBag.AutoFocusOnUpdateDescriptionButton = true;
+
+
+
+                return View(viewModel);
             }
             else
             {
@@ -160,6 +203,8 @@ public class FormsController : ControllerBase
                     Name = editFormVersionViewModel.Title
                 };
                 await Send(command);
+
+                TempData[UpdateKeys.FormUpdated.ToString()] = true;
             }
             return RedirectToAction(nameof(Edit), new { formVersionId = editFormVersionViewModel.Id });
         }

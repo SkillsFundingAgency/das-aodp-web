@@ -13,7 +13,7 @@
     <h2 class="govuk-heading-m">@form.Title</h2>
 
     <div class="govuk-!-margin-bottom-2">
-        <p>@form.Description </p>
+        @Html.Raw(form.DescriptionHTML)
     </div>
 
     <a class="govuk-button" asp-action="Create" asp-controller="Applications" asp-route-organisationId="@Model.OrganisationId" asp-route-formVersionId="@form.Id">Start application</a>

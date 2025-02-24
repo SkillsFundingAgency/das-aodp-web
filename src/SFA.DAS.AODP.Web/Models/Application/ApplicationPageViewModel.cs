@@ -28,6 +28,8 @@ namespace SFA.DAS.AODP.Web.Models.Application
             public QuestionType Type { get; set; }
             public bool Required { get; set; }
             public string? Hint { get; set; } = string.Empty;
+            public string? Helper { get; set; }
+            public string? HelperHTML { get; set; }
             public int Order { get; set; }
             public Answer? Answer { get; set; } = new();
 
@@ -154,6 +156,8 @@ namespace SFA.DAS.AODP.Web.Models.Application
                 questionModel.Id = responseQuestion.Id;
                 questionModel.Order = responseQuestion.Order;
                 questionModel.Hint = responseQuestion.Hint;
+                questionModel.Helper = responseQuestion.Helper;
+                questionModel.HelperHTML = responseQuestion.HelperHTML;
                 questionModel.Required = responseQuestion.Required;
                 questionModel.Type = type;
                 questionModel.Title = responseQuestion.Title;

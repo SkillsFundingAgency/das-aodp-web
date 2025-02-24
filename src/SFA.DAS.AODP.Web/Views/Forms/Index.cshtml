@@ -1,4 +1,6 @@
-﻿@using SFA.DAS.AODP.Web.Models.FormBuilder.Form
+﻿@using SFA.DAS.AODP.Web.Helpers.ListHelper
+@using SFA.DAS.AODP.Web.Models.FormBuilder.Form
+@using static SFA.DAS.AODP.Web.Controllers.FormBuilder.FormsController
 @model FormVersionListViewModel
 
 <h1 class="govuk-heading-l">View Forms</h1>
@@ -42,13 +44,15 @@
                         }
                         @if (i != 0)
                         {
-                            <button class="govuk-button govuk-button--secondary" type="submit" value="@item.FormId.Value" name="AdditionalActions[MoveUp]">
+                            <button @(OrderButtonHelper.ShouldAutoFocus(TempData, OrderButtonHelper.OrderDirection.Up, item.FormId.Value, i, Model.FormVersions.Count) ? "autofocus" : "")
+                                    class="govuk-button govuk-button--secondary" type="submit" value="@item.FormId.Value" name="AdditionalActions[MoveUp]">
                                 Move Up
                             </button>
                         }
                         @if (i != Model.FormVersions.Count() - 1)
                         {
-                            <button class="govuk-button govuk-button--secondary" type="submit" value="@item.FormId.Value" name="AdditionalActions[MoveDown]">
+                            <button @(OrderButtonHelper.ShouldAutoFocus(TempData, OrderButtonHelper.OrderDirection.Down, item.FormId.Value, i, Model.FormVersions.Count) ? "autofocus" : "")
+                                    class="govuk-button govuk-button--secondary" type="submit" value="@item.FormId.Value" name="AdditionalActions[MoveDown]">
                                 Move Down
                             </button>
                         }

@@ -40,6 +40,8 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
                     ViewBag.NotificationMessage = "The application has been deleted";
                 }
               
+                ShowNotificationIfKeyExists(ApplicationDeletedKey, ViewNotificationMessageType.Success, "The application has been deleted.");
+
                 return View(model);
             }
             catch
@@ -113,6 +115,68 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
             catch
             {
                 return View(createApplicationViewModel);
+            }
+        }
+
+        [ValidateApplication]
+        [HttpGet]
+        [Route("organisations/{organisationId}/applications/{applicationId}/Edit")]
+        public async Task<IActionResult> Edit(Guid organisationId, Guid applicationId)
+        {
+            try
+            {
+                var application = await Send(new GetApplicationByIdQuery(applicationId));
+
+                return View(new EditApplicationViewModel()
+                {
+                    OrganisationId = organisationId,
+                    FormVersionId = application.FormVersionId,
+                    Name = application.Name,
+                    ApplicationId = applicationId,
+                    Owner = application.Owner,
+                    QualificationNumber = application.QualificationNumber
+                });
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
+        }
+
+
+        [ValidateApplication]
+        [HttpPost]
+        [Route("organisations/{organisationId}/applications/{applicationId}/Edit")]
+        public async Task<IActionResult> Edit(EditApplicationViewModel editApplicationViewModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(editApplicationViewModel);
+            }
+
+            var request = new EditApplicationCommand()
+            {
+                Title = editApplicationViewModel.Name,
+                ApplicationId = editApplicationViewModel.ApplicationId,
+                Owner = editApplicationViewModel.Owner,
+                QualificationNumber = editApplicationViewModel.QualificationNumber,
+                
+            };
+
+            try
+            {
+                var response = await Send(request);
+
+                return RedirectToAction(nameof(ViewApplication), new
+                {
+                    organisationId = editApplicationViewModel.OrganisationId,
+                    applicationId = editApplicationViewModel.ApplicationId,
+                    formVersionId = editApplicationViewModel.FormVersionId
+                });
+            }
+            catch
+            {
+                return View(editApplicationViewModel);
             }
         }
 
@@ -262,13 +326,14 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
         {
             try
             {
-                var query = new GetApplicationMetadataByIdQuery(applicationId);
+                var query = new GetApplicationByIdQuery(applicationId);
                 var response = await Send(query);
                 return View(new DeleteApplicationViewModel()
                 {
                     ApplicationId = applicationId,
                     ApplicationReference = response.Reference,
                     OrganisationId = response.OrganisationId,
+                    ApplicationName = response.Name
                 });
             }
             catch

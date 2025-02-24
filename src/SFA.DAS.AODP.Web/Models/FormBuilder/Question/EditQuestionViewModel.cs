@@ -25,6 +25,8 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
 
         public string? Hint { get; set; } = string.Empty;
         public bool DoesHaveAssociatedRoutes { get; set; } = false;
+        public string? Helper { get; set; }
+        public string? HelperHTML { get; set; }
 
         public TextInputOptions TextInput { get; set; } = new();
         public Option Options { get; set; } = new();
@@ -105,6 +107,8 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
                 SectionId = sectionId,
                 Index = response.Order,
                 Hint = response.Hint,
+                Helper = response.Helper,
+                HelperHTML = response.HelperHTML,
                 Required = response.Required,
                 Type = type,
                 Title = response.Title,
@@ -188,6 +192,7 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
             var command = new UpdateQuestionCommand()
             {
                 Hint = model.Hint,
+                Helper = model.Helper,
                 Title = model.Title,
                 Required = model.Required,
                 Id = model.Id,

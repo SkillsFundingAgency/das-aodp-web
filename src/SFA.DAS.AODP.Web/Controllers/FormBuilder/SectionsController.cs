@@ -3,12 +3,16 @@ using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
+using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Section;
+using static SFA.DAS.AODP.Web.Helpers.ListHelper.OrderButtonHelper;
 
 namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
 
 public class SectionsController : ControllerBase
 {
+    private const string SectionUpdatedKey = nameof(SectionUpdatedKey);
+
     public SectionsController(IMediator mediator, ILogger<SectionsController> logger) : base(mediator, logger)
     {
     }
@@ -51,6 +55,8 @@ public class SectionsController : ControllerBase
             var sectionQuery = new GetSectionByIdQuery(sectionId, formVersionId);
             var response = await Send(sectionQuery);
 
+            ShowNotificationIfKeyExists(SectionUpdatedKey, ViewNotificationMessageType.Success, "The section has been updated.");
+
             return View(EditSectionViewModel.Map(response));
         }
         catch
@@ -74,6 +80,10 @@ public class SectionsController : ControllerBase
                     PageId = model.AdditionalActions.MoveUp ?? Guid.Empty,
                 };
                 await Send(command);
+
+                TempData[UpdateTempDataKeys.FocusItemId.ToString()] = command.PageId.ToString();
+                TempData[UpdateTempDataKeys.Directon.ToString()] = OrderDirection.Up.ToString();
+
                 return await Edit(model.FormVersionId, model.SectionId);
             }
             else if (model.AdditionalActions.MoveDown != default)
@@ -85,6 +95,10 @@ public class SectionsController : ControllerBase
                     PageId = model.AdditionalActions.MoveDown ?? Guid.Empty,
                 };
                 await _mediator.Send(command);
+
+                TempData[UpdateTempDataKeys.FocusItemId.ToString()] = command.PageId.ToString();
+                TempData[UpdateTempDataKeys.Directon.ToString()] = OrderDirection.Down.ToString();
+
                 return await Edit(model.FormVersionId, model.SectionId);
             }
             else
@@ -97,6 +111,7 @@ public class SectionsController : ControllerBase
                 };
 
                 var response = await _mediator.Send(command);
+                TempData[SectionUpdatedKey] = true;
                 return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId });
             }
         }
@@ -118,9 +133,10 @@ public class SectionsController : ControllerBase
             var response = await Send(query);
             return View(new DeleteSectionViewModel()
             {
-                Title = response.Title,
-                SectionId = sectionId,
-                FormVersionId = formVersionId
+              Title = response.Title,
+              SectionId = sectionId,
+              FormVersionId = formVersionId,
+              HasAssociatedRoutes = response.HasAssociatedRoutes
             });
         }
         catch
