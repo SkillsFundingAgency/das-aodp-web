@@ -1,4 +1,5 @@
 ﻿@using SFA.DAS.AODP.Models.Forms
+@using SFA.DAS.AODP.Web.Helpers.Markdown
 @model EditQuestionViewModel
 
 <a class="govuk-back-link" asp-action="Edit" asp-controller="Pages" asp-route-formVersionId="@Model.FormVersionId" asp-route-sectionId="@Model.SectionId" asp-route-pageId="@Model.PageId">
@@ -109,11 +110,11 @@
             </govuk-textarea-hint>
         </govuk-textarea>
         <partial name="~/Views/Shared/FormBuilder/Helper/_MarkdownHelper.cshtml" />
-        @if (!string.IsNullOrEmpty(Model.HelperHTML))
+        @if (!string.IsNullOrEmpty(Model.Helper))
         {
             <div class="govuk-label govuk-label--s">Guidance Preview</div>
             <div class="govuk-inset-text">
-                @Html.Raw(Model.HelperHTML)
+                @Html.Raw(MarkdownHelper.ToGovUkHtml(Model.Helper))
             </div>
         }
 
