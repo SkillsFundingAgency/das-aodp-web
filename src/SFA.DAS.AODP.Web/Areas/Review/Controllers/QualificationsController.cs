@@ -8,7 +8,6 @@ using System.Globalization;
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 {
     [Area("Review")]
-    [Route("review/[controller]")]
     public class QualificationsController : Controller
     {
         private readonly ILogger<QualificationsController> _logger;
@@ -49,13 +48,13 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> QualificationDetails([FromRoute] string qualificationReference)
         {
-            if (string.IsNullOrWhiteSpace(qualificationReference))
+            if (string.IsNullOrWhiteSpace(id))
             {
                 _logger.LogWarning("Qualification reference is empty");
                 return BadRequest(new { message = "Qualification reference cannot be empty" });
             }
 
-            var result = await _mediator.Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });
+            var result = await _mediator.Send(new GetQualificationDetailsQuery { QualificationReference = id });
 
             if (!result.Success || result.Value == null)
             {

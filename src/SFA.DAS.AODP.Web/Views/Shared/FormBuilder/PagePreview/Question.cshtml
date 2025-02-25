@@ -84,10 +84,22 @@
     }
     else if (Model.Type == QuestionType.File.ToString())
     {
-        <input class="govuk-file-upload" id="@htmlId" type="file">
+        <input class="govuk-file-upload" id="@htmlId" type="file" multiple>
     }
 
-
-
+    @if (!string.IsNullOrEmpty(Model.HelperHTML))
+    {
+        string helperClass = Model.Type == QuestionType.TextArea.ToString() ? "" : "helper-details";
+        <details class="govuk-details @helperClass">
+            <summary class="govuk-details__summary">
+                <span class="govuk-details__summary-text">
+                    Help
+                </span>
+            </summary>
+            <div class="govuk-details__text">
+                @Html.Raw(Model.HelperHTML)
+            </div>
+        </details>
+    }
 
 </div>
