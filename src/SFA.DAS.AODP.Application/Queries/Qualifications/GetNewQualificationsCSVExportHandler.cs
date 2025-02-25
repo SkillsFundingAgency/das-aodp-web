@@ -4,7 +4,7 @@ using SFA.DAS.AODP.Domain.Qualifications.Requests;
 
 namespace SFA.DAS.AODP.Application.Queries.Qualifications
 {
-    class GetNewQualificationsCsvExportHandler : IRequestHandler<GetNewQualificationsCsvExportQuery, BaseMediatrResponse<GetNewQualificationsCsvExportResponse>>
+    public class GetNewQualificationsCsvExportHandler : IRequestHandler<GetNewQualificationsCsvExportQuery, BaseMediatrResponse<GetNewQualificationsCsvExportResponse>>
     {
         private readonly IApiClient _apiClient;
 
@@ -16,23 +16,35 @@ namespace SFA.DAS.AODP.Application.Queries.Qualifications
         public async Task<BaseMediatrResponse<GetNewQualificationsCsvExportResponse>> Handle(GetNewQualificationsCsvExportQuery request, CancellationToken cancellationToken)
         {
             var response = new BaseMediatrResponse<GetNewQualificationsCsvExportResponse>();
-            response.Success = false;
+
             try
             {
                 var result = await _apiClient.Get<BaseMediatrResponse<GetNewQualificationsCsvExportResponse>>(new GetNewQualificationCsvExportApiRequest());
-                if (result != null && result.Value != null)
-                {
-                    response.Value = result.Value;
-                    response.Success = true;
-                }
-                else
+                if (result == null)
                 {
                     response.Success = false;
                     response.ErrorMessage = "No new qualifications found.";
                 }
+                else if (result.Value.QualificationExports.Any())
+                {
+                    response.Value = new GetNewQualificationsCsvExportResponse
+                    {
+                        QualificationExports = result.Value.QualificationExports
+                    };
+                    response.Success = true;
+                }
+                else
+                {
+                    response.Value = new GetNewQualificationsCsvExportResponse
+                    {
+                        QualificationExports = new List<QualificationExport>()
+                    };
+                    response.Success = true;
+                }
             }
             catch (Exception ex)
             {
+                response.Success = false;
                 response.ErrorMessage = ex.Message;
             }
 

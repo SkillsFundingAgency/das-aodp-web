@@ -4,6 +4,6 @@ namespace SFA.DAS.AODP.Domain.Qualifications.Requests
 {
     public class GetNewQualificationCsvExportApiRequest : IGetApiRequest
     {
-        public string GetUrl => "/api/qualifications/export?status=new";
+        public string GetUrl => "api/qualifications/export?status=new";
     }
 }
