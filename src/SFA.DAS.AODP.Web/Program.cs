@@ -62,7 +62,7 @@ internal class Program
         });
 
         var app = builder.Build();
-
+        app.UseStatusCodePagesWithRedirects("/Error/{0}");
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
@@ -106,8 +106,9 @@ internal class Program
                                      defaults: new { area = "Review", controller = "Home" });
 
         endpoints.MapControllerRoute(name: "ReviewDefault",
-                                     pattern: "Review/{action=Index}/{id?}",
-                                     defaults: new { area = "Review", controller = "Review" }).RequireAuthorization("IsReviewUser"); ;
+                                     pattern: "review/{controller=review}/{action=Index}/{id?}",
+                                     defaults:new {area="review"}).
+                                     RequireAuthorization("IsReviewUser");
 
         endpoints.MapAreaControllerRoute(name: "AdminHomeLandingPage",
                                areaName: "Admin",

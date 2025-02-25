@@ -17,7 +17,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             _mediator = mediator;
         }
 
-        public async Task<IActionResult> Index(string status)
+        public async Task<IActionResult> Index([FromQuery] string status)
         {
             status = status?.Trim().ToLower();
 
@@ -35,17 +35,15 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
             return response;
         }
-
-        [HttpGet("qualificationdetails/{qualificationReference}")]
-        public async Task<IActionResult> QualificationDetails([FromRoute] string qualificationReference)
+        public async Task<IActionResult> QualificationDetails([FromRoute] string id)
         {
-            if (string.IsNullOrWhiteSpace(qualificationReference))
+            if (string.IsNullOrWhiteSpace(id))
             {
                 _logger.LogWarning("Qualification reference is empty");
                 return BadRequest(new { message = "Qualification reference cannot be empty" });
             }
 
-            var result = await _mediator.Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });
+            var result = await _mediator.Send(new GetQualificationDetailsQuery { QualificationReference = id });
 
             if (!result.Success || result.Value == null)
             {
