@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Qualifications List";
+    var status = Model.FirstOrDefault()?.Status ?? null;
 }
 
 <h1 class="govuk-heading-xl">New Qualifications</h1>
@@ -33,3 +34,8 @@
         }
     </tbody>
 </table>
+<div class="govuk-button-group">
+    <a class="govuk-button" asp-controller="Qualifications" asp-action="GetQualificationCSVExportData" asp-route-area="Review" asp-route-status="@status">
+        Download
+    </a>
+</div>
