@@ -64,6 +64,15 @@
                asp-route-organisationId="@Model.OrganisationId">
                 Edit application details
             </a>
+
+            <a class="govuk-button" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init=""
+               asp-action="ApplicationFormPreview"
+               asp-controller="Applications"
+               asp-route-formVersionId="@Model.FormVersionId"
+               asp-route-applicationId="@Model.ApplicationId"
+               asp-route-organisationId="@Model.OrganisationId">
+                Form Preview
+            </a>
         }
 
         <h2 class="govuk-heading-m">Application progress</h2>

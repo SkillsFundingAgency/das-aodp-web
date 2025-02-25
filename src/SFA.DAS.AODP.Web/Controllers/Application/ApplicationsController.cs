@@ -1,13 +1,12 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
+using SFA.DAS.AODP.Application.Queries.Application.Form;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Controllers.FormBuilder;
 using SFA.DAS.AODP.Web.Filters;
 using SFA.DAS.AODP.Web.Models.Application;
-using SFA.DAS.AODP.Web.Models.FormBuilder.Form;
 using SFA.DAS.AODP.Web.Validators;
 
 namespace SFA.DAS.AODP.Web.Controllers.Application
@@ -171,6 +170,26 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
             catch
             {
                 return View(editApplicationViewModel);
+            }
+        }
+
+        [ValidateApplication]
+        [HttpGet]
+        [Route("organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/preview")]
+        public async Task<IActionResult> ApplicationFormPreview(Guid organisationId, Guid applicationId, Guid formVersionId)    
+        {
+            try
+            {
+                var query = new GetFormPreviewByIdQuery(applicationId);
+                var response = await Send(query);
+
+                var viewModel = ApplicationFormPreviewViewModel.Map(response, formVersionId, organisationId, applicationId);
+
+                return View(viewModel);
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
             }
         }
 
