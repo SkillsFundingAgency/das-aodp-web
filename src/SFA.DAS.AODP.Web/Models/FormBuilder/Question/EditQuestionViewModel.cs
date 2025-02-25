@@ -27,7 +27,6 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
         public bool DoesHaveAssociatedRoutes { get; set; } = false;
         public string? Helper { get; set; }
         public string? HelperHTML { get; set; }
-        public bool? UpdateDescriptionPreview { get; set; }
 
         public TextInputOptions TextInput { get; set; } = new();
         public Option Options { get; set; } = new();
@@ -38,6 +37,16 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
 
 
         public bool Editable { get; set; }
+
+        public AdditionalFormActions? AdditionalActions { get; set; } = new();
+
+
+        public class AdditionalFormActions
+        {
+            public bool? UpdateDescriptionPreview { get; set; }
+            public bool? SaveAndExit { get; set; }
+            public bool? SaveAndAddAnother { get; set; }
+        }
 
         public class TextInputOptions
         {

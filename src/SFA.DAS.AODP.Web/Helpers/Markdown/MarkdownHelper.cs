@@ -1,4 +1,6 @@
-﻿namespace SFA.DAS.AODP.Web.Helpers.Markdown
+﻿using System.Web;
+
+namespace SFA.DAS.AODP.Web.Helpers.Markdown
 {
     public static class MarkdownHelper
     {
@@ -6,7 +8,7 @@
         {
             if (string.IsNullOrEmpty(markdown)) return string.Empty;
             return Markdig.Markdown
-                .ToHtml(markdown)
+                .ToHtml(HttpUtility.HtmlEncode(markdown))
                 .Replace("<a", "<a class=\"govuk-link\" target=\"_blank\"");
         }
 

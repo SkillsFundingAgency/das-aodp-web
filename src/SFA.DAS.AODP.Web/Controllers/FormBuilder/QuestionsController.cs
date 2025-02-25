@@ -3,13 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Questions;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Questions;
-using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Routes;
-using SFA.DAS.AODP.Web.Models.FormBuilder.Question;
+using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Constants;
-using Markdig;
-using SFA.DAS.AODP.Web.Models.FormBuilder.Form;
 using SFA.DAS.AODP.Web.Helpers.Markdown;
+using SFA.DAS.AODP.Web.Models.FormBuilder.Question;
 
 namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
 
@@ -120,15 +118,10 @@ public class QuestionsController : ControllerBase
         {
             if (model.FileUpload != null) model.FileUpload.FileTypes = _formBuilderSettings.UploadFileTypesAllowed;
 
-            if (model.UpdateDescriptionPreview == true)
+            if (model.AdditionalActions?.UpdateDescriptionPreview == true)
             {
                 model.HelperHTML = MarkdownHelper.ToGovUkHtml(model.Helper);
                 ViewBag.AutoFocusOnUpdateDescriptionButton = true;
-                return View(model);
-            }
-            ValidateEditQuestionViewModel(model);
-            if (!ModelState.IsValid)
-            {
                 return View(model);
             }
 
@@ -156,12 +149,32 @@ public class QuestionsController : ControllerBase
             }
 
 
+            ValidateEditQuestionViewModel(model);
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+
             var command = EditQuestionViewModel.MapToCommand(model);
-            var response = await _mediator.Send(command);
+            await _mediator.Send(command);
 
-            TempData[QuestionUpdatedKey] = true;
 
-            return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId, pageId = model.PageId, questionId = model.Id });
+            if (model.AdditionalActions?.SaveAndExit == true)
+            {
+                TempData[QuestionUpdatedKey] = true;
+                return RedirectToAction("Edit", "Pages", new { formVersionId = model.FormVersionId, sectionId = model.SectionId, pageId = model.PageId });
+            }
+            else if (model.AdditionalActions?.SaveAndAddAnother == true)
+            {
+                return RedirectToAction("Create", new { formVersionId = model.FormVersionId, sectionId = model.SectionId, pageId = model.PageId });
+            }
+            else
+            {
+                TempData[QuestionUpdatedKey] = true;
+                return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId, pageId = model.PageId, questionId = model.Id });
+            }
+
         }
         catch
         {
