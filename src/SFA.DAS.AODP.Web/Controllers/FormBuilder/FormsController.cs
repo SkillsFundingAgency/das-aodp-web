@@ -5,7 +5,9 @@ using SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Web.Constants;
+using SFA.DAS.AODP.Web.Helpers.Markdown;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Form;
+using System.Reflection;
 using static SFA.DAS.AODP.Web.Helpers.ListHelper.OrderButtonHelper;
 
 namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
@@ -94,8 +96,7 @@ public class FormsController : ControllerBase
 
             if (viewModel.AdditionalFormActions.UpdateDescriptionPreview)
             {
-                viewModel.DescriptionPreview = Markdown.ToHtml(viewModel.Description)
-                    .Replace("<a", "<a class=\"govuk-link\"");
+                viewModel.DescriptionPreview = MarkdownHelper.ToGovUkHtml(viewModel.Description);
                 return View(viewModel);
             }
 
@@ -185,8 +186,7 @@ public class FormsController : ControllerBase
 
                 viewModel.Title = editFormVersionViewModel.Title;
                 viewModel.Description = editFormVersionViewModel.Description;
-                viewModel.DescriptionHTML = Markdown.ToHtml(editFormVersionViewModel.Description)
-                .Replace("<a", "<a class=\"govuk-link\"");
+                viewModel.DescriptionHTML = MarkdownHelper.ToGovUkHtml(viewModel.Description);
                 ViewBag.AutoFocusOnUpdateDescriptionButton = true;
 
 
