@@ -33,9 +33,13 @@
     {
         <a class="govuk-button" asp-action="Create" asp-controller="Pages" asp-route-sectionId="@Model.SectionId" asp-route-formVersionId="@Model.FormVersionId">Create New Page</a>
     }
+
+    <h2 class="govuk-heading-m">Pages</h2>
+
     <table class="govuk-table">
         <thead class="govuk-table__head">
             <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">Order</th>
                 <th scope="col" class="govuk-table__header">Name</th>
                 <th scope="col" class="govuk-table__header">Options</th>
             </tr>
@@ -44,6 +48,7 @@
             @foreach (var (item, i) in Model.Pages.OrderBy(o => o.Order).Select((v, i) => (v, i)))
             {
                 <tr class="govuk-table__row">
+                    <td>@item.Order</td>
                     <td>@item.Title</td>
                     <td>
                         <a class="govuk-button"

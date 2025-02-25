@@ -35,7 +35,18 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
         public DateInputOptions DateInput { get; set; } = new();
         public FileUploadOptions FileUpload { get; set; } = new();
 
+
         public bool Editable { get; set; }
+
+        public AdditionalFormActions? AdditionalActions { get; set; } = new();
+
+
+        public class AdditionalFormActions
+        {
+            public bool? UpdateDescriptionPreview { get; set; }
+            public bool? SaveAndExit { get; set; }
+            public bool? SaveAndAddAnother { get; set; }
+        }
 
         public class TextInputOptions
         {

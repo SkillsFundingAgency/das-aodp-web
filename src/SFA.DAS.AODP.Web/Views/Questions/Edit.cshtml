@@ -1,4 +1,5 @@
 ﻿@using SFA.DAS.AODP.Models.Forms
+@using SFA.DAS.AODP.Web.Helpers.Markdown
 @model EditQuestionViewModel
 
 <a class="govuk-back-link" asp-action="Edit" asp-controller="Pages" asp-route-formVersionId="@Model.FormVersionId" asp-route-sectionId="@Model.SectionId" asp-route-pageId="@Model.PageId">
@@ -103,18 +104,37 @@
     </div>
     <div class="govuk-form-group">
         <govuk-textarea disabled="@(!Model.Editable)" asp-for="@Model.Helper">
-            <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Helper (optional)</govuk-textarea-label>
+            <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Additional guidance (optional)</govuk-textarea-label>
+            <govuk-textarea-hint>
+                Provide optional guidance to completing the question. Markdown should be used to format the guidance.
+            </govuk-textarea-hint>
         </govuk-textarea>
         <partial name="~/Views/Shared/FormBuilder/Helper/_MarkdownHelper.cshtml" />
-        @if (!string.IsNullOrEmpty(Model.HelperHTML))
+        @if (!string.IsNullOrEmpty(Model.Helper))
         {
-            <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible" />
-            <div class="govuk-label govuk-label--s">Helper Preview</div>
+            <div class="govuk-label govuk-label--s">Guidance Preview</div>
             <div class="govuk-inset-text">
-                @Html.Raw(Model.HelperHTML)
+                @Html.Raw(MarkdownHelper.ToGovUkHtml(Model.Helper))
             </div>
         }
+
+        @if (Model.Editable)
+        {
+            <button @(ViewBag.AutoFocusOnUpdateDescriptionButton != null ? "autofocus" : "")
+                    type="submit"
+                    class="govuk-button govuk-button--secondary"
+                    data-module="govuk-button"
+                    data-prevent-double-click="true"
+                    value="true"
+                    name="AdditionalActions[UpdateDescriptionPreview]">
+                Update Description Preview
+            </button>
+        }
+
     </div>
+
+    <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+
     @if (Model.Type == QuestionType.Text || Model.Type == QuestionType.TextArea)
     {
         await Html.RenderPartialAsync("FormBuilder/QuestionEdit/_TextInput", Model.TextInput);
@@ -145,20 +165,16 @@
     {
         <div class="govuk-button-group">
             <button type="submit" class="govuk-button govuk-!-margin-bottom-3" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init="">Save question</button>
-            <a class="govuk-button govuk-!-margin-bottom-3 govuk-button--secondary" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init=""
-               asp-action="Create"
-               asp-controller="Questions"
-               asp-route-formVersionId="@Model.FormVersionId"
-               asp-route-sectionId="@Model.SectionId"
-               asp-route-pageId="@Model.PageId">
+            <button type="submit"
+                    class="govuk-button govuk-!-margin-bottom-3 govuk-button--secondary"
+                    data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init=""
+                    name="AdditionalActions[SaveAndAddAnother]" value="true">
                 Save and add new question
-            </a>
-            <button type="submit" class="govuk-button govuk-!-margin-bottom-3 govuk-button--secondary" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init=""
-                    asp-action="Edit"
-                    asp-controller="Pages"
-                    asp-route-formVersionId="@Model.FormVersionId"
-                    asp-route-sectionId="@Model.SectionId"
-                    asp-route-pageId="@Model.PageId">
+            </button>
+            <button type="submit"
+                    class="govuk-button govuk-!-margin-bottom-3 govuk-button--secondary"
+                    data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init=""
+                    name="AdditionalActions[SaveAndExit]" value="true">
                 Save question and exit
             </button>
         </div>
