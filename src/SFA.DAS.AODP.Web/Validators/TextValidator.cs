@@ -18,11 +18,13 @@ namespace SFA.DAS.AODP.Web.Validators
             if (required && (answer == null || String.IsNullOrEmpty(answer.TextValue)))
                 throw new QuestionValidationFailedException(question.Id, question.Title, $"Please provide a value.");
 
-            if (minLength is not null && minLength > answer.TextValue?.Length)
-                throw new QuestionValidationFailedException(question.Id, question.Title, $"The value must be greater than {minLength} characters long.");
+            var wordCount = answer?.TextValue?.Split().Where(v => !string.IsNullOrEmpty(v)).Count() ?? 0;
 
-            if (maxLength is not null && maxLength < answer.TextValue?.Length)
-                throw new QuestionValidationFailedException(question.Id, question.Title, $"The value must be less than {maxLength} characters long.");
+            if (minLength is not null && minLength > wordCount)
+                throw new QuestionValidationFailedException(question.Id, question.Title, $"Must have more than {minLength} words.");
+            
+            if (maxLength is not null && maxLength < wordCount)
+                throw new QuestionValidationFailedException(question.Id, question.Title, $"Must have less than {maxLength} words.");
         }
     }
 }

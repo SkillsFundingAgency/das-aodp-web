@@ -19,7 +19,7 @@
 
         <govuk-textarea asp-for="@Model.Description">
             <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Description</govuk-textarea-label>
-            <govuk-textarea-hint>This field will allow for links to be provided in the upcoming sprints. </govuk-textarea-hint>
+            <govuk-textarea-hint>This field supports Markdown. </govuk-textarea-hint>
         </govuk-textarea>
         <partial name="~/Views/Shared/FormBuilder/Helper/_MarkdownHelper.cshtml" />
         @if (!string.IsNullOrEmpty(Model.DescriptionPreview))
