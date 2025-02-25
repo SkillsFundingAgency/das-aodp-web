@@ -7,7 +7,7 @@
 }
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
+    <div class="govuk-grid-column-full">
 
         <govuk-back-link class="govuk-link govuk-task-list__link"
                          asp-action="ViewApplication"
@@ -18,19 +18,80 @@
 
         <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
-        <h1 class="govuk-heading-l">Form Preview</h1>
+        <h1 class="govuk-heading-xl govuk-!-margin-bottom-3">Form Preview</h1>
+       
+        
+    @if (Model.Sections.Any())
+    {
+        @foreach (var sec in Model.Sections)
+        {
+                <h3 class="govuk-heading-l govuk-!-margin-top-3 govuk-!-margin-bottom-0">
+                   Section: @sec.Title
+                </h3>
+                <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible govuk-!-margin-top-1 govuk-!-margin-bottom-3">
 
-        <h2 class="govuk-heading-m">@Model.FormTitle</h2>
+                <div class="govuk-inset-text govuk-!-margin-top-1">
+                @if (sec.Pages.Any())
+                {
+                    
+                        <ol class="govuk-list govuk-list--number govuk-list--spaced">
+                            @foreach (var p in sec.Pages)
+                            {
+                                <li>
+                                    <h4 class="govuk-heading-m govuk-!-margin-bottom-1">Page: @p.Title</h4>
+                                    <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible govuk-!-margin-top-0 govuk-!-margin-bottom-3">
 
-        @{
-            // TODO: form details here
+                                    @if (p.Questions.Any())
+                                    {
+                                        <ol class="govuk-list govuk-list--number">
+                                            @foreach (var question in p.Questions)
+                                            {
+                                                <li>
+                                                    <p class="govuk-body govuk-!-font-weight-bold">Question: @question.Title
+                                                    @if (!question.Required)
+                                                    {
+                                                            <span class="govuk-body govuk-!-font-weight-regular"> (optional)</span>
+                                                    }
+                                                    </p>
+
+                                                    @if (question.QuestionOptions.Any())
+                                                    {
+                                                        <ul class="govuk-list govuk-list--bullet">
+                                                            @foreach (var option in question.QuestionOptions)
+                                                            {
+                                                                <li>@option.Value</li>
+                                                            }
+                                                        </ul>
+                                                    }
+                                                </li>
+                                            }
+                                        </ol>
+                                    }
+                                    else
+                                    {
+                                        <p class="govuk-body">No questions available for this page.</p>
+                                    }
+                                </li>
+                            }
+                        </ol>
+                }
+                else
+                {
+                    <p class="govuk-body">No pages available for this section.</p>
+                }
+                </div>
         }
+    }
+    else
+    {
+        <p>No sections available.</p>
+    }
 
-        <a class="govuk-button govuk-button--secondary"
-                         asp-action="ViewApplication"
-                         asp-controller="Applications"
-                         asp-route-formVersionId="@Model.FormVersionId"
-                         asp-route-organisationId="@Model.OrganisationId"
-                         asp-route-applicationId="@Model.ApplicationId">Back to view application</a>
+    <a class="govuk-button govuk-button--secondary"
+                        asp-action="ViewApplication"
+                        asp-controller="Applications"
+                        asp-route-formVersionId="@Model.FormVersionId"
+                        asp-route-organisationId="@Model.OrganisationId"
+                        asp-route-applicationId="@Model.ApplicationId">Back to view application</a>
     </div>
 </div>
