@@ -1,4 +1,5 @@
 ﻿@using System.Security.Claims
+@using SFA.DAS.AODP.Authentication.Constants
 @{
 	ViewData["Title"] = "Apply Dashboard";
 }
@@ -15,7 +16,7 @@
 				</div>
 
 				<div class="govuk-grid-row">a
-					<h3 class="govuk-heading-3">Your assigned organisation is :@User.Claims.FirstOrDefault(c => c.Type == "OrganisationName").Value</h3>
+					<h3 class="govuk-heading-3">Your assigned organisation is :@User.Claims.FirstOrDefault(c => c.Type == ClaimName.OrganisationName).Value</h3>
 				</div>
 				<div class="govuk-grid-row">
 					<label class="govuk-label govuk-label--s">Claims</label>
