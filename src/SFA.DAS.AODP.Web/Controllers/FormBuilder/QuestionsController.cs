@@ -5,15 +5,12 @@ using SFA.DAS.AODP.Application.Commands.FormBuilder.Questions;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Questions;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Routes;
 using SFA.DAS.AODP.Models.Settings;
-using SFA.DAS.AODP.Web.Enums;
+using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Helpers.Markdown;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Question;
-using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
+namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
 
-namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers.FormBuilder;
-
-[Area("Admin")]
 public class QuestionsController : ControllerBase
 {
     private const string QuestionUpdatedKey = nameof(QuestionUpdatedKey);
@@ -28,7 +25,7 @@ public class QuestionsController : ControllerBase
     #region Create
 
     [HttpGet()]
-    [Route("/admin/forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/add-question")]
+    [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/add-question")]
     public async Task<IActionResult> Create(Guid formVersionId, Guid sectionId, Guid pageId)
     {
         return View(new CreateQuestionViewModel
@@ -40,7 +37,7 @@ public class QuestionsController : ControllerBase
     }
 
     [HttpPost()]
-    [Route("/admin/forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/add-question")]
+    [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/add-question")]
     public async Task<IActionResult> Create(CreateQuestionViewModel model)
     {
         try
@@ -78,7 +75,7 @@ public class QuestionsController : ControllerBase
     #region Edit
 
     [HttpGet()]
-    [Route("/admin/forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/questions/{questionId}")]
+    [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/questions/{questionId}")]
     public async Task<IActionResult> Edit(Guid formVersionId, Guid sectionId, Guid pageId, Guid questionId)
     {
         try
@@ -114,7 +111,7 @@ public class QuestionsController : ControllerBase
     }
 
     [HttpPost()]
-    [Route("/admin/forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/questions/{questionId}")]
+    [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/questions/{questionId}")]
     public async Task<IActionResult> Edit(EditQuestionViewModel model)
     {
         try
@@ -189,7 +186,7 @@ public class QuestionsController : ControllerBase
     #region Delete
 
     [HttpGet()]
-    [Route("/admin/forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/questions/{questionId}/delete")]
+    [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/questions/{questionId}/delete")]
     public async Task<IActionResult> Delete(Guid formVersionId, Guid sectionId, Guid pageId, Guid questionId)
     {
         try
@@ -206,6 +203,9 @@ public class QuestionsController : ControllerBase
             {
                 ModelState.AddModelError("", "There are routes associated with this question");
             }
+
+            // Instead of the above, add Routes to the GetQuestionByIdQueryResponse???
+
 
             var query = new GetQuestionByIdQuery()
             {
@@ -229,8 +229,8 @@ public class QuestionsController : ControllerBase
 
     [HttpPost()]
     [ValidateAntiForgeryToken]
-    [Route("/admin/forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/questions/{questionId}/delete")]
-    public async Task<IActionResult> Delete(Guid formVersionId, Guid sectionId, Guid pageId, Guid questionId, DeleteQuestionViewModel model)
+    [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/questions/{questionId}/delete")]
+    public async Task<IActionResult> DeleteConfirmed(Guid formVersionId, Guid sectionId, Guid pageId, Guid questionId, DeleteQuestionViewModel model)
     {
         try
         {
@@ -244,7 +244,7 @@ public class QuestionsController : ControllerBase
 
             await Send(command);
 
-            return RedirectToAction("Edit", "Pages", new { formVersionId, sectionId, pageId });
+            return RedirectToAction("Edit", "Pages", new { formVersionId = formVersionId, sectionId = sectionId, pageId = pageId });
         }
         catch
         {

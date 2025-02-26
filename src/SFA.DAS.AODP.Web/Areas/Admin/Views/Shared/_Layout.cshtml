@@ -13,17 +13,17 @@
                 </a>
             </div>
             <div class="dfe-header__content" id="content-header">
-                <ul class="dfe-header__action-links">
-                    <li>
-                        @if (User.Identity.IsAuthenticated)
-                        {
-                            <a asp-controller="authentication" asp-action="signout" class="govuk-link govuk-link--inverse">Sign out</a>
-                        }
-                    </li>
+                <ul class="dfe-header__action-links">           
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <li>
+                            <a href="/authentication/signout" class="govuk-link govuk-link--inverse">Sign out</a>
+                        </li>
+                    }
                 </ul>
                 <div class="dfe-header__menu">
                     <button class="dfe-header__menu-toggle" id="toggle-menu" aria-controls="header-navigation" aria-expanded="false">Menu</button>
-                </div>
+                </div>               
             </div>
         </div>
         <div class="govuk-width-container dfe-header__service-name">
@@ -34,6 +34,7 @@
                 <p class="dfe-header__navigation-title">
                     <span id="label-navigation">
                         Menu
+                        <div id="extwaiokist" style="display:none" v="bmmch" q="f0ae2e3d" c="594.5" i="601" u="0.751" s="04272401" sg="svr_09102316-ga_04272401-bai_04252415" d="1" w="false" e="}" a="2" m="BMe=" vn="9colr"><div id="extwaigglbit" style="display:none" v="bmmch" q="f0ae2e3d" c="594.5" i="601" u="0.751" s="04272401" sg="svr_09102316-ga_04272401-bai_04252415" d="1" w="false" e="}" a="2" m="BMe="></div></div>
                     </span>
                     <button class="dfe-header__navigation-close" id="close-menu">
                         <svg class="dfe-icon dfe-icon__close" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false" width="27" height="27">
@@ -42,48 +43,22 @@
                         <span class="govuk-visually-hidden">Close menu</span>
                     </button>
                 </p>
-                @if (User.Identity.IsAuthenticated)
-                {
-                    <ul class="dfe-header__navigation-list">
-                        <li class="dfe-header__navigation-item dfe-header__navigation-item--current">
-                            <a class="dfe-header__navigation-link" href="#">
-                                Home
-                                <svg class="dfe-icon dfe-icon__chevron-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" width="34" height="34">
-                                    <path d="M15.5 12a1 1 0 0 1-.29.71l-5 5a1 1 0 0 1-1.42-1.42l4.3-4.29-4.3-4.29a1 1 0 0 1 1.42-1.42l5 5a1 1 0 0 1 .29.71z"></path>
-                                </svg>
-                            </a>
-                        </li>
-                        <li class="dfe-header__navigation-item">
-                            <a class="dfe-header__navigation-link" asp-action="Index" asp-controller="Forms">
-                                Form Management
-                                <svg class="dfe-icon dfe-icon__chevron-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" width="34" height="34">
-                                    <path d="M15.5 12a1 1 0 0 1-.29.71l-5 5a1 1 0 0 1-1.42-1.42l4.3-4.29-4.3-4.29a1 1 0 0 1 1.42-1.42l5 5a1 1 0 0 1 .29.71z"></path>
-                                </svg>
-                            </a>
-                        </li>
-                        <li class="dfe-header__navigation-item">
-                            <a class="dfe-header__navigation-link" asp-action="Index" asp-controller="Applications" asp-route-organisationId="@Guid.Empty">
-                                Applications
-                                <svg class="dfe-icon dfe-icon__chevron-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" width="34" height="34">
-                                    <path d="M15.5 12a1 1 0 0 1-.29.71l-5 5a1 1 0 0 1-1.42-1.42l4.3-4.29-4.3-4.29a1 1 0 0 1 1.42-1.42l5 5a1 1 0 0 1 .29.71z"></path>
-                                </svg>
-                            </a>
-                        </li>
-                    </ul>
-                }
-
+                <ul class="dfe-header__navigation-list">
+                    <li class="dfe-header__navigation-item dfe-header__navigation-item--current">
+                        <a class="dfe-header__navigation-link" href="#">
+                            Home
+                            <svg class="dfe-icon dfe-icon__chevron-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" width="34" height="34">
+                                <path d="M15.5 12a1 1 0 0 1-.29.71l-5 5a1 1 0 0 1-1.42-1.42l4.3-4.29-4.3-4.29a1 1 0 0 1 1.42-1.42l5 5a1 1 0 0 1 .29.71z"></path>
+                            </svg>
+                        </a>
+                    </li>                    
+                </ul>
             </div>
         </nav>
     </header>
-    <div class="govuk-width-container">
-        <div class="govuk-phase-banner">
-            <p class="govuk-phase-banner__content">
-                <strong class="govuk-tag govuk-phase-banner__content__tag">Development</strong>
-                <span class="govuk-phase-banner__text">This site is currently in active development.</span>
-            </p>
-        </div>
-
-    </div>
+    <script src="~/lib/sortablejs/sortable.min.js"></script>
+    <link href="~/lib/quill/dist/quill.snow.css" rel="stylesheet" />
+    <script src="~/lib/quill/dist/quill.js"></script>
 }
 
 @section Head {
@@ -136,14 +111,15 @@
 }
 
 @section BodyEnd {
-    @Html.GovUkFrontendScriptImports()
-
-    <environment include="Development">
-        <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <environment include="Development">        
+        <script src="~/lib/dfe-frontend/dist/dfefrontend.js"></script>
         <script src="~/js/site.js"></script>
     </environment>
     <environment exclude="Development">
-        <script src="~/js/site.min.js"></script>
+        <script src="~/js/application.min.js"></script>
+        <script src="~/lib/dfe-frontend/dist/dfefrontend.min.js"></script>
     </environment>
 
+    @RenderSection("Scripts", required: false)
 }

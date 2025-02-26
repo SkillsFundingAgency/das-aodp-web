@@ -1,24 +1,25 @@
-﻿@model DeleteSectionViewModel
+﻿﻿@using SFA.DAS.AODP.Web.Models.FormBuilder.Page
+@model DeletePageViewModel
 
-<a class="govuk-back-link" asp-action="Edit" asp-controller="Forms" asp-route-formVersionId="@Model.FormVersionId">
-    Back to Form
+<a class="govuk-back-link" asp-action="Edit" asp-controller="Sections" asp-route-formVersionId="@Model.FormVersionId" asp-route-sectionId="@Model.SectionId">
+    Back to Section
 </a>
 
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
-<h1 class="govuk-heading-l">Delete Section?</h1>
+<h1 class="govuk-heading-l">Delete Page?</h1>
 
 @if (Model.HasAssociatedRoutes)
 {
     <div class="govuk-error-summary" data-module="govuk-error-summary">
         <div role="alert">
             <h2 class="govuk-error-summary__title">
-                Section cannot be deleted
+                Page cannot be deleted
             </h2>
             <div class="govuk-error-summary__body">
                 <ul class="govuk-list govuk-error-summary__list">
                     <li>
-                        <p>This Section cannot be deleted because there is a route associated with it or with the pages and questions relating to this section. You must first edit the routes to remove any association before deleting this section.</p>
+                        <p>This Page cannot be deleted because there is a route associated with it or with the questions on this page. You must first edit the routes to remove any association before deleting this page.</p>
                     </li>
                 </ul>
             </div>
@@ -32,8 +33,10 @@ else
     <form asp-action="Delete" method="post">
         @Html.HiddenFor(m => m.FormVersionId)
         @Html.HiddenFor(m => m.SectionId)
+        @Html.HiddenFor(m => m.PageId)
+
         <govuk-warning-text icon-fallback-text="Warning">
-            Are you sure you want to delete the section "@Model.Title"?
+            Are you sure you want to delete the page "@Model.Title"?
         </govuk-warning-text>
 
         <p class="govuk-body">
@@ -42,17 +45,21 @@ else
 
         <div class="govuk-button-group">
 
-            <govuk-button class="govuk-button--warning" type="submit">
+            <govuk-button class="govuk-button--warning" type="submit"
+                          asp-action="DeleteConfirmed" asp-controller="Pages"
+                          asp-route-formVersionId="@Model.FormVersionId"
+                          asp-route-sectionId="@Model.SectionId"
+                          asp-route-pageId="@Model.PageId">
                 Delete
             </govuk-button>
 
             <a class="govuk-button govuk-button--secondary"
                asp-action="Edit"
-               asp-controller="Forms"
-               asp-route-formVersionId="@Model.FormVersionId">
+               asp-controller="Sections"
+               asp-route-formVersionId="@Model.FormVersionId"
+               asp-route-sectionId="@Model.SectionId">
                 Cancel
             </a>
-
         </div>
     </form>
 }

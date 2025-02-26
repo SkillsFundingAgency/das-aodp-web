@@ -1,12 +1,12 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Routes;
+using SFA.DAS.AODP.Domain.FormBuilder.Requests.Sections;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Routing;
-using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
+using System.Reflection;
 
-namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers.FormBuilder;
+namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
 
-[Area("Admin")]
 public class RoutesController : ControllerBase
 {
     public RoutesController(IMediator mediator, ILogger<RoutesController> logger) : base(mediator, logger)
@@ -14,7 +14,7 @@ public class RoutesController : ControllerBase
     }
 
     [HttpGet()]
-    [Route("/admin/forms/{formVersionId}/routes/sections/{sectionId}/pages/{pageId}/questions/{questionId}")]
+    [Route("forms/{formVersionId}/routes/sections/{sectionId}/pages/{pageId}/questions/{questionId}")]
     public async Task<IActionResult> Configure(Guid formVersionId, Guid questionId, Guid sectionId, Guid pageId)
     {
         try
@@ -37,7 +37,7 @@ public class RoutesController : ControllerBase
     }
 
     [HttpPost()]
-    [Route("/admin/forms/{formVersionId}/routes/sections/{sectionId}/pages/{pageId}/questions/{questionId}")]
+    [Route("forms/{formVersionId}/routes/sections/{sectionId}/pages/{pageId}/questions/{questionId}")]
     public async Task<IActionResult> Configure(CreateRouteViewModel model)
     {
         try
@@ -53,7 +53,7 @@ public class RoutesController : ControllerBase
         }
     }
     [HttpGet()]
-    [Route("/admin/forms/{formVersionId}/routes/choose-section-page")]
+    [Route("forms/{formVersionId}/routes/choose-section-page")]
     public async Task<IActionResult> ChooseSection(Guid formVersionId)
     {
         try
@@ -72,7 +72,7 @@ public class RoutesController : ControllerBase
     }
 
     [HttpPost()]
-    [Route("/admin/forms/{formVersionId}/routes/choose-section-page")]
+    [Route("forms/{formVersionId}/routes/choose-section-page")]
     public async Task<IActionResult> ChooseSection(CreateRouteChooseSectionAndPageViewModel model)
     {
         try
@@ -99,7 +99,7 @@ public class RoutesController : ControllerBase
     }
 
     [HttpGet()]
-    [Route("/admin/forms/{formVersionId}/routes/sections/{sectionId}/pages/{pageId}/choose-question")]
+    [Route("forms/{formVersionId}/routes/sections/{sectionId}/pages/{pageId}/choose-question")]
     public async Task<IActionResult> ChooseQuestion(Guid formVersionId, Guid sectionId, Guid pageId)
     {
         try
@@ -121,7 +121,7 @@ public class RoutesController : ControllerBase
     }
 
     [HttpPost()]
-    [Route("/admin/forms/{formVersionId}/routes/sections/{sectionId}/pages/{pageId}/choose-question")]
+    [Route("forms/{formVersionId}/routes/sections/{sectionId}/pages/{pageId}/choose-question")]
     public async Task<IActionResult> ChooseQuestion(CreateRouteChooseQuestionViewModel model)
     {
         try
@@ -147,7 +147,7 @@ public class RoutesController : ControllerBase
     }
 
     [HttpGet()]
-    [Route("/admin/forms/{formVersionId}/routes")]
+    [Route("forms/{formVersionId}/routes")]
     public async Task<IActionResult> List(Guid formVersionId)
     {
         try

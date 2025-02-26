@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application;
-using SFA.DAS.AODP.Web.Enums;
+using SFA.DAS.AODP.Web.Constants;
 
 namespace SFA.DAS.AODP.Web.Controllers;
 

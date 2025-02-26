@@ -1,9 +1,9 @@
+using Authentication;
 using GovUk.Frontend.AspNetCore;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Authentication.Extensions;
-using SFA.DAS.AODP.Web.Authentication;
-using SFA.DAS.AODP.Web.Extensions.Startup;
+using SFA.DAS.AODP.Web.Extensions;
 using System.Reflection;
 
 internal class Program
@@ -108,7 +108,7 @@ internal class Program
         endpoints.MapControllerRoute(name: "ReviewDefault",
                                      pattern: "review/{controller=review}/{action=Index}/{id?}",
                                      defaults:new {area="review"}).
-                                     RequireAuthorization(PolicyConstants.IsReviewUser);
+                                     RequireAuthorization("IsReviewUser");
 
         endpoints.MapAreaControllerRoute(name: "AdminHomeLandingPage",
                                areaName: "Admin",
@@ -118,11 +118,10 @@ internal class Program
         endpoints.MapAreaControllerRoute(name: "AdminDefaultForImport",
                         areaName: "Admin",
                         pattern: "Admin/Import/{action=Index}/{id?}",
-                        defaults: new { area = "Admin", controller = "Import" }).RequireAuthorization(PolicyConstants.IsAdminImportUser);
-
+                        defaults: new { area = "Admin", controller = "Import" }).RequireAuthorization("IsAdminImportUser");
         endpoints.MapControllerRoute(name: "AdminDefaultForForms",
-                                         pattern: "Admin/{controller=Forms}/{action=index}/{id?}",
-                                         defaults: new { area = "Admin" }).RequireAuthorization(PolicyConstants.IsAdminFormsUser);
+                                         pattern: "Admin/{controller=FormsBuilder}/{action=index}/{id?}",
+                                         defaults: new { area = "Admin" }).RequireAuthorization("IsAdminFormsUser");
 
         endpoints.MapControllerRoute(name: "ApplyHome",
                                   pattern: "Apply/Home/{action=Index}/{id?}",
@@ -130,6 +129,6 @@ internal class Program
 
         endpoints.MapAreaControllerRoute(name: "Apply",
                                        areaName: "Apply",
-                                       pattern: "{area:exists}/{controller=Application}/{action=Index}/{id?}").RequireAuthorization(PolicyConstants.IsApplyUser);
+                                       pattern: "{area:exists}/{controller=Apply}/{action=Index}/{id?}").RequireAuthorization("IsApplyUser");
     }
 }

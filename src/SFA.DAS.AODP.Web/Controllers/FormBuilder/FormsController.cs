@@ -1,17 +1,17 @@
-﻿using MediatR;
+﻿using Markdig;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
-using SFA.DAS.AODP.Web.Enums;
+using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Helpers.Markdown;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Form;
+using System.Reflection;
 using static SFA.DAS.AODP.Web.Helpers.ListHelper.OrderButtonHelper;
-using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
-namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers.FormBuilder;
+namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
 
-[Area("Admin")]
 public class FormsController : ControllerBase
 {
     public enum UpdateKeys { FormUpdated, }
@@ -20,7 +20,6 @@ public class FormsController : ControllerBase
     { }
 
     #region Main
-    [Route("/admin/forms")]
     public async Task<IActionResult> Index()
     {
         try
@@ -38,7 +37,6 @@ public class FormsController : ControllerBase
         }
     }
 
-    [Route("/admin/forms")]
     [HttpPost]
     public async Task<IActionResult> Index(FormVersionListViewModel model)
     {
@@ -55,7 +53,7 @@ public class FormsController : ControllerBase
             {
                 var command = new MoveFormDownCommand(model.AdditionalActions.MoveDown.Value);
                 TempData[UpdateTempDataKeys.FocusItemId.ToString()] = command.FormId.ToString();
-                TempData[UpdateTempDataKeys.Directon.ToString()] = OrderDirection.Down.ToString();
+                TempData[UpdateTempDataKeys.Directon.ToString()] =  OrderDirection.Down.ToString();
                 await Send(command);
             }
             else if (model.AdditionalActions.MoveUp.HasValue)
@@ -77,7 +75,7 @@ public class FormsController : ControllerBase
 
     #region Create
     [HttpGet]
-    [Route("/admin/forms/create")]
+    [Route("forms/create")]
     public IActionResult Create()
     {
         var viewModel = new CreateFormVersionViewModel();
@@ -85,7 +83,7 @@ public class FormsController : ControllerBase
     }
 
     [HttpPost]
-    [Route("/admin/forms/create")]
+    [Route("forms/create")]
     public async Task<IActionResult> Create(CreateFormVersionViewModel viewModel)
     {
         try
@@ -114,7 +112,7 @@ public class FormsController : ControllerBase
 
     #region Edit
     [HttpGet]
-    [Route("/admin/forms/{formVersionId}")]
+    [Route("forms/{formVersionId}")]
     public async Task<IActionResult> Edit(Guid formVersionId)
     {
         try
@@ -130,13 +128,13 @@ public class FormsController : ControllerBase
         }
         catch
         {
-            return Redirect("/Home/Error");
+            return Redirect("Error");
         }
 
     }
 
     [HttpPost]
-    [Route("/admin/forms/{formVersionId}")]
+    [Route("forms/{formVersionId}")]
     public async Task<IActionResult> Edit(EditFormVersionViewModel editFormVersionViewModel)
     {
         try
@@ -180,7 +178,7 @@ public class FormsController : ControllerBase
             }
             else if (editFormVersionViewModel.AdditionalFormActions.UpdateDescriptionPreview)
             {
-
+            
                 var formVersionQuery = new GetFormVersionByIdQuery(editFormVersionViewModel.Id);
                 var response = await Send(formVersionQuery);
 
@@ -218,7 +216,7 @@ public class FormsController : ControllerBase
     #endregion
 
     #region Delete
-    [Route("/admin/forms/{formVersionId}/delete")]
+    [Route("forms/{formVersionId}/delete")]
     public async Task<IActionResult> Delete(Guid formVersionId)
     {
         try
@@ -238,7 +236,7 @@ public class FormsController : ControllerBase
     }
 
     [HttpPost]
-    [Route("/admin/forms/{formVersionId}/delete")]
+    [Route("forms/{formVersionId}/delete")]
     public async Task<IActionResult> DeleteConfirmed(DeleteFormViewModel model)
     {
         try

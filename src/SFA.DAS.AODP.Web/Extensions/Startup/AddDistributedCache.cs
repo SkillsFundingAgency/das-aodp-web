@@ -2,7 +2,7 @@
 using SFA.DAS.AODP.Models.Settings;
 using System.Diagnostics.CodeAnalysis;
 
-namespace SFA.DAS.AODP.Web.Extensions.Startup;
+namespace SFA.DAS.AODP.Web.Extensions;
 
 [ExcludeFromCodeCoverage]
 public static class AddDistributedCacheExtension

@@ -1,4 +1,4 @@
-﻿namespace SFA.DAS.AODP.Web.Authentication;
+﻿namespace Authentication;
 static class PolicyConstants
 {
     public const string IsReviewUser = "IsReviewUser";

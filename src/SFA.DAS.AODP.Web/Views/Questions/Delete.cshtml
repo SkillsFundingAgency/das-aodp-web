@@ -9,7 +9,7 @@
 
 <h1 class="govuk-heading-l">Delete Question?</h1>
 
-@if (!ViewContext.ModelState.IsValid && Model.Routes.Any())
+@if (!ViewContext.ModelState.IsValid)
 {
     <div class="govuk-error-summary" data-module="govuk-error-summary">
         <div role="alert">
@@ -88,7 +88,7 @@
 }
 else
 {
-    <form asp-action="Delete" method="post">
+    <form asp-action="DeleteConfirmed" method="post">
         @Html.AntiForgeryToken()
         <input type="hidden" id="Id" name="Id" value="@Model.QuestionId" />
 
@@ -100,7 +100,12 @@ else
             @Model.Title.ToString()
         </p>
 
-        <govuk-button class="govuk-button--warning" type="submit">
+        <govuk-button class="govuk-button--warning" type="submit"
+                      asp-action="DeleteConfirmed" asp-controller="Questions"
+                      asp-route-formVersionId="@Model.FormVersionId"
+                      asp-route-sectionId="@Model.SectionId"
+                      asp-route-pageId="@Model.PageId"
+                      asp-route-questionId="@Model.QuestionId">
             Delete
         </govuk-button>
 
