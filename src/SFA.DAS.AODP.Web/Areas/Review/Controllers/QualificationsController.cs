@@ -19,7 +19,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             _mediator = mediator;
         }
 
-        [HttpGet("")]
         [ProducesResponseType(typeof(IActionResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -41,20 +40,19 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             return response;
         }
 
-        [HttpGet("qualificationdetails/{qualificationReference}")]
         [ProducesResponseType(typeof(QualificationDetailsViewModel), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> QualificationDetails([FromRoute] string qualificationReference)
         {
-            if (string.IsNullOrWhiteSpace(id))
+            if (string.IsNullOrWhiteSpace(qualificationReference))
             {
                 _logger.LogWarning("Qualification reference is empty");
                 return BadRequest(new { message = "Qualification reference cannot be empty" });
             }
 
-            var result = await _mediator.Send(new GetQualificationDetailsQuery { QualificationReference = id });
+            var result = await _mediator.Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });
 
             if (!result.Success || result.Value == null)
             {
@@ -66,12 +64,12 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             return View(viewModel);
         }
 
-        [HttpGet("export")]
+        //[HttpGet("export")]
         [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetQualificationCSVExportData([FromQuery] string? status)
+        public async Task<IActionResult> GetQualificationCSVExportData([FromRoute] string? status)
         {
             var validationResult = ProcessAndValidateStatus(status);
             if (!validationResult.IsValid)
