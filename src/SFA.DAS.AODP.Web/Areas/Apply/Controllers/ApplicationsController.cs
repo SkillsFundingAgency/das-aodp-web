@@ -1,16 +1,17 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using SFA.DAS.AODP.Application.Queries.Application.Form;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Infrastructure.File;
-using SFA.DAS.AODP.Web.Constants;
-using SFA.DAS.AODP.Web.Controllers.FormBuilder;
+using SFA.DAS.AODP.Web.Areas.Admin.Controllers.FormBuilder;
+using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Filters;
 using SFA.DAS.AODP.Web.Models.Application;
 using SFA.DAS.AODP.Web.Validators;
+using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
-namespace SFA.DAS.AODP.Web.Controllers.Application
+namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
 {
+    [Area("Apply")]
     [ValidateOrganisation]
     public class ApplicationsController : ControllerBase
     {
@@ -25,7 +26,7 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
         }
 
         [HttpGet]
-        [Route("organisations/{organisationId}")]
+        [Route("apply/organisations/{organisationId}")]
         public async Task<IActionResult> Index(Guid organisationId)
         {
             try
@@ -44,7 +45,7 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
         }
 
         [HttpGet]
-        [Route("organisations/{organisationId}/forms")]
+        [Route("apply/organisations/{organisationId}/forms")]
         public async Task<IActionResult> AvailableFormsAsync(Guid organisationId)
         {
             try
@@ -60,7 +61,7 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
         }
 
         [HttpGet]
-        [Route("organisations/{organisationId}/forms/{formVersionId}/Create")]
+        [Route("apply/organisations/{organisationId}/forms/{formVersionId}/Create")]
         public async Task<IActionResult> Create(Guid organisationId, Guid formVersionId)
         {
             try
@@ -82,7 +83,7 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
 
 
         [HttpPost]
-        [Route("organisations/{organisationId}/forms/{formVersionId}/Create")]
+        [Route("apply/organisations/{organisationId}/forms/{formVersionId}/Create")]
         public async Task<IActionResult> Create(CreateApplicationViewModel createApplicationViewModel)
         {
             if (!ModelState.IsValid)
@@ -113,7 +114,7 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
 
         [ValidateApplication]
         [HttpGet]
-        [Route("organisations/{organisationId}/applications/{applicationId}/Edit")]
+        [Route("apply/organisations/{organisationId}/applications/{applicationId}/Edit")]
         public async Task<IActionResult> Edit(Guid organisationId, Guid applicationId)
         {
             try
@@ -139,7 +140,7 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
 
         [ValidateApplication]
         [HttpPost]
-        [Route("organisations/{organisationId}/applications/{applicationId}/Edit")]
+        [Route("apply/organisations/{organisationId}/applications/{applicationId}/Edit")]
         public async Task<IActionResult> Edit(EditApplicationViewModel editApplicationViewModel)
         {
             if (!ModelState.IsValid)
@@ -173,30 +174,10 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
             }
         }
 
-        [ValidateApplication]
-        [HttpGet]
-        [Route("organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/preview")]
-        public async Task<IActionResult> ApplicationFormPreview(Guid organisationId, Guid applicationId, Guid formVersionId)    
-        {
-            try
-            {
-                var query = new GetFormPreviewByIdQuery(applicationId);
-                var response = await Send(query);
-
-                var viewModel = ApplicationFormPreviewViewModel.Map(response, formVersionId, organisationId, applicationId);
-
-                return View(viewModel);
-            }
-            catch
-            {
-                return Redirect("/Home/Error");
-            }
-        }
-
 
         [ValidateApplication]
         [HttpGet]
-        [Route("organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}")]
+        [Route("apply/organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}")]
         public async Task<IActionResult> ViewApplication(Guid organisationId, Guid applicationId, Guid formVersionId)
         {
             try
@@ -217,7 +198,7 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
 
         [ValidateApplication]
         [HttpGet]
-        [Route("organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/sections/{sectionId}")]
+        [Route("apply/organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/sections/{sectionId}")]
         public async Task<IActionResult> ViewApplicationSection(Guid organisationId, Guid applicationId, Guid sectionId, Guid formVersionId)
         {
             try
@@ -238,7 +219,7 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
 
         [ValidateApplication]
         [HttpGet]
-        [Route("organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/sections/{sectionId}/pages/{pageOrder}")]
+        [Route("apply/organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/sections/{sectionId}/pages/{pageOrder}")]
         public async Task<IActionResult> ApplicationPage(Guid organisationId, Guid applicationId, Guid sectionId, int pageOrder, Guid formVersionId)
         {
             try
@@ -268,7 +249,7 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
 
         [ValidateApplication]
         [HttpPost]
-        [Route("organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/sections/{sectionId}/pages/{pageOrder}")]
+        [Route("apply/organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/sections/{sectionId}/pages/{pageOrder}")]
         public async Task<IActionResult> ApplicationPageAsync([FromForm] ApplicationPageViewModel model)
         {
             Func<string, List<UploadedBlob>> fetchBlobFunc = path => _fileService.ListBlobs(path);
@@ -334,7 +315,7 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
 
         #region Delete
         [ValidateApplication]
-        [Route("organisations/{organisationId}/applications/{applicationId}/delete")]
+        [Route("apply/organisations/{organisationId}/applications/{applicationId}/delete")]
         public async Task<IActionResult> Delete(Guid applicationId)
         {
             try
@@ -357,7 +338,7 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
 
         [ValidateApplication]
         [HttpPost]
-        [Route("organisations/{organisationId}/applications/{applicationId}/delete")]
+        [Route("apply/organisations/{organisationId}/applications/{applicationId}/delete")]
         public async Task<IActionResult> Delete(DeleteApplicationViewModel model)
         {
             try

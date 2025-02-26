@@ -38,7 +38,10 @@ namespace SFA.DAS.AODP.Authentication.Extensions
                 new Claim("rolecode", "QFAdmin"),
                 new Claim("roleId", "03ff5868-31cd-453e-ae9f-fad5f101124d"),
                 new Claim("email", "tester@education.gov.uk"),
-            };          
+
+                new Claim("roleName", "qfau_admin_form_editor"),
+                new Claim("roleName", "ao_user"),
+            };
 
             var identity = new ClaimsIdentity(claims, "Provider-stub");
             var principal = new ClaimsPrincipal(identity);

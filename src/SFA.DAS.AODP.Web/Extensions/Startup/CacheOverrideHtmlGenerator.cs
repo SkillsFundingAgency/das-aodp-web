@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using System.Text.Encodings.Web;
 
-namespace SFA.DAS.AODP.Web.Extensions
+namespace SFA.DAS.AODP.Web.Extensions.Startup
 {
     public class CacheOverrideHtmlGenerator : DefaultHtmlGenerator
     {

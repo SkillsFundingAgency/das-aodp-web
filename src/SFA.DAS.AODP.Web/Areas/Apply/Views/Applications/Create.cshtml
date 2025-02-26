@@ -34,7 +34,7 @@
     <div class="govuk-form-group">
         <govuk-input asp-for="@Model.QualificationNumber" input-class="govuk-input--width-50" spellcheck="false">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Qualification number (optional)</govuk-input-label>
-            <govuk-input-hint>Please provide the qualification number,if you have it.</govuk-input-hint>
+            <govuk-input-hint>Please provide the qualification number, if you have it.</govuk-input-hint>
             @Html.RenderPartialAsync("Validation/_TextInputValidationPartial", nameof(Model.QualificationNumber))
         </govuk-input>
     </div>
