@@ -19,10 +19,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             _mediator = mediator;
         }
 
-        [ProducesResponseType(typeof(IActionResult), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Index([FromQuery] string status)
         {
             var validationResult = ProcessAndValidateStatus(status);
@@ -40,10 +36,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             return response;
         }
 
-        [ProducesResponseType(typeof(QualificationDetailsViewModel), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> QualificationDetails([FromRoute] string qualificationReference)
         {
             if (string.IsNullOrWhiteSpace(qualificationReference))
@@ -65,10 +57,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         }
 
         //[HttpGet("export")]
-        [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetQualificationCSVExportData([FromRoute] string? status)
         {
             var validationResult = ProcessAndValidateStatus(status);
