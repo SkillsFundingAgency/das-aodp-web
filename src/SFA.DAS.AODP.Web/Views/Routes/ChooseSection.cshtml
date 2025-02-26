@@ -1,6 +1,8 @@
-﻿@using SFA.DAS.AODP.Web.Models.FormBuilder.Routing
+﻿﻿@using SFA.DAS.AODP.Web.Models.FormBuilder.Routing
 
 @model CreateRouteChooseSectionAndPageViewModel
+
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
 @{
     ViewData["Title"] = "Choose section and page";
@@ -11,49 +13,85 @@
     @Html.HiddenFor(v => v.FormVersionId)
 
     <div class="govuk-form-group">
-        <govuk-radios asp-for="@Model.ChosenSectionId">
-            <govuk-radios-fieldset>
-                <govuk-radios-fieldset-legend is-page-heading="true">
-                    <h1 class="govuk-heading-l">Choose section and page</h1>
-                </govuk-radios-fieldset-legend>
 
-                <govuk-radios-hint>
-                    Select one option. Only sections and pages with questions requiring user to select a option are shown.
-                </govuk-radios-hint>
+        @if (Model.AreSectionsEmpty)
+        {
+            <h1 class="govuk-heading-l govuk-!-margin-top-5">Choose section and page</h1>
 
-                @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.ChosenSectionId))
-                @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.ChosenPageId))
+            <div class="govuk-warning-text">
+                <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+                <strong class="govuk-warning-text__text">
+                    <span class="govuk-visually-hidden">Warning</span>
+                    <p class="govuk-body">There are no questions available for routing, either because:</p>
+                    <ul class="govuk-list govuk-list--bullet">
+                        <li>there is currently no radio type question in the form</li>
+                        <li>routing has been configured for all radio type questions</li>
+                    </ul>
+                </strong>
+            </div>
+        }
+        else
+        {
+            <govuk-radios asp-for="@Model.ChosenSectionId">
+                <govuk-radios-fieldset>
+                    <govuk-radios-fieldset-legend is-page-heading="true">
+                        <h1 class="govuk-heading-l govuk-!-margin-top-5">Choose section and page</h1>
+                    </govuk-radios-fieldset-legend>
 
-                @foreach (var sectionInformation in Model.Sections.OrderBy(o => o.Order))
-                {
-                    <govuk-radios-item value="@sectionInformation.Id">
+                    <govuk-radios-hint>
+                        Select one option. Only sections and pages with questions requiring user to select a option are shown.
+                    </govuk-radios-hint>
 
-                        Section @(sectionInformation.Order). @sectionInformation.Title
+                    @if (!Model.AreSectionsEmpty)
+                    {
+                        @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.ChosenSectionId))
+                        @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.ChosenPageId))
 
-                        <govuk-radios-item-conditional>
-                            <govuk-radios asp-for="@Model.ChosenPageId">
-                                <govuk-radios-fieldset>
-                                    <govuk-radios-fieldset-legend is-page-heading="true">
-                                        <h2 class="govuk-heading-s">Choose page</h2>
-                                    </govuk-radios-fieldset-legend>
+                        @foreach (var sectionInformation in Model.Sections.OrderBy(o => o.Order))
+                        {
+                            <govuk-radios-item value="@sectionInformation.Id">
 
-                                    @foreach (var pageInformation in sectionInformation.Pages.OrderBy(o => o.Order))
-                                    {
-                                        <govuk-radios-item value="@pageInformation.Id">
-                                         Page @(pageInformation.Order). @pageInformation.Title
-                                        </govuk-radios-item>
-                                    }
+                                Section @(sectionInformation.Order). @sectionInformation.Title
 
-                                </govuk-radios-fieldset>
-                            </govuk-radios>
-                        </govuk-radios-item-conditional>
+                                <govuk-radios-item-conditional>
+                                    <govuk-radios asp-for="@Model.ChosenPageId">
+                                        <govuk-radios-fieldset>
+                                            <govuk-radios-fieldset-legend is-page-heading="true">
+                                                <h2 class="govuk-heading-s">Choose page</h2>
+                                            </govuk-radios-fieldset-legend>
 
-                    </govuk-radios-item>
-                }
-            </govuk-radios-fieldset>
-        </govuk-radios>
+                                            @foreach (var pageInformation in sectionInformation.Pages.OrderBy(o => o.Order))
+                                            {
+                                                <govuk-radios-item value="@pageInformation.Id">
+                                                    Page @(pageInformation.Order). @pageInformation.Title
+                                                </govuk-radios-item>
+                                            }
+
+                                        </govuk-radios-fieldset>
+                                    </govuk-radios>
+                                </govuk-radios-item-conditional>
+
+                            </govuk-radios-item>
+                        }
+                    }
+
+                </govuk-radios-fieldset>
+            </govuk-radios>
+        }
     </div>
 
-    <govuk-button type="submit">Continue to choose page</govuk-button>
+    @if (Model.AreSectionsEmpty)
+    {
+        <a class="govuk-button govuk-button--secondary"
+           asp-action="Edit"
+           asp-controller="Forms"
+           asp-route-formVersionId="@Model.FormVersionId">
+            Return to Form
+        </a>
+    }
+    else
+    {
+        <govuk-button type="submit">Continue to choose question</govuk-button>
+    }
 
 </form>

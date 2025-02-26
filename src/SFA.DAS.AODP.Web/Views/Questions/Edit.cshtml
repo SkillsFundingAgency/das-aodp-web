@@ -1,9 +1,38 @@
 ﻿@using SFA.DAS.AODP.Models.Forms
+@using SFA.DAS.AODP.Web.Helpers.Markdown
 @model EditQuestionViewModel
 
 <a class="govuk-back-link" asp-action="Edit" asp-controller="Pages" asp-route-formVersionId="@Model.FormVersionId" asp-route-sectionId="@Model.SectionId" asp-route-pageId="@Model.PageId">
     Back to Page
 </a>
+
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
+@if (!ViewContext.ModelState.IsValid)
+{
+    <div class="govuk-error-summary" data-module="govuk-error-summary">
+        <div role="alert">
+            <h2 class="govuk-error-summary__title">
+                There is a problem
+            </h2>
+            <div class="govuk-error-summary__body">
+                <ul class="govuk-list govuk-error-summary__list">
+
+                    @foreach (var ms in ViewContext.ModelState)
+                    {
+                        var error = @ms.Value.Errors.FirstOrDefault();
+                        if (error == null) continue;
+
+                        <li>
+                            <a href="#@ms.Key">@error.ErrorMessage</a>
+                        </li>
+                    }
+
+                </ul>
+            </div>
+        </div>
+    </div>
+}
 
 <h1 class="govuk-heading-l">Edit Question</h1>
 
@@ -11,7 +40,7 @@
     ViewBag.IsEditable = Model.Editable;
 }
 
-<form asp-controller="Questions" asp-action="Edit" method="post">
+<form asp-controller="Questions" asp-action="Edit" method="post" gfa-prepend-error-summary="false">
     @Html.HiddenFor(m => m.Id)
     @Html.HiddenFor(m => m.PageId)
     @Html.HiddenFor(m => m.SectionId)
@@ -73,15 +102,62 @@
 
         </govuk-input>
     </div>
-    @if (Model.Type == QuestionType.Text)
+    <div class="govuk-form-group">
+        <govuk-textarea disabled="@(!Model.Editable)" asp-for="@Model.Helper">
+            <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Additional guidance (optional)</govuk-textarea-label>
+            <govuk-textarea-hint>
+                Provide optional guidance to completing the question. Markdown should be used to format the guidance.
+            </govuk-textarea-hint>
+        </govuk-textarea>
+        <partial name="~/Views/Shared/FormBuilder/Helper/_MarkdownHelper.cshtml" />
+        @if (!string.IsNullOrEmpty(Model.Helper))
+        {
+            <div class="govuk-label govuk-label--s">Guidance Preview</div>
+            <div class="govuk-inset-text">
+                @Html.Raw(MarkdownHelper.ToGovUkHtml(Model.Helper))
+            </div>
+        }
+
+        @if (Model.Editable)
+        {
+            <button @(ViewBag.AutoFocusOnUpdateDescriptionButton != null ? "autofocus" : "")
+                    type="submit"
+                    class="govuk-button govuk-button--secondary"
+                    data-module="govuk-button"
+                    data-prevent-double-click="true"
+                    value="true"
+                    name="AdditionalActions[UpdateDescriptionPreview]">
+                Update Description Preview
+            </button>
+        }
+
+    </div>
+
+    <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+
+    @if (Model.Type == QuestionType.Text || Model.Type == QuestionType.TextArea)
     {
         await Html.RenderPartialAsync("FormBuilder/QuestionEdit/_TextInput", Model.TextInput);
-
     }
-    else if (Model.Type == QuestionType.Radio)
+    else if (Model.Type == QuestionType.Radio || Model.Type == QuestionType.MultiChoice)
     {
-        await Html.RenderPartialAsync("FormBuilder/QuestionEdit/_RadioInput", Model.RadioButton);
-
+        await Html.RenderPartialAsync("FormBuilder/QuestionEdit/_Options", Model.Options);
+        if (Model.Type == QuestionType.MultiChoice)
+        {
+            await Html.RenderPartialAsync("FormBuilder/QuestionEdit/_Checkbox", Model.Checkbox);
+        }
+    }
+    else if (Model.Type == QuestionType.Number)
+    {
+        await Html.RenderPartialAsync("FormBuilder/QuestionEdit/_NumberInput", Model.NumberInput);
+    }
+    else if (Model.Type == QuestionType.Date)
+    {
+        await Html.RenderPartialAsync("FormBuilder/QuestionEdit/_DateInput", Model.DateInput);
+    }
+    else if (Model.Type == QuestionType.File)
+    {
+        await Html.RenderPartialAsync("FormBuilder/QuestionEdit/_File", Model.FileUpload);
     }
     <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
 
@@ -89,35 +165,31 @@
     {
         <div class="govuk-button-group">
             <button type="submit" class="govuk-button govuk-!-margin-bottom-3" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init="">Save question</button>
-            <a class="govuk-button govuk-!-margin-bottom-3 govuk-button--secondary" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init=""
-               asp-action="Create"
-               asp-controller="Questions"
-               asp-route-formVersionId="@Model.FormVersionId"
-               asp-route-sectionId="@Model.SectionId"
-               asp-route-pageId="@Model.PageId">
+            <button type="submit"
+                    class="govuk-button govuk-!-margin-bottom-3 govuk-button--secondary"
+                    data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init=""
+                    name="AdditionalActions[SaveAndAddAnother]" value="true">
                 Save and add new question
-            </a>
-            <button type="submit" class="govuk-button govuk-!-margin-bottom-3 govuk-button--secondary" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init=""
-                    asp-action="Edit"
-                    asp-controller="Pages"
-                    asp-route-formVersionId="@Model.FormVersionId"
-                    asp-route-sectionId="@Model.SectionId"
-                    asp-route-pageId="@Model.PageId">
+            </button>
+            <button type="submit"
+                    class="govuk-button govuk-!-margin-bottom-3 govuk-button--secondary"
+                    data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init=""
+                    name="AdditionalActions[SaveAndExit]" value="true">
                 Save question and exit
             </button>
         </div>
 
         <ul class="govuk-list govuk-list--spaced">
             <li>
-             <a class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init=""
-                    asp-action="Delete"
-                    asp-controller="Questions"
-                    asp-route-formVersionId="@Model.FormVersionId"
-                    asp-route-sectionId="@Model.SectionId"
-                    asp-route-pageId="@Model.PageId"
-                    asp-route-questionId="@Model.Id">
-                Delete question
-            </a>
+                <a class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init=""
+                   asp-action="Delete"
+                   asp-controller="Questions"
+                   asp-route-formVersionId="@Model.FormVersionId"
+                   asp-route-sectionId="@Model.SectionId"
+                   asp-route-pageId="@Model.PageId"
+                   asp-route-questionId="@Model.Id">
+                    Delete question
+                </a>
             </li>
             <li>
                 <a class="govuk-link" asp-action="Edit" asp-controller="Pages" asp-route-formVersionId="@Model.FormVersionId" asp-route-pageId="@Model.PageId" asp-route-sectionId="@Model.SectionId">

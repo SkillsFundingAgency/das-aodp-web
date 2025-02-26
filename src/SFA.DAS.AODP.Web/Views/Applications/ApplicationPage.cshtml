@@ -1,16 +1,23 @@
-﻿@using SFA.DAS.AODP.Web.Models.Application
+﻿@using SFA.DAS.AODP.Web.Helpers.ApplicationPageViewHelpers
+@using SFA.DAS.AODP.Web.Models.Application
 @model ApplicationPageViewModel
+
+@{
+    ViewData["Title"] = Model.Title;
+}
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
 
         <govuk-back-link class="govuk-link govuk-task-list__link"
-           asp-action="ViewApplicationSection"
-           asp-route-sectionId="@Model.SectionId"
-           asp-controller="Applications"
-           asp-route-formVersionId="@Model.FormVersionId"
-           asp-route-organisationId="@Model.OrganisationId"
-           asp-route-applicationId="@Model.ApplicationId">Back to view section</govuk-back-link>
+                         asp-action="ViewApplicationSection"
+                         asp-route-sectionId="@Model.SectionId"
+                         asp-controller="Applications"
+                         asp-route-formVersionId="@Model.FormVersionId"
+                         asp-route-organisationId="@Model.OrganisationId"
+                         asp-route-applicationId="@Model.ApplicationId">Back to view section</govuk-back-link>
+
+        <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
         @if (!ViewContext.ModelState.IsValid)
         {
@@ -24,12 +31,20 @@
 
                             @foreach (var error in ViewContext.ModelState)
                             {
-                                var question = Model.Questions.FirstOrDefault(q => q.Id.ToString() == error.Key);
                                 var errorMsg = @error.Value.Errors.FirstOrDefault()?.ErrorMessage;
+                                if (string.IsNullOrEmpty(errorMsg)) continue;
+
+                                var question = ApplicationPageErrorHelper.GetQuestionByErrorKey(Model.Questions, error.Key);
                                 if (question != null)
                                 {
+                                    string href = $"#question-{question.Id}";
+
+                                    if (question.Type == SFA.DAS.AODP.Models.Forms.QuestionType.Date)
+                                    {
+                                        href = $"#Questions[{question.Order - 1}][Answer][DateValue.Day]";
+                                    }
                                     <li>
-                                        <a href="#question-@question.Id">Question @(question.Order). @errorMsg</a>
+                                        <a href="@href">Question @(question.Order). @errorMsg</a>
                                     </li>
                                 }
                                 else
@@ -46,7 +61,7 @@
         }
 
 
-        <form asp-controller="Applications" asp-action="ApplicationPage" method="post">
+        <form asp-controller="Applications" asp-action="ApplicationPage" method="post" enctype="multipart/form-data">
 
             @Html.HiddenFor(m => m.OrganisationId)
             @Html.HiddenFor(m => m.PageId)

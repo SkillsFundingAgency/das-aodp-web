@@ -1,53 +1,83 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using SFA.DAS.AODP.Application.Queries.Application.Form;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
+using SFA.DAS.AODP.Infrastructure.File;
+using SFA.DAS.AODP.Web.Constants;
+using SFA.DAS.AODP.Web.Controllers.FormBuilder;
+using SFA.DAS.AODP.Web.Filters;
 using SFA.DAS.AODP.Web.Models.Application;
 using SFA.DAS.AODP.Web.Validators;
 
 namespace SFA.DAS.AODP.Web.Controllers.Application
 {
-    public class ApplicationsController : Controller
+    [ValidateOrganisation]
+    public class ApplicationsController : ControllerBase
     {
-        private readonly IMediator _mediator;
-        private readonly IApplicationAnswersValidator _validator;
+        private const string ApplicationDeletedKey = nameof(ApplicationDeletedKey);
 
-        public ApplicationsController(IMediator mediator, IApplicationAnswersValidator validator)
+        private readonly IApplicationAnswersValidator _validator;
+        private readonly IFileService _fileService;
+        public ApplicationsController(IMediator mediator, IApplicationAnswersValidator validator, ILogger<FormsController> logger, IFileService fileService) : base(mediator, logger)
         {
-            _mediator = mediator;
             _validator = validator;
+            _fileService = fileService;
         }
 
         [HttpGet]
         [Route("organisations/{organisationId}")]
         public async Task<IActionResult> Index(Guid organisationId)
         {
-            var applications = await _mediator.Send(new GetApplicationsByOrganisationIdQuery(organisationId));
-            ListApplicationsViewModel model = ListApplicationsViewModel.Map(applications.Value, organisationId);
-            return View(model);
+            try
+            {
+                var response = await Send(new GetApplicationsByOrganisationIdQuery(organisationId));
+                ListApplicationsViewModel model = ListApplicationsViewModel.Map(response, organisationId);
+
+                ShowNotificationIfKeyExists(ApplicationDeletedKey, ViewNotificationMessageType.Success, "The application has been deleted.");
+
+                return View(model);
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
         }
 
         [HttpGet]
         [Route("organisations/{organisationId}/forms")]
         public async Task<IActionResult> AvailableFormsAsync(Guid organisationId)
         {
-            var formsResponse = await _mediator.Send(new GetApplicationFormsQuery());
-            ListAvailableFormsViewModel model = ListAvailableFormsViewModel.Map(formsResponse.Value, organisationId);
-            return View(model);
+            try
+            {
+                var formsResponse = await Send(new GetApplicationFormsQuery());
+                ListAvailableFormsViewModel model = ListAvailableFormsViewModel.Map(formsResponse, organisationId);
+                return View(model);
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
         }
 
         [HttpGet]
         [Route("organisations/{organisationId}/forms/{formVersionId}/Create")]
         public async Task<IActionResult> Create(Guid organisationId, Guid formVersionId)
         {
-            var formVersion = await _mediator.Send(new GetFormVersionByIdQuery(formVersionId));
-            if (!formVersion.Success) return StatusCode(StatusCodes.Status500InternalServerError);
-
-            return View(new CreateApplicationViewModel()
+            try
             {
-                OrganisationId = organisationId,
-                FormVersionId = formVersionId,
-                FormTitle = formVersion.Value.Title
-            });
+                var formVersion = await Send(new GetFormVersionByIdQuery(formVersionId));
+
+                return View(new CreateApplicationViewModel()
+                {
+                    OrganisationId = organisationId,
+                    FormVersionId = formVersionId,
+                    FormTitle = formVersion.Title
+                });
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
         }
 
 
@@ -65,70 +95,184 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
                 Title = createApplicationViewModel.Name,
                 FormVersionId = createApplicationViewModel.FormVersionId,
                 Owner = createApplicationViewModel.Owner,
+                OrganisationId = createApplicationViewModel.OrganisationId,
+                QualificationNumber = createApplicationViewModel.QualificationNumber,
             };
 
-            var response = await _mediator.Send(request);
+            try
+            {
+                var response = await Send(request);
 
-            if (!response.Success) return NotFound();
+                return RedirectToAction(nameof(ViewApplication), new { organisationId = createApplicationViewModel.OrganisationId, applicationId = response.Id, formVersionId = createApplicationViewModel.FormVersionId });
+            }
+            catch
+            {
+                return View(createApplicationViewModel);
+            }
+        }
 
-            return RedirectToAction(nameof(ViewApplication), new { organisationId = createApplicationViewModel.OrganisationId, applicationId = response.Value.Id, formVersionId = createApplicationViewModel.FormVersionId });
+        [ValidateApplication]
+        [HttpGet]
+        [Route("organisations/{organisationId}/applications/{applicationId}/Edit")]
+        public async Task<IActionResult> Edit(Guid organisationId, Guid applicationId)
+        {
+            try
+            {
+                var application = await Send(new GetApplicationByIdQuery(applicationId));
+
+                return View(new EditApplicationViewModel()
+                {
+                    OrganisationId = organisationId,
+                    FormVersionId = application.FormVersionId,
+                    Name = application.Name,
+                    ApplicationId = applicationId,
+                    Owner = application.Owner,
+                    QualificationNumber = application.QualificationNumber
+                });
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
         }
 
 
+        [ValidateApplication]
+        [HttpPost]
+        [Route("organisations/{organisationId}/applications/{applicationId}/Edit")]
+        public async Task<IActionResult> Edit(EditApplicationViewModel editApplicationViewModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(editApplicationViewModel);
+            }
+
+            var request = new EditApplicationCommand()
+            {
+                Title = editApplicationViewModel.Name,
+                ApplicationId = editApplicationViewModel.ApplicationId,
+                Owner = editApplicationViewModel.Owner,
+                QualificationNumber = editApplicationViewModel.QualificationNumber,
+
+            };
+
+            try
+            {
+                var response = await Send(request);
+
+                return RedirectToAction(nameof(ViewApplication), new
+                {
+                    organisationId = editApplicationViewModel.OrganisationId,
+                    applicationId = editApplicationViewModel.ApplicationId,
+                    formVersionId = editApplicationViewModel.FormVersionId
+                });
+            }
+            catch
+            {
+                return View(editApplicationViewModel);
+            }
+        }
+
+        [ValidateApplication]
+        [HttpGet]
+        [Route("organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/preview")]
+        public async Task<IActionResult> ApplicationFormPreview(Guid organisationId, Guid applicationId, Guid formVersionId)    
+        {
+            try
+            {
+                var query = new GetFormPreviewByIdQuery(applicationId);
+                var response = await Send(query);
+
+                var viewModel = ApplicationFormPreviewViewModel.Map(response, formVersionId, organisationId, applicationId);
+
+                return View(viewModel);
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
+        }
+
+
+        [ValidateApplication]
         [HttpGet]
         [Route("organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}")]
         public async Task<IActionResult> ViewApplication(Guid organisationId, Guid applicationId, Guid formVersionId)
         {
-            var formsResponse = await _mediator.Send(new GetApplicationFormByIdQuery(formVersionId));
+            try
+            {
+                var formsResponse = await Send(new GetApplicationFormByIdQuery(formVersionId));
 
-            var statusResponse = await _mediator.Send(new GetApplicationFormStatusByApplicationIdQuery(formVersionId, applicationId));
+                var statusResponse = await Send(new GetApplicationFormStatusByApplicationIdQuery(formVersionId, applicationId));
 
-            ApplicationFormViewModel model = ApplicationFormViewModel.Map(formsResponse.Value, statusResponse.Value, formVersionId, organisationId, applicationId);
+                ApplicationFormViewModel model = ApplicationFormViewModel.Map(formsResponse, statusResponse, formVersionId, organisationId, applicationId);
 
-            return View(model);
-
+                return View(model);
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
         }
 
-
+        [ValidateApplication]
         [HttpGet]
         [Route("organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/sections/{sectionId}")]
         public async Task<IActionResult> ViewApplicationSection(Guid organisationId, Guid applicationId, Guid sectionId, Guid formVersionId)
         {
-            var sectionResponse = await _mediator.Send(new GetApplicationSectionByIdQuery(sectionId, formVersionId));
+            try
+            {
+                var sectionResponse = await Send(new GetApplicationSectionByIdQuery(sectionId, formVersionId));
 
-            var sectionStatus = await _mediator.Send(new GetApplicationSectionStatusByApplicationIdQuery(sectionId, formVersionId, applicationId));
+                var sectionStatus = await Send(new GetApplicationSectionStatusByApplicationIdQuery(sectionId, formVersionId, applicationId));
 
-            ApplicationSectionViewModel model = ApplicationSectionViewModel.Map(sectionResponse.Value, sectionStatus.Value, organisationId, formVersionId, sectionId, applicationId);
+                ApplicationSectionViewModel model = ApplicationSectionViewModel.Map(sectionResponse, sectionStatus, organisationId, formVersionId, sectionId, applicationId);
 
-            return View(model);
+                return View(model);
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
         }
 
+        [ValidateApplication]
         [HttpGet]
         [Route("organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/sections/{sectionId}/pages/{pageOrder}")]
         public async Task<IActionResult> ApplicationPage(Guid organisationId, Guid applicationId, Guid sectionId, int pageOrder, Guid formVersionId)
         {
-            var request = new GetApplicationPageByIdQuery()
+            try
             {
-                FormVersionId = formVersionId,
-                PageOrder = pageOrder,
-                SectionId = sectionId,
-            };
+                Func<string, List<UploadedBlob>> fetchBlobFunc = path => _fileService.ListBlobs(path);
 
-            var response = await _mediator.Send(request);
-            if (!response.Success) return NotFound();
+                var request = new GetApplicationPageByIdQuery()
+                {
+                    FormVersionId = formVersionId,
+                    PageOrder = pageOrder,
+                    SectionId = sectionId,
+                };
 
-            var answers = await _mediator.Send(new GetApplicationPageAnswersByPageIdQuery(applicationId, response.Value.Id, sectionId, formVersionId));
-            if (!answers.Success) return NotFound();
+                var response = await Send(request);
 
-            ApplicationPageViewModel viewModel = ApplicationPageViewModel.MapToViewModel(response.Value, applicationId, formVersionId, sectionId, organisationId, answers.Value);
+                var answers = await Send(new GetApplicationPageAnswersByPageIdQuery(applicationId, response.Id, sectionId, formVersionId));
 
-            return View(viewModel);
+                ApplicationPageViewModel viewModel = ApplicationPageViewModel.MapToViewModel(response, applicationId, formVersionId, sectionId, organisationId, answers, fetchBlobFunc);
+
+                return View(viewModel);
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
         }
 
+        [ValidateApplication]
         [HttpPost]
         [Route("organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/sections/{sectionId}/pages/{pageOrder}")]
-        public async Task<IActionResult> ApplicationPageAsync(ApplicationPageViewModel model)
+        public async Task<IActionResult> ApplicationPageAsync([FromForm] ApplicationPageViewModel model)
         {
+            Func<string, List<UploadedBlob>> fetchBlobFunc = path => _fileService.ListBlobs(path);
+
             var request = new GetApplicationPageByIdQuery()
             {
                 FormVersionId = model.FormVersionId,
@@ -136,38 +280,123 @@ namespace SFA.DAS.AODP.Web.Controllers.Application
                 SectionId = model.SectionId,
             };
 
-            var response = await _mediator.Send(request);
-            if (!response.Success) return NotFound();
+            var response = await Send(request);
 
-            _validator.ValidateApplicationPageAnswers(ModelState, response.Value, model);
-
-            if (!ModelState.IsValid)
+            try
             {
-                model = ApplicationPageViewModel.RepopulatePageDataOnViewModel(response.Value, model);
+                if (!string.IsNullOrEmpty(model.RemoveFile))
+                {
+                    if (!model.RemoveFile.StartsWith(model.ApplicationId.ToString()))
+                    {
+                        return BadRequest();
+                    }
+                    await _fileService.DeleteFileAsync(model.RemoveFile);
+                    model = ApplicationPageViewModel.RepopulatePageDataOnViewModel(response, model, fetchBlobFunc);
+                    return View(model);
+
+                }
+                _validator.ValidateApplicationPageAnswers(ModelState, response, model);
+
+                if (!ModelState.IsValid)
+                {
+                    model = ApplicationPageViewModel.RepopulatePageDataOnViewModel(response, model, fetchBlobFunc);
+                    return View(model);
+                }
+
+                await HandleFileUploads(model);
+
+                var command = ApplicationPageViewModel.MapToCommand(model, response);
+
+                var commandResponse = await Send(command);
+
+                bool endSection = command.Routing?.EndSection == true || response.TotalSectionPages == response.Order;
+                if (endSection) return RedirectToAction(nameof(ViewApplicationSection), new { organisationId = model.OrganisationId, applicationId = model.ApplicationId, sectionId = model.SectionId, formVersionId = model.FormVersionId });
+
+
+                return RedirectToAction(nameof(ApplicationPage),
+                    new
+                    {
+                        organisationId = model.OrganisationId,
+                        applicationId = model.ApplicationId,
+                        sectionId = model.SectionId,
+                        pageOrder = command.Routing?.NextPageOrder ?? response.Order + 1,
+                        formVersionId = model.FormVersionId
+                    });
+            }
+            catch
+            {
+                model = ApplicationPageViewModel.RepopulatePageDataOnViewModel(response, model, fetchBlobFunc);
+
                 return View(model);
             }
-
-            var command = ApplicationPageViewModel.MapToCommand(model, response.Value);
-
-            var commandResponse = await _mediator.Send(command);
-
-            if (!commandResponse.Success) return NotFound();
-
-            bool endSection = command.Routing?.EndSection == true || response.Value.TotalSectionPages == response.Value.Order;
-            if (endSection) return RedirectToAction(nameof(ViewApplicationSection), new { organisationId = model.OrganisationId, applicationId = model.ApplicationId, sectionId = model.SectionId, formVersionId = model.FormVersionId });
-
-
-            return RedirectToAction(nameof(ApplicationPage),
-                new
-                {
-                    organisationId = model.OrganisationId,
-                    applicationId = model.ApplicationId,
-                    sectionId = model.SectionId,
-                    pageOrder = command.Routing?.NextPageOrder ?? response.Value.Order + 1,
-                    formVersionId = model.FormVersionId
-                });
         }
 
+
+        #region Delete
+        [ValidateApplication]
+        [Route("organisations/{organisationId}/applications/{applicationId}/delete")]
+        public async Task<IActionResult> Delete(Guid applicationId)
+        {
+            try
+            {
+                var query = new GetApplicationByIdQuery(applicationId);
+                var response = await Send(query);
+                return View(new DeleteApplicationViewModel()
+                {
+                    ApplicationId = applicationId,
+                    ApplicationReference = response.Reference,
+                    OrganisationId = response.OrganisationId,
+                    ApplicationName = response.Name
+                });
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
+        }
+
+        [ValidateApplication]
+        [HttpPost]
+        [Route("organisations/{organisationId}/applications/{applicationId}/delete")]
+        public async Task<IActionResult> Delete(DeleteApplicationViewModel model)
+        {
+            try
+            {
+                var command = new DeleteApplicationCommand(model.ApplicationId);
+
+                await DeleteApplicationFiles(model.ApplicationId);
+                await Send(command);
+
+                TempData[ApplicationDeletedKey] = true;
+                return RedirectToAction(nameof(Index), new { organisationId = model.OrganisationId });
+            }
+            catch
+            {
+                return View(model);
+            }
+        }
+        #endregion
+
+        private async Task HandleFileUploads(ApplicationPageViewModel viewModel)
+        {
+            foreach (var question in viewModel.Questions?.Where(q => q.Type == AODP.Models.Forms.QuestionType.File) ?? [])
+            {
+                foreach (var file in question.Answer?.FormFiles ?? [])
+                {
+                    using var stream = file.OpenReadStream();
+                    await _fileService.UploadFileAsync($"{viewModel.ApplicationId}/{question.Id}", file.FileName, stream, file.ContentType);
+                }
+            }
+        }
+
+        private async Task DeleteApplicationFiles(Guid applicationId)
+        {
+            var files = _fileService.ListBlobs(applicationId.ToString());
+            foreach (var file in files)
+            {
+                await _fileService.DeleteFileAsync(file.FullPath);
+            }
+        }
     }
 }
 

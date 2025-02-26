@@ -1,8 +1,11 @@
-﻿@model EditPageViewModel
+﻿@using SFA.DAS.AODP.Web.Helpers.ListHelper
+@model EditPageViewModel
 
 <a class="govuk-back-link" asp-action="Edit" asp-controller="Sections" asp-route-formVersionId="@Model.FormVersionId" asp-route-sectionId="@Model.SectionId">
     Back to Section
 </a>
+
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
 <h1 class="govuk-heading-l">Edit Page</h1>
 
@@ -35,10 +38,12 @@
     }
     <a class="govuk-button" asp-action="Preview" asp-controller="Pages" asp-route-pageId="@Model.PageId" asp-route-sectionId="@Model.SectionId" asp-route-formVersionId="@Model.FormVersionId">Preview page</a>
 
+    <h2 class="govuk-heading-m">Questions</h2>
 
     <table class="govuk-table">
         <thead class="govuk-table__head">
             <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">Order</th>
                 <th scope="col" class="govuk-table__header">Name</th>
                 <th scope="col" class="govuk-table__header">Options</th>
             </tr>
@@ -47,6 +52,7 @@
             @foreach (var (item, i) in Model.Questions.OrderBy(o => o.Order).Select((v, i) => (v, i)))
             {
                 <tr class="govuk-table__row">
+                    <td>@item.Order</td>
                     <td>@item.Title</td>
                     <td>
                         <a class="govuk-button"
@@ -61,13 +67,15 @@
                         </a>
                         @if (i != 0 && Model.Editable)
                         {
-                            <button class="govuk-button govuk-button--secondary" type="submit" value="@item.Id" name="AdditionalFormActions[MoveUp]" data-module="govuk-button" data-prevent-double-click="true">
+                            <button @(OrderButtonHelper.ShouldAutoFocus(TempData, OrderButtonHelper.OrderDirection.Up, item.Id, i, Model.Questions.Count) ? "autofocus" : "")
+                                class="govuk-button govuk-button--secondary" type="submit" value="@item.Id" name="AdditionalFormActions[MoveUp]" data-module="govuk-button" data-prevent-double-click="true">
                                 Move Up
                             </button>
                         }
                         @if (i != Model.Questions.Count() - 1 && Model.Editable)
                         {
-                            <button class="govuk-button govuk-button--secondary" type="submit" value="@item.Id" name="AdditionalFormActions[MoveDown]">
+                            <button @(OrderButtonHelper.ShouldAutoFocus(TempData, OrderButtonHelper.OrderDirection.Down, item.Id, i, Model.Questions.Count) ? "autofocus" : "")
+                                class="govuk-button govuk-button--secondary" type="submit" value="@item.Id" name="AdditionalFormActions[MoveDown]">
                                 Move Down
                             </button>
                         }

@@ -1,0 +1,60 @@
+﻿@using static SFA.DAS.AODP.Web.Models.FormBuilder.Question.EditQuestionViewModel
+@model Option
+
+<govuk-fieldset disabled="@(!ViewBag.IsEditable)">
+    <govuk-fieldset-legend class="govuk-fieldset__legend--s">Options</govuk-fieldset-legend>
+    <ul class="govuk-list">
+        @for (int i = 0; i < Model.Options.Count; i++)
+        {
+            <li style="display: flex; align-items: flex-end;">
+
+                <div class="govuk-form-group" style="width:80%">
+                    <label class="govuk-label"
+                           for="Options[Options][@i][Value]">Option @(i + 1)</label>
+
+                    <input type="hidden" name="Options[Options][@i][Id]" value="@Model.Options[i].Id" />
+                    @{
+                        var key = $"RadioButton.MultiChoice[{i}]";
+                        if (ViewData.ModelState[key]?.Errors.Count > 0)
+                        {
+                            <p id="radio-option-@i-error" class="govuk-error-message govuk-form-group--error">
+                                <span class="govuk-visually-hidden">Error:</span>
+                                @ViewData.ModelState[key].Errors[0].ErrorMessage
+                            </p>
+                        }
+                    }
+                    <input type="text"
+                           name="Options[Options][@i][Value]"
+                           class="govuk-input govuk-input--width-50"
+                           value="@Model.Options[i].Value" />
+                </div>
+
+                @if (ViewBag.IsEditable)
+                {
+                    <input type="hidden" name="Options[Options][@i][DoesHaveAssociatedRoutes]" value="@Model.Options[i].DoesHaveAssociatedRoutes.ToString().ToLowerInvariant()" />
+                    <input type="hidden" name="Options[Options][@i][Order]" value=@Model.Options[i].Order />
+                    <button type="submit"
+                            class="govuk-button govuk-button--warning"
+                            data-module="govuk-button"
+                            data-prevent-double-click="true"
+                            value="@i"
+                            name="Options[AdditionalFormActions][RemoveOptionIndex]">
+                        Remove
+                        <span class="govuk-visually-hidden">option @(i + 1)</span>
+                    </button>
+                }
+            </li>
+        }
+    </ul>
+
+    @if (ViewBag.IsEditable)
+    {
+        <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button"
+                data-prevent-double-click="true" name="Options[AdditionalFormActions][AddOption]" value="true" data-govuk-button-init=""
+                @(ViewBag.AutoFocusOnAddOptionButton != null ? "autofocus" : "")>
+            Add another option
+        </button>
+    }
+
+</govuk-fieldset>
+

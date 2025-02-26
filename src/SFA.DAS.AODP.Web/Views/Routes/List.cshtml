@@ -6,6 +6,8 @@
     Back to Form
 </a>
 
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
 <h1 class="govuk-heading-l">Routes</h1>
 
 @foreach (var sectionInfo in Model.Response.Sections.OrderBy(o => o.Order))

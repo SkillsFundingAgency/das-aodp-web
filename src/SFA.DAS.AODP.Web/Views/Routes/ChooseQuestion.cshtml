@@ -1,6 +1,7 @@
 ﻿@using SFA.DAS.AODP.Web.Models.FormBuilder.Routing
 @model CreateRouteChooseQuestionViewModel
 
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
 <form asp-controller="Routes" asp-action="ChooseQuestion" method="post">
 
@@ -13,7 +14,7 @@
         <govuk-radios asp-for="ChosenQuestionId">
             <govuk-radios-fieldset>
                 <govuk-radios-fieldset-legend is-page-heading="true">
-                    <h1 class="govuk-heading-l">Choose page</h1>
+                    <h1 class="govuk-heading-l">Choose question</h1>
                 </govuk-radios-fieldset-legend>
 
                 <govuk-radios-hint>

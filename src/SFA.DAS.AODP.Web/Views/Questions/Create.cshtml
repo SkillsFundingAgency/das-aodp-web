@@ -5,6 +5,8 @@
     Back to Page
 </a>
 
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
 <h1 class="govuk-heading-l">Create Question</h1>
 
 <form asp-controller="Questions" asp-action="Create" method="post">
@@ -31,8 +33,12 @@
                 @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.QuestionType))
 
                 <govuk-radios-item value="@QuestionType.Text">Short text</govuk-radios-item>
+                <govuk-radios-item value="@QuestionType.TextArea">Long text</govuk-radios-item>
+                <govuk-radios-item value="@QuestionType.Number">Number</govuk-radios-item>
+                <govuk-radios-item value="@QuestionType.Date">Date</govuk-radios-item>
                 <govuk-radios-item value="@QuestionType.Radio">User selects single option from a list of options</govuk-radios-item>
-
+                <govuk-radios-item value="@QuestionType.MultiChoice">User selects one or more options from a list of options</govuk-radios-item>
+                <govuk-radios-item value="@QuestionType.File">File upload</govuk-radios-item>
             </govuk-radios-fieldset>
         </govuk-radios>
     </div>

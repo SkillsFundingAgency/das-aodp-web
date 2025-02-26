@@ -1,0 +1,47 @@
+﻿@using System.Security.Claims
+@{
+	ViewData["Title"] = "Not Authorised";
+}
+
+<div class="govuk-width-container">
+	<main class="govuk-main-wrapper">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+				<div class="govuk-grid-row">
+					<h1 class="govuk-heading-1">Not Authorised</h1>
+				</div>
+
+				@if (User.Identity.IsAuthenticated)
+				{
+					<table>
+						@foreach (var item in ((ClaimsIdentity)User.Identity).Claims.Where(i => i.Type == "rolecode"))
+						{
+							<tr class="govuk-table__header">
+								<th>Value</th>
+							</tr>
+							<tr>
+								<td class="govuk-table__cell">@item.Value</td>
+							</tr>
+						}
+					</table>
+					<a asp-controller="authentication" asp-action="index" role="button" draggable="false" class="govuk-button govuk-button--start" data-module="govuk-button">
+						Auto Redirect
+						<svg class="govuk-button__start-icon" xmlns="http://www.w3.org/2000/svg" width="17.5" height="19" viewBox="0 0 33 40" aria-hidden="true" focusable="false">
+							<path fill="currentColor" d="M0 0h13l20 20-20 20H0l20-20z"></path>
+						</svg>
+					</a>
+				}
+				else
+				{
+					<a asp-controller="authentication" asp-action="signin" role="button" draggable="false" class="govuk-button govuk-button--start" data-module="govuk-button">
+						Start now
+						<svg class="govuk-button__start-icon" xmlns="http://www.w3.org/2000/svg" width="17.5" height="19" viewBox="0 0 33 40" aria-hidden="true" focusable="false">
+							<path fill="currentColor" d="M0 0h13l20 20-20 20H0l20-20z"></path>
+						</svg>
+					</a>
+				}
+			</div>
+		</div>
+	</main>
+</div>
+

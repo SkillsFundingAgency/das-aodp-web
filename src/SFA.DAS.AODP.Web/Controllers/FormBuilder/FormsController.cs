@@ -1,62 +1,80 @@
-﻿using MediatR;
-using Microsoft.AspNetCore.Authorization;
+﻿using Markdig;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
+using SFA.DAS.AODP.Web.Constants;
+using SFA.DAS.AODP.Web.Helpers.Markdown;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Form;
+using System.Reflection;
+using static SFA.DAS.AODP.Web.Helpers.ListHelper.OrderButtonHelper;
 
 namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
 
-public class FormsController : Controller
+public class FormsController : ControllerBase
 {
-    private readonly IMediator _mediator;
+    public enum UpdateKeys { FormUpdated, }
 
-    public FormsController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
+    public FormsController(IMediator mediator, ILogger<FormsController> logger) : base(mediator, logger)
+    { }
 
     #region Main
     public async Task<IActionResult> Index()
     {
-        var query = new GetAllFormVersionsQuery();
-        var response = await _mediator.Send(query);
-        if(!response.Success) return Ok(response);
+        try
+        {
+            var query = new GetAllFormVersionsQuery();
+            var response = await Send(query);
 
-        var viewModel = FormVersionListViewModel.Map(response.Value);
+            var viewModel = FormVersionListViewModel.Map(response);
 
-        return View(viewModel);
+            return View(viewModel);
+        }
+        catch
+        {
+            return Redirect("/Home/Error");
+        }
     }
 
     [HttpPost]
     public async Task<IActionResult> Index(FormVersionListViewModel model)
     {
-        if (model.AdditionalActions.CreateDraft.HasValue)
+        try
         {
-            var command = new CreateDraftFormVersionCommand(model.AdditionalActions.CreateDraft.Value);
-            var response = await _mediator.Send(command);
-            if (!response.Success) return StatusCode(StatusCodes.Status500InternalServerError);
+            if (model.AdditionalActions.CreateDraft.HasValue)
+            {
+                var command = new CreateDraftFormVersionCommand(model.AdditionalActions.CreateDraft.Value);
+                var response = await Send(command);
+                return RedirectToAction(nameof(Edit), new { formVersionId = response.FormVersionId });
 
-            return RedirectToAction(nameof(Edit), new { formVersionId = response.Value.FormVersionId });
+            }
+            else if (model.AdditionalActions.MoveDown.HasValue)
+            {
+                var command = new MoveFormDownCommand(model.AdditionalActions.MoveDown.Value);
+                TempData[UpdateTempDataKeys.FocusItemId.ToString()] = command.FormId.ToString();
+                TempData[UpdateTempDataKeys.Directon.ToString()] =  OrderDirection.Down.ToString();
+                await Send(command);
+            }
+            else if (model.AdditionalActions.MoveUp.HasValue)
+            {
+                var command = new MoveFormUpCommand(model.AdditionalActions.MoveUp.Value);
+                TempData[UpdateTempDataKeys.FocusItemId.ToString()] = command.FormId.ToString();
+                TempData[UpdateTempDataKeys.Directon.ToString()] = OrderDirection.Up.ToString();
+                await Send(command);
+            }
 
+            return RedirectToAction(nameof(Index));
         }
-        else if (model.AdditionalActions.MoveDown.HasValue)
+        catch
         {
-            var command = new MoveFormDownCommand(model.AdditionalActions.MoveDown.Value);
-            var response = await _mediator.Send(command);
+            return View(model);
         }
-        else if (model.AdditionalActions.MoveUp.HasValue)
-        {
-            var command = new MoveFormUpCommand(model.AdditionalActions.MoveUp.Value);
-            var response = await _mediator.Send(command);
-        }
-
-        return RedirectToAction(nameof(Index));
     }
     #endregion
 
     #region Create
+    [HttpGet]
     [Route("forms/create")]
     public IActionResult Create()
     {
@@ -68,15 +86,27 @@ public class FormsController : Controller
     [Route("forms/create")]
     public async Task<IActionResult> Create(CreateFormVersionViewModel viewModel)
     {
-        var command = new CreateFormVersionCommand
+        try
         {
-            Title = viewModel.Name,
-            Description = viewModel.Description,
-        };
+            var command = new CreateFormVersionCommand
+            {
+                Title = viewModel.Name,
+                Description = viewModel.Description,
+            };
 
-        var response = await _mediator.Send(command);
-        if (!response.Success) return View(viewModel);
-        return RedirectToAction(nameof(Edit), new { formVersionId = response.Value.Id });
+            if (viewModel.AdditionalFormActions.UpdateDescriptionPreview)
+            {
+                viewModel.DescriptionPreview = MarkdownHelper.ToGovUkHtml(viewModel.Description);
+                return View(viewModel);
+            }
+
+            var response = await Send(command);
+            return RedirectToAction(nameof(Edit), new { formVersionId = response.Id });
+        }
+        catch
+        {
+            return View(viewModel);
+        }
     }
     #endregion
 
@@ -85,60 +115,103 @@ public class FormsController : Controller
     [Route("forms/{formVersionId}")]
     public async Task<IActionResult> Edit(Guid formVersionId)
     {
-        var formVersionQuery = new GetFormVersionByIdQuery(formVersionId);
-        var response = await _mediator.Send(formVersionQuery);
-        if (!response.Success) return NotFound();
+        try
+        {
+            var formVersionQuery = new GetFormVersionByIdQuery(formVersionId);
+            var response = await Send(formVersionQuery);
 
-        var viewModel = EditFormVersionViewModel.Map(response.Value);
+            var viewModel = EditFormVersionViewModel.Map(response);
 
+            ShowNotificationIfKeyExists(UpdateKeys.FormUpdated.ToString(), ViewNotificationMessageType.Success, "The form has been updated.");
 
-        return View(viewModel);
+            return View(viewModel);
+        }
+        catch
+        {
+            return Redirect("Error");
+        }
+
     }
 
     [HttpPost]
     [Route("forms/{formVersionId}")]
     public async Task<IActionResult> Edit(EditFormVersionViewModel editFormVersionViewModel)
     {
-        if (editFormVersionViewModel.AdditionalFormActions.Publish != default)
+        try
         {
-            var command = new PublishFormVersionCommand(editFormVersionViewModel.Id);
-            var response = await _mediator.Send(command);
-        }
-        else if (editFormVersionViewModel.AdditionalFormActions.UnPublish != default)
-        {
-            var command = new UnpublishFormVersionCommand(editFormVersionViewModel.Id);
-            var response = await _mediator.Send(command);
-        }
-        else if (editFormVersionViewModel.AdditionalFormActions.MoveUp != default)
-        {
-            var command = new MoveSectionUpCommand()
+            if (editFormVersionViewModel.AdditionalFormActions.Publish != default)
             {
-                FormVersionId = editFormVersionViewModel.Id,
-                SectionId = editFormVersionViewModel.AdditionalFormActions.MoveUp ?? Guid.Empty,
-            };
-            var response = await _mediator.Send(command);
-        }
-        else if (editFormVersionViewModel.AdditionalFormActions.MoveDown != default)
-        {
-            var command = new MoveSectionDownCommand()
+                var command = new PublishFormVersionCommand(editFormVersionViewModel.Id);
+                await Send(command);
+
+            }
+            else if (editFormVersionViewModel.AdditionalFormActions.UnPublish != default)
             {
-                FormVersionId = editFormVersionViewModel.Id,
-                SectionId = editFormVersionViewModel.AdditionalFormActions.MoveDown ?? Guid.Empty,
-            };
-            var response = await _mediator.Send(command);
-        }
-        else
-        {
-            var command = new UpdateFormVersionCommand()
+                var command = new UnpublishFormVersionCommand(editFormVersionViewModel.Id);
+                await Send(command);
+            }
+            else if (editFormVersionViewModel.AdditionalFormActions.MoveUp != default)
             {
-                FormVersionId = editFormVersionViewModel.Id,
-                Description = editFormVersionViewModel.Description,
-                Order = editFormVersionViewModel.Order,
-                Name = editFormVersionViewModel.Title
-            };
-            var response = await _mediator.Send(command);
+                var command = new MoveSectionUpCommand()
+                {
+                    FormVersionId = editFormVersionViewModel.Id,
+                    SectionId = editFormVersionViewModel.AdditionalFormActions.MoveUp ?? Guid.Empty,
+                };
+                await Send(command);
+
+                TempData[UpdateTempDataKeys.FocusItemId.ToString()] = command.SectionId.ToString();
+                TempData[UpdateTempDataKeys.Directon.ToString()] = OrderDirection.Up.ToString();
+
+            }
+            else if (editFormVersionViewModel.AdditionalFormActions.MoveDown != default)
+            {
+                var command = new MoveSectionDownCommand()
+                {
+                    FormVersionId = editFormVersionViewModel.Id,
+                    SectionId = editFormVersionViewModel.AdditionalFormActions.MoveDown ?? Guid.Empty,
+                };
+                await Send(command);
+
+                TempData[UpdateTempDataKeys.FocusItemId.ToString()] = command.SectionId.ToString();
+                TempData[UpdateTempDataKeys.Directon.ToString()] = OrderDirection.Down.ToString();
+
+            }
+            else if (editFormVersionViewModel.AdditionalFormActions.UpdateDescriptionPreview)
+            {
+            
+                var formVersionQuery = new GetFormVersionByIdQuery(editFormVersionViewModel.Id);
+                var response = await Send(formVersionQuery);
+
+                var viewModel = EditFormVersionViewModel.Map(response);
+
+                viewModel.Title = editFormVersionViewModel.Title;
+                viewModel.Description = editFormVersionViewModel.Description;
+                viewModel.DescriptionHTML = MarkdownHelper.ToGovUkHtml(viewModel.Description);
+                ViewBag.AutoFocusOnUpdateDescriptionButton = true;
+
+
+
+                return View(viewModel);
+            }
+            else
+            {
+                var command = new UpdateFormVersionCommand()
+                {
+                    FormVersionId = editFormVersionViewModel.Id,
+                    Description = editFormVersionViewModel.Description,
+                    Order = editFormVersionViewModel.Order,
+                    Name = editFormVersionViewModel.Title
+                };
+                await Send(command);
+
+                TempData[UpdateKeys.FormUpdated.ToString()] = true;
+            }
+            return RedirectToAction(nameof(Edit), new { formVersionId = editFormVersionViewModel.Id });
         }
-        return RedirectToAction(nameof(Edit), new { formVersionId = editFormVersionViewModel.Id });
+        catch
+        {
+            return View(editFormVersionViewModel);
+        }
     }
     #endregion
 
@@ -146,23 +219,36 @@ public class FormsController : Controller
     [Route("forms/{formVersionId}/delete")]
     public async Task<IActionResult> Delete(Guid formVersionId)
     {
-        var query = new GetFormVersionByIdQuery(formVersionId);
-        var response = await _mediator.Send(query);
-        if (response.Value == null) return NotFound();
-        return View(new DeleteFormViewModel()
+        try
         {
-            FormVersionId = formVersionId,
-            Title = response.Value.Title
-        });
+            var query = new GetFormVersionByIdQuery(formVersionId);
+            var response = await Send(query);
+            return View(new DeleteFormViewModel()
+            {
+                FormVersionId = formVersionId,
+                Title = response.Title
+            });
+        }
+        catch
+        {
+            return Redirect("/Home/Error");
+        }
     }
 
     [HttpPost]
     [Route("forms/{formVersionId}/delete")]
     public async Task<IActionResult> DeleteConfirmed(DeleteFormViewModel model)
     {
-        var command = new DeleteFormVersionCommand(model.FormVersionId);
-        var deleteResponse = await _mediator.Send(command);
-        return RedirectToAction(nameof(Index));
+        try
+        {
+            var command = new DeleteFormVersionCommand(model.FormVersionId);
+            await Send(command);
+            return RedirectToAction(nameof(Index));
+        }
+        catch
+        {
+            return View(model);
+        }
     }
     #endregion
 }

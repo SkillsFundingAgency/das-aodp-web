@@ -16,6 +16,7 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
         [Display(Name = "Question Type")]
         public QuestionType? QuestionType { get; set; }
 
+        [Required]
         public bool Required { get; set; }
     }
 }

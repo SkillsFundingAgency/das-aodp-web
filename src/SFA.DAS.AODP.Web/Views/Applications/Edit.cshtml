@@ -1,0 +1,54 @@
+﻿@using SFA.DAS.AODP.Web.Models.Application
+@model EditApplicationViewModel
+
+@{
+    ViewData["Title"] = "Edit application";
+}
+<govuk-back-link class="govuk-link"
+                 asp-action="ViewApplication"
+                 asp-route-organisationId="@Model.OrganisationId"
+                 asp-route-applicationId="@Model.ApplicationId"
+                 asp-route-formVersionId="@Model.FormVersionId"
+                 asp-controller="Applications">
+    Back to view application
+</govuk-back-link>
+
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
+<h1 class="govuk-heading-l">Edit application</h1>
+
+<form asp-controller="Applications" asp-action="Edit" method="post">
+    @Html.HiddenFor(f => f.FormVersionId)
+    @Html.HiddenFor(f => f.ApplicationId)
+    @Html.HiddenFor(f => f.OrganisationId)
+
+    <div class="govuk-form-group">
+        <govuk-input asp-for="@Model.Name" input-class="govuk-input--width-50" inputmode="text" spellcheck="false">
+            <govuk-input-label is-page-heading="false" class="govuk-label--s">Application Name</govuk-input-label>
+            <govuk-input-hint>Please provide the qualification title you are applying for.</govuk-input-hint>
+            @Html.RenderPartialAsync("Validation/_TextInputValidationPartial", nameof(Model.Name))
+        </govuk-input>
+    </div>
+
+    <div class="govuk-form-group">
+        <govuk-input asp-for="@Model.Owner" input-class="govuk-input--width-50" spellcheck="false">
+            <govuk-input-label is-page-heading="false" class="govuk-label--s">Application Owner</govuk-input-label>
+            <govuk-input-hint>Please provide the name of person mainly responsible for this application.</govuk-input-hint>
+            @Html.RenderPartialAsync("Validation/_TextInputValidationPartial", nameof(Model.Owner))
+        </govuk-input>
+    </div>
+
+    <div class="govuk-form-group">
+        <govuk-input asp-for="@Model.QualificationNumber" input-class="govuk-input--width-50" spellcheck="false">
+            <govuk-input-label is-page-heading="false" class="govuk-label--s">Qualification number (optional)</govuk-input-label>
+            <govuk-input-hint>Please provide the qualification number,if you have it.</govuk-input-hint>
+            @Html.RenderPartialAsync("Validation/_TextInputValidationPartial", nameof(Model.QualificationNumber))
+        </govuk-input>
+    </div>
+
+
+    <div class="govuk-button-group">
+        <button class="govuk-button" type="submit">Save</button>
+    </div>
+
+</form>

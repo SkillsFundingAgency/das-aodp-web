@@ -4,6 +4,7 @@
 @{
     ViewData["Title"] = "View applications";
 }
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
 <a class="govuk-button" asp-action="AvailableForms" asp-route-organisationId="@Model.OrganisationId" asp-controller="Applications">Start new application</a>
 
@@ -21,7 +22,9 @@
         @foreach (var item in Model.Applications)
         {
             <tr class="govuk-table__row">
-                <td class="govuk-table__cell">Coming soon</td>
+                <td class="govuk-table__cell">
+                    @item.Reference.PadLeft(6, '0')
+                </td>
                 <td class="govuk-table__cell">
                     <a class="govuk-link"
                        asp-action="ViewApplication"

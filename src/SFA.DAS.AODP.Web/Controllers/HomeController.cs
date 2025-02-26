@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 
 namespace SFA.DAS.AODP.Web.Controllers
 {
-    [AllowAnonymous]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -29,34 +28,5 @@ namespace SFA.DAS.AODP.Web.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
-        [Authorize]
-        [HttpGet]
-        [Route("signout", Name = "provider-signout")]
-        public async Task<IActionResult> SignOut()
-        {
-
-            var idToken = await HttpContext.GetTokenAsync("id_token");
-            var authenticationProperties = new AuthenticationProperties();
-            authenticationProperties.Parameters.Clear();
-            authenticationProperties.Parameters.Add("id_token", idToken);
-            authenticationProperties.Parameters.Add("post_logout_redirect_uri", "/signout");
-            return SignOut(authenticationProperties,
-                CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme);
-
-        }
-
-        [Authorize]
-        [HttpGet]
-        [Route("signin", Name = "provider-signin")]
-        public async Task<IActionResult> SignIn()
-        {
-            // When using Stub Auth dont redirect to the login challenge, as it doesnt exist. User Auth already configured so no need.            
-            if (!User.Identity.IsAuthenticated)
-            {
-                await HttpContext.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme, new AuthenticationProperties { RedirectUri = "/dashboard" });
-            }
-
-            return RedirectToAction("Index", "Dashboard");
-        }
     }
 }

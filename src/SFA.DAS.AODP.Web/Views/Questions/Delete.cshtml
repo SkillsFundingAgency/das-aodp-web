@@ -1,38 +1,121 @@
-﻿﻿@using SFA.DAS.AODP.Web.Models.FormBuilder.Question
+﻿﻿﻿@using SFA.DAS.AODP.Web.Models.FormBuilder.Question
 @model DeleteQuestionViewModel
 
 <a class="govuk-back-link" asp-action="Edit" asp-controller="Questions" asp-route-formVersionId="@Model.FormVersionId" asp-route-sectionId="@Model.SectionId" asp-route-pageId="@Model.PageId" asp-route-questionId="@Model.QuestionId">
     Back to Question
 </a>
 
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
 <h1 class="govuk-heading-l">Delete Question?</h1>
 
-<form asp-action="DeleteConfirmed" method="post">
-    @Html.AntiForgeryToken()
-    <input type="hidden" id="Id" name="Id" value="@Model.QuestionId" />
-    <govuk-warning-text icon-fallback-text="Warning">
-        Are you sure you want to delete the question?
-    </govuk-warning-text>
-    
+@if (!ViewContext.ModelState.IsValid)
+{
+    <div class="govuk-error-summary" data-module="govuk-error-summary">
+        <div role="alert">
+            <h2 class="govuk-error-summary__title">
+                Question cannot be deleted
+            </h2>
+            <div class="govuk-error-summary__body">
+                <ul class="govuk-list govuk-error-summary__list">
+                    <li>
+                        <p>This question cannot be deleted because there is a route associated with it. You must first edit the route to remove this association before deleting this question.</p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
     <p class="govuk-body">
-        @Model.Title.ToString()
+        Here are the routes associated to this question:
     </p>
+    <!--
+    Display a list of routesthat need to be part of the DeleteQuestionViewModel.
+    Next to that list, add a link to the associated Routes.
 
-    <govuk-button class="govuk-button--warning" type="submit" 
-        asp-action="DeleteConfirmed" asp-controller="Questions" 
-        asp-route-formVersionId="@Model.FormVersionId" 
-        asp-route-sectionId="@Model.SectionId" 
-        asp-route-pageId="@Model.PageId" 
-        asp-route-questionId="@Model.QuestionId">
-        Delete
-    </govuk-button>
+    - otherwise, Hide Deete Button and the rest of the text.
+    -->
 
-    <a class="govuk-button govuk-button--secondary" 
-        asp-action="Edit" asp-controller="Questions" 
-        asp-route-formVersionId="@Model.FormVersionId" 
-        asp-route-sectionId="@Model.SectionId" 
-        asp-route-pageId="@Model.PageId" 
-        asp-route-questionId="@Model.QuestionId">
-        Cancel
-    </a>
-</form>
+    <govuk-summary-card>
+        <govuk-summary-card-title>Routes for Question @Model.Title</govuk-summary-card-title>
+        <govuk-summary-card-actions>
+            <govuk-summary-card-action>
+                <a class="govuk-button" asp-action="Configure" asp-controller="Routes" asp-route-questionId="@Model.QuestionId" asp-route-pageId="@Model.PageId" asp-route-sectionId="@Model.SectionId" asp-route-formVersionId="@Model.FormVersionId">Edit</a>
+            </govuk-summary-card-action>
+        </govuk-summary-card-actions>
+        <govuk-summary-list>
+
+            @foreach (var option in Model.Routes.OrderBy(o => o.Option.Order))
+            {
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>
+                        If the answer is @option.Option.Value
+                    </govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>
+                        <ul class="govuk-list">
+                            @if (option.NextPage?.Title != null)
+                            {
+                                <li>The next page is: <strong>@(option.NextPage.Order). @option.NextPage.Title</strong></li>
+                            }
+                            else if (option.EndSection)
+                            {
+                                <li>Go to end of current section.</li>
+                            }
+                            else
+                            {
+                                <li>Go to default next page.</li>
+                            }
+
+                            @if (option.NextSection?.Title != null)
+                            {
+                                <li>The next section is: <strong>@(option.NextSection.Order). @option.NextSection.Title</strong></li>
+                            }
+                            else if (option.EndSection)
+                            {
+                                <li>Go to end of form.</li>
+                            }
+                            else
+                            {
+                                <li>Go to default next section.</li>
+                            }
+                        </ul>
+                    </govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+            }
+
+        </govuk-summary-list>
+    </govuk-summary-card>
+}
+else
+{
+    <form asp-action="DeleteConfirmed" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" id="Id" name="Id" value="@Model.QuestionId" />
+
+        <govuk-warning-text icon-fallback-text="Warning">
+            Are you sure you want to delete the question?
+        </govuk-warning-text>
+
+        <p class="govuk-body">
+            @Model.Title.ToString()
+        </p>
+
+        <govuk-button class="govuk-button--warning" type="submit"
+                      asp-action="DeleteConfirmed" asp-controller="Questions"
+                      asp-route-formVersionId="@Model.FormVersionId"
+                      asp-route-sectionId="@Model.SectionId"
+                      asp-route-pageId="@Model.PageId"
+                      asp-route-questionId="@Model.QuestionId">
+            Delete
+        </govuk-button>
+
+        <a class="govuk-button govuk-button--secondary"
+           asp-action="Edit" asp-controller="Questions"
+           asp-route-formVersionId="@Model.FormVersionId"
+           asp-route-sectionId="@Model.SectionId"
+           asp-route-pageId="@Model.PageId"
+           asp-route-questionId="@Model.QuestionId">
+            Cancel
+        </a>
+    </form>
+}
