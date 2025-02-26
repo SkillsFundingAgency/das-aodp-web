@@ -4,7 +4,7 @@ using SFA.DAS.AODP.Infrastructure.ApiClient;
 using SFA.DAS.AODP.Infrastructure.Extensions;
 using System.Diagnostics.CodeAnalysis;
 
-namespace SFA.DAS.AODP.Web.Extensions;
+namespace SFA.DAS.AODP.Web.Extensions.Startup;
 
 [ExcludeFromCodeCoverage]
 public static class AddServiceRegistrationsExtension

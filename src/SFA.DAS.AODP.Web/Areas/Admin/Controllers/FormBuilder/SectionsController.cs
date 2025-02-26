@@ -3,12 +3,15 @@ using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
-using SFA.DAS.AODP.Web.Constants;
+using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Section;
 using static SFA.DAS.AODP.Web.Helpers.ListHelper.OrderButtonHelper;
+using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
-namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
 
+namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers.FormBuilder;
+
+[Area("Admin")]
 public class SectionsController : ControllerBase
 {
     private const string SectionUpdatedKey = nameof(SectionUpdatedKey);
@@ -18,14 +21,14 @@ public class SectionsController : ControllerBase
     }
 
     #region Create
-    [Route("forms/{formVersionId}/sections/create")]
+    [Route("/admin/forms/{formVersionId}/sections/create")]
     public async Task<IActionResult> Create(Guid formVersionId)
     {
         return View(new CreateSectionViewModel { FormVersionId = formVersionId });
     }
 
     [HttpPost]
-    [Route("forms/{formVersionId}/sections/create")]
+    [Route("/admin/forms/{formVersionId}/sections/create")]
     public async Task<IActionResult> Create(CreateSectionViewModel model)
     {
         try
@@ -47,7 +50,7 @@ public class SectionsController : ControllerBase
     #endregion
 
     #region Edit
-    [Route("forms/{formVersionId}/sections/{sectionId}")]
+    [Route("/admin/forms/{formVersionId}/sections/{sectionId}")]
     public async Task<IActionResult> Edit(Guid formVersionId, Guid sectionId)
     {
         try
@@ -66,7 +69,7 @@ public class SectionsController : ControllerBase
     }
 
     [HttpPost]
-    [Route("forms/{formVersionId}/sections/{sectionId}")]
+    [Route("/admin/forms/{formVersionId}/sections/{sectionId}")]
     public async Task<IActionResult> Edit(EditSectionViewModel model)
     {
         try
@@ -124,7 +127,7 @@ public class SectionsController : ControllerBase
 
     #region Delete
     [HttpGet]
-    [Route("forms/{formVersionId}/sections/{sectionId}/delete")]
+    [Route("/admin/forms/{formVersionId}/sections/{sectionId}/delete")]
     public async Task<IActionResult> Delete(Guid sectionId, Guid formVersionId)
     {
         try
@@ -133,10 +136,10 @@ public class SectionsController : ControllerBase
             var response = await Send(query);
             return View(new DeleteSectionViewModel()
             {
-              Title = response.Title,
-              SectionId = sectionId,
-              FormVersionId = formVersionId,
-              HasAssociatedRoutes = response.HasAssociatedRoutes
+                Title = response.Title,
+                SectionId = sectionId,
+                FormVersionId = formVersionId,
+                HasAssociatedRoutes = response.HasAssociatedRoutes
             });
         }
         catch
@@ -146,7 +149,7 @@ public class SectionsController : ControllerBase
     }
 
     [HttpPost, ActionName("Delete")]
-    [Route("forms/{formVersionId}/sections/{sectionId}/delete")]
+    [Route("/admin/forms/{formVersionId}/sections/{sectionId}/delete")]
     public async Task<IActionResult> DeleteConfirmed(DeleteSectionViewModel model)
     {
         try
