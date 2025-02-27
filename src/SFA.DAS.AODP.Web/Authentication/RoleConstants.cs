@@ -1,6 +1,4 @@
-﻿using System.CodeDom;
-
-namespace Authentication;
+﻿namespace SFA.DAS.AODP.Web.Authentication;
 static class RoleConstants
 {
     public const string QFAUApprover = "qfau_user_approver";

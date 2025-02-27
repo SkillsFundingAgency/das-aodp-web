@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Authentication;
+using SFA.DAS.AODP.Web.Authentication;
 
 namespace SFA.DAS.AODP.Web.Controllers
 {

@@ -3,12 +3,14 @@ using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Questions;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Pages;
-using SFA.DAS.AODP.Web.Constants;
+using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Page;
 using static SFA.DAS.AODP.Web.Helpers.ListHelper.OrderButtonHelper;
+using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
-namespace SFA.DAS.AODP.Web.Controllers.FormBuilder;
+namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers.FormBuilder;
 
+[Area("Admin")]
 public class PagesController : ControllerBase
 {
     private const string PageUpdatedKey = nameof(PageUpdatedKey);
@@ -18,7 +20,7 @@ public class PagesController : ControllerBase
     }
 
     #region Create
-    [Route("forms/{formVersionId}/sections/{sectionId}/pages/create")]
+    [Route("/admin/forms/{formVersionId}/sections/{sectionId}/pages/create")]
     public async Task<IActionResult> Create(Guid formVersionId, Guid sectionId)
     {
         return View(new CreatePageViewModel()
@@ -29,7 +31,7 @@ public class PagesController : ControllerBase
     }
 
     [HttpPost]
-    [Route("forms/{formVersionId}/sections/{sectionId}/pages/create")]
+    [Route("/admin/forms/{formVersionId}/sections/{sectionId}/pages/create")]
     public async Task<IActionResult> Create(CreatePageViewModel model)
     {
         var command = new CreatePageCommand()
@@ -50,7 +52,7 @@ public class PagesController : ControllerBase
     #endregion
 
     #region Edit
-    [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}")]
+    [Route("/admin/forms/{formVersionId}/sections/{sectionId}/pages/{pageId}")]
     public async Task<IActionResult> Edit(Guid pageId, Guid sectionId, Guid formVersionId)
     {
         try
@@ -69,7 +71,7 @@ public class PagesController : ControllerBase
     }
 
     [HttpPost]
-    [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}")]
+    [Route("/admin/forms/{formVersionId}/sections/{sectionId}/pages/{pageId}")]
     public async Task<IActionResult> Edit(EditPageViewModel model)
     {
         try
@@ -131,7 +133,7 @@ public class PagesController : ControllerBase
     #endregion
 
     #region Preview
-    [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/preview")]
+    [Route("/admin/forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/preview")]
     public async Task<IActionResult> Preview(Guid pageId, Guid sectionId, Guid formVersionId)
     {
         try
@@ -156,7 +158,7 @@ public class PagesController : ControllerBase
 
     #region Delete
     [HttpGet]
-    [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/delete")]
+    [Route("/admin/forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/delete")]
     public async Task<IActionResult> Delete(Guid formVersionId, Guid sectionId, Guid pageId)
     {
         try
@@ -179,7 +181,7 @@ public class PagesController : ControllerBase
     }
 
     [HttpPost]
-    [Route("forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/delete")]
+    [Route("/admin/forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/delete")]
     public async Task<IActionResult> DeleteConfirmed(DeletePageViewModel model)
     {
         try
