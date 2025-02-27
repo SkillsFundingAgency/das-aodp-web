@@ -82,6 +82,10 @@
 	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
 	  </Content>
+	  <Content Update="Areas\Review\Views\ApplicationsReview\Index.cshtml">
+	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+	  </Content>
 	  <Content Update="wwwroot\js\site.js">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
@@ -91,6 +95,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Folder Include="Areas\Review\Views\Review\" />
 	  <Folder Include="Areas\Review\Views\Shared\" />
 	</ItemGroup>
 

@@ -1,0 +1,53 @@
+﻿@using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
+@using SFA.DAS.AODP.Web.Models.GdsComponents
+@model ApplicationsReviewListViewModel
+
+@{
+    ViewData["Title"] = "Review applications";
+}
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
+<table class="govuk-table">
+    <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">Reference</th>
+            <th scope="col" class="govuk-table__header">QAN</th>
+            <th scope="col" class="govuk-table__header">Name</th>
+            <th scope="col" class="govuk-table__header">Status</th>
+            <th scope="col" class="govuk-table__header">Owner</th>
+        </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+        @foreach (var item in Model.Applications.OrderByDescending(a => a.LastUpdated))
+        {
+            <tr class="govuk-table__row">
+                <td class="govuk-table__cell">
+                    @item.Reference.PadLeft(6, '0')
+                </td>
+                <td class="govuk-table__cell">
+                    @(item.Qan ?? "Not provided")
+                </td>
+                <td class="govuk-table__cell">
+                    <a class="govuk-link"
+                       asp-action="ViewApplication"
+                       asp-route-applicationId="@item.Id"
+                       asp-controller="ReviewApplications">@item.Name</a>
+                </td>
+                <td class="govuk-table__cell">@item.Status</td>
+                <td class="govuk-table__cell">@item.Owner</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<partial name="~/Views/Shared/GdsComponents/_GdsPagination.cshtml" />
+
+@{
+    PaginationModel model = new()
+    {
+        CurrentPage = 1,
+        MaxPageNumber = 10,
+        Label = "hello",
+    };
+    await Html.RenderPartialAsync("GdsComponents/_GdsPagination", model);
+}
