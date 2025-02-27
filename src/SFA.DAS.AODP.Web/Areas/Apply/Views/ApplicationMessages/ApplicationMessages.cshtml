@@ -1,0 +1,28 @@
+﻿@using SFA.DAS.AODP.Web.Models.Application;
+@model ApplicationMessagesViewModel
+
+@{
+    ViewData["Title"] = "Application Messages";
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+
+        <govuk-back-link class="govuk-link govuk-task-list__link"
+                         asp-action="ViewApplicationDetails"
+                         asp-controller="Applications">Back</govuk-back-link>
+
+        <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
+        <h1 class="govuk-heading-l govuk-!-margin-bottom-2">Application messages</h1>
+
+
+        <!-- Message Box and Message Send  -->
+        <!-- Application Event Timeline  -->
+        <div>
+            @await Html.PartialAsync("ApplicationMessages/_ApplicationEventTimeline", Model)
+        </div>
+
+
+    </div>
+</div>
