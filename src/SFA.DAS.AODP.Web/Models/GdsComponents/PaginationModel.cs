@@ -4,7 +4,6 @@
     {
         public int MaxPageNumber { get; set; }
         public int CurrentPage { get; set; }
-        public string Label { get; set; }
         public string PageLink { get; set; } 
     }
 }

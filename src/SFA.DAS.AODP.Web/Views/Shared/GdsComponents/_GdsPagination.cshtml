@@ -24,7 +24,7 @@
             blocks.Add(0); // Ellipsis
             blocks.Add(Model.MaxPageNumber);
         }
-        else if (Model.CurrentPage >= Model.MaxPageNumber - maxMiniPagingSize)
+        else if (Model.CurrentPage > Model.MaxPageNumber - maxMiniPagingSize)
         {
             blocks.Add(1);
             blocks.Add(0); // Ellipsis
@@ -46,38 +46,28 @@
         }
     }
 }
-}
 
-<nav class="govuk-pagination" aria-label="@Model.Label" role="navigation">
+<govuk-pagination>
     @if (Model.CurrentPage > 1)
     {
-        <a class="govuk-pagination__prev" href="@Model.PageLink?page=@(Model.CurrentPage - 1)" rel="prev">
-            <span class="govuk-pagination__link-title">Previous</span>
-        </a>
+        <govuk-pagination-previous href="#" />
     }
 
-    <ul class="govuk-pagination__list">
-        @foreach (var block in blocks)
+    @foreach (var block in blocks)
+    {
+        if (block == 0)
         {
-            if (block == 0)
-            {
-                <li class="govuk-pagination__item govuk-pagination__item--ellipses" aria-hidden="true">...</li>
-            }
-            else
-            {
-                var className = "govuk-pagination__item";
-                if (Model.CurrentPage == block) className += " govuk-pagination__item--current";
-                <li class="@className">
-                    <a href="@Model.PageLink?page=@block" aria-label="Page @block">@block</a>
-                </li>
-            }
+            <govuk-pagination-ellipsis />
         }
-    </ul>
+        else
+        {
+            <govuk-pagination-item href="#" is-current="@(Model.CurrentPage == block)">@block</govuk-pagination-item>
+        }
+    }
 
     @if (Model.CurrentPage < Model.MaxPageNumber)
     {
-        <a class="govuk-pagination__next" href="@Model.PageLink?page=@(Model.CurrentPage + 1)" rel="next">
-            <span class="govuk-pagination__link-title">Next</span>
-        </a>
+        <govuk-pagination-next href="#" />
     }
-</nav>
+
+</govuk-pagination>

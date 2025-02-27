@@ -40,14 +40,27 @@
     </tbody>
 </table>
 
-<partial name="~/Views/Shared/GdsComponents/_GdsPagination.cshtml" />
-
 @{
     PaginationModel model = new()
-    {
-        CurrentPage = 1,
-        MaxPageNumber = 10,
-        Label = "hello",
-    };
-    await Html.RenderPartialAsync("GdsComponents/_GdsPagination", model);
+            {
+                CurrentPage = 7,
+                MaxPageNumber = 10,
+            };
 }
+
+<div class="app-pagination__container>
+
+    <div>
+        @{
+        await Html.RenderPartialAsync("GdsComponents/_GdsPagination", model);
+        }
+    </div>
+    <div class="app-pagination__select-container">
+        <select class="govuk-select" style="min-width: 1rem">
+            <option>1</option>
+        </select>
+        <p class="govuk-body-m">applications per page</p>
+    </div>
+
+
+</div>
