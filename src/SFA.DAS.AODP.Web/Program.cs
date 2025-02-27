@@ -130,6 +130,6 @@ internal class Program
 
         endpoints.MapAreaControllerRoute(name: "Apply",
                                        areaName: "Apply",
-                                       pattern: "{area:exists}/{controller=Application}/{action=Index}/{id?}").RequireAuthorization(PolicyConstants.IsApplyUser);
+                                       pattern: "{area:exists}/{controller=Apply}/{action=Index}/{id?}").RequireAuthorization(PolicyConstants.IsApplyUser);
     }
 }
