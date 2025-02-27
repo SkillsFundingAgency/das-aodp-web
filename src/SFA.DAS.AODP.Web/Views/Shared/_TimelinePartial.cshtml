@@ -1,45 +1,33 @@
 ﻿@using SFA.DAS.AODP.Web.Models.Application;
-@model ApplicationMessagesViewModel
+@using SFA.DAS.AODP.Web.Models.TimelineComponents;
+@using System.Globalization;
+@model TimelineViewModel<TimelineItemBase>
 
-@if (Model.Messages != null && Model.Messages.Any())
+@if (Model.Items != null && Model.Items.Any())
 {
     <div class="app-timeline">
-        @foreach (var message in Model.Messages.OrderByDescending(m => m.SentAt))
+        @foreach (var item in Model.Items.OrderByDescending(m => m.SentAt))
         {
             <div class="app-timeline__item">
 
                 <div class="app-timeline__header">
-                    <h2 class="app-timeline__title">@message.Status</h2>
-                    <p class="app-timeline__byline">by @message.SentByName</p>
+                    <h2 class="app-timeline__title">Status: @item.Status</h2>
+
                 </div>
 
-                <p class="app-timeline__date">
-                    <time datetime="@message.SentAt.ToString("app-MM-ddTHH:mm:ss.fffZ")">
-                        @message.SentAt.ToString("dd MMMM app 'at' h:mmtt").ToLower()
+                <p class="app-timeline__details">
+                    <p class="app-timeline__byline">by @item.SentByName, </p>
+                    <time datetime="@item.SentAt.ToString("dd MMM yyyy 'at' HH:mm", CultureInfo.InvariantCulture);">
+                        @item.SentAt.ToString("dd MMM yyyy 'at' HH:mm", CultureInfo.InvariantCulture)
                     </time>
                 </p>
+                @if(item.Status.Equals("MessageSent"))
+                {
+                    <div class="app-timeline__description">
+                        <p>@item.Text</p>
 
-                <div class="app-timeline__description">
-                    <p>@message.Text</p>
-
-                    @if (message.Type == "Action")
-                    {
-                        <a class="govuk-button govuk-!-margin-bottom-0" href="#">Continue</a>
-                    }
-
-                    @if (message.Type == "Details")
-                    {
-                        <details class="govuk-details govuk-!-margin-bottom-0">
-                            <summary class="govuk-details__summary">
-                                <span class="govuk-details__summary-text">Application details</span>
-                            </summary>
-                            <div class="govuk-details__text">
-                                Additional details about the application. <a class="govuk-link" href="#">Click here for more</a>
-                            </div>
-                        </details>
-                    }
-
-                </div>
+                    </div>
+                }
 
             </div>
         }
@@ -77,7 +65,6 @@ else
 
     .app-timeline__item {
         position: relative;
-        padding-bottom: 30px;
         padding-left: 20px;
     }
 
@@ -104,15 +91,17 @@ else
         color: #6f777b;
     }
 
-    .app-timeline__date {
+    .app-timeline__details {
         font-size: 16px;
         margin-top: 5px;
         margin-bottom: 0;
+        color: #6f777b;
     }
 
     .app-timeline__description {
         font-size: 19px;
         margin-top: 20px;
+        margin-bottom: 0;
     }
 
 </style>

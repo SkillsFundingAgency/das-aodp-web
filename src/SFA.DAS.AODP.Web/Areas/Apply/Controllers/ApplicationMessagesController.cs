@@ -6,6 +6,7 @@ using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers;
 
+[Area("Apply")]
 [ValidateOrganisation]
 public class ApplicationMessagesController : ControllerBase
 {
@@ -14,7 +15,7 @@ public class ApplicationMessagesController : ControllerBase
     }
 
     [HttpGet]
-    [Route("organisations/{organisationId}/applications/{applicationId}/messages")]
+    [Route("apply/organisations/{organisationId}/applications/{applicationId}/messages")]
     public IActionResult ApplicationMessages()
     {
         var model = new ApplicationMessagesViewModel
@@ -24,19 +25,17 @@ public class ApplicationMessagesController : ControllerBase
                 new()
                 {
                     Id = 1,
-                    Text = "Application submitted successfully.",
-                    Status = "Submitted",
-                    Type = "Info",
+                    Text = "Dear Somebody, Please can you give further evidence of the application. Kind Regards, Davidowski",
+                    Status = "MessageSent",
                     SentAt = DateTime.Now.AddMinutes(-30),
-                    SentByName = "John Doe",
-                    SentByEmail = "john.doe@example.com"
+                    SentByName = "Davidowski",
+                    SentByEmail = "test123@example.com"
                 },
                 new()
                 {
                     Id = 2,
-                    Text = "Application is under review.",
-                    Status = "In Progress",
-                    Type = "Update",
+                    Text = "Test",
+                    Status = "Awaiting Response From AO",
                     SentAt = DateTime.Now.AddMinutes(-20),
                     SentByName = "Admin",
                     SentByEmail = "admin@example.com"
@@ -44,12 +43,11 @@ public class ApplicationMessagesController : ControllerBase
                 new()
                 {
                     Id = 3,
-                    Text = "Application approved!",
-                    Status = "Approved",
-                    Type = "Success",
+                    Text = "Test",
+                    Status = "In Review",
                     SentAt = DateTime.Now.AddMinutes(-10),
-                    SentByName = "Manager",
-                    SentByEmail = "manager@example.com"
+                    SentByName = "AO",
+                    SentByEmail = "ao@example.com"
                 }
             }
         };

@@ -1,4 +1,5 @@
 ﻿@using SFA.DAS.AODP.Web.Models.Application;
+@using SFA.DAS.AODP.Web.Models.TimelineComponents
 @model ApplicationMessagesViewModel
 
 @{
@@ -18,10 +19,18 @@
 
 
         <!-- Message Box and Message Send  -->
+
         <!-- Application Event Timeline  -->
-        <div>
-            @await Html.PartialAsync("ApplicationMessages/_ApplicationEventTimeline", Model)
-        </div>
+        @{
+            var timelineModel = new TimelineViewModel<TimelineItemBase>
+            {
+                Items = Model.Messages.Cast<TimelineItemBase>().ToList()
+            };
+
+            <div>
+                @await Html.PartialAsync("_TimelinePartial", timelineModel)
+            </div>
+        }
 
 
     </div>
