@@ -121,7 +121,7 @@ internal class Program
                         defaults: new { area = "Admin", controller = "Import" }).RequireAuthorization(PolicyConstants.IsAdminImportUser);
 
         endpoints.MapControllerRoute(name: "AdminDefaultForForms",
-                                         pattern: "Admin/{controller=Forms}/{action=index}/{id?}",
+                                         pattern: "Admin/{controller=Dashboard}/{action=index}/{id?}",
                                          defaults: new { area = "Admin" }).RequireAuthorization(PolicyConstants.IsAdminFormsUser);
 
         endpoints.MapControllerRoute(name: "ApplyHome",
