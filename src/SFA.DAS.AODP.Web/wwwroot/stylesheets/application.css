@@ -18,18 +18,3 @@
         margin-top: 30px;
     }
 }
-
-/* Pagination */
-
-.app-pagination__container {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    justify-content: space-between;
-}
-
-.app-pagination__select-container {
-    display: flex;
-    gap: 0.2rem;
-    justify-self: end;
-    align-items: baseline;
-}

@@ -7,6 +7,9 @@
         public int CurrentPage { get; set; }
         public int ItemsPerPage { get; set; }
 
+        public string? GeneralSearchFilter { get; set; }
+        public string? AwardingOrganisation { get; set; }
+
         public class Application
         {
             public Guid Id { get; set; }

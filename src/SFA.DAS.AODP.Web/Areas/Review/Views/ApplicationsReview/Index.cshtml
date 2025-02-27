@@ -7,6 +7,77 @@
 }
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
+<h1 class="govuk-heading-1">Requests for funding</h1>
+
+<form asp-controller="ApplicationsReview" asp-action="Edit" method="post">
+    @Html.HiddenFor(f => f.ItemsPerPage)
+    @Html.HiddenFor(f => f.CurrentPage)
+
+    <div class="govuk-grid-row">
+        <div class="govuk-form-group govuk-grid-column-one-half">
+            <govuk-input asp-for="@Model.GeneralSearchFilter" input-class="govuk-input--width-30" inputmode="text" spellcheck="false">
+                <govuk-input-label is-page-heading="false" class="govuk-label--s">You can search by submission ID, qualification title or QAN</govuk-input-label>
+            </govuk-input>
+            <govuk-input asp-for="@Model.AwardingOrganisation" input-class="govuk-input--width-30" inputmode="text" spellcheck="false">
+                <govuk-input-label is-page-heading="false" class="govuk-label--s">Search by Awarding Organisation</govuk-input-label>
+            </govuk-input>
+        </div>
+        <div class="govuk-form-group govuk-grid-column-one-half">
+            <fieldset class="govuk-fieldset">
+                <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">
+                    <h1 class="govuk-fieldset__heading">
+                        Status
+                    </h1>
+                </legend>
+                <div class="govuk-checkboxes govuk-checkboxes--small govuk-grid-column-one-half" data-module="govuk-checkboxes">
+                    <div class="govuk-checkboxes__item">
+                        <input class="govuk-checkboxes__input" id="organisation" name="organisation" type="checkbox" value="hmrc">
+                        <label class="govuk-label govuk-checkboxes__label" for="organisation">
+                            New message
+                        </label>
+                    </div>
+                    <div class="govuk-checkboxes__item">
+                        <input class="govuk-checkboxes__input" id="organisation-2" name="organisation" type="checkbox" value="employment-tribunal">
+                        <label class="govuk-label govuk-checkboxes__label" for="organisation-2">
+                            Draft
+                        </label>
+                    </div>
+                    <div class="govuk-checkboxes__item">
+                        <input class="govuk-checkboxes__input" id="organisation-3" name="organisation" type="checkbox" value="MOD">
+                        <label class="govuk-label govuk-checkboxes__label" for="organisation-3">
+                            In review
+                        </label>
+                    </div>
+                </div>
+
+                <div class="govuk-checkboxes govuk-checkboxes--small govuk-grid-column-one-half" data-module="govuk-checkboxes">
+                    <div class="govuk-checkboxes__item">
+                        <input class="govuk-checkboxes__input" id="organisation" name="organisation" type="checkbox" value="hmrc">
+                        <label class="govuk-label govuk-checkboxes__label" for="organisation">
+                            New message
+                        </label>
+                    </div>
+                    <div class="govuk-checkboxes__item">
+                        <input class="govuk-checkboxes__input" id="organisation-2" name="organisation" type="checkbox" value="employment-tribunal">
+                        <label class="govuk-label govuk-checkboxes__label" for="organisation-2">
+                            Draft
+                        </label>
+                    </div>
+                    <div class="govuk-checkboxes__item">
+                        <input class="govuk-checkboxes__input" id="organisation-3" name="organisation" type="checkbox" value="MOD">
+                        <label class="govuk-label govuk-checkboxes__label" for="organisation-3">
+                            In review
+                        </label>
+                    </div>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+
+</form>
+
+<p class="govuk-heading-s">Viewing 1-10 of 134 qualifications</p>
+
 <table class="govuk-table">
     <thead class="govuk-table__head">
         <tr class="govuk-table__row">
@@ -48,19 +119,26 @@
             };
 }
 
-<div class="app-pagination__container>
+<div class="govuk-grid-row">
 
-    <div>
+    <div class="govuk-grid-column-two-thirds">
         @{
         await Html.RenderPartialAsync("GdsComponents/_GdsPagination", model);
         }
     </div>
-    <div class="app-pagination__select-container">
+    <div class="govuk-grid-column-one-third" id="app-pagaination__select-container">
         <select class="govuk-select" style="min-width: 1rem">
             <option>1</option>
         </select>
         <p class="govuk-body-m">applications per page</p>
     </div>
-
-
 </div>
+
+<style>
+    #app-pagaination__select-container {
+        display: flex;
+        gap: 0.2rem;
+        align-items: baseline;
+    }
+
+</style>
