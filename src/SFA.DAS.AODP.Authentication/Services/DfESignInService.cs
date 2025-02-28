@@ -105,6 +105,8 @@ namespace SFA.DAS.AODP.Authentication.Services
                 {
                     var organisationClaims = new List<Claim>();
                     organisationClaims.Add(new Claim(ClaimName.OrganisationName, organisationDetails.Name ?? ""));
+                    organisationClaims.Add(new Claim(ClaimName.UKPrn, organisationDetails.Ukprn ?? ""));
+                    organisationClaims.Add(new Claim(ClaimName.LegalName, organisationDetails.LegalName ?? ""));
                     ctx?.Principal?.Identities.First().AddClaims(organisationClaims);
                 }
             }
