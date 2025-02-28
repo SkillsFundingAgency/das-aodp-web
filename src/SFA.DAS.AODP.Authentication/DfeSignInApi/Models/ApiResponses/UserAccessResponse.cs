@@ -1,6 +1,6 @@
-﻿namespace SFA.DAS.AODP.Authentication.DfeSignInApi.Models
+﻿namespace SFA.DAS.AODP.Authentication.DfeSignInApi.Models.ApiResponses
 {
-    public class ApiServiceResponse
+    public class UserAccessResponse
     {
         public Guid UserId { get; set; }
         public Guid ServiceId { get; set; }

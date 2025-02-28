@@ -1,36 +1,37 @@
 ﻿//using System.Security.Claims;
 //using AutoFixture.NUnit3;
-//using FluentAssertions;
 //using Microsoft.AspNetCore.Authentication;
 //using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 //using Microsoft.AspNetCore.Http;
 //using Microsoft.Extensions.Options;
 //using Moq;
 //using Newtonsoft.Json;
-//using SFA.DAS.DfESignIn.Auth.Api.Models;
-//using SFA.DAS.DfESignIn.Auth.Configuration;
-//using SFA.DAS.DfESignIn.Auth.Constants;
-//using SFA.DAS.DfESignIn.Auth.Enums;
-//using SFA.DAS.DfESignIn.Auth.Interfaces;
-//using SFA.DAS.DfESignIn.Auth.Services;
+//using SFA.DAS.AODP.Authentication.Configuration;
+//using SFA.DAS.AODP.Authentication.Constants;
+//using SFA.DAS.AODP.Authentication.DfeSignInApi.Client;
+//using SFA.DAS.AODP.Authentication.DfeSignInApi.Models;
+//using SFA.DAS.AODP.Authentication.DfeSignInApi.Models.ApiResponses;
+//using SFA.DAS.AODP.Authentication.Enums;
+//using SFA.DAS.AODP.Authentication.Interfaces;
+//using SFA.DAS.AODP.Authentication.Services;
 //using SFA.DAS.Testing.AutoFixture;
 
 //namespace SFA.DAS.DfESignIn.Auth.UnitTests.Services
 //{
 //    public class DfESignInServiceTest
 //    {
-//        [Test, MoqAutoData]
+//        [Fact, MoqAutoData]
 //        public async Task Then_The_Claims_Are_Populated_For_Users(
 //            string userId,
 //            Organisation organisation,
 //            DfEOidcConfiguration config,
-//            ApiServiceResponse response,
-//            [Frozen] Mock<IApiHelper> apiHelper,
+//            UserAccessResponse response,
+//            [Frozen] Mock<IDFESignInAPIClient> apiHelper,
 //            [Frozen] Mock<IOptions<DfEOidcConfiguration>> configuration,
 //            [Frozen] Mock<ICustomServiceRole> customServiceRole)
 //        {
 //            var tokenValidatedContext = ArrangeTokenValidatedContext(userId, organisation, string.Empty);
-//            apiHelper.Setup(x => x.Get<ApiServiceResponse>($"{config.APIServiceUrl}/services/{config.APIServiceId}/organisations/{organisation.Id}/users/{userId}")).ReturnsAsync(response);
+//            apiHelper.Setup(x => x.Get<UserAccessResponse>($"{config.APIServiceUrl}/services/{config.APIServiceId}/organisations/{organisation.Id}/users/{userId}")).ReturnsAsync(response);
 //            configuration.Setup(c => c.Value).Returns(config);
 //            customServiceRole.Setup(role => role.RoleClaimType).Returns(CustomClaimsIdentity.Service);
 //            customServiceRole.Setup(role => role.RoleValueType).Returns(CustomServiceRoleValueType.Name);
@@ -45,19 +46,19 @@
 //            actualClaims?.First(c => c.Type.Equals(CustomClaimsIdentity.DisplayName)).Value.Should().Be("Test Tester");
 //        }
 
-//        [Test, MoqAutoData]
+//        [Fact, MoqAutoData]
 //        public async Task Then_The_Organisations_Are_Added_To_The_Claims(
 //            string userId,
 //            Organisation organisation,
 //            DfEOidcConfiguration config,
-//            ApiServiceResponse response,
-//            [Frozen] Mock<IApiHelper> apiHelper,
+//            UserAccessResponse response,
+//            [Frozen] Mock<IDFESignInAPIClient> apiHelper,
 //            [Frozen] Mock<IOptions<DfEOidcConfiguration>> configuration,
 //            [Frozen] Mock<ICustomServiceRole> customServiceRole)
 //        {
 //            var tokenValidatedContext = ArrangeTokenValidatedContext(userId, organisation, string.Empty);
 //            response.Roles = response.Roles.Select(c => { c.Status.Id = (int)RoleStatus.Active; return c; }).ToList();
-//            apiHelper.Setup(x => x.Get<ApiServiceResponse>($"{config.APIServiceUrl}/services/{config.APIServiceId}/organisations/{organisation.Id}/users/{userId}")).ReturnsAsync(response);
+//            apiHelper.Setup(x => x.Get<UserAccessResponse>($"{config.APIServiceUrl}/services/{config.APIServiceId}/organisations/{organisation.Id}/users/{userId}")).ReturnsAsync(response);
 //            configuration.Setup(c => c.Value).Returns(config);
 //            customServiceRole.Setup(role => role.RoleClaimType).Returns(CustomClaimsIdentity.Service);
 //            customServiceRole.Setup(role => role.RoleValueType).Returns(CustomServiceRoleValueType.Name);
@@ -84,7 +85,7 @@
 //        private static TokenValidatedContext ArrangeTokenValidatedContext(string userId, Organisation organisation, string emailAddress)
 //        {
 //            return new TokenValidatedContext(
-//                new DefaultHttpContext(), 
+//                new DefaultHttpContext(),
 //                new AuthenticationScheme(",", "", typeof(TestAuthHandler)),
 //                new OpenIdConnectOptions(), Mock.Of<ClaimsPrincipal>(),
 //                new AuthenticationProperties())

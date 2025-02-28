@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using SFA.DAS.AODP.Application.Queries.Application.Form;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Web.Areas.Admin.Controllers.FormBuilder;
@@ -358,6 +359,28 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         }
         #endregion
 
+
+        #region Preview
+        [ValidateApplication]
+        [HttpGet]
+        [Route("apply/organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/preview")]
+        public async Task<IActionResult> ApplicationFormPreview(Guid organisationId, Guid applicationId, Guid formVersionId)
+        {
+            try
+            {
+                var query = new GetFormPreviewByIdQuery(applicationId);
+                var response = await Send(query);
+
+                var viewModel = ApplicationFormPreviewViewModel.Map(response, formVersionId, organisationId, applicationId);
+
+                return View(viewModel);
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
+        }
+        #endregion
         private async Task HandleFileUploads(ApplicationPageViewModel viewModel)
         {
             foreach (var question in viewModel.Questions?.Where(q => q.Type == AODP.Models.Forms.QuestionType.File) ?? [])
