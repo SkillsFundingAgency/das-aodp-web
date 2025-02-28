@@ -1,6 +1,6 @@
 ﻿namespace SFA.DAS.AODP.Web.Models.TimelineComponents;
 
-public class TimelineViewModel<T> where T : TimelineItemBase
+public class TimelineViewModel
 {
-    public List<T> Items { get; set; } = new();
+    public IEnumerable<TimelineItemBase> Items { get; set; }
 }

@@ -22,9 +22,9 @@
 
         <!-- Application Event Timeline  -->
         @{
-            var timelineModel = new TimelineViewModel<TimelineItemBase>
+            var timelineModel = new TimelineViewModel
             {
-                Items = Model.Messages.Cast<TimelineItemBase>().ToList()
+                Items = Model.Messages
             };
 
             <div>
