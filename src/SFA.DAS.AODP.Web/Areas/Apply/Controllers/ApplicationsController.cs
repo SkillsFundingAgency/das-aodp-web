@@ -1,9 +1,11 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Queries.Application.Form;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Web.Areas.Admin.Controllers.FormBuilder;
+using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Filters;
 using SFA.DAS.AODP.Web.Models.Application;
@@ -13,6 +15,7 @@ using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
 {
     [Area("Apply")]
+    [Authorize(Policy = PolicyConstants.IsApplyUser)]
     [ValidateOrganisation]
     public class ApplicationsController : ControllerBase
     {
