@@ -6,7 +6,18 @@ namespace SFA.DAS.AODP.Web.Models.Application;
 
 public class ApplicationMessagesViewModel
 {
-    public List<ApplicationMessageViewModel> Messages { get; set; } = new();
+    public Guid OrganisationId { get; set; }
+    public Guid ApplicationId { get; set; }
+    public string? MessageText { get; set; }
+    public string MessageType { get; set; }
+    public List<ApplicationMessageViewModel> TimelineMessages { get; set; } = new();
+    public MessageActions AdditionalActions { get; set; } = new();
+
+    public class MessageActions
+    {
+        public bool Preview { get; set; }
+        public bool Send { get; set; }
+    }
 }
 
 public class ApplicationMessageViewModel : TimelineItemBase

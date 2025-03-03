@@ -10,21 +10,73 @@
     <div class="govuk-grid-column-full">
 
         <govuk-back-link class="govuk-link govuk-task-list__link"
-                         asp-action="ViewApplicationDetails"
-                         asp-controller="Applications">Back</govuk-back-link>
+        asp-action="ViewApplicationDetails"
+        asp-controller="Applications">Back</govuk-back-link>
 
         <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
+        <!-- Success banner -->
+        @if (ViewBag.SuccessBanner != null)
+        {
+
+        }
+
         <h1 class="govuk-heading-l govuk-!-margin-bottom-2">Application messages</h1>
 
+        <div class="govuk-hint">
+            Request for funding
+        </div>
 
         <!-- Message Box and Message Send  -->
+        @if (!Model.AdditionalActions.Preview)
+        {
+            <form asp-controller="ApplicationMessages" asp-action="ApplicationMessages" method="post" enctype="multipart/form-data">
+                @Html.HiddenFor(m => m.OrganisationId)
+                @Html.HiddenFor(m => m.ApplicationId)
+
+                <h1 class="govuk-label-wrapper">
+                    <label class="govuk-label govuk-label--m" for="messageText">Message</label>
+                </h1>
+                <div id="more-detail-hint" class="govuk-hint">
+                    Leave messages, comments and recommendations to other DfE staff members, IfATE, Ofqual or the AO applicant owner.
+                </div>
+
+                <textarea class="govuk-textarea" id="messageText" name="MessageText" rows="5" aria-describedby="more-detail-hint">@Model.MessageText</textarea>
+
+                <div class="govuk-form-group">
+                    <label class="govuk-label" for="messageType">Message type</label>
+                    <select class="govuk-select" id="messageType" name="MessageType" aria-describedby="message-type-hint">
+                        <option value="choose" selected>Choose message type</option>
+                        <option value="RequestInformation">Request Information</option>
+                        <option value="ReplyToInformationRequest">Reply To Information Request</option>
+                    </select>
+                </div>
+
+                <button type="submit" name="AdditionalActions.Preview" value="true" class="govuk-button govuk-button--start">Preview</button>
+
+            </form>
+        }
+        else
+        {
+            <form asp-controller="ApplicationMessages" asp-action="ApplicationMessages" method="post" enctype="multipart/form-data">
+                @Html.HiddenFor(m => m.OrganisationId)
+                @Html.HiddenFor(m => m.ApplicationId)
+                <div class="preview-box">
+                    <h1 class="govuk-label-wrapper">
+                        <label class="govuk-label govuk-label--m" for="messageText">Message</label>
+                    </h1>
+                    <p>@Model.MessageText</p>
+                    <p><strong>Message Type</strong> @Model.MessageType</p>
+                </div>
+                <button type="submit" name="AdditionalActions.Send" value="true" class="govuk-button govuk-button--start">Send message</button>
+            </form>
+        }
 
         <!-- Application Event Timeline  -->
         @{
             var timelineModel = new TimelineViewModel
             {
-                Items = Model.Messages
+                Items = Model.TimelineMessages
             };
 
             <div>

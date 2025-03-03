@@ -16,42 +16,94 @@ public class ApplicationMessagesController : ControllerBase
 
     [HttpGet]
     [Route("apply/organisations/{organisationId}/applications/{applicationId}/messages")]
-    public IActionResult ApplicationMessages()
+    public IActionResult ApplicationMessages(Guid organisationId, Guid applicationId)
     {
         var model = new ApplicationMessagesViewModel
         {
-            Messages = new List<ApplicationMessageViewModel>
-            {
-                new()
-                {
-                    Id = 1,
-                    Text = "Dear Somebody, Please can you give further evidence of the application. Kind Regards, Davidowski",
-                    Status = "MessageSent",
-                    SentAt = DateTime.Now.AddMinutes(-30),
-                    SentByName = "Davidowski",
-                    SentByEmail = "test123@example.com"
-                },
-                new()
-                {
-                    Id = 2,
-                    Text = "Test",
-                    Status = "Awaiting Response From AO",
-                    SentAt = DateTime.Now.AddMinutes(-20),
-                    SentByName = "Admin",
-                    SentByEmail = "admin@example.com"
-                },
-                new()
-                {
-                    Id = 3,
-                    Text = "Test",
-                    Status = "In Review",
-                    SentAt = DateTime.Now.AddMinutes(-10),
-                    SentByName = "AO",
-                    SentByEmail = "ao@example.com"
-                }
-            }
+            OrganisationId = organisationId,
+            ApplicationId = applicationId,
+            TimelineMessages = new List<ApplicationMessageViewModel>
+                    {
+                        new ApplicationMessageViewModel
+                        {
+                            Id = 1,
+                            Text = "Dear Somebody, Please can you give further evidence of the application. Kind Regards, Davidowski",
+                            Status = "MessageSent",
+                            SentAt = DateTime.Now.AddMinutes(-30),
+                            SentByName = "Davidowski",
+                            SentByEmail = "test123@example.com"
+                        },
+                        new ApplicationMessageViewModel
+                        {
+                            Id = 2,
+                            Text = "Test",
+                            Status = "Awaiting Response From AO",
+                            SentAt = DateTime.Now.AddMinutes(-20),
+                            SentByName = "Admin",
+                            SentByEmail = "admin@example.com"
+                        },
+                        new ApplicationMessageViewModel
+                        {
+                            Id = 3,
+                            Text = "Test",
+                            Status = "In Review",
+                            SentAt = DateTime.Now.AddMinutes(-10),
+                            SentByName = "AO",
+                            SentByEmail = "ao@example.com"
+                        }
+                    }
         };
 
+        if (TempData.ContainsKey("PreviewMessage"))
+        {
+            model.MessageText = TempData["PreviewMessage"]?.ToString();
+            model.AdditionalActions.Preview = true;
+        }
+        else
+        {
+            model.AdditionalActions.Preview = false;
+        }
+
+        if (TempData.ContainsKey("SuccessBanner"))
+        {
+            ViewBag.SuccessBanner = TempData["SuccessBanner"];
+        }
+
         return View(model);
+    }
+
+    [HttpPost]
+    [Route("apply/organisations/{organisationId}/applications/{applicationId}/messages")]
+    public async Task<IActionResult> ApplicationMessages([FromForm] CreateApplicationMessageViewModel model)
+    {
+        // todo
+        // 1. error message on empty message
+        // 2. Edit and Cancel button and nav
+        // 3. The actual Message Send
+        // 4. The notification banners
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        try
+        {
+            if (model.AdditionalActions.Preview)
+            {
+                TempData["PreviewMessage"] = model.MessageText;
+            }
+            else if (model.AdditionalActions.Send)
+            {
+                //var messageId = await Send(new CreateApplicationMessageCommand(model.MessageText, model.ApplicationId));
+                TempData["SuccessBanner"] = "Message sent successfully!";
+                TempData.Remove("PreviewMessage");
+            }
+
+            return RedirectToAction(nameof(ApplicationMessages), new { model.OrganisationId, model.ApplicationId });
+        }
+        catch
+        {
+            return View(model);
+        }
     }
 }
