@@ -3,7 +3,7 @@
 }
 
 <div class="govuk-service-navigation"
-     data-module="govuk-service-navigation">
+data-module="govuk-service-navigation">
     <div class="govuk-width-container">
         <div class="govuk-service-navigation__container">
             <nav aria-label="Menu" class="govuk-service-navigation__wrapper">
@@ -12,7 +12,7 @@
                 </button>
                 <ul class="govuk-service-navigation__list" id="navigation">
                     <li class="govuk-service-navigation__item">
-                        <a class="govuk-service-navigation__link" href="#" >
+                        <a asp-area="Review" asp-controller="Qualifications" asp-action="Index" class="govuk-service-navigation__link">
                             <strong class="govuk-service-navigation__active-fallback">Newly Regulated Qualifications</strong>
                         </a>
                     </li>
@@ -273,19 +273,22 @@
                                     <th class="govuk-table__header">Priority / Status</th>
                                 </tr>
                             </thead>
+
                             <tbody class="govuk-table__body">
                                 @foreach (var qualification in Model)
                                 {
                                     <tr class="govuk-table__row">
                                         <td class="govuk-table__cell">@qualification.Reference</td>
-                                        <td class="govuk-table__cell">@qualification.Title</td>
+                                        <td class="govuk-table__cell">
+                                            <a class="govuk-link" asp-area="review" asp-controller="changedqualifications" asp-route-qualificationReference="@qualification.Reference">
+
+                                            @qualification.Title
+                                            </a>
+                                         
+                                            
+                                        </td>
                                         <td class="govuk-table__cell">@qualification.ChangedFieldNames</td>
                                         <td class="govuk-table__cell">@qualification.Status</td>
-                                        <td class="govuk-table__cell">
-                                            <a class="govuk-link" href="@Url.Action("QualificationDetails", "Qualifications", new { area = "Review", qualificationReference = qualification.Reference })">
-                                                View Details
-                                            </a>
-                                        </td>
                                     </tr>
                                 }
                             </tbody>

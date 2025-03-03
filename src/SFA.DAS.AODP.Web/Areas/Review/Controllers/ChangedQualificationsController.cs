@@ -112,7 +112,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 AwardingOrganisation = q.AwardingOrganisation,
                 Reference = q.Reference,
                 Status = q.Status
-            }).ToList();
+            }).ToList().Take(10);
 
             return View(viewModel);
         }
