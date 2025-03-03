@@ -7,5 +7,6 @@
         public string? Reference { get; set; }
         public string? AwardingOrganisation { get; set; }
         public string? Status { get; set; }
+        public string? ChangedFieldNames { get; set; }
     }
 }
