@@ -13,7 +13,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         private readonly ILogger<QualificationsController> _logger;
         private readonly IMediator _mediator;
 
-        public QualificationsController(ILogger<QualificationsController> logger, IMediator mediator)
+        public ChangedQualificationsController(ILogger<QualificationsController> logger, IMediator mediator)
         {
             _logger = logger;
             _mediator = mediator;
@@ -29,7 +29,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
             IActionResult response = validationResult.ProcessedStatus switch
             {
-                "new" => await HandleNewQualifications(),
+                "changed" => await HandleChangedQualifications(),
                 _ => BadRequest(new { message = $"Invalid status: {validationResult.ProcessedStatus}" })
             };
 
@@ -106,9 +106,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
         }
 
-        private async Task<IActionResult> HandleNewQualifications()
+        private async Task<IActionResult> HandleChangedQualifications()
         {
-            var result = await _mediator.Send(new GetNewQualificationsQuery());
+            var result = await _mediator.Send(new GetChangedQualificationsQuery());
 
             if (result == null || !result.Success || result.Value == null)
             {
@@ -116,7 +116,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 return NotFound(new { message = "No new qualifications found" });
             }
 
-            var viewModel = result.Value.NewQualifications.Select(q => new NewQualificationsViewModel
+            var viewModel = result.Value.ChangedQualifications.Select(q => new ChangedQualificationsViewModel
             {
                 Id = q.Id,
                 Title = q.Title,

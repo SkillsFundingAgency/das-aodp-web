@@ -30,6 +30,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             IActionResult response = validationResult.ProcessedStatus switch
             {
                 "new" => await HandleNewQualifications(),
+                "changed" => await HandleChangedQualifications(),
                 _ => BadRequest(new { message = $"Invalid status: {validationResult.ProcessedStatus}" })
             };
 
@@ -117,6 +118,28 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
 
             var viewModel = result.Value.NewQualifications.Select(q => new NewQualificationsViewModel
+            {
+                Id = q.Id,
+                Title = q.Title,
+                AwardingOrganisation = q.AwardingOrganisation,
+                Reference = q.Reference,
+                Status = q.Status
+            }).ToList();
+
+            return View(viewModel);
+        }
+
+        private async Task<IActionResult> HandleChangedQualifications()
+        {
+            var result = await _mediator.Send(new GetChangedQualificationsQuery());
+
+            if (result == null || !result.Success || result.Value == null)
+            {
+                _logger.LogWarning("No changed qualifications found.");
+                return NotFound(new { message = "No changed qualifications found" });
+            }
+
+            var viewModel = result.Value.ChangedQualifications.Select(q => new ChangedQualificationsViewModel
             {
                 Id = q.Id,
                 Title = q.Title,
