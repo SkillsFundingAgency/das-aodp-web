@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Web.Models.Qualifications;
+using System.Collections.Generic;
 using System.Globalization;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
@@ -19,21 +20,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             _mediator = mediator;
         }
 
-        public async Task<IActionResult> Index([FromQuery] string status)
+        public async Task<IActionResult> Index()
         {
-            var validationResult = ProcessAndValidateStatus(status);
-            if (!validationResult.IsValid)
-            {
-                return BadRequest(new { message = validationResult.ErrorMessage });
-            }
-
-            IActionResult response = validationResult.ProcessedStatus switch
-            {
-                "new" => await HandleNewQualifications(),
-                "changed" => await HandleChangedQualifications(),
-                _ => BadRequest(new { message = $"Invalid status: {validationResult.ProcessedStatus}" })
-            };
-
+            var response = await HandleNewQualifications();
             return response;
         }
 
@@ -54,6 +43,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
 
             var viewModel = MapToViewModel(result.Value);
+           
             return View(viewModel);
         }
 
@@ -114,7 +104,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             if (result == null || !result.Success || result.Value == null)
             {
                 _logger.LogWarning("No new qualifications found.");
-                return NotFound(new { message = "No new qualifications found" });
+                return View("NoQualificationsData");
             }
 
             var viewModel = result.Value.NewQualifications.Select(q => new NewQualificationsViewModel
@@ -126,7 +116,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 Status = q.Status
             }).ToList();
 
-            return View(viewModel);
+                return View(viewModel);
         }
 
         private async Task<IActionResult> HandleChangedQualifications()

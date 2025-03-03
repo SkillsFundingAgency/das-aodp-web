@@ -99,14 +99,14 @@ internal class Program
 
     private static void AddRoutes(IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapDefaultControllerRoute();
+
 
         endpoints.MapControllerRoute(name: "ReviewHomeLandingPage",
                                      pattern: "Review/Home/{action=Index}/{id?}",
                                      defaults: new { area = "Review", controller = "Home" });
 
         endpoints.MapControllerRoute(name: "ReviewDefault",
-                                     pattern: "review/{controller=review}/{action=Index}/{id?}",
+                                     pattern: "review/{controller=qualifications}/{action=Index}/{id?}",
                                      defaults:new {area="review"}).
                                      RequireAuthorization(PolicyConstants.IsReviewUser);
 

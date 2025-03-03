@@ -102,7 +102,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             if (result == null || !result.Success || result.Value == null)
             {
                 _logger.LogWarning("No new qualifications found.");
-                return NotFound(new { message = "No new qualifications found" });
+                return View("NoQualificationsData");
             }
 
             var viewModel = result.Value.ChangedQualifications.Select(q => new ChangedQualificationsViewModel

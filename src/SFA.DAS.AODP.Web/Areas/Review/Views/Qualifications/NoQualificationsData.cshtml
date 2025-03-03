@@ -3,7 +3,7 @@
 }
 
 <div class="govuk-service-navigation"
-     data-module="govuk-service-navigation">
+data-module="govuk-service-navigation">
     <div class="govuk-width-container">
         <div class="govuk-service-navigation__container">
             <nav aria-label="Menu" class="govuk-service-navigation__wrapper">
@@ -275,20 +275,9 @@
                                 </tr>
                             </thead>
                             <tbody class="govuk-table__body">
-                                @foreach (var qualification in Model)
-                                {
-                                    <tr class="govuk-table__row">
-                                        <td class="govuk-table__cell">@qualification.Reference</td>
-                                        <td class="govuk-table__cell">@qualification.Title</td>
-                                        <td class="govuk-table__cell">@qualification.AwardingOrganisation</td>
-                                        <td class="govuk-table__cell">@qualification.Status</td>
-                                        <td class="govuk-table__cell">
-                                            <a class="govuk-link" href="@Url.Action("QualificationDetails", "Qualifications", new { area = "Review", qualificationReference = qualification.Reference })">
-                                                View Details
-                                            </a>
-                                        </td>
-                                    </tr>
-                                }
+                              
+                                    <h2>No Data</h2>
+                             
                             </tbody>
                         </table>
                     </div>
