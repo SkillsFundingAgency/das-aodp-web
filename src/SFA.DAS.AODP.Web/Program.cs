@@ -107,7 +107,7 @@ internal class Program
 
         endpoints.MapControllerRoute(name: "ReviewDefault",
                                      pattern: "review/{controller=qualifications}/{action=Index}/{id?}",
-                                     defaults:new {area="review"}).
+                                     defaults: new { area = "review" }).
                                      RequireAuthorization(PolicyConstants.IsReviewUser);
 
         endpoints.MapAreaControllerRoute(name: "AdminHomeLandingPage",
@@ -128,8 +128,11 @@ internal class Program
                                   pattern: "Apply/Home/{action=Index}/{id?}",
                                   defaults: new { area = "Apply", controller = "Home" }).AllowAnonymous();
 
-        endpoints.MapAreaControllerRoute(name: "Apply",
-                                       areaName: "Apply",
-                                       pattern: "{area:exists}/{controller=Apply}/{action=Index}/{id?}").RequireAuthorization(PolicyConstants.IsApplyUser);
+        endpoints.MapControllerRoute(name: "Apply",
+                                       pattern: "Apply/{controller=Apply}/{action=Index}/{id?}",
+                                       defaults: new { area = "Apply" }).
+        RequireAuthorization(PolicyConstants.IsApplyUser);
+        endpoints.MapDefaultControllerRoute();
+
     }
 }
