@@ -19,20 +19,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             _mediator = mediator;
         }
 
-        public async Task<IActionResult> Index([FromQuery] string status)
+        public async Task<IActionResult> Index()
         {
-            var validationResult = ProcessAndValidateStatus(status);
-            if (!validationResult.IsValid)
-            {
-                return BadRequest(new { message = validationResult.ErrorMessage });
-            }
-
-            IActionResult response = validationResult.ProcessedStatus switch
-            {
-                "changed" => await HandleChangedQualifications(),
-                _ => BadRequest(new { message = $"Invalid status: {validationResult.ProcessedStatus}" })
-            };
-
+            var response = await HandleChangedQualifications();
             return response;
         }
 
@@ -149,7 +138,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             };
         }
 
-        private StatusValidationResult ProcessAndValidateStatus(string? status)
+        private StatusValidationResult ProcessAndValidateStatus(string status)
         {
             status = status?.Trim().ToLower();
 
