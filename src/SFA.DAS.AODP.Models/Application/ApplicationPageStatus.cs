@@ -1,4 +1,4 @@
-﻿namespace SFA.DAS.AODP.Models.Forms;
+﻿namespace SFA.DAS.AODP.Models.Application;
 
 public enum ApplicationPageStatus
 {

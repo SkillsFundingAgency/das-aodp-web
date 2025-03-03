@@ -1,4 +1,6 @@
-﻿namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
+﻿using SFA.DAS.AODP.Models.Application;
+
+namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
 {
     public class ApplicationsReviewListViewModel
     {
@@ -7,8 +9,9 @@
         public int CurrentPage { get; set; }
         public int ItemsPerPage { get; set; }
 
-        public string? GeneralSearchFilter { get; set; }
-        public string? AwardingOrganisation { get; set; }
+        public string? ApplicationSearch { get; set; }
+        public string? AwardingOrganisationSearch { get; set; }
+        public List<ApplicationStatus>? StatusSearch { get; set; }
 
         public class Application
         {

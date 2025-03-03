@@ -1,4 +1,5 @@
-﻿@using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
+﻿@using SFA.DAS.AODP.Models.Application
+@using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
 @using SFA.DAS.AODP.Web.Models.GdsComponents
 @model ApplicationsReviewListViewModel
 
@@ -15,10 +16,10 @@
 
     <div class="govuk-grid-row">
         <div class="govuk-form-group govuk-grid-column-one-half">
-            <govuk-input asp-for="@Model.GeneralSearchFilter" input-class="govuk-input--width-30" inputmode="text" spellcheck="false">
+            <govuk-input asp-for="@Model.ApplicationSearch" input-class="govuk-input--width-30" inputmode="text" spellcheck="false">
                 <govuk-input-label is-page-heading="false" class="govuk-label--s">You can search by submission ID, qualification title or QAN</govuk-input-label>
             </govuk-input>
-            <govuk-input asp-for="@Model.AwardingOrganisation" input-class="govuk-input--width-30" inputmode="text" spellcheck="false">
+            <govuk-input asp-for="@Model.AwardingOrganisationSearch" input-class="govuk-input--width-30" inputmode="text" spellcheck="false">
                 <govuk-input-label is-page-heading="false" class="govuk-label--s">Search by Awarding Organisation</govuk-input-label>
             </govuk-input>
         </div>
@@ -29,46 +30,44 @@
                         Status
                     </h1>
                 </legend>
+
+                @{
+                    var statusPerColumn = ApplicationStatusDisplay.Dictionary.Count / 2;
+                    Dictionary<ApplicationStatus, string> statusFirstCol = ApplicationStatusDisplay.Dictionary.Take(statusPerColumn).ToDictionary();
+
+                    Dictionary<ApplicationStatus, string> statusSecondCol = ApplicationStatusDisplay.Dictionary.Skip(statusPerColumn).ToDictionary();
+
+
+                    void RenderCheckBoxes(Dictionary<ApplicationStatus, string> keyValuePairs)
+                    {
+                        @foreach (var kvp in keyValuePairs)
+                        {
+                            <div class="govuk-checkboxes__item">
+                                <input @(Model.StatusSearch?.Contains(@kvp.Key) == true ? "checked" : "")
+                                       class="govuk-checkboxes__input"
+                                       name="StatusSearch"
+                                       type="checkbox"
+                                       id="@kvp.Key"
+                                       value="@kvp.Key">
+                                <label class="govuk-label govuk-checkboxes__label" for="@kvp.Key">
+                                    @kvp.Value
+                                </label>
+                            </div>
+                        }
+                    }
+                }
                 <div class="govuk-checkboxes govuk-checkboxes--small govuk-grid-column-one-half" data-module="govuk-checkboxes">
-                    <div class="govuk-checkboxes__item">
-                        <input class="govuk-checkboxes__input" id="organisation" name="organisation" type="checkbox" value="hmrc">
-                        <label class="govuk-label govuk-checkboxes__label" for="organisation">
-                            New message
-                        </label>
-                    </div>
-                    <div class="govuk-checkboxes__item">
-                        <input class="govuk-checkboxes__input" id="organisation-2" name="organisation" type="checkbox" value="employment-tribunal">
-                        <label class="govuk-label govuk-checkboxes__label" for="organisation-2">
-                            Draft
-                        </label>
-                    </div>
-                    <div class="govuk-checkboxes__item">
-                        <input class="govuk-checkboxes__input" id="organisation-3" name="organisation" type="checkbox" value="MOD">
-                        <label class="govuk-label govuk-checkboxes__label" for="organisation-3">
-                            In review
-                        </label>
-                    </div>
+
+                    @{
+                        RenderCheckBoxes(statusFirstCol);
+                    }
+
                 </div>
 
                 <div class="govuk-checkboxes govuk-checkboxes--small govuk-grid-column-one-half" data-module="govuk-checkboxes">
-                    <div class="govuk-checkboxes__item">
-                        <input class="govuk-checkboxes__input" id="organisation" name="organisation" type="checkbox" value="hmrc">
-                        <label class="govuk-label govuk-checkboxes__label" for="organisation">
-                            New message
-                        </label>
-                    </div>
-                    <div class="govuk-checkboxes__item">
-                        <input class="govuk-checkboxes__input" id="organisation-2" name="organisation" type="checkbox" value="employment-tribunal">
-                        <label class="govuk-label govuk-checkboxes__label" for="organisation-2">
-                            Draft
-                        </label>
-                    </div>
-                    <div class="govuk-checkboxes__item">
-                        <input class="govuk-checkboxes__input" id="organisation-3" name="organisation" type="checkbox" value="MOD">
-                        <label class="govuk-label govuk-checkboxes__label" for="organisation-3">
-                            In review
-                        </label>
-                    </div>
+                    @{
+                        RenderCheckBoxes(statusSecondCol);
+                    }
                 </div>
             </fieldset>
         </div>
@@ -123,12 +122,14 @@
 
     <div class="govuk-grid-column-two-thirds">
         @{
-        await Html.RenderPartialAsync("GdsComponents/_GdsPagination", model);
+            await Html.RenderPartialAsync("GdsComponents/_GdsPagination", model);
         }
     </div>
     <div class="govuk-grid-column-one-third" id="app-pagaination__select-container">
-        <select class="govuk-select" style="min-width: 1rem">
-            <option>1</option>
+        <select class="govuk-select" style="min-width: 2rem">
+            <option>10</option>
+            <option>25</option>
+            <option>50</option>
         </select>
         <p class="govuk-body-m">applications per page</p>
     </div>
