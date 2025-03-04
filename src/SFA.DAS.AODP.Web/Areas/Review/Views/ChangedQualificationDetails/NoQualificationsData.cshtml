@@ -11,14 +11,14 @@ data-module="govuk-service-navigation">
                     Menu
                 </button>
                 <ul class="govuk-service-navigation__list" id="navigation">
-                    <li class="govuk-service-navigation__item">
-                        <a asp-area="Review" asp-controller="Qualifications" asp-action="Index" class="govuk-service-navigation__link">
+                    <li class="govuk-service-navigation__item govuk-service-navigation__item--active">
+                        <a class="govuk-service-navigation__link" href="#" aria-current="true">
                             <strong class="govuk-service-navigation__active-fallback">Newly Regulated Qualifications</strong>
                         </a>
                     </li>
-                    <li class="govuk-service-navigation__item govuk-service-navigation__item--active">
-                        <a class="govuk-service-navigation__link" href="#" aria-current="true">
-                            <strong class="govuk-service-navigation__active-fallback">Qualifications with changes</strong>
+                    <li class="govuk-service-navigation__item">
+                        <a asp-controller="ChangedQualifications" asp-action="Index" class="govuk-service-navigation__link">
+                            Qualifications with changes
                         </a>
                     </li>
                 </ul>
@@ -35,7 +35,7 @@ data-module="govuk-service-navigation">
             <div class="govuk-grid-column-full" id="guide-contents">
                 <div class="govuk-grid-row">
                     <div class="govuk-grid-column-two-thirds">
-                        <h2 class="govuk-heading-l">Qualifications with changes</h2>
+                        <h2 class="govuk-heading-l">New Qualifications</h2>
                     </div>
                     <div class="govuk-grid-column-one-third">
                         <p class="dfe-lede-text--small">Import for this cycle ran: DD/MM/YYYY HH:MM:SS</p>
@@ -102,13 +102,8 @@ data-module="govuk-service-navigation">
                                             </a>
                                         </li>
                                         <li class="govuk-tabs__list-item">
-                                            <a class="govuk-tabs__tab" href="#filter-tabs-changes">
-                                                Changes
-                                            </a>
-                                        </li>
-                                        <li class="govuk-tabs__list-item">
-                                            <a class="govuk-tabs__tab" href="#filter-tabs-priorityandstatus">
-                                                Priority & Status
+                                            <a class="govuk-tabs__tab" href="#filter-tabs-status">
+                                                Status
                                             </a>
                                         </li>
                                     </ul>
@@ -258,9 +253,6 @@ data-module="govuk-service-navigation">
                                         Search
                                     </a>
                                 </div>
-                                <p>
-                                <a href="#">Clear Search</a>
-                                </p>
                             </div>
                         </div>
                     </div>
@@ -275,30 +267,17 @@ data-module="govuk-service-navigation">
                         <table class="govuk-table">
                             <thead class="govuk-table__head">
                                 <tr class="govuk-table__row">
-                                    <th class="govuk-table__header">QAN</th>
+                                    <th class="govuk-table__header">Reference</th>
                                     <th class="govuk-table__header">Qualification Title</th>
-                                    <th class="govuk-table__header">Changes</th>
-                                    <th class="govuk-table__header">Priority / Status</th>
+                                    <th class="govuk-table__header">Awarding Organisation</th>
+                                    <th class="govuk-table__header">Status</th>
+                                    <th class="govuk-table__header">Actions</th>
                                 </tr>
                             </thead>
-
                             <tbody class="govuk-table__body">
-                                @foreach (var qualification in Model)
-                                {
-                                    <tr class="govuk-table__row">
-                                        <td class="govuk-table__cell">@qualification.Reference</td>
-                                        <td class="govuk-table__cell">
-                                            <a class="govuk-link" asp-area="review" asp-controller="changedqualificationdetails" asp-route-qualificationReference="@qualification.Reference">
-
-                                            @qualification.Title
-                                            </a>
-                                         
-                                            
-                                        </td>
-                                        <td class="govuk-table__cell">@qualification.ChangedFieldNames</td>
-                                        <td class="govuk-table__cell">@qualification.Status</td>
-                                    </tr>
-                                }
+                              
+                                    <h2>No Data</h2>
+                             
                             </tbody>
                         </table>
                     </div>

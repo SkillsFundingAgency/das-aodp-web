@@ -1,5 +1,5 @@
 ﻿@{
-    ViewData["Title"] = "Changed Qualifications";
+    ViewData["Title"] = "Changed Qualification Details";
 }
 
 <div class="govuk-service-navigation"
@@ -35,7 +35,7 @@ data-module="govuk-service-navigation">
             <div class="govuk-grid-column-full" id="guide-contents">
                 <div class="govuk-grid-row">
                     <div class="govuk-grid-column-two-thirds">
-                        <h2 class="govuk-heading-l">Qualifications with changes</h2>
+                        <h2 class="govuk-heading-l">Qualification Details</h2>
                     </div>
                     <div class="govuk-grid-column-one-third">
                         <p class="dfe-lede-text--small">Import for this cycle ran: DD/MM/YYYY HH:MM:SS</p>
@@ -49,70 +49,25 @@ data-module="govuk-service-navigation">
                             </div>
                         </div>
                         <div class="govuk-grid-row">
-                            <div class="govuk-grid-column-one-quarter">
-                                <div class="govuk-form-group">
-                                    <h5 class="govuk-label-wrapper">
-                                        <label class="govuk-label govuk-label--s" for="filter-qual-name">
-                                            Qualification Name
-                                        </label>
-                                    </h5>
-                                    <input class="govuk-input" id="filter-qual-name" name="filter-qual-name" type="text">
-                                </div>
-                                <div class="govuk-form-group">
-                                    <h5 class="govuk-label-wrapper">
-                                        <label class="govuk-label govuk-label--s" for="filter-qan">
-                                            QAN
-                                        </label>
-                                    </h5>
-                                    <input class="govuk-input" id="filter-qan" name="filter-qan" type="text">
-                                </div>
-                                <div class="govuk-form-group">
-                                    <h5 class="govuk-label-wrapper">
-                                        <label class="govuk-label govuk-label--s" for="filter-ao">
-                                            Awarding Organisation
-                                        </label>
-                                    </h5>
-                                    <input class="govuk-input" id="filter-ao" name="filter-ao" type="text">
-                                </div>
-                            </div>
-                            <div class="govuk-grid-column-three-quarters">
+                   
+                            <div class="govuk-grid-column-one-third">
                                 <div class="govuk-tabs" data-module="govuk-tabs">
                                     <h5 class="govuk-tabs__title">
                                         Filter Options
                                     </h5>
                                     <ul class="govuk-tabs__list">
                                         <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
-                                            <a class="govuk-tabs__tab" href="#filter-tabs-type">
-                                                Type
+                                            <a class="govuk-tabs__tab" href="#filter-tabs-details">
+                                                Details
                                             </a>
                                         </li>
                                         <li class="govuk-tabs__list-item">
-                                            <a class="govuk-tabs__tab" href="#filter-tabs-subject-area">
-                                                Sector Subject Area
-                                            </a>
-                                        </li>
-                                        <li class="govuk-tabs__list-item">
-                                            <a class="govuk-tabs__tab" href="#filter-tabs-age">
-                                                Age Group
-                                            </a>
-                                        </li>
-                                        <li class="govuk-tabs__list-item">
-                                            <a class="govuk-tabs__tab" href="#filter-tabs-level">
-                                                Level
-                                            </a>
-                                        </li>
-                                        <li class="govuk-tabs__list-item">
-                                            <a class="govuk-tabs__tab" href="#filter-tabs-changes">
-                                                Changes
-                                            </a>
-                                        </li>
-                                        <li class="govuk-tabs__list-item">
-                                            <a class="govuk-tabs__tab" href="#filter-tabs-priorityandstatus">
-                                                Priority & Status
+                                            <a class="govuk-tabs__tab" href="#filter-tabs-subject-History">
+                                                History
                                             </a>
                                         </li>
                                     </ul>
-                                    <div class="govuk-tabs__panel" id="filter-tabs-type">
+                                    <div class="govuk-tabs__panel" id="filter-tabs-details">
                                         <div class="govuk-grid-row">
                                             <div class="govuk-grid-column-one-third">
                                                 <div class="govuk-form-group">
@@ -283,22 +238,7 @@ data-module="govuk-service-navigation">
                             </thead>
 
                             <tbody class="govuk-table__body">
-                                @foreach (var qualification in Model)
-                                {
-                                    <tr class="govuk-table__row">
-                                        <td class="govuk-table__cell">@qualification.Reference</td>
-                                        <td class="govuk-table__cell">
-                                            <a class="govuk-link" asp-area="review" asp-controller="changedqualificationdetails" asp-route-qualificationReference="@qualification.Reference">
-
-                                            @qualification.Title
-                                            </a>
-                                         
-                                            
-                                        </td>
-                                        <td class="govuk-table__cell">@qualification.ChangedFieldNames</td>
-                                        <td class="govuk-table__cell">@qualification.Status</td>
-                                    </tr>
-                                }
+                       
                             </tbody>
                         </table>
                     </div>
