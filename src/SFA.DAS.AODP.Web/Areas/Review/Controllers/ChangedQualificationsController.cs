@@ -97,23 +97,35 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
         private async Task<IActionResult> HandleChangedQualifications()
         {
-            var result = await _mediator.Send(new GetChangedQualificationsQuery());
+            //var result = await _mediator.Send(new GetChangedQualificationsQuery());
 
-            if (result == null || !result.Success || result.Value == null)
-            {
-                _logger.LogWarning("No new qualifications found.");
-                return View("NoQualificationsData");
-            }
+            //if (result == null || !result.Success || result.Value == null)
+            //{
+            //    _logger.LogWarning("No new qualifications found.");
+            //    return View("NoQualificationsData");
+            //}
 
-            var viewModel = result.Value.ChangedQualifications.Select(q => new ChangedQualificationsViewModel
-            {
-                Id = q.Id,
-                Title = q.Title,
-                AwardingOrganisation = q.AwardingOrganisation,
-                Reference = q.Reference,
-                Status = q.Status
-            }).ToList().Take(10);
+            //var viewModel = result.Value.ChangedQualifications.Select(q => new ChangedQualificationsViewModel
+            //{
+            //    Id = q.Id,
+            //    Title = q.Title,
+            //    AwardingOrganisation = q.AwardingOrganisation,
+            //    Reference = q.Reference,
+            //    Status = q.Status
+            //}).ToList().Take(10);
 
+            var viewModel = new List<ChangedQualificationsViewModel>(){
+                new ChangedQualificationsViewModel{AwardingOrganisation="Award A",ChangedFieldNames="Name,Age",Reference="1/4/2",Title="Maths",Status="Changed"},
+                 new ChangedQualificationsViewModel{AwardingOrganisation="Award b",ChangedFieldNames="Gender,Tile",Reference="2/42/2",Title="English",Status="Changed"},
+                  new ChangedQualificationsViewModel{AwardingOrganisation="Award c",ChangedFieldNames="School,Address,MR",Reference="1/1/2",Title="French",Status="Changed"},
+                   new ChangedQualificationsViewModel{AwardingOrganisation="Award d",ChangedFieldNames="Postcode,DOB",Reference="5/42/2",Title="Geography",Status="Changed"},
+                    new ChangedQualificationsViewModel{AwardingOrganisation="Award e",ChangedFieldNames="City,Age",Reference="1/4242",Title="Social Economics",Status="Changed"},
+                     new ChangedQualificationsViewModel{AwardingOrganisation="Award f",ChangedFieldNames="School,Namee",Reference="1/42/2",Title="Science",Status="Changed"},
+                      new ChangedQualificationsViewModel{AwardingOrganisation="Award g",ChangedFieldNames="Title,Age",Reference="1/2/2",Title="Physics",Status="Changed"},
+                       new ChangedQualificationsViewModel{AwardingOrganisation="Award h",ChangedFieldNames="Gender,LastKnown",Reference="1/42/2",Title="Something",Status="Changed"},
+                        new ChangedQualificationsViewModel{AwardingOrganisation="Award i",ChangedFieldNames="Name,Age",Reference="5/8/2",Title="Anything",Status="Changed"},
+                         new ChangedQualificationsViewModel{AwardingOrganisation="Award j",ChangedFieldNames="Title,Name",Reference="1342/2",Title="Literature",Status="Changed"}
+            };
             return View(viewModel);
         }
 
