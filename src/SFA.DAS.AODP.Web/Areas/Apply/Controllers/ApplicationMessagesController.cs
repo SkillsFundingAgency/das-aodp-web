@@ -54,7 +54,13 @@ public class ApplicationMessagesController : ControllerBase
                     }
         };
 
-        if (TempData.ContainsKey("PreviewMessage"))
+        if (TempData.ContainsKey("EditMessage"))
+        {
+            model.MessageText = TempData.Peek("EditMessage")?.ToString();
+            model.MessageType = TempData.Peek("EditMessageType")?.ToString();
+            model.AdditionalActions.Preview = false;
+        }
+        else if (TempData.ContainsKey("PreviewMessage"))
         {
             model.MessageText = TempData["PreviewMessage"]?.ToString();
             model.MessageType = TempData["PreviewMessageType"]?.ToString();
@@ -81,22 +87,35 @@ public class ApplicationMessagesController : ControllerBase
         {
             model.AdditionalActions.Preview = false;
             model.AdditionalActions.Send = false;
+            model.AdditionalActions.Edit = false;
             TempData.Remove("PreviewMessage");
+            TempData.Remove("PreviewMessageType");
+            TempData.Remove("EditMessage");
             return View(model);
         }
 
         try
         {
-            if (model.AdditionalActions.Preview)
+            switch (true)
             {
-                TempData["PreviewMessage"] = model.MessageText;
-                TempData["PreviewMessageType"] = model.MessageType;
-            }
-            else if (model.AdditionalActions.Send)
-            {
-                //var messageId = await Send(new CreateApplicationMessageCommand(model.MessageText, model.ApplicationId));
-                TempData["SuccessBanner"] = "Message sent successfully!";
-                TempData.Remove("PreviewMessage");
+                case var _ when model.AdditionalActions.Preview:
+                    TempData["PreviewMessage"] = model.MessageText;
+                    TempData["PreviewMessageType"] = model.MessageType;
+                    TempData.Remove("EditMessage");
+                    break;
+
+                case var _ when model.AdditionalActions.Send:
+                    // var messageId = await Send(new CreateApplicationMessageCommand(model.MessageText, model.ApplicationId));
+                    TempData["SuccessBanner"] = "Message sent successfully!";
+                    TempData.Remove("PreviewMessage");
+                    TempData.Remove("PreviewMessageType");
+                    TempData.Remove("EditMessage");
+                    break;
+
+                case var _ when model.AdditionalActions.Edit:
+                    TempData["EditMessage"] = model.MessageText;
+                    TempData["EditMessageType"] = model.MessageType;
+                    break;
             }
 
             return RedirectToAction(nameof(ApplicationMessages), new { model.OrganisationId, model.ApplicationId });

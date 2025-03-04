@@ -107,6 +107,8 @@
             <form asp-controller="ApplicationMessages" asp-action="ApplicationMessages" method="post" enctype="multipart/form-data">
                 @Html.HiddenFor(m => m.OrganisationId)
                 @Html.HiddenFor(m => m.ApplicationId)
+                @Html.HiddenFor(m => m.MessageText)
+                @Html.HiddenFor(m => m.MessageType)
 
                 <table class="govuk-table" style="width:100%;">
                     <colgroup>
@@ -128,13 +130,9 @@
                 <div class="govuk-grid-row">
                     <div class="govuk-grid-column-three-quarters">
                         <button type="submit" name="AdditionalActions.Send" value="true" class="govuk-button">Send message</button>
-                        <a class="govuk-button govuk-button--secondary"
-                           asp-action="ApplicationMessages"
-                           asp-controller="ApplicationMessages"
-                           asp-route-organisationId="@Model.OrganisationId"
-                           asp-route-applicationId="@Model.ApplicationId">
+                        <button type="submit" name="AdditionalActions.Edit" value="true" class="govuk-button govuk-button--secondary">
                             Edit
-                        </a>
+                        </button>
                     </div>
                     <div class="govuk-grid-column-one-quarter govuk-!-text-align-right">
                         <a class="govuk-button govuk-button--secondary"
