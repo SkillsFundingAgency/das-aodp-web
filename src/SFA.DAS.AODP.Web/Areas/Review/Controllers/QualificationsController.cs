@@ -19,23 +19,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             _mediator = mediator;
         }
 
-        public async Task<IActionResult> Index([FromQuery] string status)
-        {
-            var validationResult = ProcessAndValidateStatus(status);
-            if (!validationResult.IsValid)
-            {
-                return BadRequest(new { message = validationResult.ErrorMessage });
-            }
-
-            IActionResult response = validationResult.ProcessedStatus switch
-            {
-                "new" => await HandleNewQualifications(),
-                _ => BadRequest(new { message = $"Invalid status: {validationResult.ProcessedStatus}" })
-            };
-
-            return response;
-        }
-
         public async Task<IActionResult> QualificationDetails([FromRoute] string qualificationReference)
         {
             if (string.IsNullOrWhiteSpace(qualificationReference))
@@ -104,28 +87,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 csv.WriteRecords(qualifications);
                 return writer.ToString();
             }
-        }
-
-        private async Task<IActionResult> HandleNewQualifications()
-        {
-            var result = await _mediator.Send(new GetNewQualificationsQuery());
-
-            if (result == null || !result.Success || result.Value == null)
-            {
-                _logger.LogWarning("No new qualifications found.");
-                return NotFound(new { message = "No new qualifications found" });
-            }
-
-            var viewModel = result.Value.NewQualifications.Select(q => new NewQualificationsViewModel
-            {
-                Id = q.Id,
-                Title = q.Title,
-                AwardingOrganisation = q.AwardingOrganisation,
-                Reference = q.Reference,
-                Status = q.Status
-            }).ToList();
-
-            return View(viewModel);
         }
 
         private async Task<CsvExportResult> HandleNewQualificationCSVExport()

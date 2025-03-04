@@ -106,7 +106,7 @@ internal class Program
                                      defaults: new { area = "Review", controller = "Home" });
 
         endpoints.MapControllerRoute(name: "ReviewDefault",
-                                     pattern: "review/{controller=review}/{action=Index}/{id?}",
+                                     pattern: "review/{controller=home}/{action=Index}/{id?}",
                                      defaults:new {area="review"}).
                                      RequireAuthorization(PolicyConstants.IsReviewUser);
 
