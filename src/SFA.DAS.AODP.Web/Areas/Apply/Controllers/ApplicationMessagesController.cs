@@ -1,7 +1,9 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Filters;
 using SFA.DAS.AODP.Web.Models.Application;
+using static SFA.DAS.AODP.Web.Areas.Admin.Controllers.FormBuilder.FormsController;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers;
@@ -10,6 +12,8 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers;
 [ValidateOrganisation]
 public class ApplicationMessagesController : ControllerBase
 {
+    public enum NotificationKeys { MessageSentBanner, MessageVisibilityBanner }
+
     public ApplicationMessagesController(IMediator mediator, ILogger<ApplicationMessagesController> logger) : base(mediator, logger)
     {
     }
@@ -71,10 +75,12 @@ public class ApplicationMessagesController : ControllerBase
             model.AdditionalActions.Preview = false;
         }
 
-        if (TempData.ContainsKey("SuccessBanner"))
-        {
-            ViewBag.SuccessBanner = TempData["SuccessBanner"];
-        }
+        ShowNotificationIfKeyExists(NotificationKeys.MessageSentBanner.ToString(), ViewNotificationMessageType.Success, "Your message has been sent");
+
+        //if (TempData.ContainsKey("SuccessBanner"))
+        //{
+        //    ViewBag.SuccessBanner = TempData["SuccessBanner"];
+        //}
 
         return View(model);
     }
@@ -106,7 +112,7 @@ public class ApplicationMessagesController : ControllerBase
 
                 case var _ when model.AdditionalActions.Send:
                     // var messageId = await Send(new CreateApplicationMessageCommand(model.MessageText, model.ApplicationId));
-                    TempData["SuccessBanner"] = "Message sent successfully!";
+                    TempData[NotificationKeys.MessageSentBanner.ToString()] = "Your message has been sent";
                     TempData.Remove("PreviewMessage");
                     TempData.Remove("PreviewMessageType");
                     TempData.Remove("EditMessage");

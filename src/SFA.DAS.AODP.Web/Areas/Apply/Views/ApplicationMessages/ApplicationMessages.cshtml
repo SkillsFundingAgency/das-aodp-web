@@ -15,10 +15,20 @@
 
         <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
-        <!-- Success banner -->
-        @if (ViewBag.SuccessBanner != null)
+        @if (Model.AdditionalActions.Preview)
         {
-
+            <div class="govuk-notification-banner" role="banner" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+                <div class="govuk-notification-banner__header">
+                    <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+                        Important
+                    </h2>
+                </div>
+                <div class="govuk-notification-banner__content">
+                    <p class="govuk-notification-banner__heading">
+                        This message will be visible to the Awarding Organisation
+                    </p>
+                </div>
+            </div>
         }
 
         <h1 class="govuk-heading-l govuk-!-margin-bottom-2">Application messages</h1>
@@ -92,9 +102,9 @@
                             id="messageType" 
                             name="MessageType" 
                             aria-describedby="@(ViewData.ModelState["MessageType"]?.Errors.Count > 0 ? "messageType-error" : "message-type-hint")">
-                        <option value="" selected>Choose message type</option>
-                        <option value="RequestInformation">Request Information</option>
-                        <option value="ReplyToInformationRequest">Reply To Information Request</option>
+                            <option value="" @(string.IsNullOrEmpty(Model.MessageType) ? "selected" : "")>Choose message type</option>
+                            <option value="RequestInformation" @(Model.MessageType == "RequestInformation" ? "selected" : "")>Request Information</option>
+                            <option value="ReplyToInformationRequest" @(Model.MessageType == "ReplyToInformationRequest" ? "selected" : "")>Reply To Information Request</option>
                     </select>
                 </div>
 
