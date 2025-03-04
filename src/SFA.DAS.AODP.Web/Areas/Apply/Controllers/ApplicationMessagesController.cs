@@ -57,6 +57,7 @@ public class ApplicationMessagesController : ControllerBase
         if (TempData.ContainsKey("PreviewMessage"))
         {
             model.MessageText = TempData["PreviewMessage"]?.ToString();
+            model.MessageType = TempData["PreviewMessageType"]?.ToString();
             model.AdditionalActions.Preview = true;
         }
         else
@@ -74,15 +75,13 @@ public class ApplicationMessagesController : ControllerBase
 
     [HttpPost]
     [Route("apply/organisations/{organisationId}/applications/{applicationId}/messages")]
-    public async Task<IActionResult> ApplicationMessages([FromForm] CreateApplicationMessageViewModel model)
+    public async Task<IActionResult> ApplicationMessages([FromForm] ApplicationMessagesViewModel model)
     {
-        // todo
-        // 1. error message on empty message
-        // 2. Edit and Cancel button and nav
-        // 3. The actual Message Send
-        // 4. The notification banners
         if (!ModelState.IsValid)
         {
+            model.AdditionalActions.Preview = false;
+            model.AdditionalActions.Send = false;
+            TempData.Remove("PreviewMessage");
             return View(model);
         }
 
@@ -91,6 +90,7 @@ public class ApplicationMessagesController : ControllerBase
             if (model.AdditionalActions.Preview)
             {
                 TempData["PreviewMessage"] = model.MessageText;
+                TempData["PreviewMessageType"] = model.MessageType;
             }
             else if (model.AdditionalActions.Send)
             {

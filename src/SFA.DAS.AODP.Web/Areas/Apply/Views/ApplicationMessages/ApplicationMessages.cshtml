@@ -7,7 +7,7 @@
 }
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-full">
+    <div class="govuk-grid-column-two-thirds">
 
         <govuk-back-link class="govuk-link govuk-task-list__link"
         asp-action="ViewApplicationDetails"
@@ -27,6 +27,31 @@
             Request for funding
         </div>
 
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="govuk-error-summary" data-module="govuk-error-summary">
+                <div role="alert">
+                    <h2 class="govuk-error-summary__title">There is a problem</h2>
+                    <div class="govuk-error-summary__body">
+                        <ul class="govuk-list govuk-error-summary__list">
+                            @if (ViewData.ModelState["MessageText"]?.Errors.Count > 0)
+                            {
+                                <li>
+                                    <a>Your message cannot be empty</a>
+                                </li>
+                            }
+                            @if (ViewData.ModelState["MessageType"]?.Errors.Count > 0)
+                            {
+                                <li>
+                                    <a>You must select a message type</a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        }
+
         <!-- Message Box and Message Send  -->
         @if (!Model.AdditionalActions.Preview)
         {
@@ -41,18 +66,39 @@
                     Leave messages, comments and recommendations to other DfE staff members, IfATE, Ofqual or the AO applicant owner.
                 </div>
 
-                <textarea class="govuk-textarea" id="messageText" name="MessageText" rows="5" aria-describedby="more-detail-hint">@Model.MessageText</textarea>
+                 <div class="govuk-form-group @(ViewData.ModelState["MessageText"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+                    <textarea class="govuk-textarea @(ViewData.ModelState["MessageText"]?.Errors.Count > 0 ? "govuk-textarea--error" : "")" 
+                              id="messageText" 
+                              name="MessageText" 
+                              rows="5" 
+                              aria-describedby="@(ViewData.ModelState["MessageText"]?.Errors.Count > 0 ? "messageText-error" : "more-detail-hint")">@Model.MessageText</textarea>
+                    @if (ViewData.ModelState["MessageText"]?.Errors.Count > 0)
+                    {
+                        <p id="messageText-error" class="govuk-error-message">
+                            <span class="govuk-visually-hidden">Error:</span> Type a message
+                        </p>
+                    }
+                </div>
 
-                <div class="govuk-form-group">
+                <div class="govuk-form-group @(ViewData.ModelState["MessageType"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
                     <label class="govuk-label" for="messageType">Message type</label>
-                    <select class="govuk-select" id="messageType" name="MessageType" aria-describedby="message-type-hint">
-                        <option value="choose" selected>Choose message type</option>
+                    @if (ViewData.ModelState["MessageType"]?.Errors.Count > 0)
+                    {
+                        <p id="messageType-error" class="govuk-error-message">
+                            <span class="govuk-visually-hidden">Error:</span> Select a message type
+                        </p>
+                    }
+                    <select class="govuk-select @(ViewData.ModelState["MessageType"]?.Errors.Count > 0 ? "govuk-select--error" : "")" 
+                            id="messageType" 
+                            name="MessageType" 
+                            aria-describedby="@(ViewData.ModelState["MessageType"]?.Errors.Count > 0 ? "messageType-error" : "message-type-hint")">
+                        <option value="" selected>Choose message type</option>
                         <option value="RequestInformation">Request Information</option>
                         <option value="ReplyToInformationRequest">Reply To Information Request</option>
                     </select>
                 </div>
 
-                <button type="submit" name="AdditionalActions.Preview" value="true" class="govuk-button govuk-button--start">Preview</button>
+                <button type="submit" name="AdditionalActions.Preview" value="true" class="govuk-button">Preview</button>
 
             </form>
         }
@@ -61,14 +107,46 @@
             <form asp-controller="ApplicationMessages" asp-action="ApplicationMessages" method="post" enctype="multipart/form-data">
                 @Html.HiddenFor(m => m.OrganisationId)
                 @Html.HiddenFor(m => m.ApplicationId)
-                <div class="preview-box">
-                    <h1 class="govuk-label-wrapper">
-                        <label class="govuk-label govuk-label--m" for="messageText">Message</label>
-                    </h1>
-                    <p>@Model.MessageText</p>
-                    <p><strong>Message Type</strong> @Model.MessageType</p>
+
+                <table class="govuk-table" style="width:100%;">
+                    <colgroup>
+                        <col style="width:33.33%;">
+                        <col style="width:66.67%;">
+                    </colgroup>
+                    <tbody class="govuk-table__body">
+                        <tr class="govuk-table__row">
+                            <th scope="row" class="govuk-table__header">Message</th>
+                            <td class="govuk-table__cell">@Model.MessageText</td>
+                        </tr>
+                        <tr class="govuk-table__row">
+                            <th scope="row" class="govuk-table__header">Message type</th>
+                            <td class="govuk-table__cell">@Model.MessageTypeDisplay</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="govuk-grid-row">
+                    <div class="govuk-grid-column-three-quarters">
+                        <button type="submit" name="AdditionalActions.Send" value="true" class="govuk-button">Send message</button>
+                        <a class="govuk-button govuk-button--secondary"
+                           asp-action="ApplicationMessages"
+                           asp-controller="ApplicationMessages"
+                           asp-route-organisationId="@Model.OrganisationId"
+                           asp-route-applicationId="@Model.ApplicationId">
+                            Edit
+                        </a>
+                    </div>
+                    <div class="govuk-grid-column-one-quarter govuk-!-text-align-right">
+                        <a class="govuk-button govuk-button--secondary"
+                           asp-action="ApplicationMessages"
+                           asp-controller="ApplicationMessages"
+                           asp-route-organisationId="@Model.OrganisationId"
+                           asp-route-applicationId="@Model.ApplicationId">
+                            Cancel
+                        </a>
+                    </div>
                 </div>
-                <button type="submit" name="AdditionalActions.Send" value="true" class="govuk-button govuk-button--start">Send message</button>
+
             </form>
         }
 
@@ -85,5 +163,9 @@
         }
 
 
+    </div>
+
+    <div class="govuk-grid-column-one-third">
+        <h5 class="govuk-heading-m govuk-!-margin-bottom-2">Related links</h5>
     </div>
 </div>
