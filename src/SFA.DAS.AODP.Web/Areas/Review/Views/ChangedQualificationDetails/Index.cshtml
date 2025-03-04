@@ -2,30 +2,7 @@
     ViewData["Title"] = "Changed Qualification Details";
 }
 
-<div class="govuk-service-navigation"
-data-module="govuk-service-navigation">
-    <div class="govuk-width-container">
-        <div class="govuk-service-navigation__container">
-            <nav aria-label="Menu" class="govuk-service-navigation__wrapper">
-                <button type="button" class="govuk-service-navigation__toggle govuk-js-service-navigation-toggle" aria-controls="navigation" hidden>
-                    Menu
-                </button>
-                <ul class="govuk-service-navigation__list" id="navigation">
-                    <li class="govuk-service-navigation__item">
-                        <a asp-area="Review" asp-controller="Qualifications" asp-action="Index" class="govuk-service-navigation__link">
-                            <strong class="govuk-service-navigation__active-fallback">Newly Regulated Qualifications</strong>
-                        </a>
-                    </li>
-                    <li class="govuk-service-navigation__item govuk-service-navigation__item--active">
-                        <a class="govuk-service-navigation__link" href="#" aria-current="true">
-                            <strong class="govuk-service-navigation__active-fallback">Qualifications with changes</strong>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-        </div>
-    </div>
-</div>
+
 
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
@@ -37,17 +14,11 @@ data-module="govuk-service-navigation">
                     <div class="govuk-grid-column-two-thirds">
                         <h2 class="govuk-heading-l">Qualification Details</h2>
                     </div>
-                    <div class="govuk-grid-column-one-third">
-                        <p class="dfe-lede-text--small">Import for this cycle ran: DD/MM/YYYY HH:MM:SS</p>
-                    </div>
+               
                 </div>
                 <div class="govuk-grid-row" id="New_Qual_FilterSection">
                     <div class="govuk-grid-column-full">
-                        <div class="govuk-grid-row">
-                            <div class="govuk-grid-column-full">
-                                <h3 class="govuk-heading-m">Filters</h3>
-                            </div>
-                        </div>
+              
                         <div class="govuk-grid-row">
                    
                             <div class="govuk-grid-column-one-third">
@@ -72,132 +43,21 @@ data-module="govuk-service-navigation">
                                             <div class="govuk-grid-column-one-third">
                                                 <div class="govuk-form-group">
                                                     <fieldset class="govuk-fieldset">
-                                                        <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-1" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-1">
-                                                                    Advanced Extension Award
-                                                                </label>
-                                                            </div>
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-2" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-2">
-                                                                    Alternative Academic Qualification
-                                                                </label>
-                                                            </div>
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-3" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-3">
-                                                                    Digital Functional Skills Qualification
-                                                                </label>
-                                                            </div>
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-4" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-4">
-                                                                    English For Speakers of Other Languages
-                                                                </label>
-                                                            </div>
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-5" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-5">
-                                                                    Essential Digital Skills
-                                                                </label>
-                                                            </div>
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-6" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-6">
-                                                                    Functional Skills
-                                                                </label>
-                                                            </div>
-                                                        </div>
+                                                    
                                                     </fieldset>
                                                 </div>
                                             </div>
                                             <div class="govuk-grid-column-one-third">
                                                 <div class="govuk-form-group">
                                                     <fieldset class="govuk-fieldset">
-                                                        <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-1" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-1">
-                                                                    Advanced Extension Award
-                                                                </label>
-                                                            </div>
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-2" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-2">
-                                                                    Alternative Academic Qualification
-                                                                </label>
-                                                            </div>
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-3" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-3">
-                                                                    Digital Functional Skills Qualification
-                                                                </label>
-                                                            </div>
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-4" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-4">
-                                                                    English For Speakers of Other Languages
-                                                                </label>
-                                                            </div>
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-5" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-5">
-                                                                    Essential Digital Skills
-                                                                </label>
-                                                            </div>
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-6" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-6">
-                                                                    Functional Skills
-                                                                </label>
-                                                            </div>
-                                                        </div>
+                                                       
                                                     </fieldset>
                                                 </div>
                                             </div>
                                             <div class="govuk-grid-column-one-third">
                                                 <div class="govuk-form-group">
                                                     <fieldset class="govuk-fieldset">
-                                                        <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-1" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-1">
-                                                                    Advanced Extension Award
-                                                                </label>
-                                                            </div>
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-2" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-2">
-                                                                    Alternative Academic Qualification
-                                                                </label>
-                                                            </div>
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-3" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-3">
-                                                                    Digital Functional Skills Qualification
-                                                                </label>
-                                                            </div>
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-4" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-4">
-                                                                    English For Speakers of Other Languages
-                                                                </label>
-                                                            </div>
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-5" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-5">
-                                                                    Essential Digital Skills
-                                                                </label>
-                                                            </div>
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-6" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-6">
-                                                                    Functional Skills
-                                                                </label>
-                                                            </div>
-                                                        </div>
+                                                        
                                                     </fieldset>
                                                 </div>
                                             </div>
@@ -210,7 +70,7 @@ data-module="govuk-service-navigation">
                             <div class="govuk-grid-column-full">
                                 <div class="govuk-button-group">
                                     <a class="govuk-button">
-                                        Search
+                                        Submit
                                     </a>
                                 </div>
                                 <p>
@@ -220,72 +80,7 @@ data-module="govuk-service-navigation">
                         </div>
                     </div>
                 </div>
-                <div class="govuk-grid-row" id="New_Qual_Pagination_Header_Section">
-                    <div class="govuk-grid-column-full">
-                        <p class="">Viewing 1 - 10 of 134 Qualifications</p>
-                    </div>
-                </div>
-                <div class="govuk-grid-row" id="New_Qual_Data_Section">
-                    <div class="govuk-grid-column-full">
-                        <table class="govuk-table">
-                            <thead class="govuk-table__head">
-                                <tr class="govuk-table__row">
-                                    <th class="govuk-table__header">QAN</th>
-                                    <th class="govuk-table__header">Qualification Title</th>
-                                    <th class="govuk-table__header">Changes</th>
-                                    <th class="govuk-table__header">Priority / Status</th>
-                                </tr>
-                            </thead>
-
-                            <tbody class="govuk-table__body">
-                       
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="govuk-grid-row" id="NNew_Qual_Pagination_Footer_Section">
-                        <div class="govuk-grid-column-full">
-                            <nav class="govuk-pagination" aria-label="Pagination">
-                                <div class="govuk-pagination__prev">
-                                    <a class="govuk-link govuk-pagination__link" href="#" rel="prev">
-                                        <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
-                                            <path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z"></path>
-                                        </svg>
-                                        <span class="govuk-pagination__link-title">
-                                            Previous<span class="govuk-visually-hidden"> page</span>
-                                        </span>
-                                    </a>
-                                </div>
-                                <ul class="govuk-pagination__list">
-                                    <li class="govuk-pagination__item">
-                                        <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page 1">
-                                            1
-                                        </a>
-                                    </li>
-                                    <li class="govuk-pagination__item govuk-pagination__item--current">
-                                        <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page 2" aria-current="page">
-                                            2
-                                        </a>
-                                    </li>
-                                    <li class="govuk-pagination__item">
-                                        <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page 3">
-                                            3
-                                        </a>
-                                    </li>
-                                </ul>
-                                <div class="govuk-pagination__next">
-                                    <a class="govuk-link govuk-pagination__link" href="#" rel="next">
-                                        <span class="govuk-pagination__link-title">
-                                            Next<span class="govuk-visually-hidden"> page</span>
-                                        </span>
-                                        <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
-                                            <path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path>
-                                        </svg>
-                                    </a>
-                                </div>
-                            </nav>
-                        </div>
-                    </div>
-                </div>
+               
             </div>
         </div>
     </main>
