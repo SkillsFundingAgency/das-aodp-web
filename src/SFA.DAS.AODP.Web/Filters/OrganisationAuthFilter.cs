@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Newtonsoft.Json;
+using SFA.DAS.AODP.Models.Users;
 
 namespace SFA.DAS.AODP.Web.Filters
 {
@@ -14,17 +15,14 @@ namespace SFA.DAS.AODP.Web.Filters
 
     public class OrganisationAuthFilter : Attribute, IAuthorizationFilter
     {
-        public class Organisation
-        {
-            public Guid Id { get; set; }
-        }
+       
 
         public void OnAuthorization(AuthorizationFilterContext context)
         {
             try
             {
                 var orgClaim = context.HttpContext.User.Claims.Where(c => c.Type == "organisation").First();
-                var claimOrgId = JsonConvert.DeserializeObject<Organisation>(orgClaim.Value).Id;
+                var claimOrgId = JsonConvert.DeserializeObject<UserOrganisation>(orgClaim.Value).Id;
 
                 var routeOrgId = Guid.Parse(context.RouteData.Values["organisationId"].ToString());
 

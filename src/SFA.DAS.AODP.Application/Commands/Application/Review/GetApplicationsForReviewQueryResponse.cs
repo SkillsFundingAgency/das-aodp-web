@@ -1,4 +1,6 @@
-﻿public class GetApplicationsForReviewQueryResponse
+﻿using SFA.DAS.AODP.Models.Application;
+
+public class GetApplicationsForReviewQueryResponse
 {
     public List<Application> Applications { get; set; } = new();
     public int TotalRecordsCount { get; set; }
@@ -9,9 +11,11 @@
         public DateTime LastUpdated { get; set; }
         public int Reference { get; set; }
         public string? Qan { get; set; }
+        public string? AwardingOrganisation { get; set; }
+
 
         public string? Owner { get; set; }
-        public string Status { get; set; }
+        public ApplicationStatus Status { get; set; }
         public bool NewMessage { get; set; }
 
     }

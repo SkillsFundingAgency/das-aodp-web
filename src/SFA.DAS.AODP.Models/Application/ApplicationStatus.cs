@@ -2,7 +2,8 @@
 
 public enum ApplicationStatus
 {
-    Draft, InReview, Approved, NotApproved, Withdrawn, NewMessage
+    Draft, InReview, Approved, NotApproved, Withdrawn, NewMessage,
+    Reviewed
 }
 
 public static class ApplicationStatusDisplay
@@ -15,5 +16,6 @@ public static class ApplicationStatusDisplay
         { ApplicationStatus.Approved, "Approved" },
         { ApplicationStatus.NotApproved, "Not approved" },
         { ApplicationStatus.Withdrawn, "Withdrawn" },
+        { ApplicationStatus.Reviewed, "Reviewed" },
     };
 }
