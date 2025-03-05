@@ -1,10 +1,12 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Questions;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Questions;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Routes;
 using SFA.DAS.AODP.Models.Settings;
+using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.Markdown;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Question;
@@ -14,6 +16,7 @@ using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers.FormBuilder;
 
 [Area("Admin")]
+[Authorize(Policy = PolicyConstants.IsAdminFormsUser)]
 public class QuestionsController : ControllerBase
 {
     private const string QuestionUpdatedKey = nameof(QuestionUpdatedKey);

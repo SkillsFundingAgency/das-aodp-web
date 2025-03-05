@@ -1,8 +1,10 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
+using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Section;
 using static SFA.DAS.AODP.Web.Helpers.ListHelper.OrderButtonHelper;
@@ -12,6 +14,7 @@ using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers.FormBuilder;
 
 [Area("Admin")]
+[Authorize(Policy = PolicyConstants.IsAdminFormsUser)]
 public class SectionsController : ControllerBase
 {
     private const string SectionUpdatedKey = nameof(SectionUpdatedKey);
