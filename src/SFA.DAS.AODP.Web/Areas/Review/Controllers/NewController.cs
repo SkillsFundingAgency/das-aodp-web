@@ -147,8 +147,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         public async Task<IActionResult> QualificationDetails([FromQuery] string qualificationReference)
         {            
             if (string.IsNullOrWhiteSpace(qualificationReference))
-            {
-                ShowNotificationIfKeyExists(NewQualDataKeys.InvalidPageParams.ToString(), ViewNotificationMessageType.Error, "Invalid parameters.");
+            {               
+                return Redirect("/Home/Error");
             }
 
             var result = await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });           

@@ -110,7 +110,7 @@ public class ReviewNewControllerTests
         Assert.Equal(queryResponse.Value.Status, model.Status);
     }
 
-    [Fact]
+    [Fact]    
     public async Task QualificationDetails_ReturnsNotFound_WhenQueryFails()
     {
         // Arrange
@@ -122,10 +122,15 @@ public class ReviewNewControllerTests
                      .ReturnsAsync(queryResponse);
 
         // Act
-        var result = await _controller.QualificationDetails("Ref123");
-
-        // Assert
-        Assert.IsType<NotFoundResult>(result);
+        try
+        {
+            var result = await _controller.QualificationDetails("Ref123");
+            Assert.Fail();
+        }
+        catch (Exception ex)
+        {
+            Assert.Equal(queryResponse.ErrorMessage, ex.Message);
+        }
     }
 
     [Fact]
@@ -135,9 +140,7 @@ public class ReviewNewControllerTests
         var result = await _controller.QualificationDetails(string.Empty);
 
         // Assert
-        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-        var badRequestValue = badRequestResult.Value?.GetType().GetProperty("message")?.GetValue(badRequestResult.Value, null);
-        Assert.Equal("Qualification reference cannot be empty", badRequestValue);
+        var badRequestResult = Assert.IsType<RedirectResult>(result);        
     }
 
     [Fact]
