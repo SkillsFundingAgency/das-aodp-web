@@ -98,14 +98,17 @@
                             <span class="govuk-visually-hidden">Error:</span> Select a message type
                         </p>
                     }
-                    <select class="govuk-select @(ViewData.ModelState["MessageType"]?.Errors.Count > 0 ? "govuk-select--error" : "")" 
-                            id="messageType" 
-                            name="MessageType" 
+                    <select asp-for="MessageType"
+                            asp-items="@(new List<SelectListItem>
+                            {
+                                new SelectListItem { Value = "", Text = "Choose message type" },
+                                new SelectListItem { Value = "RequestInformation", Text = "Request Information" },
+                                new SelectListItem { Value = "ReplyToInformationRequest", Text = "Reply To Information Request" }
+                            })"
+                            class="govuk-select @(ViewData.ModelState["MessageType"]?.Errors.Count > 0 ? "govuk-select--error" : "")"
                             aria-describedby="@(ViewData.ModelState["MessageType"]?.Errors.Count > 0 ? "messageType-error" : "message-type-hint")">
-                            <option value="" @(string.IsNullOrEmpty(Model.MessageType) ? "selected" : "")>Choose message type</option>
-                            <option value="RequestInformation" @(Model.MessageType == "RequestInformation" ? "selected" : "")>Request Information</option>
-                            <option value="ReplyToInformationRequest" @(Model.MessageType == "ReplyToInformationRequest" ? "selected" : "")>Reply To Information Request</option>
                     </select>
+
                 </div>
 
                 <button type="submit" name="AdditionalActions.Preview" value="true" class="govuk-button">Preview</button>
