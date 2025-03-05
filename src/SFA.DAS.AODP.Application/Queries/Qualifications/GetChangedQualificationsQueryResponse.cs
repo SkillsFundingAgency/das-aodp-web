@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace SFA.DAS.AODP.Application.Queries.Qualifications
+﻿namespace SFA.DAS.AODP.Application.Queries.Qualifications
 {
     public class GetChangedQualificationsQueryResponse
     {
@@ -20,6 +18,6 @@ namespace SFA.DAS.AODP.Application.Queries.Qualifications
         public string AgeGroup { get; set; } = string.Empty;
         public string Subject { get; set; } = string.Empty;
         public string SectorSubjectArea { get; set; } = string.Empty;
+        public string ChangedFieldNames { get; set; } = string.Empty;
     }
-
 }
