@@ -1,7 +1,9 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using SFA.DAS.AODP.Application.Commands.Application.Application;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Filters;
+using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Application;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
@@ -12,15 +14,19 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers;
 public class ApplicationMessagesController : ControllerBase
 {
     public enum NotificationKeys { MessageSentBanner, MessageVisibilityBanner }
-
-    public ApplicationMessagesController(IMediator mediator, ILogger<ApplicationMessagesController> logger) : base(mediator, logger)
+    private readonly IUserHelperService _userHelperService;
+    public ApplicationMessagesController(IMediator mediator, ILogger<ApplicationMessagesController> logger, IUserHelperService userHelperService) : base(mediator, logger)
     {
+        _userHelperService = userHelperService;
     }
 
     [HttpGet]
     [Route("apply/organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/messages")]
     public IActionResult ApplicationMessages(Guid organisationId, Guid applicationId, Guid formVersionId)
     {
+
+        // when getting timeline messages, pass the userType to it as well
+
         var model = new ApplicationMessagesViewModel
         {
             OrganisationId = organisationId,
@@ -106,7 +112,10 @@ public class ApplicationMessagesController : ControllerBase
                     break;
 
                 case var _ when model.AdditionalActions.Send:
-                    // var messageId = await Send(new CreateApplicationMessageCommand(model.MessageText, model.ApplicationId));
+
+                    string userType = _userHelperService.GetUserType().ToString();
+                    var messageId = await Send(new CreateApplicationMessageCommand(model.MessageText, model.ApplicationId, userType));
+
                     TempData[NotificationKeys.MessageSentBanner.ToString()] = "Your message has been sent";
                     TempData.Remove("PreviewMessage");
                     TempData.Remove("PreviewMessageType");
