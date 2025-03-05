@@ -20,16 +20,19 @@ namespace SFA.DAS.AODP.Application.Queries.Test
             response.Success = false;
             try
             {
-                var result = await _apiClient.Get<BaseMediatrResponse<GetChangedQualificationsQueryResponse>>(new GetChangedQualificationsApiRequest());
-                if (result != null && result.Value != null)
+                var result = await _apiClient.Get<GetChangedQualificationsQueryResponse>(new GetChangedQualificationsApiRequest()
                 {
-                    response.Value = result.Value;
+                    Skip = request.Skip,
+                    Take = request.Take,
+                    Name = request.Name,
+                    Organisation = request.Organisation,
+                    QAN = request.QAN,
+                });
+
+                if (result != null)
+                {
+                    response.Value = result;
                     response.Success = true;
-                }
-                else
-                {
-                    response.Success = false;
-                    response.ErrorMessage = "No new qualifications found.";
                 }
             }
             catch (Exception ex)

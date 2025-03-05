@@ -1,0 +1,449 @@
+﻿@model SFA.DAS.AODP.Web.Models.Qualifications.ChangedQualificationsViewModel
+@{
+    ViewData["Title"] = "Changed Qualifications";
+}
+
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
+<div class="govuk-width-container">
+    <main class="govuk-main-wrapper">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-full" id="guide-contents">
+                <div class="govuk-grid-row">
+                    <div class="govuk-grid-column-one-half">
+                        <h2 class="govuk-heading-l">Changed Qualifications</h2>
+                    </div>
+                </div>
+                @if (Model.PaginationViewModel.CurrentPage > 0)
+                {
+                    <div class="govuk-inset-text">Import for this cycle ran: @(Model.JobStatusViewModel.LastRunTime.HasValue ? Model.JobStatusViewModel.LastRunTime.Value.ToString("G") : "Never")</div>
+                    <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+                }
+                <form asp-controller="Changed" asp-action="Search" asp-area="Review" method="post">
+                    <div class="govuk-grid-row" id="New_Qual_FilterSection">
+                        <div class="govuk-grid-column-full">
+                            <div class="govuk-grid-row">
+                                <div class="govuk-grid-column-full">
+                                    <h3 class="govuk-heading-m">Filters</h3>
+                                </div>
+                            </div>
+                            <div class="govuk-grid-row">
+                                <div class="govuk-grid-column-one-quarter">
+                                    <div class="govuk-form-group">
+                                        <govuk-input asp-for="@Model.Filter.QualificationName" input-class="govuk-input--width-50" inputmode="text" spellcheck="false">
+                                            <govuk-input-label is-page-heading="false" class="govuk-label--s">Qualification Name</govuk-input-label>
+                                        </govuk-input>
+                                    </div>
+                                    <div class="govuk-form-group">
+                                        <govuk-input asp-for="@Model.Filter.QAN" input-class="govuk-input--width-50" inputmode="text" spellcheck="false">
+                                            <govuk-input-label is-page-heading="false" class="govuk-label--s">QAN</govuk-input-label>
+                                        </govuk-input>
+                                    </div>
+                                    <div class="govuk-form-group">
+                                        <govuk-input asp-for="@Model.Filter.Organisation" input-class="govuk-input--width-50" inputmode="text" spellcheck="false">
+                                            <govuk-input-label is-page-heading="false" class="govuk-label--s">Awarding Organisation</govuk-input-label>
+                                        </govuk-input>
+                                    </div>
+                                </div>
+                                <div class="govuk-grid-column-three-quarters">
+                                    @* <div class="govuk-tabs" data-module="govuk-tabs">
+                                    <h5 class="govuk-tabs__title">
+                                        Filter Options
+                                    </h5>
+                                    <ul class="govuk-tabs__list">
+                                        <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+                                            <a class="govuk-tabs__tab" href="#filter-tabs-type">
+                                                Type
+                                            </a>
+                                        </li>
+                                        <li class="govuk-tabs__list-item">
+                                            <a class="govuk-tabs__tab" href="#filter-tabs-subject-area">
+                                                Sector Subject Area
+                                            </a>
+                                        </li>
+                                        <li class="govuk-tabs__list-item">
+                                            <a class="govuk-tabs__tab" href="#filter-tabs-age">
+                                                Age Group
+                                            </a>
+                                        </li>
+                                        <li class="govuk-tabs__list-item">
+                                            <a class="govuk-tabs__tab" href="#filter-tabs-level">
+                                                Level
+                                            </a>
+                                        </li>
+                                        <li class="govuk-tabs__list-item">
+                                            <a class="govuk-tabs__tab" href="#filter-tabs-status">
+                                                Status
+                                            </a>
+                                        </li>
+                                    </ul>
+                                    <div class="govuk-tabs__panel" id="filter-tabs-type">                                        
+                                        <div class="govuk-grid-row">
+                                            <div class="govuk-grid-column-one-third">
+                                                <div class="govuk-form-group">
+                                                    <fieldset class="govuk-fieldset">
+                                                        <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+                                                            <div class="govuk-checkboxes__item">
+                                                                <input class="govuk-checkboxes__input" id="type-1" type="checkbox">
+                                                                <label class="govuk-label govuk-checkboxes__label" for="type-1">
+                                                                    Advanced Extension Award
+                                                                </label>
+                                                            </div>
+                                                            <div class="govuk-checkboxes__item">
+                                                                <input class="govuk-checkboxes__input" id="type-2" type="checkbox">
+                                                                <label class="govuk-label govuk-checkboxes__label" for="type-2">
+                                                                    Alternative Academic Qualification
+                                                                </label>
+                                                            </div>
+                                                            <div class="govuk-checkboxes__item">
+                                                                <input class="govuk-checkboxes__input" id="type-3" type="checkbox">
+                                                                <label class="govuk-label govuk-checkboxes__label" for="type-3">
+                                                                    Digital Functional Skills Qualification
+                                                                </label>
+                                                            </div>
+                                                            <div class="govuk-checkboxes__item">
+                                                                <input class="govuk-checkboxes__input" id="type-4" type="checkbox">
+                                                                <label class="govuk-label govuk-checkboxes__label" for="type-4">
+                                                                    English For Speakers of Other Languages
+                                                                </label>
+                                                            </div>
+                                                            <div class="govuk-checkboxes__item">
+                                                                <input class="govuk-checkboxes__input" id="type-5" type="checkbox">
+                                                                <label class="govuk-label govuk-checkboxes__label" for="type-5">
+                                                                    Essential Digital Skills
+                                                                </label>
+                                                            </div>
+                                                            <div class="govuk-checkboxes__item">
+                                                                <input class="govuk-checkboxes__input" id="type-6" type="checkbox">
+                                                                <label class="govuk-label govuk-checkboxes__label" for="type-6">
+                                                                    Functional Skills
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    </fieldset>
+                                                </div>
+                                            </div>
+                                            <div class="govuk-grid-column-one-third">
+                                                <div class="govuk-form-group">
+                                                    <fieldset class="govuk-fieldset">
+                                                        <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+                                                            <div class="govuk-checkboxes__item">
+                                                                <input class="govuk-checkboxes__input" id="type-1" type="checkbox">
+                                                                <label class="govuk-label govuk-checkboxes__label" for="type-1">
+                                                                    Advanced Extension Award
+                                                                </label>
+                                                            </div>
+                                                            <div class="govuk-checkboxes__item">
+                                                                <input class="govuk-checkboxes__input" id="type-2" type="checkbox">
+                                                                <label class="govuk-label govuk-checkboxes__label" for="type-2">
+                                                                    Alternative Academic Qualification
+                                                                </label>
+                                                            </div>
+                                                            <div class="govuk-checkboxes__item">
+                                                                <input class="govuk-checkboxes__input" id="type-3" type="checkbox">
+                                                                <label class="govuk-label govuk-checkboxes__label" for="type-3">
+                                                                    Digital Functional Skills Qualification
+                                                                </label>
+                                                            </div>
+                                                            <div class="govuk-checkboxes__item">
+                                                                <input class="govuk-checkboxes__input" id="type-4" type="checkbox">
+                                                                <label class="govuk-label govuk-checkboxes__label" for="type-4">
+                                                                    English For Speakers of Other Languages
+                                                                </label>
+                                                            </div>
+                                                            <div class="govuk-checkboxes__item">
+                                                                <input class="govuk-checkboxes__input" id="type-5" type="checkbox">
+                                                                <label class="govuk-label govuk-checkboxes__label" for="type-5">
+                                                                    Essential Digital Skills
+                                                                </label>
+                                                            </div>
+                                                            <div class="govuk-checkboxes__item">
+                                                                <input class="govuk-checkboxes__input" id="type-6" type="checkbox">
+                                                                <label class="govuk-label govuk-checkboxes__label" for="type-6">
+                                                                    Functional Skills
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    </fieldset>
+                                                </div>
+                                            </div>
+                                            <div class="govuk-grid-column-one-third">
+                                                <div class="govuk-form-group">
+                                                    <fieldset class="govuk-fieldset">
+                                                        <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+                                                            <div class="govuk-checkboxes__item">
+                                                                <input class="govuk-checkboxes__input" id="type-1" type="checkbox">
+                                                                <label class="govuk-label govuk-checkboxes__label" for="type-1">
+                                                                    Advanced Extension Award
+                                                                </label>
+                                                            </div>
+                                                            <div class="govuk-checkboxes__item">
+                                                                <input class="govuk-checkboxes__input" id="type-2" type="checkbox">
+                                                                <label class="govuk-label govuk-checkboxes__label" for="type-2">
+                                                                    Alternative Academic Qualification
+                                                                </label>
+                                                            </div>
+                                                            <div class="govuk-checkboxes__item">
+                                                                <input class="govuk-checkboxes__input" id="type-3" type="checkbox">
+                                                                <label class="govuk-label govuk-checkboxes__label" for="type-3">
+                                                                    Digital Functional Skills Qualification
+                                                                </label>
+                                                            </div>
+                                                            <div class="govuk-checkboxes__item">
+                                                                <input class="govuk-checkboxes__input" id="type-4" type="checkbox">
+                                                                <label class="govuk-label govuk-checkboxes__label" for="type-4">
+                                                                    English For Speakers of Other Languages
+                                                                </label>
+                                                            </div>
+                                                            <div class="govuk-checkboxes__item">
+                                                                <input class="govuk-checkboxes__input" id="type-5" type="checkbox">
+                                                                <label class="govuk-label govuk-checkboxes__label" for="type-5">
+                                                                    Essential Digital Skills
+                                                                </label>
+                                                            </div>
+                                                            <div class="govuk-checkboxes__item">
+                                                                <input class="govuk-checkboxes__input" id="type-6" type="checkbox">
+                                                                <label class="govuk-label govuk-checkboxes__label" for="type-6">
+                                                                    Functional Skills
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    </fieldset>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>                                   
+                                </div> *@
+                                </div>
+                            </div>
+                            <div class="govuk-grid-row">
+                                <div class="govuk-grid-column-full">
+                                    <govuk-select asp-for="@Model.PaginationViewModel.RecordsPerPage">
+                                        <govuk-select-label>Qualifications Per Page</govuk-select-label>
+                                        <govuk-select-item value="10" selected="true">10</govuk-select-item>
+                                        <govuk-select-item value="20">20</govuk-select-item>
+                                        <govuk-select-item value="50">50</govuk-select-item>
+                                    </govuk-select>
+                                </div>
+                            </div>
+                            <div class="govuk-grid-row">
+                                <div class="govuk-grid-column-full">
+                                    <div class="govuk-button-group">
+                                        <button type="submit"
+                                                class="govuk-button"
+                                                data-module="govuk-button"
+                                                data-prevent-double-click="true"
+                                                value="true"
+                                                name="Search">
+                                            Search
+                                        </button>
+                                        <a class="govuk-button govuk-button--secondary" asp-action="Clear" asp-controller="changed" asp-area="Review" asp-route-recordsPerPAge="@Model.PaginationViewModel.RecordsPerPage">
+                                            Clear
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                @if (Model.PaginationViewModel.CurrentPage > 0)
+                {
+                    <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+                    @if (Model.ChangedQualifications.Any())
+                    {
+                        <div class="govuk-grid-row" id="New_Qual_Pagination_Header_Section">
+                            <div class="govuk-grid-column-full">
+                                <p class="">Viewing @(Model.PaginationViewModel.StartRecord) - @(Model.PaginationViewModel.EndRecord) of @(Model.PaginationViewModel.TotalRecords) Qualifications</p>
+                            </div>
+                        </div>
+                        <div class="govuk-grid-row" id="New_Qual_Data_Section">
+                            <div class="govuk-grid-column-full">
+                                <table class="govuk-table">
+                                    <thead class="govuk-table__head">
+                                        <tr class="govuk-table__row">
+                                            <th class="govuk-table__header">QAN</th>
+                                            <th class="govuk-table__header">Qualification Title</th>
+                                            <th class="govuk-table__header">Age Group</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="govuk-table__body">
+                                        @foreach (var qualification in Model.ChangedQualifications)
+                                        {
+                                            <tr class="govuk-table__row">
+                                                <td class="govuk-table__cell">@qualification.QualificationReference</td>
+                                                <td class="govuk-table__cell">
+                                                    <a class="govuk-link" href="@Url.Action("QualificationDetails", "Qualifications", new { area = "Review", qualificationReference = qualification.QualificationReference })">
+                                                        @qualification.QualificationTitle
+                                                    </a>
+                                                </td>
+                                                <td class="govuk-table__cell">@qualification.AgeGroup</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                            @if (Model.PaginationViewModel.TotalPages > 1)
+                            {
+                                <div class="govuk-grid-row" id="New_Qual_Pagination_Footer_Section">
+                                    <div class="govuk-grid-column-three-quarters">
+                                        <nav class="govuk-pagination" aria-label="Pagination">
+                                            @if (Model.PaginationViewModel.HasPreviousPage)
+                                            {
+                                                <div class="govuk-pagination__prev">
+                                                    <a class="govuk-link govuk-pagination__link" rel="prev"
+                                                       asp-controller="Changed"
+                                                       asp-action="ChangePage"
+                                                       asp-route-area="Review"
+                                                       asp-route-newPage="@Model.PaginationViewModel.PreviousPage"
+                                                       asp-route-recordsPerPAge="@Model.PaginationViewModel.RecordsPerPage"
+                                                       asp-route-name="@Model.Filter.QualificationName"
+                                                       asp-route-organisation="@Model.Filter.Organisation"
+                                                       asp-route-qan="@Model.Filter.QAN">
+                                                        <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+                                                            <path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z"></path>
+                                                        </svg>
+                                                        <span class="govuk-pagination__link-title">
+                                                            Previous<span class="govuk-visually-hidden"> page</span>
+                                                        </span>
+                                                    </a>
+                                                </div>
+                                            }
+                                            <ul class="govuk-pagination__list">
+                                                @if (Model.PaginationViewModel.ShowExtendedPreviousNavigation)
+                                                {
+                                                    <li class="govuk-pagination__item">
+                                                        <a class="govuk-link govuk-pagination__link" aria-label="Page @Model.PaginationViewModel.FirstPage"
+                                                           asp-controller="Changed"
+                                                           asp-action="ChangePage"
+                                                           asp-route-area="Review"
+                                                           asp-route-newPage="@Model.PaginationViewModel.FirstPage"
+                                                           asp-route-recordsPerPAge="@Model.PaginationViewModel.RecordsPerPage"
+                                                           asp-route-name="@Model.Filter.QualificationName"
+                                                           asp-route-organisation="@Model.Filter.Organisation"
+                                                           asp-route-qan="@Model.Filter.QAN">
+                                                            @Model.PaginationViewModel.FirstPage
+                                                        </a>
+                                                    </li>
+                                                    <li class="govuk-pagination__item govuk-pagination__item--ellipses">
+                                                        &ctdot;
+                                                    </li>
+                                                }
+                                                @if (Model.PaginationViewModel.HasPreviousPage)
+                                                {
+                                                    <li class="govuk-pagination__item">
+                                                        <a class="govuk-link govuk-pagination__link" aria-label="Page @(Model.PaginationViewModel.PreviousPage)"
+                                                           asp-controller="Changed"
+                                                           asp-action="ChangePage"
+                                                           asp-route-area="Review"
+                                                           asp-route-newPage="@Model.PaginationViewModel.PreviousPage"
+                                                           asp-route-recordsPerPAge="@Model.PaginationViewModel.RecordsPerPage"
+                                                           asp-route-name="@Model.Filter.QualificationName"
+                                                           asp-route-organisation="@Model.Filter.Organisation"
+                                                           asp-route-qan="@Model.Filter.QAN">
+                                                            @(Model.PaginationViewModel.PreviousPage)
+                                                        </a>
+                                                    </li>
+                                                }
+                                                <li class="govuk-pagination__item govuk-pagination__item--current">
+                                                    <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page @Model.PaginationViewModel.CurrentPage" aria-current="Page @Model.PaginationViewModel.CurrentPage">
+                                                        @Model.PaginationViewModel.CurrentPage
+                                                    </a>
+                                                </li>
+                                                @if (Model.PaginationViewModel.HasNextPage)
+                                                {
+                                                    <li class="govuk-pagination__item">
+                                                        <a class="govuk-link govuk-pagination__link" aria-label="Page @(Model.PaginationViewModel.NextPage)"
+                                                           asp-controller="Changed"
+                                                           asp-action="ChangePage"
+                                                           asp-route-area="Review"
+                                                           asp-route-newPage="@Model.PaginationViewModel.NextPage"
+                                                           asp-route-recordsPerPAge="@Model.PaginationViewModel.RecordsPerPage"
+                                                           asp-route-name="@Model.Filter.QualificationName"
+                                                           asp-route-organisation="@Model.Filter.Organisation"
+                                                           asp-route-qan="@Model.Filter.QAN">
+                                                            @(Model.PaginationViewModel.NextPage)
+                                                        </a>
+                                                    </li>
+                                                }
+                                                @if (Model.PaginationViewModel.ShowExtendedNextNavigation)
+                                                {
+                                                    <li class="govuk-pagination__item govuk-pagination__item--ellipses">
+                                                        &ctdot;
+                                                    </li>
+                                                    <li class="govuk-pagination__item">
+                                                        <a class="govuk-link govuk-pagination__link" aria-label="Page @Model.PaginationViewModel.TotalPages"
+                                                           asp-controller="Changed"
+                                                           asp-action="ChangePage"
+                                                           asp-route-area="Review"
+                                                           asp-route-newPage="@Model.PaginationViewModel.TotalPages"
+                                                           asp-route-recordsPerPAge="@Model.PaginationViewModel.RecordsPerPage"
+                                                           asp-route-name="@Model.Filter.QualificationName"
+                                                           asp-route-organisation="@Model.Filter.Organisation"
+                                                           asp-route-qan="@Model.Filter.QAN">
+                                                            @Model.PaginationViewModel.TotalPages
+                                                        </a>
+                                                    </li>
+                                                }
+                                            </ul>
+                                            @if (Model.PaginationViewModel.HasNextPage)
+                                            {
+                                                <div class="govuk-pagination__next">
+                                                    <a class="govuk-link govuk-pagination__link" rel="next"
+                                                       asp-controller="Changed"
+                                                       asp-action="ChangePage"
+                                                       asp-route-area="Review"
+                                                       asp-route-newPage="@Model.PaginationViewModel.NextPage"
+                                                       asp-route-recordsPerPAge="@Model.PaginationViewModel.RecordsPerPage"
+                                                       asp-route-name="@Model.Filter.QualificationName"
+                                                       asp-route-organisation="@Model.Filter.Organisation"
+                                                       asp-route-qan="@Model.Filter.QAN">
+                                                        <span class="govuk-pagination__link-title">
+                                                            Next<span class="govuk-visually-hidden"> page</span>
+                                                        </span>
+                                                        <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+                                                            <path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path>
+                                                        </svg>
+                                                    </a>
+                                                </div>
+                                            }
+                                        </nav>
+                                    </div>
+                                </div>
+                                <div class="govuk-grid-row">
+                                    <div class="govuk-button-group">
+                                        <a class="govuk-button govuk-button--secondary" asp-controller="Qualifications" asp-action="GetQualificationCSVExportData" asp-route-area="Review" asp-route-status="Changed">
+                                            Download
+                                        </a>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="govuk-grid-row" id="Empty_Data_Section">
+                            <div class="govuk-grid-column-full">
+                                <table class="govuk-table">
+                                    <thead class="govuk-table__head">
+                                        <tr class="govuk-table__row">
+                                            <th class="govuk-table__header">QAN</th>
+                                            <th class="govuk-table__header">Qualification Title</th>
+                                            <th class="govuk-table__header">Age Group</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="govuk-table__body">
+                                        <tr class="govuk-table__row">
+                                            <td class="govuk-table__cell">No Results</td>
+                                            <td class="govuk-table__cell"></td>
+                                            <td class="govuk-table__cell"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </main>
+</div>

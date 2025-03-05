@@ -1,16 +1,6 @@
-﻿using System.Collections.Generic;
-
-namespace SFA.DAS.AODP.Application.Queries.Qualifications
+﻿namespace SFA.DAS.AODP.Web.Models.Qualifications
 {
-    public class GetChangedQualificationsQueryResponse
-    {
-        public int TotalRecords { get; set; }
-        public int Skip { get; set; }
-        public int Take { get; set; }
-        public List<ChangedQualification> Data { get; set; } = new();
-        public Job Job { get; set; } = new();
-    }
-    public class ChangedQualification
+    public class ChangedQualificationViewModel
     {
         public string QualificationReference { get; set; } = string.Empty;
         public string AwardingOrganisation { get; set; } = string.Empty;
@@ -21,5 +11,4 @@ namespace SFA.DAS.AODP.Application.Queries.Qualifications
         public string Subject { get; set; } = string.Empty;
         public string SectorSubjectArea { get; set; } = string.Empty;
     }
-
 }

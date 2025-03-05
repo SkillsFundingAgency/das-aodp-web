@@ -30,7 +30,7 @@ public class GetNewQualificationsQueryHandlerTests
         var query = _fixture.Create<GetNewQualificationsQuery>();
         var response = _fixture.Create<BaseMediatrResponse<GetNewQualificationsQueryResponse>>();
         response.Success = true;
-        response.Value.NewQualifications = _fixture.CreateMany<NewQualification>(2).ToList();
+        response.Value.Data = _fixture.CreateMany<NewQualification>(2).ToList();
 
         _apiClientMock.Setup(x => x.Get<BaseMediatrResponse<GetNewQualificationsQueryResponse>>(It.IsAny<GetNewQualificationsApiRequest>()))
                       .ReturnsAsync(response);
@@ -41,7 +41,7 @@ public class GetNewQualificationsQueryHandlerTests
         // Assert
         _apiClientMock.Verify(x => x.Get<BaseMediatrResponse<GetNewQualificationsQueryResponse>>(It.IsAny<GetNewQualificationsApiRequest>()), Times.Once);
         Assert.True(result.Success);
-        Assert.Equal(2, result.Value.NewQualifications.Count);
+        Assert.Equal(2, result.Value.Data.Count);
     }
 
     [Fact]
