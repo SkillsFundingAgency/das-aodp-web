@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Filters;
 using SFA.DAS.AODP.Web.Models.Application;
-using static SFA.DAS.AODP.Web.Areas.Admin.Controllers.FormBuilder.FormsController;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers;
@@ -19,13 +18,14 @@ public class ApplicationMessagesController : ControllerBase
     }
 
     [HttpGet]
-    [Route("apply/organisations/{organisationId}/applications/{applicationId}/messages")]
-    public IActionResult ApplicationMessages(Guid organisationId, Guid applicationId)
+    [Route("apply/organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/messages")]
+    public IActionResult ApplicationMessages(Guid organisationId, Guid applicationId, Guid formVersionId)
     {
         var model = new ApplicationMessagesViewModel
         {
             OrganisationId = organisationId,
             ApplicationId = applicationId,
+            FormVersionId = formVersionId,
             TimelineMessages = new List<ApplicationMessageViewModel>
                     {
                         new ApplicationMessageViewModel
@@ -77,16 +77,11 @@ public class ApplicationMessagesController : ControllerBase
 
         ShowNotificationIfKeyExists(NotificationKeys.MessageSentBanner.ToString(), ViewNotificationMessageType.Success, "Your message has been sent");
 
-        //if (TempData.ContainsKey("SuccessBanner"))
-        //{
-        //    ViewBag.SuccessBanner = TempData["SuccessBanner"];
-        //}
-
         return View(model);
     }
 
     [HttpPost]
-    [Route("apply/organisations/{organisationId}/applications/{applicationId}/messages")]
+    [Route("apply/organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/messages")]
     public async Task<IActionResult> ApplicationMessages([FromForm] ApplicationMessagesViewModel model)
     {
         if (!ModelState.IsValid)
@@ -124,7 +119,7 @@ public class ApplicationMessagesController : ControllerBase
                     break;
             }
 
-            return RedirectToAction(nameof(ApplicationMessages), new { model.OrganisationId, model.ApplicationId });
+            return RedirectToAction(nameof(ApplicationMessages), new { model.OrganisationId, model.ApplicationId, model.FormVersionId });
         }
         catch
         {

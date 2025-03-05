@@ -10,8 +10,11 @@
     <div class="govuk-grid-column-two-thirds">
 
         <govuk-back-link class="govuk-link govuk-task-list__link"
-        asp-action="ViewApplicationDetails"
-        asp-controller="Applications">Back</govuk-back-link>
+            asp-action="ViewApplication"
+            asp-controller="Applications"
+            asp-route-organisationId="@Model.OrganisationId"
+            asp-route-applicationId="@Model.ApplicationId"
+            asp-route-formVersionId="@Model.FormVersionId">Back</govuk-back-link>
 
         <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
@@ -68,6 +71,7 @@
             <form asp-controller="ApplicationMessages" asp-action="ApplicationMessages" method="post" enctype="multipart/form-data">
                 @Html.HiddenFor(m => m.OrganisationId)
                 @Html.HiddenFor(m => m.ApplicationId)
+                @Html.HiddenFor(m => m.FormVersionId)
 
                 <h1 class="govuk-label-wrapper">
                     <label class="govuk-label govuk-label--m" for="messageText">Message</label>
@@ -120,6 +124,7 @@
             <form asp-controller="ApplicationMessages" asp-action="ApplicationMessages" method="post" enctype="multipart/form-data">
                 @Html.HiddenFor(m => m.OrganisationId)
                 @Html.HiddenFor(m => m.ApplicationId)
+                @Html.HiddenFor(m => m.FormVersionId)
                 @Html.HiddenFor(m => m.MessageText)
                 @Html.HiddenFor(m => m.MessageType)
 
@@ -178,5 +183,13 @@
 
     <div class="govuk-grid-column-one-third">
         <h5 class="govuk-heading-m govuk-!-margin-bottom-2">Related links</h5>
+        <p class="govuk-body">
+            <a class="govuk-link" rel="noreferrer noopener" target="_blank"
+                asp-action="ViewApplication"
+                asp-controller="Applications"
+                asp-route-organisationId="@Model.OrganisationId"
+                asp-route-applicationId="@Model.ApplicationId"
+                asp-route-formVersionId="@Model.FormVersionId">View application (opens in new tab)</a>
+        </p>
     </div>
 </div>

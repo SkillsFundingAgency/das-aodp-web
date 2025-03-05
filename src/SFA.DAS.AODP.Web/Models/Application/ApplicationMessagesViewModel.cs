@@ -9,6 +9,7 @@ public class ApplicationMessagesViewModel
 {
     public Guid OrganisationId { get; set; }
     public Guid ApplicationId { get; set; }
+    public Guid FormVersionId { get; set; }
     [Required]
     public string MessageText { get; set; }
     [Required]
