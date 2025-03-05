@@ -10,8 +10,7 @@ using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 {
-    [Area("Review")]
-    [AllowAnonymous]
+    [Area("Review")]    
     public class NewController : ControllerBase
     {
         private readonly ILogger<NewController> _logger;
@@ -144,53 +143,49 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
         }
 
-        public async Task<IActionResult> QualificationDetails([FromRoute] string qualificationReference)
-        {
+        [Route("/Review/New/QualificationDetails")]
+        public async Task<IActionResult> QualificationDetails([FromQuery] string qualificationReference)
+        {            
             if (string.IsNullOrWhiteSpace(qualificationReference))
             {
-                _logger.LogWarning("Qualification reference is empty");
-                return BadRequest(new { message = "Qualification reference cannot be empty" });
+                ShowNotificationIfKeyExists(NewQualDataKeys.InvalidPageParams.ToString(), ViewNotificationMessageType.Error, "Invalid parameters.");
             }
 
-            var result = await _mediator.Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });
+            var result = await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });           
 
-            if (!result.Success || result.Value == null)
-            {
-                _logger.LogWarning(result.ErrorMessage);
-                return NotFound(); //handle error
-            }
-
-            var viewModel = MapToViewModel(result.Value);
+            var viewModel = MapToViewModel(result);
             return View(viewModel);
         }
 
-        //[HttpGet("export")]
-        public async Task<IActionResult> GetQualificationCSVExportData()
-        {
-            var result = await _mediator.Send(new GetNewQualificationsCsvExportQuery());
-            
-            if (result.Success)
-            {
-                return WriteCsvToResponse(result.Value.QualificationExports);
-            }
-
-            return NotFound(new { message = result.ErrorMessage });
-        }
-
-        private FileContentResult WriteCsvToResponse(List<QualificationExport> qualifications)
+        [Route("/Review/New/ExportData")]
+        public async Task<IActionResult> ExportData()
         {
             try
             {
-                var csvData = GenerateCsv(qualifications);
-                var bytes = System.Text.Encoding.UTF8.GetBytes(csvData);
-                var fileName = $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}-NewQualificationsExport.csv";
-                return File(bytes, "text/csv", fileName);
+                var result = await Send(new GetNewQualificationsCsvExportQuery());
+            
+                if (result?.QualificationExports != null)
+                {
+                    return WriteCsvToResponse(result.QualificationExports);
+                }
+                else
+                {
+                    return Redirect("/Home/Error");
+                }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while generating the CSV file.");
-                throw;
+                return Redirect("/Home/Error");
             }
+        }
+
+        private FileContentResult WriteCsvToResponse(List<QualificationExport> qualifications)
+        {            
+            var csvData = GenerateCsv(qualifications);
+            var bytes = System.Text.Encoding.UTF8.GetBytes(csvData);
+            var fileName = $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}-NewQualificationsExport.csv";
+            return File(bytes, "text/csv", fileName);            
         }
 
         private static string GenerateCsv(List<QualificationExport> qualifications)

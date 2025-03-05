@@ -272,7 +272,7 @@
                                         <tr class="govuk-table__row">
                                             <td class="govuk-table__cell">@qualification.Reference</td>
                                             <td class="govuk-table__cell">
-                                                <a class="govuk-link" href="@Url.Action("QualificationDetails", "Qualifications", new { area = "Review", qualificationReference = qualification.Reference })">
+                                                <a class="govuk-link" href="@Url.Action("QualificationDetails", "New", new { area = "Review", qualificationReference = qualification.Reference })">
                                                     @qualification.Title
                                                 </a>
                                             </td>
@@ -411,7 +411,7 @@
                             </div>
                             <div class="govuk-grid-row">
                                 <div class="govuk-button-group">
-                                    <a class="govuk-button govuk-button--secondary" asp-controller="Qualifications" asp-action="GetQualificationCSVExportData" asp-route-area="Review" asp-route-status="New">
+                                    <a class="govuk-button govuk-button--secondary" asp-controller="New" asp-action="ExportData" asp-route-area="Review" asp-route-status="New">
                                         Download
                                     </a>
                                 </div>
