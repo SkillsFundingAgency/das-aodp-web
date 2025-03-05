@@ -109,9 +109,9 @@ namespace SFA.DAS.AODP.Infrastructure.ApiClient
             };
             AddAuthenticationHeader(requestMessage);
             var response = await _httpClient.SendAsync(requestMessage).ConfigureAwait(false);
+            var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
             response.EnsureSuccessStatusCode();
-            var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             return JsonConvert.DeserializeObject<TResponse>(responseContent) ?? default;
         }
 

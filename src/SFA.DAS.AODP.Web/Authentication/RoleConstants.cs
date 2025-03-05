@@ -9,4 +9,10 @@ static class RoleConstants
     public const string QFAUFormBuilder = "qfau_admin_form_editor";
     public const string IFATEFormBuilder = "ifate_admin_form_editor";
     public const string QFAUImport = "qfau_admin_data_importer";
+
+
+    public static string[] QfauRoles = [QFAUApprover, QFAUReviewer, QFAUFormBuilder, QFAUImport];
+    public static string[] IfateRoles = [IFATEFormBuilder, IFATEFormBuilder];
+    public static string[] OfqualRoles = [OFQUALReviewer];
+    public static string[] AoRoles = [AOApply];
 }

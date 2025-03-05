@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 {
@@ -10,5 +9,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         {
             return View();
         }
+
+    
     }
 }

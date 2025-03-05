@@ -1,4 +1,6 @@
-﻿namespace SFA.DAS.AODP.Web.Models.Application
+﻿using SFA.DAS.AODP.Models.Application;
+
+namespace SFA.DAS.AODP.Web.Models.Application
 {
     public class ListApplicationsViewModel
     {
@@ -24,7 +26,9 @@
                     Reference = application.Reference,
                     Submitted = application.Submitted,
                     SubmittedDate = application.SubmittedDate,
-                    FormVersionId = application.FormVersionId
+                    FormVersionId = application.FormVersionId,
+                    UpdatedDate = application.UpdatedDate,
+                    Status = application.Status,
                 });
             }
 
@@ -41,6 +45,8 @@
             public string Owner { get; set; }
             public string Reference { get; set; }
             public Guid FormVersionId { get; set; }
+            public DateTime? UpdatedDate { get; set; }
+            public ApplicationStatus Status { get; set; }
 
         }
     }

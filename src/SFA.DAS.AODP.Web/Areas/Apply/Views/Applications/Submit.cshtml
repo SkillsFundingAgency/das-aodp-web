@@ -1,8 +1,8 @@
 ﻿@using SFA.DAS.AODP.Web.Models.Application
-@model DeleteApplicationViewModel
+@model SubmitApplicationViewModel
 
 @{
-    ViewData["Title"] = "Delete application";
+    ViewData["Title"] = "Submit application";
 }
 
 <a class="govuk-back-link" asp-action="ViewApplication" asp-controller="Applications"
@@ -14,15 +14,18 @@
 
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
-<h1 class="govuk-heading-l">Delete Application?</h1>
+<h1 class="govuk-heading-l">Submit Application?</h1>
 
-<form asp-action="Delete" asp-controller="Applications" method="post">
+<form asp-action="Submit" asp-controller="Applications" method="post">
     @Html.HiddenFor(m => m.FormVersionId)
     @Html.HiddenFor(m => m.ApplicationId)
     @Html.HiddenFor(m => m.OrganisationId)
 
     <govuk-warning-text icon-fallback-text="Warning">
-        Are you sure you want to delete the application? The application cannot be recovered.
+        The application will be shared with the Qualifications Funding and Approvals team.
+        <br />
+
+        Please ensure all information and evidence requested has been provided and reviewed internally.
     </govuk-warning-text>
 
     <p class="govuk-body">
@@ -33,8 +36,8 @@
 
     <div class="govuk-button-group">
 
-        <govuk-button class="govuk-button--warning" type="submit">
-            Delete
+        <govuk-button class="govuk-button" type="submit">
+            Submit
         </govuk-button>
 
         <a class="govuk-button govuk-button--secondary" asp-action="ViewApplication" asp-controller="Applications"
