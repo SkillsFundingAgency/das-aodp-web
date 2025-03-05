@@ -4,14 +4,20 @@ namespace SFA.DAS.AODP.Application.Commands.Application.Application;
 
 public class CreateApplicationMessageCommand : IRequest<BaseMediatrResponse<CreateApplicationMessageCommandResponse>>
 {
-    public CreateApplicationMessageCommand(string messageText, Guid applicationId, string userType)
-    {
-        MessageText = messageText;
-        ApplicationId = applicationId;
-        UserType = userType;
-    }
-
-    public string MessageText { get; set; }
     public Guid ApplicationId { get; set; }
+    public string MessageText { get; set; }
+    public string MessageType { get; set; }
     public string UserType { get; set; }
+    public string SentByEmail { get; set; }
+    public string SentName { get; set; }
+
+    public CreateApplicationMessageCommand(Guid applicationId, string messageText, string messageType, string userType, string sentByEmail, string sentByName)
+    {
+        ApplicationId = applicationId;
+        MessageText = messageText;
+        MessageType = messageType;
+        UserType = userType;
+        SentByEmail = sentByEmail;
+        SentName = sentByName;
+    }
 }

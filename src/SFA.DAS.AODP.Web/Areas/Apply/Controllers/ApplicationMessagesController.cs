@@ -114,7 +114,9 @@ public class ApplicationMessagesController : ControllerBase
                 case var _ when model.AdditionalActions.Send:
 
                     string userType = _userHelperService.GetUserType().ToString();
-                    var messageId = await Send(new CreateApplicationMessageCommand(model.MessageText, model.ApplicationId, userType));
+                    string userEmail = _userHelperService.GetUserEmail().ToString();
+                    string userName = _userHelperService.GetUserDisplayName().ToString();
+                    var messageId = await Send(new CreateApplicationMessageCommand(model.ApplicationId, model.MessageText, model.MessageType, userType, userEmail, userName));
 
                     TempData[NotificationKeys.MessageSentBanner.ToString()] = "Your message has been sent";
                     TempData.Remove("PreviewMessage");

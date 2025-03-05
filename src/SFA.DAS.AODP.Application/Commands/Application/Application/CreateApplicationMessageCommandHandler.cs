@@ -6,10 +6,10 @@ namespace SFA.DAS.AODP.Application.Commands.Application.Application;
 
 public class CreateApplicationMessageCommandHandler : IRequestHandler<CreateApplicationMessageCommand, BaseMediatrResponse<CreateApplicationMessageCommandResponse>>
 {
-    private readonly IApiClient _apiCLient;
-    public CreateApplicationMessageCommandHandler(IApiClient apiCLient)
+    private readonly IApiClient _apiClient;
+    public CreateApplicationMessageCommandHandler(IApiClient apiClient)
     {
-        _apiCLient = apiCLient;
+        _apiClient = apiClient;
     }
 
     public async Task<BaseMediatrResponse<CreateApplicationMessageCommandResponse>> Handle(CreateApplicationMessageCommand request, CancellationToken cancellationToken)
@@ -21,8 +21,9 @@ public class CreateApplicationMessageCommandHandler : IRequestHandler<CreateAppl
 
         try
         {
-            var result = await _apiCLient.PostWithResponseCode<CreateApplicationMessageCommandResponse>(new CreateApplicationMessageApiRequest()
+            var result = await _apiClient.PostWithResponseCode<CreateApplicationMessageCommandResponse>(new CreateApplicationMessageApiRequest()
             {
+                ApplicationId = request.ApplicationId,
                 Data = request
             });
 

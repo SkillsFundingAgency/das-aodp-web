@@ -4,7 +4,8 @@ namespace SFA.DAS.AODP.Domain.Application.Application;
 
 public class CreateApplicationMessageApiRequest : IPostApiRequest
 {
-    public string PostUrl => "api/TODO";
+    public Guid ApplicationId { get; set; }
+    public string PostUrl => $"api/applicationMessages/{ApplicationId}/messages";
 
     public object Data { get; set; }
 
