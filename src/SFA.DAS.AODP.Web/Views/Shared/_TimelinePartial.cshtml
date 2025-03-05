@@ -1,0 +1,105 @@
+﻿@using SFA.DAS.AODP.Web.Models.Application;
+@using SFA.DAS.AODP.Web.Models.TimelineComponents;
+@using System.Globalization;
+@model TimelineViewModel
+
+@if (Model.Items != null && Model.Items.Any())
+{
+    <div class="app-timeline">
+        @foreach (var item in Model.Items.OrderByDescending(m => m.SentAt))
+        {
+            <div class="app-timeline__item">
+
+                <div class="app-timeline__header">
+                    <h2 class="app-timeline__title">@item.TimelineTitle</h2>
+                </div>
+
+                <p class="app-timeline__details">
+                    <p class="app-timeline__byline">@item.TimelineMetadata</p>
+                </p>
+
+                @if (item.ShowText)
+                {
+                    <div class="app-timeline__description">
+                        <p>@item.Text</p>
+
+                    </div>
+                }
+
+            </div>
+        }
+    </div>
+}
+else
+{
+    <p class="govuk-body">No application updates yet.</p>
+}
+
+<style>
+    .app-timeline {
+        position: relative;
+        margin-bottom: 20px;
+        overflow: hidden;
+        font-family: GDS Transport, arial, sans-serif;
+    }
+
+    .app-timeline::before {
+        content: "";
+        position: absolute;
+        top: 10px;
+        left: 0;
+        width: 5px;
+        height: 100%;
+        background-color: #005ea5;
+    }
+
+    .app-timeline--full {
+        margin-bottom: 0;
+    }
+
+    .app-timeline--full::before {
+        height: calc(100% - 75px);
+    }
+
+    .app-timeline__item {
+        position: relative;
+        padding-left: 20px;
+    }
+
+    .app-timeline__item::before {
+        content: "";
+        position: absolute;
+        top: 10px;
+        left: 0;
+        width: 15px;
+        height: 5px;
+        background-color: #005ea5;
+    }
+
+    .app-timeline__title {
+        font-size: 19px;
+        font-weight: bold;
+        display: inline;
+    }
+
+    .app-timeline__byline {
+        font-size: 19px;
+        display: inline;
+        margin: 0;
+        color: #6f777b;
+    }
+
+    .app-timeline__details {
+        font-size: 16px;
+        margin-top: 5px;
+        margin-bottom: 0;
+        color: #6f777b;
+    }
+
+    .app-timeline__description {
+        font-size: 19px;
+        margin-top: 20px;
+        margin-bottom: 0;
+    }
+
+</style>
