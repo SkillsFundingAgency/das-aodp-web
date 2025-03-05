@@ -263,7 +263,8 @@
                                         <tr class="govuk-table__row">
                                             <th class="govuk-table__header">QAN</th>
                                             <th class="govuk-table__header">Qualification Title</th>
-                                            <th class="govuk-table__header">Age Group</th>
+                                            <th class="govuk-table__header">Changes</th>
+                                            <th class="govuk-table__header">Priority / Status</th>
                                         </tr>
                                     </thead>
                                     <tbody class="govuk-table__body">
@@ -276,7 +277,8 @@
                                                         @qualification.QualificationTitle
                                                     </a>
                                                 </td>
-                                                <td class="govuk-table__cell">@qualification.AgeGroup</td>
+                                                <td class="govuk-table__cell">@qualification.ChangedFieldNames</td>
+                                                <td class="govuk-table__cell">Changed/<td>
                                             </tr>
                                         }
                                     </tbody>
