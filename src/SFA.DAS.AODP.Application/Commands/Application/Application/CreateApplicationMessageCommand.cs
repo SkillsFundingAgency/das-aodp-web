@@ -9,7 +9,7 @@ public class CreateApplicationMessageCommand : IRequest<BaseMediatrResponse<Crea
     public string MessageType { get; set; }
     public string UserType { get; set; }
     public string SentByEmail { get; set; }
-    public string SentName { get; set; }
+    public string SentByName { get; set; }
 
     public CreateApplicationMessageCommand(Guid applicationId, string messageText, string messageType, string userType, string sentByEmail, string sentByName)
     {
@@ -18,6 +18,6 @@ public class CreateApplicationMessageCommand : IRequest<BaseMediatrResponse<Crea
         MessageType = messageType;
         UserType = userType;
         SentByEmail = sentByEmail;
-        SentName = sentByName;
+        SentByName = sentByName;
     }
 }

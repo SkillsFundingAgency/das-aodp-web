@@ -116,7 +116,8 @@ public class ApplicationMessagesController : ControllerBase
                     string userType = _userHelperService.GetUserType().ToString();
                     string userEmail = _userHelperService.GetUserEmail().ToString();
                     string userName = _userHelperService.GetUserDisplayName().ToString();
-                    var messageId = await Send(new CreateApplicationMessageCommand(model.ApplicationId, model.MessageText, model.MessageType, userType, userEmail, userName));
+                    string messageTypeToSend = SendMessageTypeRule.GetMessageType(_userHelperService.GetUserType(), model.MessageType);
+                    var messageId = await Send(new CreateApplicationMessageCommand(model.ApplicationId, model.MessageText, messageTypeToSend, userType, userEmail, userName));
 
                     TempData[NotificationKeys.MessageSentBanner.ToString()] = "Your message has been sent";
                     TempData.Remove("PreviewMessage");
