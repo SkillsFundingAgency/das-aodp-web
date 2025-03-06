@@ -10,7 +10,7 @@ using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 {
-    [Area("Review")]
+    [Area("Review")]    
     public class NewController : ControllerBase
     {
         private readonly ILogger<NewController> _logger;
@@ -23,6 +23,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             _mediator = mediator;
         }
 
+        [Route("/Review/New/Index")]
         public async Task<IActionResult> Index(int pageNumber = 0, int recordsPerPage = 10, string name = "", string organisation = "", string qan = "")
         {
             var viewModel = new NewQualificationsViewModel();
@@ -58,8 +59,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
                     var response = await Send(query);
                     viewModel = NewQualificationsViewModel.Map(response, organisation, qan, name);
-                }
-
+                }                                                                                  
+                
                 return View(viewModel);
             }
             catch
@@ -69,18 +70,19 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         }
 
         [HttpPost]
+        [Route("/Review/New/Search")]
         public async Task<IActionResult> Search(NewQualificationsViewModel viewModel)
         {
             try
             {
-                return RedirectToAction(nameof(Index), new
-                {
-                    pageNumber = 1,
-                    recordsPerPage = viewModel.PaginationViewModel.RecordsPerPage,
-                    name = viewModel.Filter.QualificationName,
-                    organisation = viewModel.Filter.Organisation,
-                    qan = viewModel.Filter.QAN
-                });
+                    return RedirectToAction(nameof(Index), new
+                    {
+                        pageNumber = 1,
+                        recordsPerPage = viewModel.PaginationViewModel.RecordsPerPage,
+                        name = viewModel.Filter.QualificationName,
+                        organisation = viewModel.Filter.Organisation,
+                        qan = viewModel.Filter.QAN
+                    });               
             }
             catch
             {
@@ -89,6 +91,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         }
 
         [HttpGet]
+        [Route("/Review/New/Clear")]
         public async Task<IActionResult> Clear(int recordsPerPage = 10)
         {
             try
@@ -98,7 +101,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     return RedirectToAction(nameof(Index), new
                     {
                         pageNumber = 0,
-                        recordsPerPage = recordsPerPage,
+                        recordsPerPage = recordsPerPage,               
                     });
                 }
                 else
@@ -113,6 +116,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         }
 
         [HttpGet]
+        [Route("/Review/New/ChangePage")]
         public async Task<IActionResult> ChangePage(int newPage = 1, int recordsPerPage = 10, string name = "", string organisation = "", string qan = "")
         {
             try
@@ -139,25 +143,27 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
         }
 
+        [Route("/Review/New/QualificationDetails")]
         public async Task<IActionResult> QualificationDetails([FromQuery] string qualificationReference)
-        {
+        {            
             if (string.IsNullOrWhiteSpace(qualificationReference))
-            {
+            {               
                 return Redirect("/Home/Error");
             }
 
-            var result = await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });
+            var result = await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });           
 
             var viewModel = MapToViewModel(result);
             return View(viewModel);
         }
 
+        [Route("/Review/New/ExportData")]
         public async Task<IActionResult> ExportData()
         {
             try
             {
                 var result = await Send(new GetNewQualificationsCsvExportQuery());
-
+            
                 if (result?.QualificationExports != null)
                 {
                     return WriteCsvToResponse(result.QualificationExports);
@@ -175,11 +181,11 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         }
 
         private FileContentResult WriteCsvToResponse(List<QualificationExport> qualifications)
-        {
+        {            
             var csvData = GenerateCsv(qualifications);
             var bytes = System.Text.Encoding.UTF8.GetBytes(csvData);
             var fileName = $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}-NewQualificationsExport.csv";
-            return File(bytes, "text/csv", fileName);
+            return File(bytes, "text/csv", fileName);            
         }
 
         private static string GenerateCsv(List<QualificationExport> qualifications)
@@ -190,7 +196,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 csv.WriteRecords(qualifications);
                 return writer.ToString();
             }
-        }
+        }      
 
         private static QualificationDetailsViewModel MapToViewModel(GetQualificationDetailsQueryResponse response)
         {

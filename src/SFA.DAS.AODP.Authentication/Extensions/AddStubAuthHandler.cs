@@ -32,14 +32,17 @@ namespace SFA.DAS.AODP.Authentication.Extensions
                 new Claim(CustomClaimsIdentity.Service, "QFAdmin"),
                 new Claim(CustomClaimsIdentity.UkPrn, "10000001"),
                 new Claim("organisation", "{\"id\":\"71A7429D-1875-4CDD-8FEF-A89676E661A8\"}"),
-                new Claim("roleName", "Reviewer"),
-                new Claim("roleName", "Admin"),
+                new Claim("roleName", "qfau_user_approver"),
+                new Claim("roleName", "qfau_user_reviewer"),
+                new Claim("roleName", "ifate_user_reviewer"),
+                new Claim("roleName", "ofqual_user_reviewer"),
                 new Claim("rolenumericid", "22328"),
                 new Claim("rolecode", "QFAdmin"),
                 new Claim("roleId", "03ff5868-31cd-453e-ae9f-fad5f101124d"),
-                new Claim("email", "tester@education.gov.uk"),
-
+                new Claim("email", "tester@education.gov.uk"),                
                 new Claim("roleName", "qfau_admin_form_editor"),
+                new Claim("roleName", "ifate_admin_form_editor"),
+                new Claim("roleName", "qfau_admin_data_importer"),
                 new Claim("roleName", "ao_user"),
             };
 
