@@ -34,7 +34,9 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
                 Level=s.Level,
                 SectorSubjectArea=s.SectorSubjectArea,
                 AgeGroup = s.AgeGroup,
-                ChangedFieldNames = s.ChangedFieldNames
+                ChangedFieldNames = s.ChangedFieldNames,
+                Status=s.Status
+                
             }).ToList();
             viewModel.Filter = new NewQualificationFilterViewModel()
             {

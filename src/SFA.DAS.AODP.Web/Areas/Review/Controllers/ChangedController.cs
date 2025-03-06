@@ -157,7 +157,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             return View(viewModel);
         }
 
-        [Route("/Review/New/ExportData")]
         public async Task<IActionResult> ExportData()
         {
             try
