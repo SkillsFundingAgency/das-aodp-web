@@ -99,40 +99,32 @@ internal class Program
 
     private static void AddRoutes(IEndpointRouteBuilder endpoints)
     {
+        endpoints.MapAreaControllerRoute(name: "ReviewGeneric",
+              areaName: "Review",
+                                 pattern: "Review/{controller:exists}/{action=Index}/{id?}").RequireAuthorization(PolicyConstants.IsReviewUser);
 
+        endpoints.MapAreaControllerRoute(name: "ReviewHome",
+                                                areaName: "Review",
+                                         pattern: "Review/{controller=home}/{action=index}").
+                                         AllowAnonymous();
+        endpoints.MapAreaControllerRoute(name: "AdminGeneric",
+            areaName: "Admin",
+                               pattern: "Admin/{controller:exists}/{action=Index}/{id?}").RequireAuthorization(PolicyConstants.IsReviewUser);
 
-        endpoints.MapControllerRoute(name: "ReviewHomeLandingPage",
-                                     pattern: "Review/Home/{action=Index}/{id?}",
-                                     defaults: new { area = "Review", controller = "Home" });
+        endpoints.MapAreaControllerRoute(name: "AdminHome",
+                                                areaName: "Admin",
+                                         pattern: "Admin/{controller=home}/{action=index}").
+                                         AllowAnonymous();
 
-        endpoints.MapControllerRoute(name: "ReviewDefault",
-                                     pattern: "review/{controller=home}/{action=Index}/{id?}",
-                                     defaults:new {area="review"}).
-                                     RequireAuthorization(PolicyConstants.IsReviewUser);
+        endpoints.MapAreaControllerRoute(name: "ApplyGeneric",
+    areaName: "Apply",
+                       pattern: "Apply/{controller:exists}/{action=Index}/{id?}").RequireAuthorization(PolicyConstants.IsReviewUser);
 
-        endpoints.MapAreaControllerRoute(name: "AdminHomeLandingPage",
-                               areaName: "Admin",
-                               pattern: "{area:exists}/Home/{action=Index}/{id?}",
-                                defaults: new { controller = "Home" }).AllowAnonymous();
+        endpoints.MapAreaControllerRoute(name: "ApplyHome",
+                                                areaName: "Apply",
+                                         pattern: "Apply/{controller=home}/{action=index}").
+                                         AllowAnonymous();
 
-        endpoints.MapAreaControllerRoute(name: "AdminDefaultForImport",
-                        areaName: "Admin",
-                        pattern: "Admin/Import/{action=Index}/{id?}",
-                        defaults: new { area = "Admin", controller = "Import" }).RequireAuthorization(PolicyConstants.IsAdminImportUser);
-
-        endpoints.MapControllerRoute(name: "AdminDefaultForForms",
-                                         pattern: "Admin/{controller=Dashboard}/{action=index}/{id?}",
-                                         defaults: new { area = "Admin" }).RequireAuthorization(PolicyConstants.IsAdminFormsUser);
-
-        endpoints.MapControllerRoute(name: "ApplyHome",
-                                  pattern: "Apply/Home/{action=Index}/{id?}",
-                                  defaults: new { area = "Apply", controller = "Home" }).AllowAnonymous();
-
-        endpoints.MapControllerRoute(name: "Apply",
-                                       pattern: "Apply/{controller=Apply}/{action=Index}/{id?}",
-                                       defaults: new { area = "Apply" }).
-        RequireAuthorization(PolicyConstants.IsApplyUser);
         endpoints.MapDefaultControllerRoute();
-
     }
 }
