@@ -88,12 +88,12 @@ internal class Program
             .UseRouting()
             .UseAuthentication()
             .UseAuthorization()
-                .UseEndpoints(endpoints =>
-                {
-                    AddRoutes(endpoints);
+            .UseSession()
+            .UseEndpoints(endpoints =>
+            {
+                AddRoutes(endpoints);
 
-                })
-            .UseSession();
+            });
         app.Run();
     }
 
@@ -107,7 +107,7 @@ internal class Program
 
         endpoints.MapControllerRoute(name: "ReviewDefault",
                                      pattern: "review/{controller=review}/{action=Index}/{id?}",
-                                     defaults:new {area="review"}).
+                                     defaults: new { area = "review" }).
                                      RequireAuthorization(PolicyConstants.IsReviewUser);
 
         endpoints.MapAreaControllerRoute(name: "AdminHomeLandingPage",

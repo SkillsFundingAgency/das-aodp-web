@@ -169,9 +169,10 @@
                 </td>
                 <td class="govuk-table__cell">
                     <a class="govuk-link"
+                       asp-area="Review"
                        asp-action="ViewApplication"
-                       asp-route-applicationId="@item.Id"
-                       asp-controller="ReviewApplications">@item.Name</a>
+                       asp-route-applicationReviewId="@item.ApplicationReviewId"
+                       asp-controller="ApplicationsReview">@item.Name</a>
                 </td>
                 <td class="govuk-table__cell">
                     @ApplicationStatusDisplay.Dictionary[item.Status]

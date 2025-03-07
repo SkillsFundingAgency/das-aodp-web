@@ -8,31 +8,8 @@
 
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
-@if (!ViewContext.ModelState.IsValid)
-{
-    <div class="govuk-error-summary" data-module="govuk-error-summary">
-        <div role="alert">
-            <h2 class="govuk-error-summary__title">
-                There is a problem
-            </h2>
-            <div class="govuk-error-summary__body">
-                <ul class="govuk-list govuk-error-summary__list">
+<partial name="~/Views/Shared/_ValidationSummaryPartial" />
 
-                    @foreach (var ms in ViewContext.ModelState)
-                    {
-                        var error = @ms.Value.Errors.FirstOrDefault();
-                        if (error == null) continue;
-
-                        <li>
-                            <a href="#@ms.Key">@error.ErrorMessage</a>
-                        </li>
-                    }
-
-                </ul>
-            </div>
-        </div>
-    </div>
-}
 
 <h1 class="govuk-heading-l">Edit Question</h1>
 

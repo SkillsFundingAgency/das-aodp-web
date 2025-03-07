@@ -34,11 +34,12 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         }
 
         [HttpGet]
-        [Route("apply/organisations/{organisationId}")]
-        public async Task<IActionResult> Index(Guid organisationId)
+        [Route("apply")]
+        public async Task<IActionResult> Index()
         {
             try
             {
+                var organisationId = Guid.Parse(_userHelperService.GetUserOrganisationId());
                 var response = await Send(new GetApplicationsByOrganisationIdQuery(organisationId));
                 ListApplicationsViewModel model = ListApplicationsViewModel.Map(response, organisationId);
 

@@ -2,6 +2,6 @@
 
 public class GetApplicationsForReviewApiRequest : IPostApiRequest
 {
-    public string PostUrl => $"/api/application-reviews";
+    public string PostUrl => $"api/application-reviews";
     public object Data { get; set; }
 }

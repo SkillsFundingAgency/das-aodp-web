@@ -1,0 +1,39 @@
+﻿@using SFA.DAS.AODP.Models.Application
+@using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApproval
+@model QfauFundingReviewConfirmationViewModel;
+
+@{
+    ViewData["Title"] = "Funding review confirmation";
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+        <div class="govuk-grid-row">
+            <h1 class="govuk-heading-xl">
+                Offers funding confirmation
+                <span class="govuk-caption-l">Request for funding</span>
+            </h1>
+        </div>
+
+        <div class="govuk-grid-row">
+            <govuk-panel heading-level="2">
+                <govuk-panel-title>Application review complete</govuk-panel-title>
+                <govuk-panel-body>
+                </govuk-panel-body>
+            </govuk-panel>
+            </<div>
+
+                <div class="govuk-grid-row">
+                    <a asp-area="Review"
+                       asp-action="ViewApplication"
+                       asp-route-applicationReviewId="@Model.ApplicationReviewId"
+                       asp-controller="ApplicationsReview">View application</a>
+                </div>
+
+
+
+            </div>
+        </div>
+    </div>
+</div>
