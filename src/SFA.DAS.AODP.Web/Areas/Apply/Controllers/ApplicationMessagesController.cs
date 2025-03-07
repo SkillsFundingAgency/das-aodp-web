@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.Application.Application;
+using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Filters;
 using SFA.DAS.AODP.Web.Helpers.User;
@@ -22,46 +23,35 @@ public class ApplicationMessagesController : ControllerBase
 
     [HttpGet]
     [Route("apply/organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/messages")]
-    public IActionResult ApplicationMessages(Guid organisationId, Guid applicationId, Guid formVersionId)
+    public async Task<IActionResult> ApplicationMessagesAsync(Guid organisationId, Guid applicationId, Guid formVersionId)
     {
 
         // when getting timeline messages, pass the userType to it as well
+
+        var response = await Send(new GetApplicationMessagesByIdQuery(applicationId));
+        var messages = response.Messages;
+
+        var timelineMessages = new List<ApplicationMessageViewModel>();
+
+        foreach (var message in messages) 
+        {
+            timelineMessages.Add(new ApplicationMessageViewModel
+            {
+                Id = message.MessageId,
+                Text = message.MessageText,
+                Status = message.MessageHeader,
+                SentAt = message.SentAt,
+                SentByName = message.SentByName,
+                SentByEmail = message.SentByEmail
+            });
+        }
 
         var model = new ApplicationMessagesViewModel
         {
             OrganisationId = organisationId,
             ApplicationId = applicationId,
             FormVersionId = formVersionId,
-            TimelineMessages = new List<ApplicationMessageViewModel>
-                    {
-                        new ApplicationMessageViewModel
-                        {
-                            Id = 1,
-                            Text = "Dear Somebody, Please can you give further evidence of the application. Kind Regards, Davidowski",
-                            Status = "MessageSent",
-                            SentAt = DateTime.Now.AddMinutes(-30),
-                            SentByName = "Davidowski",
-                            SentByEmail = "test123@example.com"
-                        },
-                        new ApplicationMessageViewModel
-                        {
-                            Id = 2,
-                            Text = "Test",
-                            Status = "Awaiting Response From AO",
-                            SentAt = DateTime.Now.AddMinutes(-20),
-                            SentByName = "Admin",
-                            SentByEmail = "admin@example.com"
-                        },
-                        new ApplicationMessageViewModel
-                        {
-                            Id = 3,
-                            Text = "Test",
-                            Status = "In Review",
-                            SentAt = DateTime.Now.AddMinutes(-10),
-                            SentByName = "AO",
-                            SentByEmail = "ao@example.com"
-                        }
-                    }
+            TimelineMessages = timelineMessages
         };
 
         if (TempData.ContainsKey("EditMessage"))
