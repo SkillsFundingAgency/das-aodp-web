@@ -278,7 +278,24 @@
                                                     </a>
                                                 </td>
                                                 <td class="govuk-table__cell">@qualification.ChangedFieldNames</td>
-                                                <td class="govuk-table__cell">@qualification.Status</td>
+                                                <td class="govuk-table__cell">
+                                                @if (qualification.Priority == "Red")
+                                                {
+                                                    <strong class="govuk-tag govuk-tag--red">
+                                                        @qualification.Status
+                                                    </strong>
+                                                }
+                                                else if (qualification.Priority == "Yellow")
+                                                {
+                                                        <strong class="govuk-tag govuk-tag--yellow">
+                                                            @qualification.Status
+                                                        </strong>
+                                                }
+                                                else
+                                                {                                                       
+                                                    @qualification.Status                                                    
+                                                }
+                                                </td>
                                             </tr>
                                         }
                                     </tbody>
