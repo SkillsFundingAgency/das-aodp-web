@@ -78,19 +78,21 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
                 .Build<CreateFormVersionViewModel>()
                 .Create();
 
+            request.AdditionalFormActions.UpdateDescriptionPreview = false;
+
             _mediatorMock.Setup(x => x.Send(It.IsAny<CreateFormVersionCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(expectedResponse);
 
             //Act
             //simulate the post request
             var result = await _controller.Create(request);
 
-            //var result = _controller.Create(request);
+            
             var okResult = (RedirectToActionResult)result;
 
             //Assert
-            Assert.True(expectedResponse.Success); // Assert.That(expectedResponse.Success, Is.EqualTo(true));
-            Assert.IsType<RedirectToActionResult>(result); // Assert.That(result, Is.InstanceOf<RedirectToActionResult>());
-            Assert.Equal("Edit", okResult.ActionName); // Assert.That(okResult.ActionName, Is.EqualTo("Index"));
+            Assert.True(expectedResponse.Success); 
+            Assert.IsType<RedirectToActionResult>(result);
+            Assert.Equal("Edit", okResult.ActionName);
         }
 
         [Fact]
@@ -112,9 +114,9 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
             var returnedData = okResult.Model as EditFormVersionViewModel;
 
             //Assert
-            Assert.IsType<ViewResult>(result); // Assert.That(result, Is.InstanceOf<ViewResult>());
-            Assert.NotNull(returnedData); // Assert.That(returnedData, Is.Not.Null);
-            Assert.IsType<EditFormVersionViewModel>(returnedData); // Assert.That(returnedData, Is.TypeOf<EditFormVersionViewModel>());
+            Assert.IsType<ViewResult>(result); 
+            Assert.NotNull(returnedData); 
+            Assert.IsType<EditFormVersionViewModel>(returnedData);
         }
 
         [Fact]

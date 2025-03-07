@@ -10,7 +10,7 @@ using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 {
-    [Area("Review")]
+    [Area("Review")]    
     public class NewController : ControllerBase
     {
         private readonly ILogger<NewController> _logger;
@@ -58,8 +58,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
                     var response = await Send(query);
                     viewModel = NewQualificationsViewModel.Map(response, organisation, qan, name);
-                }
-
+                }                                                                                  
+                
                 return View(viewModel);
             }
             catch
@@ -73,14 +73,14 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         {
             try
             {
-                return RedirectToAction(nameof(Index), new
-                {
-                    pageNumber = 1,
-                    recordsPerPage = viewModel.PaginationViewModel.RecordsPerPage,
-                    name = viewModel.Filter.QualificationName,
-                    organisation = viewModel.Filter.Organisation,
-                    qan = viewModel.Filter.QAN
-                });
+                    return RedirectToAction(nameof(Index), new
+                    {
+                        pageNumber = 1,
+                        recordsPerPage = viewModel.PaginationViewModel.RecordsPerPage,
+                        name = viewModel.Filter.QualificationName,
+                        organisation = viewModel.Filter.Organisation,
+                        qan = viewModel.Filter.QAN
+                    });               
             }
             catch
             {
@@ -98,7 +98,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     return RedirectToAction(nameof(Index), new
                     {
                         pageNumber = 0,
-                        recordsPerPage = recordsPerPage,
+                        recordsPerPage = recordsPerPage,               
                     });
                 }
                 else
@@ -140,13 +140,13 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         }
 
         public async Task<IActionResult> QualificationDetails([FromQuery] string qualificationReference)
-        {
+        {            
             if (string.IsNullOrWhiteSpace(qualificationReference))
-            {
+            {               
                 return Redirect("/Home/Error");
             }
 
-            var result = await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });
+            var result = await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });           
 
             var viewModel = MapToViewModel(result);
             return View(viewModel);
@@ -157,7 +157,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             try
             {
                 var result = await Send(new GetNewQualificationsCsvExportQuery());
-
+            
                 if (result?.QualificationExports != null)
                 {
                     return WriteCsvToResponse(result.QualificationExports);
@@ -175,11 +175,11 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         }
 
         private FileContentResult WriteCsvToResponse(List<QualificationExport> qualifications)
-        {
+        {            
             var csvData = GenerateCsv(qualifications);
             var bytes = System.Text.Encoding.UTF8.GetBytes(csvData);
             var fileName = $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}-NewQualificationsExport.csv";
-            return File(bytes, "text/csv", fileName);
+            return File(bytes, "text/csv", fileName);            
         }
 
         private static string GenerateCsv(List<QualificationExport> qualifications)
@@ -190,7 +190,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 csv.WriteRecords(qualifications);
                 return writer.ToString();
             }
-        }
+        }      
 
         private static QualificationDetailsViewModel MapToViewModel(GetQualificationDetailsQueryResponse response)
         {

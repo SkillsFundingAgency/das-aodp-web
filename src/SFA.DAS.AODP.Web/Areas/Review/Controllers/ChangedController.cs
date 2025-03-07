@@ -13,11 +13,11 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
     [Area("Review")]
     public class ChangedController : ControllerBase
     {
-        private readonly ILogger<NewController> _logger;
+        private readonly ILogger<ChangedController> _logger;
         private readonly IMediator _mediator;
         public enum NewQualDataKeys { InvalidPageParams, }
 
-        public ChangedController(ILogger<NewController> logger, IMediator mediator) : base(mediator, logger)
+        public ChangedController(ILogger<ChangedController> logger, IMediator mediator) : base(mediator, logger)
         {
             _logger = logger;
             _mediator = mediator;
@@ -69,7 +69,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Search(NewQualificationsViewModel viewModel)
+        public async Task<IActionResult> Search(ChangedQualificationsViewModel viewModel)
         {
             try
             {

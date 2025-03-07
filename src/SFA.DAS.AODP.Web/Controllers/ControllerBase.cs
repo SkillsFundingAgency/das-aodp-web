@@ -25,7 +25,7 @@ public class ControllerBase(IMediator mediator, ILogger logger) : Controller
 
     protected void ShowNotificationIfKeyExists(string key, ViewNotificationMessageType type, string? message = null)
     {
-        if (TempData[key] != null)
+        if (TempData != null && TempData[key] != null)
         {
             ViewBag.NotificationType = type;
             ViewBag.NotificationMessage = message;
