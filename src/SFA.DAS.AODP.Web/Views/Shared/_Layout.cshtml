@@ -17,7 +17,7 @@
                     <li>
                         @if (User.Identity.IsAuthenticated)
                         {
-                            <a asp-controller="authentication" asp-action="signout" class="govuk-link govuk-link--inverse">Sign out</a>
+                            <a asp-area="/" asp-controller="authentication" asp-action="signout" class="govuk-link govuk-link--inverse">Sign out</a>
                         }
                     </li>
                 </ul>
