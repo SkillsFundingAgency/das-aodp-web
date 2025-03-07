@@ -273,7 +273,7 @@
                                             <tr class="govuk-table__row">
                                                 <td class="govuk-table__cell">@qualification.QualificationReference</td>
                                                 <td class="govuk-table__cell">
-                                                    <a class="govuk-link" href="@Url.Action("QualificationDetails", "Qualifications", new { area = "Review", qualificationReference = qualification.QualificationReference })">
+                                                    <a class="govuk-link" asp-area"review" asp-controller="Changed" asp-action="qualificationdetails" asp-route-qualificationReference = "@qualification.QualificationReference">
                                                         @qualification.QualificationTitle
                                                     </a>
                                                 </td>
