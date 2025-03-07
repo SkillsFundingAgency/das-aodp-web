@@ -146,7 +146,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 return Redirect("/Home/Error");
             }
 
-            var result = await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });
+            var result = await Send(new GetChangedQualificationDetailsQuery { QualificationReference = qualificationReference });
 
             var viewModel = MapToViewModel(result);
             return View(viewModel);
@@ -192,7 +192,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
         }
 
-        private static QualificationDetailsViewModel MapToViewModel(GetQualificationDetailsQueryResponse response)
+        private static QualificationDetailsViewModel MapToViewModel(GetChangedQualificationDetailsQueryResponse response)
         {
             if (response == null)
             {
