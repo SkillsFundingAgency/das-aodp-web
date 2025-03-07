@@ -273,28 +273,28 @@
                                             <tr class="govuk-table__row">
                                                 <td class="govuk-table__cell">@qualification.QualificationReference</td>
                                                 <td class="govuk-table__cell">
-                                                    <a class="govuk-link" asp-area"review" asp-controller="Changed" asp-action="qualificationdetails" asp-route-qualificationReference = "@qualification.QualificationReference">
+                                                    <a class="govuk-link" asp-area"review" asp-controller="Changed" asp-action="qualificationdetails" asp-route-qualificationReference="@qualification.QualificationReference">
                                                         @qualification.QualificationTitle
                                                     </a>
                                                 </td>
                                                 <td class="govuk-table__cell">@qualification.ChangedFieldNames</td>
                                                 <td class="govuk-table__cell">
-                                                @if (qualification.Priority == "Red")
-                                                {
-                                                    <strong class="govuk-tag govuk-tag--red">
-                                                        @qualification.Status
-                                                    </strong>
-                                                }
-                                                else if (qualification.Priority == "Yellow")
-                                                {
+                                                    @if (qualification.Priority == "Red")
+                                                    {
+                                                        <strong class="govuk-tag govuk-tag--red">
+                                                            @qualification.Status
+                                                        </strong>
+                                                    }
+                                                    else if (qualification.Priority == "Yellow")
+                                                    {
                                                         <strong class="govuk-tag govuk-tag--yellow">
                                                             @qualification.Status
                                                         </strong>
-                                                }
-                                                else
-                                                {                                                       
-                                                    @qualification.Status                                                    
-                                                }
+                                                    }
+                                                    else
+                                                    {
+                                                        @qualification.Status
+                                                    }
                                                 </td>
                                             </tr>
                                         }
@@ -428,6 +428,9 @@
                                         </nav>
                                     </div>
                                 </div>
+
+                            }
+                            <div class="govuk-grid-column-three-quarters">
                                 <div class="govuk-grid-row">
                                     <div class="govuk-button-group">
                                         <a class="govuk-button govuk-button--secondary" asp-controller="Changed" asp-action="ExportData" asp-route-area="Review" asp-route-status="Changed">
@@ -435,7 +438,7 @@
                                         </a>
                                     </div>
                                 </div>
-                            }
+                            </div>
                         </div>
                     }
                     else
