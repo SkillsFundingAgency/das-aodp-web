@@ -15,4 +15,7 @@ static class RoleConstants
     public static string[] IfateRoles = [IFATEFormBuilder, IFATEFormBuilder];
     public static string[] OfqualRoles = [OFQUALReviewer];
     public static string[] AoRoles = [AOApply];
+    public const string QFAUFormBuilder = "qfau_admin_forms";
+    public const string IFATEFormBuilder = "ifate_admin_forms";
+    public const string QFAUImport = "qfau_admin_data";
 }
