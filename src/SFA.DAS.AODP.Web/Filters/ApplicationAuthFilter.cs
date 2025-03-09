@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Newtonsoft.Json;
+using SFA.DAS.AODP.Web.Helpers.User;
 
 namespace SFA.DAS.AODP.Web.Filters
 {
@@ -16,10 +16,12 @@ namespace SFA.DAS.AODP.Web.Filters
     public class ApplicationAuthFilter : Attribute, IAsyncAuthorizationFilter
     {
         private readonly IMediator _mediator;
+        private readonly IUserHelperService _userHelperService;
 
-        public ApplicationAuthFilter(IMediator mediator)
+        public ApplicationAuthFilter(IMediator mediator, IUserHelperService userHelperService)
         {
             _mediator = mediator;
+            _userHelperService = userHelperService;
         }
 
         public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
@@ -27,25 +29,25 @@ namespace SFA.DAS.AODP.Web.Filters
             try
             {
                 var routeApplicationId = Guid.Parse(context.RouteData.Values["applicationId"].ToString());
-                var routeFormId = Guid.Parse(context.RouteData.Values["formVersionId"].ToString());
-                var routeOrgId = Guid.Parse(context.RouteData.Values["organisationId"].ToString());
+                var orgId = _userHelperService.GetUserOrganisationId();
 
                 var response = await _mediator.Send(new GetApplicationMetadataByIdQuery(routeApplicationId));
                 if (!response.Success) throw new Exception(response.ErrorMessage);
 
-                if (routeFormId != response.Value.FormVersionId)
-                    throw new Exception("Form id for application does not match route application id");
+                if (Guid.TryParse(context.RouteData.Values["formVersionId"]?.ToString(), out var routeFormId))
+                {
+                    if (routeFormId != response.Value.FormVersionId)
+                        throw new Exception("Form id for application does not match route application id");
+                }
 
 
-                if (routeOrgId != response.Value.OrganisationId)
-                    throw new Exception("Organisation id for application does not match route organisation id");
+                if (orgId != response.Value.OrganisationId.ToString())
+                    throw new Exception("Organisation id for application does not match user's organisation id");
 
             }
             catch
             {
-                //context.Result = new BadRequestResult();
-
-                //TODO remove this try catch once internal testing completed
+                context.Result = new BadRequestResult();
             }
 
         }

@@ -59,6 +59,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Content Update="Areas\Apply\Views\Applications\SubmitConfirmation.cshtml">
+	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+	  </Content>
 	  <Content Update="Areas\Apply\Views\Applications\Submit.cshtml">
 	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
@@ -103,7 +107,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Areas\Review\Views\Review\" />
 	  <Folder Include="Areas\Review\Views\Shared\" />
 	</ItemGroup>
 

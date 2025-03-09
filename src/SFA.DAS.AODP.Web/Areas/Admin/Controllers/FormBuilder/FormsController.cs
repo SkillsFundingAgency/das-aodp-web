@@ -149,6 +149,7 @@ public class FormsController : ControllerBase
             {
                 var command = new PublishFormVersionCommand(editFormVersionViewModel.Id);
                 await Send(command);
+                TempData[UpdateKeys.FormPublished.ToString()] = true;
 
             }
             else if (editFormVersionViewModel.AdditionalFormActions.UnPublish != default)

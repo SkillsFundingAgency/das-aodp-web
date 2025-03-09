@@ -28,7 +28,7 @@ namespace SFA.DAS.AODP.Web.Controllers
 
             var IsAdminFormUser = _authorizationService.AuthorizeAsync(User, PolicyConstants.IsAdminFormsUser).Result;
             if (IsAdminFormUser.Succeeded)
-                return Redirect("/admin");
+                return Redirect("/admin/forms");
 
             var IsAdminImportUser = _authorizationService.AuthorizeAsync(User, PolicyConstants.IsAdminImportUser).Result;
             if (IsAdminImportUser.Succeeded)
@@ -56,14 +56,15 @@ namespace SFA.DAS.AODP.Web.Controllers
 
         }
 
-        public async Task SignIn()
+        public async Task<IActionResult> SignIn()
         {
             // When using Stub Auth dont redirect to the login challenge, as it doesnt exist. User Auth already configured so no need.            
             if (!User.Identity.IsAuthenticated)
             {
-                await HttpContext.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme, new AuthenticationProperties { RedirectUri = "/Authentication/" });
+                return Forbid();
+                //await HttpContext.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme, new AuthenticationProperties { RedirectUri = "/Authentication/" });
             }
-            RedirectToAction("Index");
+            return RedirectToAction(nameof(Index));
 
         }
     }

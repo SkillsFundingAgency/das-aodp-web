@@ -22,10 +22,7 @@
     @Html.HiddenFor(m => m.OrganisationId)
 
     <govuk-warning-text icon-fallback-text="Warning">
-        The application will be shared with the Qualifications Funding and Approvals team.
-        <br />
-
-        Please ensure all information and evidence requested has been provided and reviewed internally.
+        By submitting this application you are confirming that, to the best of your knowledge, the details you are providing are correct.
     </govuk-warning-text>
 
     <p class="govuk-body">
@@ -37,7 +34,7 @@
     <div class="govuk-button-group">
 
         <govuk-button class="govuk-button" type="submit">
-            Submit
+            Accept and submit
         </govuk-button>
 
         <a class="govuk-button govuk-button--secondary" asp-action="ViewApplication" asp-controller="Applications"

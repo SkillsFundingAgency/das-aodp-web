@@ -1,9 +1,10 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SFA.DAS.AODP.Infrastructure.Cache;
 using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApproval;
+using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Helpers.User;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
@@ -11,6 +12,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 {
 
     [Area("Review")]
+    [Authorize(Policy = PolicyConstants.IsReviewUser)]
     public class ApplicationsReviewController : ControllerBase
     {
         private readonly IUserHelperService _userHelperService;
@@ -69,9 +71,13 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         {
             try
             {
+                var userType = _userHelperService.GetUserType();
                 var review = await Send(new GetApplicationForReviewByIdQuery(applicationReviewId));
 
-                return View(ApplicationReviewViewModel.Map(review, _userHelperService.GetUserType()));
+                if (userType == AODP.Models.Users.UserType.Ofqual && review.SharedWithOfqual == false) return NotFound();
+                if (userType == AODP.Models.Users.UserType.SkillsEngland && review.SharedWithSkillsEngland == false) return NotFound();
+
+                return View(ApplicationReviewViewModel.Map(review, userType ));
             }
             catch
             {
@@ -79,6 +85,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
         }
 
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
         [HttpGet]
         [Route("review/application-reviews/{applicationReviewId}/qfau-funding")]
         public async Task<IActionResult> QfauFundingReviewOutcome(Guid applicationReviewId)
@@ -92,7 +99,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     ApplicationReviewId = applicationReviewId,
                     Approved = review.Status == ApplicationStatus.Approved.ToString(),
                     Comments = review.Comments,
-                    NewDecision = review.Status == ApplicationStatus.InReview.ToString()
+                    NewDecision = review.Status != ApplicationStatus.Approved.ToString() && review.Status != ApplicationStatus.NotApproved.ToString(),
                 };
 
                 return View(model);
@@ -103,6 +110,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
         }
 
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
         [HttpPost]
         [Route("review/application-reviews/{applicationReviewId}/qfau-funding")]
         public async Task<IActionResult> QfauFundingReviewOutcome(QfauFundingReviewOutcomeViewModel model)
@@ -131,6 +139,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
         }
 
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
         [HttpGet]
         [Route("review/application-reviews/{applicationReviewId}/qfau-funding-offers")]
         public async Task<IActionResult> QfauFundingReviewOffers(Guid applicationReviewId)
@@ -157,6 +166,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
         }
 
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
         [HttpPost]
         [Route("review/application-reviews/{applicationReviewId}/qfau-funding-offers")]
         public async Task<IActionResult> QfauFundingReviewOffers(QfauFundingReviewOutcomeOffersSelectViewModel model)
@@ -185,6 +195,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
         }
 
+        [Authorize(Roles = RoleConstants.QFAUReviewer)]
         [HttpGet]
         [Route("review/application-reviews/{applicationReviewId}/qfau-funding-offers-details")]
         public async Task<IActionResult> QfauFundingReviewOfferDetails(Guid applicationReviewId)
@@ -204,6 +215,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
         }
 
+        [Authorize(Roles = RoleConstants.QFAUReviewer)]
         [HttpPost]
         [Route("review/application-reviews/{applicationReviewId}/qfau-funding-offers-details")]
         public async Task<IActionResult> QfauFundingReviewOfferDetails(QfauFundingReviewOutcomeOfferDetailsViewModel model)
@@ -230,6 +242,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         }
 
 
+        [Authorize(Roles = RoleConstants.QFAUReviewer)]
         [HttpGet]
         [Route("review/application-reviews/{applicationReviewId}/qfau-funding-summary")]
         public async Task<IActionResult> QfauFundingReviewSummary(Guid applicationReviewId)
@@ -250,6 +263,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
         }
 
+        [Authorize(Roles = RoleConstants.QFAUReviewer)]
         [HttpGet]
         [Route("review/application-reviews/{applicationReviewId}/qfau-funding-confirm")]
         public async Task<IActionResult> QfauFundingReviewConfirmation(Guid applicationReviewId)
