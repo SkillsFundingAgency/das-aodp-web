@@ -61,8 +61,7 @@ namespace SFA.DAS.AODP.Web.Controllers
             // When using Stub Auth dont redirect to the login challenge, as it doesnt exist. User Auth already configured so no need.            
             if (!User.Identity.IsAuthenticated)
             {
-                return Forbid();
-                //await HttpContext.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme, new AuthenticationProperties { RedirectUri = "/Authentication/" });
+                await HttpContext.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme, new AuthenticationProperties { RedirectUri = "/Authentication/" });
             }
             return RedirectToAction(nameof(Index));
 
