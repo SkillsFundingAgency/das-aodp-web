@@ -34,6 +34,20 @@
                     </govuk-summary-list-row-actions>
                 </govuk-summary-list-row>
 
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>
+                        Comments
+                    </govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>
+                        @Model.Comments
+                    </govuk-summary-list-row-value>
+
+                    <govuk-summary-list-row-actions>
+                        <govuk-summary-list-row-action asp-action="QfauFundingReviewOutcome" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId" visually-hidden-text="name">Change</govuk-summary-list-row-action>
+                    </govuk-summary-list-row-actions>
+                </govuk-summary-list-row>
+
+
 
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key>

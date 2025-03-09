@@ -413,7 +413,7 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
                 };
                 await Send(command);
 
-                return RedirectToAction(nameof(SubmitConfirmation), new { organisationId = model.OrganisationId, applicationId = model.ApplicationId });
+                return RedirectToAction(nameof(SubmitConfirmation), new { organisationId = _userHelperService.GetUserOrganisationId(), applicationId = model.ApplicationId });
             }
             catch
             {

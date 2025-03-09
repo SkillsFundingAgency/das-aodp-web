@@ -16,7 +16,7 @@ namespace SFA.DAS.AODP.Web.Helpers.User
 
         public UserType GetUserType()
         {
-            var roles = GetUserClaims(ClaimTypes.Role);
+            var roles = GetUserClaims("rolecode");
 
             foreach (var role in roles)
             {
