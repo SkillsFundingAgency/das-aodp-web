@@ -63,7 +63,8 @@ namespace SFA.DAS.AODP.Web.Controllers
             {
                 await HttpContext.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme, new AuthenticationProperties { RedirectUri = "/Authentication/" });
             }
-            RedirectToAction(nameof(Index));
+
+            HttpContext.Response.Redirect("/authentication/index");
 
         }
     }
