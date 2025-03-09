@@ -56,14 +56,14 @@ namespace SFA.DAS.AODP.Web.Controllers
 
         }
 
-        public async Task<IActionResult> SignIn()
+        public async Task SignIn()
         {
             // When using Stub Auth dont redirect to the login challenge, as it doesnt exist. User Auth already configured so no need.            
             if (!User.Identity.IsAuthenticated)
             {
                 await HttpContext.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme, new AuthenticationProperties { RedirectUri = "/Authentication/" });
             }
-            return RedirectToAction(nameof(Index));
+            RedirectToAction(nameof(Index));
 
         }
     }
