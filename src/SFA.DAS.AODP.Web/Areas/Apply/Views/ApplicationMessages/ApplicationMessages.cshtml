@@ -1,5 +1,6 @@
-﻿@using SFA.DAS.AODP.Web.Models.Application;
-@using SFA.DAS.AODP.Web.Models.TimelineComponents
+﻿@using SFA.DAS.AODP.Web.Areas.Apply.Models
+@using SFA.DAS.AODP.Web.Models.Application;
+@using SFA.DAS.AODP.Web.Models.TimelineComponents;
 @model ApplicationMessagesViewModel
 
 @{
@@ -50,7 +51,7 @@
                 @Html.HiddenFor(m => m.OrganisationId)
                 @Html.HiddenFor(m => m.ApplicationId)
                 @Html.HiddenFor(m => m.FormVersionId)
-                @Html.HiddenFor(m => m.MessageType == "ReplyToInformationRequest")
+                @Html.HiddenFor(m => m.SelectedMessageType)
 
 
                 <h1 class="govuk-label-wrapper">
@@ -85,7 +86,7 @@
                 @Html.HiddenFor(m => m.ApplicationId)
                 @Html.HiddenFor(m => m.FormVersionId)
                 @Html.HiddenFor(m => m.MessageText)
-                @Html.HiddenFor(m => m.MessageType)
+                @Html.HiddenFor(m => m.SelectedMessageType)
 
                 <table class="govuk-table" style="width:100%;">
                     <colgroup>
@@ -99,7 +100,7 @@
                         </tr>
                         <tr class="govuk-table__row">
                             <th scope="row" class="govuk-table__header">Message type</th>
-                            <td class="govuk-table__cell">@Model.MessageTypeDisplay</td>
+                            <td class="govuk-table__cell">@Model.SelectedMessageTypeDisplay</td>
                         </tr>
                     </tbody>
                 </table>
@@ -129,7 +130,7 @@
         @{
             var timelineModel = new TimelineViewModel
             {
-                Items = Model.TimelineMessages
+                Items = Model.TimelineMessages.Where(message => message.VisibleToUser)
             };
 
             <div>

@@ -4,16 +4,16 @@ namespace SFA.DAS.AODP.Web.Enums;
 
 public enum MessageType
 {
-    UnlockApplication, // DfE only
-    PutApplicationOnHold, // DfE only
+    UnlockApplication,
+    PutApplicationOnHold,
 
     RequestInformationFromAOByQfau,
     RequestInformationFromAOByOfqaul,
     RequestInformationFromAOBySkillsEngland,
 
-    ReplyToInformationRequest, // AO only
+    ReplyToInformationRequest,
 
-    InternalNotes, // DfE to DfE
+    InternalNotes,
 
     InternalNotesForQfauFromOfqual,
     InternalNotesForQfauFromSkillsEngland,
@@ -36,7 +36,7 @@ public static class SendMessageTypeRule
 
          // Ofqual 
         { (UserType.Ofqual, "RequestInformation"), "RequestInformationFromAOByOfqaul" },
-        { (UserType.Ofqual,  "InternalNotesForDfE"), "InternalNotesForQfauFromOfqual" },
+        { (UserType.Ofqual, "InternalNotesForDfE"), "InternalNotesForQfauFromOfqual" },
 
         // SkillsEngland
         { (UserType.SkillsEngland, "RequestInformation"), "RequestInformationFromAOBySkillsEngland" },
@@ -65,7 +65,6 @@ public static class MessageTypeConfigurationRules
     public static readonly Dictionary<MessageType, Func<MessageTypeConfiguration>> MessageTypeConfigurations =
         new()
         {
-            // DfE
             { MessageType.UnlockApplication, () => new MessageTypeConfiguration
             {
                 DisplayName = "Unlock Application",
@@ -73,7 +72,9 @@ public static class MessageTypeConfigurationRules
                 SharedWithDfe = true,
                 SharedWithOfqual = false,
                 SharedWithSkillsEngland = false,
-                SharedWithAwardingOrganisation = true } },
+                SharedWithAwardingOrganisation = true,
+                AvailableTo = [UserType.Qfau, UserType.AwardingOrganisation]    
+            } },
 
             { MessageType.PutApplicationOnHold, () => new MessageTypeConfiguration
             {
@@ -82,7 +83,9 @@ public static class MessageTypeConfigurationRules
                 SharedWithDfe = true,
                 SharedWithOfqual = false,
                 SharedWithSkillsEngland = false,
-                SharedWithAwardingOrganisation = true } },
+                SharedWithAwardingOrganisation = true,
+                AvailableTo = [UserType.Qfau, UserType.AwardingOrganisation]   
+            } },
 
             { MessageType.RequestInformationFromAOByQfau, () => new MessageTypeConfiguration
             {
@@ -91,7 +94,9 @@ public static class MessageTypeConfigurationRules
                 SharedWithDfe = true,
                 SharedWithOfqual = false,
                 SharedWithSkillsEngland = false,
-                SharedWithAwardingOrganisation = true } },
+                SharedWithAwardingOrganisation = true,
+                AvailableTo = [UserType.Qfau, UserType.AwardingOrganisation]
+            } },
 
             { MessageType.RequestInformationFromAOByOfqaul, () => new MessageTypeConfiguration
             {
@@ -100,7 +105,9 @@ public static class MessageTypeConfigurationRules
                 SharedWithDfe = false,
                 SharedWithOfqual = true,
                 SharedWithSkillsEngland = false,
-                SharedWithAwardingOrganisation = true } },
+                SharedWithAwardingOrganisation = true,
+                AvailableTo = [UserType.Ofqual, UserType.AwardingOrganisation]
+            } },
 
             { MessageType.RequestInformationFromAOBySkillsEngland, () => new MessageTypeConfiguration
             {
@@ -109,7 +116,9 @@ public static class MessageTypeConfigurationRules
                 SharedWithDfe = false,
                 SharedWithOfqual = false,
                 SharedWithSkillsEngland = true,
-                SharedWithAwardingOrganisation = true } },
+                SharedWithAwardingOrganisation = true,
+                AvailableTo = [UserType.SkillsEngland, UserType.AwardingOrganisation]
+            } },
 
             { MessageType.InternalNotes, () => new MessageTypeConfiguration
             {
@@ -118,7 +127,9 @@ public static class MessageTypeConfigurationRules
                 SharedWithDfe = true,
                 SharedWithOfqual = false,
                 SharedWithSkillsEngland = false,
-                SharedWithAwardingOrganisation = false } },
+                SharedWithAwardingOrganisation = false,
+                AvailableTo = [UserType.Qfau]
+            } },
 
             { MessageType.InternalNotesForQfauFromOfqual, () => new MessageTypeConfiguration
             {
@@ -127,7 +138,9 @@ public static class MessageTypeConfigurationRules
                 SharedWithDfe = true,
                 SharedWithOfqual = true,
                 SharedWithSkillsEngland = false,
-                SharedWithAwardingOrganisation = false } },
+                SharedWithAwardingOrganisation = false,
+                AvailableTo = [UserType.Qfau, UserType.Ofqual]
+            } },
 
             { MessageType.InternalNotesForQfauFromSkillsEngland, () => new MessageTypeConfiguration
             {
@@ -136,7 +149,9 @@ public static class MessageTypeConfigurationRules
                 SharedWithDfe = true,
                 SharedWithOfqual = false,
                 SharedWithSkillsEngland = true,
-                SharedWithAwardingOrganisation = false } },
+                SharedWithAwardingOrganisation = false,
+                AvailableTo = [UserType.Qfau, UserType.SkillsEngland]
+            } },
 
             { MessageType.InternalNotesForPartners, () => new MessageTypeConfiguration
             {
@@ -145,7 +160,9 @@ public static class MessageTypeConfigurationRules
                 SharedWithDfe = true,
                 SharedWithOfqual = true,
                 SharedWithSkillsEngland = true,
-                SharedWithAwardingOrganisation = false } },
+                SharedWithAwardingOrganisation = false,
+                AvailableTo = [UserType.Qfau, UserType.Ofqual, UserType.SkillsEngland]
+            } },
 
             { MessageType.ReplyToInformationRequest, () => new MessageTypeConfiguration
             {
@@ -154,12 +171,16 @@ public static class MessageTypeConfigurationRules
                 SharedWithDfe = true,
                 SharedWithOfqual = true,
                 SharedWithSkillsEngland = true,
-                SharedWithAwardingOrganisation = true } }
+                SharedWithAwardingOrganisation = true,
+                AvailableTo = [UserType.Qfau, UserType.Ofqual, UserType.SkillsEngland, UserType.AwardingOrganisation]
+            } }
         };
 
-    public static MessageTypeConfiguration GetMessageSharingSettings(MessageType messageType)
+    public static MessageTypeConfiguration GetMessageSharingSettings(string messageTypeString)
     {
-        if (MessageTypeConfigurations.TryGetValue(messageType, out var config))
+        _ = Enum.TryParse(messageTypeString, out MessageType messageTypeEnum) ? messageTypeEnum : MessageType.InternalNotes;
+
+        if (MessageTypeConfigurations.TryGetValue(messageTypeEnum, out var config))
         {
             return config();
         }
@@ -176,13 +197,5 @@ public class MessageTypeConfiguration
     public bool SharedWithAwardingOrganisation { get; set; }
     public bool SharedWithSkillsEngland { get; set; }
     public bool SharedWithOfqual { get; set; }
-}
-
-public class MessageTypeConfigurationA
-{
-    public string DisplayName { get; set; }
-    public bool VisibleToDfe { get; set; }
-    public bool VisibleToOfqual { get; set; }
-    public bool VisibleToSkillsEngland { get; set; }
-    public bool VisibleToAwardingOrganisation { get; set; }
+    public List<UserType> AvailableTo { get; set; }
 }

@@ -1,9 +1,12 @@
-﻿using SFA.DAS.AODP.Web.Enums;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using SFA.DAS.AODP.Models.Users;
+using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationMessage;
+using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Models.TimelineComponents;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 
-namespace SFA.DAS.AODP.Web.Models.Application;
+namespace SFA.DAS.AODP.Web.Areas.Apply.Models;
 
 public class ApplicationMessagesViewModel
 {
@@ -13,14 +16,10 @@ public class ApplicationMessagesViewModel
     [Required]
     public string MessageText { get; set; }
     [Required]
-    public string MessageType { get; set; }
-    public string MessageTypeDisplay => MessageType switch
-    {
-        "RequestInformation" => "Request Information",
-        "ReplyToInformationRequest" => "Reply To Information Request",
-        _ => string.Empty,
-    };
-
+    public string SelectedMessageType => "ReplyToInformationRequest";
+    public string SelectedMessageTypeDisplay => MessageTypeConfigurationRules.GetMessageSharingSettings(SelectedMessageType).DisplayName;
+    public UserType UserType { get; set; }
+    public List<SelectListItem> MessageTypeSelectOptions => MessageTypeSelectOptionRules.GetMessageTypeSelectOptions(UserType);
     public List<ApplicationMessageViewModel>? TimelineMessages { get; set; } = new();
     public MessageActions AdditionalActions { get; set; } = new();
 
@@ -34,13 +33,17 @@ public class ApplicationMessagesViewModel
 
 public class ApplicationMessageViewModel : TimelineItemBase
 {
+    public string MessageType { get; set; }
+    public UserType UserType { get; set; }
+    public MessageTypeConfiguration MessageTypeConfiguration => MessageTypeConfigurationRules.GetMessageSharingSettings(MessageType);
+    public bool VisibleToUser => MessageTypeConfiguration.AvailableTo.Contains(UserType);
+    public string MessageTypeDisplay => MessageTypeConfiguration.DisplayName;
     public string SentByEmail { get; set; }
     public override string TimelineTitle
     {
         get
         {
-            // if status is not null, display Status: ___, othwrwise just write out the message type
-            return $"Status: {Status}"; // probably need a mapping of the enum to textual representation later
+            return (Status == null) ? $"{Status}" : $"Status: {Status}";
         }
     }
     public override string TimelineMetadata
@@ -50,12 +53,11 @@ public class ApplicationMessageViewModel : TimelineItemBase
             return $"{SentByName}, {SentAt.ToString("dd MMM yyyy 'at' HH:mm", CultureInfo.InvariantCulture)}";
         }
     }
-
     public override bool ShowText
     {
         get
         {
-            return string.Equals(Status, "MessageSent", StringComparison.OrdinalIgnoreCase); // TODO: Confirm statuses to show Text for
+            return (Text.Length > 0) ? true : false;
         }
     }
 }

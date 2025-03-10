@@ -1,5 +1,6 @@
-﻿@using SFA.DAS.AODP.Web.Models.Application;
-@using SFA.DAS.AODP.Web.Models.TimelineComponents
+﻿@using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationMessage
+@using SFA.DAS.AODP.Web.Models.Application;
+@using SFA.DAS.AODP.Web.Models.TimelineComponents;
 @model ApplicationMessagesViewModel
 
 @{
@@ -10,11 +11,9 @@
     <div class="govuk-grid-column-two-thirds">
 
         <govuk-back-link class="govuk-link govuk-task-list__link"
-                         asp-action="ViewApplication"
-                         asp-controller="Applications"
-                         asp-route-organisationId="@Model.OrganisationId"
-                         asp-route-applicationId="@Model.ApplicationId"
-                         asp-route-formVersionId="@Model.FormVersionId">Back</govuk-back-link>
+                         asp-action="Index"
+                         asp-controller="ApplicationsReview"
+                         asp-route-applicationReviewId="@Model.ApplicationReviewId">Back</govuk-back-link>
 
         <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
@@ -53,7 +52,7 @@
                                     <a>Your message cannot be empty</a>
                                 </li>
                             }
-                            @if (ViewData.ModelState["MessageType"]?.Errors.Count > 0)
+                            @if (ViewData.ModelState["SelectedMessageType"]?.Errors.Count > 0)
                             {
                                 <li>
                                     <a>You must select a message type</a>
@@ -69,9 +68,8 @@
         @if (!Model.AdditionalActions.Preview)
         {
             <form asp-controller="ApplicationMessages" asp-action="ApplicationMessages" method="post" enctype="multipart/form-data">
-                @Html.HiddenFor(m => m.OrganisationId)
+                @Html.HiddenFor(m => m.ApplicationReviewId)
                 @Html.HiddenFor(m => m.ApplicationId)
-                @Html.HiddenFor(m => m.FormVersionId)
 
                 <h1 class="govuk-label-wrapper">
                     <label class="govuk-label govuk-label--m" for="messageText">Message</label>
@@ -94,23 +92,18 @@
                     }
                 </div>
 
-                <div class="govuk-form-group @(ViewData.ModelState["MessageType"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+                <div class="govuk-form-group @(ViewData.ModelState["SelectedMessageType"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
                     <label class="govuk-label" for="messageType">Message type</label>
-                    @if (ViewData.ModelState["MessageType"]?.Errors.Count > 0)
+                    @if (ViewData.ModelState["SelectedMessageType"]?.Errors.Count > 0)
                     {
                         <p id="messageType-error" class="govuk-error-message">
                             <span class="govuk-visually-hidden">Error:</span> Select a message type
                         </p>
                     }
-                    <select asp-for="MessageType"
-                            asp-items="@(new List<SelectListItem>
-                            {
-                                new SelectListItem { Value = "", Text = "Choose message type" },
-                                new SelectListItem { Value = "RequestInformation", Text = "Request Information" },
-                                new SelectListItem { Value = "ReplyToInformationRequest", Text = "Reply To Information Request" }
-                            })"
-                            class="govuk-select @(ViewData.ModelState["MessageType"]?.Errors.Count > 0 ? "govuk-select--error" : "")"
-                            aria-describedby="@(ViewData.ModelState["MessageType"]?.Errors.Count > 0 ? "messageType-error" : "message-type-hint")">
+                    <select asp-for="SelectedMessageType"
+                            asp-items="@(Model.MessageTypeSelectOptions)"
+                            class="govuk-select @(ViewData.ModelState["SelectedMessageType"]?.Errors.Count > 0 ? "govuk-select--error" : "")"
+                            aria-describedby="@(ViewData.ModelState["SelectedMessageType"]?.Errors.Count > 0 ? "messageType-error" : "message-type-hint")">
                     </select>
 
                 </div>
@@ -122,11 +115,10 @@
         else
         {
             <form asp-controller="ApplicationMessages" asp-action="ApplicationMessages" method="post" enctype="multipart/form-data">
-                @Html.HiddenFor(m => m.OrganisationId)
+                @Html.HiddenFor(m => m.ApplicationReviewId)
                 @Html.HiddenFor(m => m.ApplicationId)
-                @Html.HiddenFor(m => m.FormVersionId)
                 @Html.HiddenFor(m => m.MessageText)
-                @Html.HiddenFor(m => m.MessageType)
+                @Html.HiddenFor(m => m.SelectedMessageType)
 
                 <table class="govuk-table" style="width:100%;">
                     <colgroup>
@@ -140,7 +132,7 @@
                         </tr>
                         <tr class="govuk-table__row">
                             <th scope="row" class="govuk-table__header">Message type</th>
-                            <td class="govuk-table__cell">@Model.MessageTypeDisplay</td>
+                            <td class="govuk-table__cell">@Model.SelectedMessageTypeDisplay</td>
                         </tr>
                     </tbody>
                 </table>
@@ -156,7 +148,7 @@
                         <a class="govuk-button govuk-button--secondary"
                            asp-action="ApplicationMessages"
                            asp-controller="ApplicationMessages"
-                           asp-route-organisationId="@Model.OrganisationId"
+                           asp-route-applicationReviewId="@Model.ApplicationReviewId"
                            asp-route-applicationId="@Model.ApplicationId">
                             Cancel
                         </a>
@@ -170,7 +162,7 @@
         @{
             var timelineModel = new TimelineViewModel
             {
-                Items = Model.TimelineMessages
+                Items = Model.TimelineMessages.Where(message => message.VisibleToUser)
             };
 
             <div>
@@ -185,11 +177,9 @@
         <h5 class="govuk-heading-m govuk-!-margin-bottom-2">Related links</h5>
         <p class="govuk-body">
             <a class="govuk-link" rel="noreferrer noopener" target="_blank"
-               asp-action="ViewApplication"
-               asp-controller="Applications"
-               asp-route-organisationId="@Model.OrganisationId"
-               asp-route-applicationId="@Model.ApplicationId"
-               asp-route-formVersionId="@Model.FormVersionId">View application (opens in new tab)</a>
+               asp-action="Index"
+               asp-controller="ApplicationsReview"
+               asp-route-applicationReviewId="@Model.ApplicationReviewId">View application (opens in new tab)</a>
         </p>
     </div>
 </div>

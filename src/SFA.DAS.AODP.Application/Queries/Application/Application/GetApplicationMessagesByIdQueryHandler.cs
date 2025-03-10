@@ -18,9 +18,13 @@ public class GetApplicationMessagesByIdQueryHandler : IRequestHandler<GetApplica
         response.Success = false;
         try
         {
+            if (request.UserType == null) { }
+
             var result = await _apiClient.Get<GetApplicationMessagesByIdQueryResponse>(new GetApplicationMessagesByIdApiRequest()
             {
                 ApplicationId = request.ApplicationId,
+                UserType = request.UserType
+                
             });
             response.Value = result;
             response.Success = true;

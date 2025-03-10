@@ -2,33 +2,31 @@
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Application.Application;
+using SFA.DAS.AODP.Models.Users;
+using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationMessage;
 using SFA.DAS.AODP.Web.Enums;
-using SFA.DAS.AODP.Web.Filters;
 using SFA.DAS.AODP.Web.Helpers.User;
-using SFA.DAS.AODP.Web.Models.Application;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers;
 
 [Area("Review")]
-[ValidateOrganisation]
 public class ApplicationMessagesController : ControllerBase
 {
     public enum NotificationKeys { MessageSentBanner }
     private readonly IUserHelperService _userHelperService;
+    private readonly UserType UserType;
     public ApplicationMessagesController(IMediator mediator, ILogger<ApplicationMessagesController> logger, IUserHelperService userHelperService) : base(mediator, logger)
     {
         _userHelperService = userHelperService;
+        UserType = userHelperService.GetUserType();
     }
 
     [HttpGet]
-    [Route("review/organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/messages")]
-    public async Task<IActionResult> ApplicationMessagesAsync(Guid organisationId, Guid applicationId, Guid formVersionId)
+    [Route("review/{applicationReviewId}/applications/{applicationId}/messages")]
+    public async Task<IActionResult> ApplicationMessagesAsync(Guid applicationReviewId, Guid applicationId)
     {
-
-        // when getting timeline messages, pass the userType to it as well
-
-        var response = await Send(new GetApplicationMessagesByIdQuery(applicationId));
+        var response = await Send(new GetApplicationMessagesByIdQuery(applicationId, UserType.ToString()));
         var messages = response.Messages;
 
         var timelineMessages = new List<ApplicationMessageViewModel>();
@@ -42,28 +40,29 @@ public class ApplicationMessagesController : ControllerBase
                 Status = message.MessageHeader,
                 SentAt = message.SentAt,
                 SentByName = message.SentByName,
-                SentByEmail = message.SentByEmail
+                SentByEmail = message.SentByEmail,
+                UserType = UserType
             });
         }
 
         var model = new ApplicationMessagesViewModel
         {
-            OrganisationId = organisationId,
+            ApplicationReviewId = applicationReviewId,
             ApplicationId = applicationId,
-            FormVersionId = formVersionId,
-            TimelineMessages = timelineMessages
+            TimelineMessages = timelineMessages,
+            UserType = UserType
         };
 
         if (TempData.ContainsKey("EditMessage"))
         {
             model.MessageText = TempData.Peek("EditMessage")?.ToString();
-            model.MessageType = TempData.Peek("EditMessageType")?.ToString();
+            model.SelectedMessageType = TempData.Peek("EditMessageType")?.ToString();
             model.AdditionalActions.Preview = false;
         }
         else if (TempData.ContainsKey("PreviewMessage"))
         {
             model.MessageText = TempData["PreviewMessage"]?.ToString();
-            model.MessageType = TempData["PreviewMessageType"]?.ToString();
+            model.SelectedMessageType = TempData["PreviewMessageType"]?.ToString();
             model.AdditionalActions.Preview = true;
         }
         else
@@ -77,7 +76,7 @@ public class ApplicationMessagesController : ControllerBase
     }
 
     [HttpPost]
-    [Route("review/organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/messages")]
+    [Route("review/{applicationReviewId}/applications/{applicationId}/messages")]
     public async Task<IActionResult> ApplicationMessages([FromForm] ApplicationMessagesViewModel model)
     {
         if (!ModelState.IsValid)
@@ -97,17 +96,15 @@ public class ApplicationMessagesController : ControllerBase
             {
                 case var _ when model.AdditionalActions.Preview:
                     TempData["PreviewMessage"] = model.MessageText;
-                    TempData["PreviewMessageType"] = model.MessageType;
+                    TempData["PreviewMessageType"] = model.SelectedMessageType;
                     TempData.Remove("EditMessage");
                     break;
 
                 case var _ when model.AdditionalActions.Send:
-
-                    string userType = _userHelperService.GetUserType().ToString();
                     string userEmail = _userHelperService.GetUserEmail().ToString();
                     string userName = _userHelperService.GetUserDisplayName().ToString();
-                    string messageTypeToSend = SendMessageTypeRule.GetMessageType(_userHelperService.GetUserType(), model.MessageType);
-                    var messageId = await Send(new CreateApplicationMessageCommand(model.ApplicationId, model.MessageText, messageTypeToSend, userType, userEmail, userName));
+                    string messageTypeToSend = SendMessageTypeRule.GetMessageType(_userHelperService.GetUserType(), model.SelectedMessageType);
+                    var messageId = await Send(new CreateApplicationMessageCommand(model.ApplicationId, model.MessageText, messageTypeToSend, UserType.ToString(), userEmail, userName));
 
                     TempData[NotificationKeys.MessageSentBanner.ToString()] = "Your message has been sent";
                     TempData.Remove("PreviewMessage");
@@ -117,11 +114,11 @@ public class ApplicationMessagesController : ControllerBase
 
                 case var _ when model.AdditionalActions.Edit:
                     TempData["EditMessage"] = model.MessageText;
-                    TempData["EditMessageType"] = model.MessageType;
+                    TempData["EditMessageType"] = model.SelectedMessageType;
                     break;
             }
 
-            return RedirectToAction(nameof(ApplicationMessages), new { model.OrganisationId, model.ApplicationId, model.FormVersionId });
+            return RedirectToAction(nameof(ApplicationMessages), new { model.ApplicationReviewId, model.ApplicationId });
         }
         catch
         {

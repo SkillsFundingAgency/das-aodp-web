@@ -5,8 +5,9 @@ using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Filters;
 using SFA.DAS.AODP.Web.Helpers.User;
-using SFA.DAS.AODP.Web.Models.Application;
+using SFA.DAS.AODP.Web.Areas.Apply.Models;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
+using SFA.DAS.AODP.Models.Users;
 
 namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers;
 
@@ -16,19 +17,18 @@ public class ApplicationMessagesController : ControllerBase
 {
     public enum NotificationKeys { MessageSentBanner, MessageVisibilityBanner }
     private readonly IUserHelperService _userHelperService;
+    private readonly UserType UserType; // it is meant to be AO always?
     public ApplicationMessagesController(IMediator mediator, ILogger<ApplicationMessagesController> logger, IUserHelperService userHelperService) : base(mediator, logger)
     {
         _userHelperService = userHelperService;
+        UserType = userHelperService.GetUserType();
     }
 
     [HttpGet]
     [Route("apply/organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/messages")]
     public async Task<IActionResult> ApplicationMessagesAsync(Guid organisationId, Guid applicationId, Guid formVersionId)
     {
-
-        // when getting timeline messages, pass the userType to it as well
-
-        var response = await Send(new GetApplicationMessagesByIdQuery(applicationId));
+        var response = await Send(new GetApplicationMessagesByIdQuery(applicationId, UserType.ToString()));
         var messages = response.Messages;
 
         var timelineMessages = new List<ApplicationMessageViewModel>();
@@ -42,7 +42,8 @@ public class ApplicationMessagesController : ControllerBase
                 Status = message.MessageHeader,
                 SentAt = message.SentAt,
                 SentByName = message.SentByName,
-                SentByEmail = message.SentByEmail
+                SentByEmail = message.SentByEmail,
+                UserType = UserType
             });
         }
 
@@ -51,19 +52,18 @@ public class ApplicationMessagesController : ControllerBase
             OrganisationId = organisationId,
             ApplicationId = applicationId,
             FormVersionId = formVersionId,
-            TimelineMessages = timelineMessages
+            TimelineMessages = timelineMessages,
+            UserType = UserType,
         };
 
         if (TempData.ContainsKey("EditMessage"))
         {
             model.MessageText = TempData.Peek("EditMessage")?.ToString();
-            model.MessageType = TempData.Peek("EditMessageType")?.ToString();
             model.AdditionalActions.Preview = false;
         }
         else if (TempData.ContainsKey("PreviewMessage"))
         {
             model.MessageText = TempData["PreviewMessage"]?.ToString();
-            model.MessageType = TempData["PreviewMessageType"]?.ToString();
             model.AdditionalActions.Preview = true;
         }
         else
@@ -97,17 +97,14 @@ public class ApplicationMessagesController : ControllerBase
             {
                 case var _ when model.AdditionalActions.Preview:
                     TempData["PreviewMessage"] = model.MessageText;
-                    TempData["PreviewMessageType"] = model.MessageType;
+                    TempData["PreviewMessageType"] = model.SelectedMessageType;
                     TempData.Remove("EditMessage");
                     break;
 
                 case var _ when model.AdditionalActions.Send:
-
-                    string userType = _userHelperService.GetUserType().ToString();
                     string userEmail = _userHelperService.GetUserEmail().ToString();
                     string userName = _userHelperService.GetUserDisplayName().ToString();
-                    string messageTypeToSend = SendMessageTypeRule.GetMessageType(_userHelperService.GetUserType(), model.MessageType);
-                    var messageId = await Send(new CreateApplicationMessageCommand(model.ApplicationId, model.MessageText, messageTypeToSend, userType, userEmail, userName));
+                    var messageId = await Send(new CreateApplicationMessageCommand(model.ApplicationId, model.MessageText, model.SelectedMessageType, UserType.ToString(), userEmail, userName));
 
                     TempData[NotificationKeys.MessageSentBanner.ToString()] = "Your message has been sent";
                     TempData.Remove("PreviewMessage");
@@ -117,7 +114,7 @@ public class ApplicationMessagesController : ControllerBase
 
                 case var _ when model.AdditionalActions.Edit:
                     TempData["EditMessage"] = model.MessageText;
-                    TempData["EditMessageType"] = model.MessageType;
+                    TempData["EditMessageType"] = model.SelectedMessageType;
                     break;
             }
 
