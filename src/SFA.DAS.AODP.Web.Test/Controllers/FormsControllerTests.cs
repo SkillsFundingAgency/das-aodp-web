@@ -61,9 +61,9 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
             var returnedData = okResult.Model as CreateFormVersionViewModel;
 
             //Assert
-            Assert.IsType<ViewResult>(result); // Assert.That(result, Is.InstanceOf<ViewResult>());
-            Assert.NotNull(returnedData); // Assert.That(returnedData, Is.Not.Null);
-            Assert.IsType<CreateFormVersionViewModel>(returnedData); // Assert.That(returnedData, Is.TypeOf<CreateFormVersionViewModel>());
+            Assert.IsType<ViewResult>(result);
+            Assert.NotNull(returnedData);
+            Assert.IsType<CreateFormVersionViewModel>(returnedData);
         }
 
         [Fact]
@@ -83,7 +83,6 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
             _mediatorMock.Setup(x => x.Send(It.IsAny<CreateFormVersionCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(expectedResponse);
 
             //Act
-            //simulate the post request
             var result = await _controller.Create(request);
 
             
@@ -122,7 +121,7 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
         [Fact]
         public async Task Edit_Post_ValidRequest_RedirectsOk()
         {
-            //Arrange
+            // Arrange
             var expectedResponse = _fixture
                 .Build<BaseMediatrResponse<UpdateFormVersionCommandResponse>>()
                 .With(w => w.Success, true)
@@ -132,15 +131,14 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
                 .Create();
             _mediatorMock.Setup(x => x.Send(It.IsAny<UpdateFormVersionCommand>(), It.IsAny<CancellationToken>())).ReturnsAsync(expectedResponse);
 
-            // TODO fix tests
-            ////Act
-            //var result = await _controller.Edit(request);
-            //var okResult = (RedirectToActionResult)result;
+            // Act
+            var result = await _controller.Edit(request);
+            var okResult = (RedirectToActionResult)result;
 
-            ////Assert
-            //Assert.True(expectedResponse.Success); // Assert.That(expectedResponse.Success, Is.EqualTo(true));
-            //Assert.IsType<RedirectToActionResult>(result); // Assert.That(result, Is.InstanceOf<RedirectToActionResult>());
-            //Assert.Equal("Edit", okResult.ActionName); // Assert.That(okResult.ActionName, Is.EqualTo("Edit"));
+            // Assert
+            Assert.True(expectedResponse.Success); // Assert.That(expectedResponse.Success, Is.EqualTo(true));
+            Assert.IsType<RedirectToActionResult>(result); // Assert.That(result, Is.InstanceOf<RedirectToActionResult>());
+            Assert.Equal("Edit", okResult.ActionName); // Assert.That(okResult.ActionName, Is.EqualTo("Edit"));
         }
 
         [Fact]

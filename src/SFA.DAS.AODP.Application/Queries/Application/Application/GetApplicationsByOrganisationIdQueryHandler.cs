@@ -2,6 +2,8 @@
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Domain.Interfaces;
 
+namespace SFA.DAS.AODP.Application.Queries.Application.Application;
+
 public class GetApplicationsByOrganisationIdQueryHandler : IRequestHandler<GetApplicationsByOrganisationIdQuery, BaseMediatrResponse<GetApplicationsByOrganisationIdQueryResponse>>
 {
     private readonly IApiClient _apiClient;
