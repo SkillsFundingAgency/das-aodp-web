@@ -4,24 +4,24 @@ using SFA.DAS.AODP.Domain.Qualifications.Requests;
 
 namespace SFA.DAS.AODP.Application.Queries.Qualifications
 {
-    public class GetChangedQualificationDetailsQueryHandler : IRequestHandler<GetChangedQualificationDetailsQuery, BaseMediatrResponse<GetChangedQualificationDetailsQueryResponse>>
+    public class GetChangedQualificationDetailsHandler : IRequestHandler<GetChangedQualificationDetailsQuery, BaseMediatrResponse<GetChangedQualificationDetailsResponse>>
     {
         private readonly IApiClient _apiClient;
 
-        public GetChangedQualificationDetailsQueryHandler(IApiClient apiClient)
+        public GetChangedQualificationDetailsHandler(IApiClient apiClient)
         {
             _apiClient = apiClient;
         }
 
-        public async Task<BaseMediatrResponse<GetChangedQualificationDetailsQueryResponse>> Handle(GetChangedQualificationDetailsQuery request, CancellationToken cancellationToken)
+        public async Task<BaseMediatrResponse<GetChangedQualificationDetailsResponse>> Handle(GetChangedQualificationDetailsQuery request, CancellationToken cancellationToken)
         {
-            var response = new BaseMediatrResponse<GetChangedQualificationDetailsQueryResponse>();
+            var response = new BaseMediatrResponse<GetChangedQualificationDetailsResponse>();
             try
             {
-                var result = await _apiClient.Get<BaseMediatrResponse<GetChangedQualificationDetailsQueryResponse>>(new GetChangedQualificationDetailsApiRequest(request.QualificationReference));
-                if (result != null && result.Value != null)
+                var result = await _apiClient.Get<GetChangedQualificationDetailsResponse>(new GetChangedQualificationDetailsApiRequest(request.QualificationReference,request.Status));
+                if (result != null)
                 {
-                    response.Value = result.Value;
+                    response.Value = result;
                     response.Success = true;
                 }
                 else

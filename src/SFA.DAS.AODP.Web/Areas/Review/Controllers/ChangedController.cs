@@ -139,16 +139,19 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
         }
 
-        public async Task<IActionResult> QualificationDetails([FromQuery] string qualificationReference)
+        public async Task<IActionResult> QualificationDetails([FromQuery] string qualificationReference,string status)
         {
             if (string.IsNullOrWhiteSpace(qualificationReference))
             {
                 return Redirect("/Home/Error");
             }
 
-            var result = await Send(new GetChangedQualificationDetailsQuery { QualificationReference = qualificationReference });
+            var qualificationsResult = await Send(new GetChangedQualificationDetailsQuery { QualificationReference = qualificationReference,Status=status });
 
-            var viewModel = MapToViewModel(result);
+            var viewModel = MapToViewModel(qualificationsResult);
+            
+            var actionTypesResult = await Send(new GetActionTypesQuery());
+            viewModel.ActionTypes = actionTypesResult.ActionTypes;
             return View(viewModel);
         }
 
@@ -192,7 +195,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
         }
 
-        private static QualificationDetailsViewModel MapToViewModel(GetChangedQualificationDetailsQueryResponse response)
+        private static QualificationDetailsViewModel MapToViewModel(GetChangedQualificationDetailsResponse response)
         {
             if (response == null)
             {

@@ -1,6 +1,6 @@
 ﻿    namespace SFA.DAS.AODP.Application.Queries.Qualifications
 {
-        public class GetChangedQualificationDetailsQueryResponse
+        public class GetChangedQualificationDetailsResponse
         {
             public int Id { get; set; }
             public string? Status { get; set; }

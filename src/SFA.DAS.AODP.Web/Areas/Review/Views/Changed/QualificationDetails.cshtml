@@ -23,7 +23,7 @@
         <govuk-summary-list-row-key>Qualification Reference</govuk-summary-list-row-key>
         <govuk-summary-list-row-value>@Model.QualificationReference</govuk-summary-list-row-value>
     </govuk-summary-list-row>
-        <govuk-summary-list-row>
+    <govuk-summary-list-row>
         <govuk-summary-list-row-key>Awarding Organisation</govuk-summary-list-row-key>
         <govuk-summary-list-row-value>@Model.AwardingOrganisation</govuk-summary-list-row-value>
     </govuk-summary-list-row>
@@ -31,7 +31,7 @@
         <govuk-summary-list-row-key>Title</govuk-summary-list-row-key>
         <govuk-summary-list-row-value>@Model.Title</govuk-summary-list-row-value>
     </govuk-summary-list-row>
-        <govuk-summary-list-row>
+    <govuk-summary-list-row>
         <govuk-summary-list-row-key>Qualification Type</govuk-summary-list-row-key>
         <govuk-summary-list-row-value>@Model.QualificationType</govuk-summary-list-row-value>
     </govuk-summary-list-row>
@@ -63,13 +63,39 @@
         <govuk-summary-list-row-key>Comments</govuk-summary-list-row-key>
         <govuk-summary-list-row-value>
             <govuk-textarea name="Comments">
-                <govuk-textarea-label class="govuk-label--l" is-page-heading="true">
+                <govuk-textarea-label class="govuk-label--s" is-page-heading="false">
+                    Leave comments and recommendations. Give as much detail as you can.
                 </govuk-textarea-label>
                 <govuk-textarea-value>
-                @Model.Comments
+                    @Model.Comments
                 </govuk-textarea-value>
             </govuk-textarea>
-            </govuk-summary-list-row-value>
+        </govuk-summary-list-row-value>
     </govuk-summary-list-row>
+
+
 </govuk-summary-list>
+
+<form action="/" method="post">
+    <div class="govuk-form-group">
+        <label class="govuk-label" for="sort">
+            Status
+        </label>
+
+        <select asp-for="ActionTypes"
+                asp-items="@(new SelectList(Model.ActionTypes, "Id", "Name"))"/>
+
+        <select class="govuk-select" id="sort" name="sort">
+            <option value="published">Recently published</option>
+            <option value="updated" selected>Recently updated</option>
+            <option value="views">Most views</option>
+            <option value="comments">Most comments</option>
+
+        </select>
+        <button type="submit" class="govuk-button" data-module="govuk-button">
+            Save and continue
+        </button>
+
+    </div>
+</form>
 

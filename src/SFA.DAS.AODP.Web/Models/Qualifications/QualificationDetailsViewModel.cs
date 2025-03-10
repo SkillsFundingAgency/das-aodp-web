@@ -1,4 +1,6 @@
-﻿namespace SFA.DAS.AODP.Web.Models.Qualifications
+﻿using SFA.DAS.AODP.Application.Queries.Qualifications;
+
+namespace SFA.DAS.AODP.Web.Models.Qualifications
 {
     public class QualificationDetailsViewModel
     {
@@ -17,6 +19,8 @@
         public string? Subject { get; set; }
         public string? SectorSubjectArea { get; set; }
         public string? Comments { get; set; }
+
+        public List<ActionTypeViewModel>? ActionTypes { get; set; }
     }
 }
 
