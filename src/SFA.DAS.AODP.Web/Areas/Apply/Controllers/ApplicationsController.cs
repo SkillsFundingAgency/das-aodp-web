@@ -3,11 +3,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Queries.Application.Form;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
+using SFA.DAS.AODP.Authentication.DfeSignInApi.Models;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Web.Areas.Admin.Controllers.FormBuilder;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Filters;
+using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Application;
 using SFA.DAS.AODP.Web.Validators;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
@@ -19,26 +21,33 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
     [ValidateOrganisation]
     public class ApplicationsController : ControllerBase
     {
-        private const string ApplicationDeletedKey = nameof(ApplicationDeletedKey);
+        public enum UpdateKeys
+        {
+            ApplicationDeletedKey
+        }
 
         private readonly IApplicationAnswersValidator _validator;
         private readonly IFileService _fileService;
-        public ApplicationsController(IMediator mediator, IApplicationAnswersValidator validator, ILogger<FormsController> logger, IFileService fileService) : base(mediator, logger)
+        private readonly IUserHelperService _userHelperService;
+
+        public ApplicationsController(IMediator mediator, IApplicationAnswersValidator validator, ILogger<FormsController> logger, IFileService fileService, IUserHelperService userHelperService) : base(mediator, logger)
         {
             _validator = validator;
             _fileService = fileService;
+            _userHelperService = userHelperService;
         }
 
         [HttpGet]
-        [Route("apply/organisations/{organisationId}")]
-        public async Task<IActionResult> Index(Guid organisationId)
+        [Route("apply/applications")]
+        public async Task<IActionResult> Index()
         {
             try
             {
+                var organisationId = Guid.Parse(_userHelperService.GetUserOrganisationId());
                 var response = await Send(new GetApplicationsByOrganisationIdQuery(organisationId));
                 ListApplicationsViewModel model = ListApplicationsViewModel.Map(response, organisationId);
 
-                ShowNotificationIfKeyExists(ApplicationDeletedKey, ViewNotificationMessageType.Success, "The application has been deleted.");
+                ShowNotificationIfKeyExists(UpdateKeys.ApplicationDeletedKey.ToString(), ViewNotificationMessageType.Success, "The application has been deleted.");
 
                 return View(model);
             }
@@ -100,8 +109,10 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
                 Title = createApplicationViewModel.Name,
                 FormVersionId = createApplicationViewModel.FormVersionId,
                 Owner = createApplicationViewModel.Owner,
-                OrganisationId = createApplicationViewModel.OrganisationId,
+                OrganisationId = Guid.Parse(_userHelperService.GetUserOrganisationId()),
                 QualificationNumber = createApplicationViewModel.QualificationNumber,
+                OrganisationName = _userHelperService.GetUserOrganisationName(),
+                OrganisationUkprn = _userHelperService.GetUserOrganisationUkPrn()
             };
 
             try
@@ -287,12 +298,11 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
                     model = ApplicationPageViewModel.RepopulatePageDataOnViewModel(response, model, fetchBlobFunc);
                     return View(model);
                 }
-
-                await HandleFileUploads(model);
-
                 var command = ApplicationPageViewModel.MapToCommand(model, response);
 
                 var commandResponse = await Send(command);
+
+                await HandleFileUploads(model);
 
                 bool endSection = command.Routing?.EndSection == true || response.TotalSectionPages == response.Order;
                 if (endSection) return RedirectToAction(nameof(ViewApplicationSection), new { organisationId = model.OrganisationId, applicationId = model.ApplicationId, sectionId = model.SectionId, formVersionId = model.FormVersionId });
@@ -352,14 +362,89 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
                 await DeleteApplicationFiles(model.ApplicationId);
                 await Send(command);
 
-                TempData[ApplicationDeletedKey] = true;
-                return RedirectToAction(nameof(Index), new { organisationId = model.OrganisationId });
+                TempData[UpdateKeys.ApplicationDeletedKey.ToString()] = true;
+                return RedirectToAction(nameof(Index));
             }
             catch
             {
                 return View(model);
             }
         }
+
+
+        #endregion
+
+        #region Submit
+        [ValidateApplication]
+        [Route("apply/organisations/{organisationId}/applications/{applicationId}/submit")]
+        public async Task<IActionResult> Submit(Guid applicationId)
+        {
+            try
+            {
+                var query = new GetApplicationByIdQuery(applicationId);
+                var response = await Send(query);
+                return View(new SubmitApplicationViewModel()
+                {
+                    ApplicationId = applicationId,
+                    ApplicationReference = response.Reference,
+                    OrganisationId = response.OrganisationId,
+                    FormVersionId = response.FormVersionId,
+                    ApplicationName = response.Name
+                });
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
+        }
+
+        [ValidateApplication]
+        [HttpPost]
+        [Route("apply/organisations/{organisationId}/applications/{applicationId}/submit")]
+        public async Task<IActionResult> Submit(SubmitApplicationViewModel model)
+        {
+            try
+            {
+                var command = new SubmitApplicationCommand()
+                {
+                    ApplicationId = model.ApplicationId,
+                    SubmittedBy = _userHelperService.GetUserDisplayName(),
+                    SubmittedByEmail = _userHelperService.GetUserEmail(),
+                };
+                await Send(command);
+
+                return RedirectToAction(nameof(SubmitConfirmation), new { organisationId = _userHelperService.GetUserOrganisationId(), applicationId = model.ApplicationId });
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
+        }
+
+        [HttpGet]
+        [ValidateApplication]
+        [Route("apply/organisations/{organisationId}/applications/{applicationId}/submit-confirmed")]
+        public async Task<IActionResult> SubmitConfirmation(Guid applicationId)
+        {
+            try
+            {
+                var query = new GetApplicationByIdQuery(applicationId);
+                var response = await Send(query);
+                return View(new SubmitApplicationViewModel()
+                {
+                    ApplicationId = applicationId,
+                    ApplicationReference = response.Reference,
+                    OrganisationId = response.OrganisationId,
+                    FormVersionId = response.FormVersionId,
+                    ApplicationName = response.Name
+                });
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
+        }
+
         #endregion
 
 

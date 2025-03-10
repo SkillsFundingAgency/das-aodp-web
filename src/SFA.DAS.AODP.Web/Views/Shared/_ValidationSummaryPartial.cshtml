@@ -1,20 +1,25 @@
-﻿@* @if (!ViewData.ModelState.IsValid)
+﻿@if (!ViewContext.ModelState.IsValid)
 {
-    <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
-        <h2 class="govuk-error-summary__title" id="error-summary-title">
-            There is a problem
-        </h2>
-        <div class="govuk-error-summary__body">
-            <ul class="govuk-list govuk-error-summary__list">
+    <div class="govuk-error-summary" data-module="govuk-error-summary">
+        <div role="alert">
+            <h2 class="govuk-error-summary__title">
+                There is a problem
+            </h2>
+            <div class="govuk-error-summary__body">
+                <ul class="govuk-list govuk-error-summary__list">
 
-                @foreach (var item in ViewData.ModelState)
-                {
-                    foreach (var error in item.Value.Errors)
+                    @foreach (var ms in ViewContext.ModelState)
                     {
-                        <li><a href="#@item.Key"><span class="govuk-visually-hidden">Error: </span>@error.ErrorMessage</a></li>
+                        var error = @ms.Value.Errors.FirstOrDefault();
+                        if (error == null) continue;
+
+                        <li>
+                            <a href="#@ms.Key">@error.ErrorMessage</a>
+                        </li>
                     }
-                }
-            </ul>
+
+                </ul>
+            </div>
         </div>
     </div>
-} *@
+}

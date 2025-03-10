@@ -1,0 +1,208 @@
+﻿@using SFA.DAS.AODP.Models.Application
+@using SFA.DAS.AODP.Models.Users
+@using SFA.DAS.AODP.Web.Areas.Review.Controllers
+@using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
+@using SFA.DAS.AODP.Web.Models.GdsComponents
+@model ApplicationsReviewListViewModel
+
+@{
+    ViewData["Title"] = "Review applications";
+}
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-full" id="guide-contents">
+        <h1 class="govuk-heading-1">Requests for funding</h1>
+
+        <form asp-controller="ApplicationsReview" asp-action="Search" method="post">
+            <div class="govuk-grid-row">
+                <div class="govuk-form-group govuk-grid-column-one-half">
+                    <govuk-input asp-for="@Model.ApplicationSearch" input-class="govuk-input--width-30" inputmode="text" spellcheck="false">
+                        <govuk-input-label is-page-heading="false" class="govuk-label--s">You can search by submission ID, qualification title or QAN</govuk-input-label>
+                    </govuk-input>
+                    <govuk-input asp-for="@Model.AwardingOrganisationSearch" input-class="govuk-input--width-30" inputmode="text" spellcheck="false">
+                        <govuk-input-label is-page-heading="false" class="govuk-label--s">Search by Awarding Organisation</govuk-input-label>
+                    </govuk-input>
+                </div>
+                <div class="govuk-form-group govuk-grid-column-one-half">
+                    <fieldset class="govuk-fieldset">
+                        <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">
+                            <h1 class="govuk-fieldset__heading">
+                                Status
+                            </h1>
+                        </legend>
+
+                        @{
+                            void RenderCheckBoxes(Dictionary<ApplicationStatus, string> keyValuePairs)
+                            {
+                                @foreach (var kvp in keyValuePairs)
+                                {
+                                    <div class="govuk-checkboxes__item">
+                                        <input @(Model.Status?.Contains(@kvp.Key) == true ? "checked" : "")
+                                               class="govuk-checkboxes__input"
+                                               name="Status"
+                                               type="checkbox"
+                                               id="@kvp.Key"
+                                               value="@kvp.Key">
+                                        <label class="govuk-label govuk-checkboxes__label" for="@kvp.Key">
+                                            @kvp.Value
+                                        </label>
+                                    </div>
+                                }
+                            }
+                        }
+
+                        @if (Model.UserType == UserType.Qfau.ToString())
+                        {
+                            <div class="govuk-checkboxes govuk-checkboxes--small govuk-grid-column-one-half" data-module="govuk-checkboxes">
+
+                                @{
+                                    RenderCheckBoxes(new()
+                            {
+                            {ApplicationStatus.NewMessage, ApplicationStatusDisplay.Dictionary[ApplicationStatus.NewMessage].ToString()},
+                            {ApplicationStatus.Draft, ApplicationStatusDisplay.Dictionary[ApplicationStatus.Draft].ToString()},
+                            {ApplicationStatus.InReview, ApplicationStatusDisplay.Dictionary[ApplicationStatus.InReview].ToString()},
+                            });
+                                }
+
+                            </div>
+
+                            <div class="govuk-checkboxes govuk-checkboxes--small govuk-grid-column-one-half" data-module="govuk-checkboxes">
+                                @{
+                                    RenderCheckBoxes(new()
+                            {
+                            {ApplicationStatus.Approved, ApplicationStatusDisplay.Dictionary[ApplicationStatus.Approved].ToString()},
+                            {ApplicationStatus.NotApproved, ApplicationStatusDisplay.Dictionary[ApplicationStatus.NotApproved].ToString()},
+                            {ApplicationStatus.Withdrawn, ApplicationStatusDisplay.Dictionary[ApplicationStatus.Withdrawn].ToString()},
+                            });
+                                }
+                            </div>
+                        }
+                        else if (Model.UserType == UserType.Ofqual.ToString())
+                        {
+                            <div class="govuk-checkboxes govuk-checkboxes--small govuk-grid-column-one-half" data-module="govuk-checkboxes">
+
+                                @{
+                                    RenderCheckBoxes(new()
+                            {
+                            {ApplicationStatus.NewMessage, ApplicationStatusDisplay.Dictionary[ApplicationStatus.NewMessage].ToString()},
+                            {ApplicationStatus.InReview, ApplicationStatusDisplay.Dictionary[ApplicationStatus.InReview].ToString()},
+                            {ApplicationStatus.Reviewed, ApplicationStatusDisplay.Dictionary[ApplicationStatus.Reviewed].ToString()},
+                            });
+                                }
+
+                            </div>
+                        }
+                        else if (Model.UserType == UserType.SkillsEngland.ToString())
+                        {
+                            <div class="govuk-checkboxes govuk-checkboxes--small govuk-grid-column-one-half" data-module="govuk-checkboxes">
+
+                                @{
+                                    RenderCheckBoxes(new()
+                            {
+                            {ApplicationStatus.NewMessage, ApplicationStatusDisplay.Dictionary[ApplicationStatus.NewMessage].ToString()},
+                            {ApplicationStatus.InReview, ApplicationStatusDisplay.Dictionary[ApplicationStatus.InReview].ToString()},
+                            {ApplicationStatus.Approved, ApplicationStatusDisplay.Dictionary[ApplicationStatus.Approved].ToString()},
+                            {ApplicationStatus.NotApproved, ApplicationStatusDisplay.Dictionary[ApplicationStatus.NotApproved].ToString()},
+                            });
+                                }
+
+                            </div>
+                        }
+
+
+
+                    </fieldset>
+                </div>
+            </div>
+
+            <div class="govuk-grid-row">
+                <div class="govuk-grid-column-full">
+                    <govuk-select asp-for="@Model.ItemsPerPage">
+                        <govuk-select-label>Applications per page</govuk-select-label>
+                        <govuk-select-item value="10" selected="true">10</govuk-select-item>
+                        <govuk-select-item value="20">20</govuk-select-item>
+                        <govuk-select-item value="50">50</govuk-select-item>
+                    </govuk-select>
+                </div>
+            </div>
+
+            <div class="govuk-button-group">
+                <govuk-button type="submit">Search</govuk-button>
+                <govuk-button-link href="/review/application-reviews" class=" govuk-button--secondary">Clear search</govuk-button-link>
+
+            </div>
+
+        </form>
+
+        @if (Model.Applications.Count != 0 && Model.TotalItems.HasValue)
+        {
+            int startNumber = (Model.Page - 1) * Model.ItemsPerPage + 1;
+            int endNumber = Math.Min(Model.Page * Model.ItemsPerPage, Model.TotalItems.Value);
+
+            <p class="govuk-heading-s">Viewing @startNumber-@endNumber of @Model.TotalItems qualifications</p>
+        }
+
+        <table class="govuk-table">
+            <thead class="govuk-table__head">
+                <tr class="govuk-table__row">
+                    <th scope="col" class="govuk-table__header">Submission ID</th>
+                    <th scope="col" class="govuk-table__header">QAN</th>
+                    <th scope="col" class="govuk-table__header">Qualification title</th>
+                    <th scope="col" class="govuk-table__header">Status</th>
+                    <th scope="col" class="govuk-table__header">Awarding Organisation</th>
+                </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+                @foreach (var item in Model.Applications.OrderByDescending(a => a.LastUpdated))
+                {
+                    <tr class="govuk-table__row">
+                        <td class="govuk-table__cell">
+                            @item.Reference.ToString().PadLeft(6, '0')
+                        </td>
+                        <td class="govuk-table__cell">
+                            @(item.Qan ?? "Not provided")
+                        </td>
+                        <td class="govuk-table__cell">
+                            <a class="govuk-link"
+                               asp-area="Review"
+                               asp-action="ViewApplication"
+                               asp-route-applicationReviewId="@item.ApplicationReviewId"
+                               asp-controller="ApplicationsReview">@item.Name</a>
+                        </td>
+                        <td class="govuk-table__cell">
+                            @ApplicationStatusDisplay.Dictionary[item.Status]
+                            @if (item.NewMessage)
+                            {
+                                <br />
+                                <govuk-tag class="govuk-!-static-margin-top-1">New message</govuk-tag>
+
+                            }
+
+                        </td>
+                        <td class="govuk-table__cell">@item.AwardingOrganisation</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        @{
+            PaginationModel model = new()
+            {
+                CurrentPage = Model.Page,
+                MaxPageNumber = (int)Math.Ceiling((double)Model.TotalItems / Model.ItemsPerPage),
+                ActionName = "Index",
+                ControllerName = nameof(ApplicationsReviewController)
+            };
+        }
+
+        <div class="govuk-grid-row">
+
+            <div class="govuk-grid-column-two-thirds">
+                @{
+                    await Html.RenderPartialAsync("GdsComponents/_GdsPagination", model);
+                }
+            </div>
+        </div>
+    </div>
+</div>

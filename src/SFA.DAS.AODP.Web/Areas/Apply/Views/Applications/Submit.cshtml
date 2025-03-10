@@ -1,0 +1,48 @@
+﻿@using SFA.DAS.AODP.Web.Models.Application
+@model SubmitApplicationViewModel
+
+@{
+    ViewData["Title"] = "Submit application";
+}
+
+<a class="govuk-back-link" asp-action="ViewApplication" asp-controller="Applications"
+   asp-route-organisationId="@Model.OrganisationId"
+   asp-route-applicationId="@Model.ApplicationId"
+   asp-route-formVersionId="@Model.FormVersionId">
+    Back to application
+</a>
+
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
+<h1 class="govuk-heading-l">Submit Application?</h1>
+
+<form asp-action="Submit" asp-controller="Applications" method="post">
+    @Html.HiddenFor(m => m.FormVersionId)
+    @Html.HiddenFor(m => m.ApplicationId)
+    @Html.HiddenFor(m => m.OrganisationId)
+
+    <govuk-warning-text icon-fallback-text="Warning">
+        By submitting this application you are confirming that, to the best of your knowledge, the details you are providing are correct.
+    </govuk-warning-text>
+
+    <p class="govuk-body">
+       Name: @Model.ApplicationName
+       <br/>
+       Reference: @Model.ApplicationReference.ToString().PadLeft(6, '0')
+    </p>
+
+    <div class="govuk-button-group">
+
+        <govuk-button class="govuk-button" type="submit">
+            Accept and submit
+        </govuk-button>
+
+        <a class="govuk-button govuk-button--secondary" asp-action="ViewApplication" asp-controller="Applications"
+           asp-route-organisationId="@Model.OrganisationId"
+           asp-route-applicationId="@Model.ApplicationId"
+           asp-route-formVersionId="@Model.FormVersionId">
+            Cancel
+        </a>
+
+    </div>
+</form>

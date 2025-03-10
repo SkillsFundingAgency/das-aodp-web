@@ -1,6 +1,10 @@
 ﻿@using SFA.DAS.AODP.Web.Models.Application
 @model DeleteApplicationViewModel
 
+@{
+    ViewData["Title"] = "Delete application";
+}
+
 <a class="govuk-back-link" asp-action="ViewApplication" asp-controller="Applications"
    asp-route-organisationId="@Model.OrganisationId"
    asp-route-applicationId="@Model.ApplicationId"
