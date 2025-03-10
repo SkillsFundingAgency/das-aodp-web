@@ -112,8 +112,7 @@ internal class Program
                                pattern: "Admin",
                                defaults: new { area = "Admin", controller = "Home", action = "Index" }).AllowAnonymous();
 
-        endpoints.MapAreaControllerRoute(name: "AdminDefaultForImport",
-                      areaName: "Admin",
+        endpoints.MapControllerRoute(name: "AdminDefaultForImport",
                       pattern: "Admin/Import/{action=Index}/{id?}",
                       defaults: new { area = "Admin", controller = "Import" }).RequireAuthorization(PolicyConstants.IsAdminImportUser);
 
