@@ -2,5 +2,5 @@
 
 @if (ViewContext.ModelState.ContainsKey(Model))
 {
-    <govuk-checkboxes-error-message>@ViewContext.ModelState[Model]?.Errors.FirstOrDefault()?.ErrorMessage</govuk-checkboxes-error-message>
+    <govuk-radios-error-message>@ViewContext.ModelState[Model]?.Errors.FirstOrDefault()?.ErrorMessage</govuk-radios-error-message>
 }
