@@ -1,5 +1,6 @@
 ﻿using AutoFixture;
 using AutoFixture.AutoMoq;
+using Azure;
 using Moq;
 using SFA.DAS.AODP.Domain.Interfaces;
 using SFA.DAS.AODP.Infrastructure.Cache;
@@ -31,7 +32,14 @@ namespace SFA.DAS.Aodp.UnitTests.Application.Queries.Application.Form
 
             var response = _fixture.Create<GetApplicationFormByIdQueryResponse>();
 
-            _cacheServiceMock.Setup(x => x.GetAsync<It.IsAnyType>(It.IsAny<string>(), It.IsAny < Func<Task<It.IsAnyType>>>())).Callback();
+            _cacheServiceMock
+                .Setup(x => x.GetAsync<GetApplicationFormByIdQueryResponse>(
+                    It.IsAny<string>(),
+                    It.IsAny<Func<Task<GetApplicationFormByIdQueryResponse>>>()))
+                .Callback<string, Func<Task<GetApplicationFormByIdQueryResponse>>>(async (key, func) =>
+                {
+                    await func();
+                }).ReturnsAsync(response);
 
             _apiClientMock.Setup(x => x.Get<GetApplicationFormByIdQueryResponse>(It.IsAny<GetApplicationFormByIdApiRequest>()))
                           .Returns(Task.FromResult(response));
@@ -55,8 +63,11 @@ namespace SFA.DAS.Aodp.UnitTests.Application.Queries.Application.Form
             var query = _fixture.Create<GetApplicationFormByIdQuery>();
             var exception = _fixture.Create<Exception>();
 
-            _apiClientMock.Setup(x => x.Get<GetApplicationFormByIdQueryResponse>(It.IsAny<GetApplicationFormByIdApiRequest>()))
-                          .ThrowsAsync(exception);
+            _cacheServiceMock
+                .Setup(x => x.GetAsync<GetApplicationFormByIdQueryResponse>(
+                    It.IsAny<string>(),
+                    It.IsAny<Func<Task<GetApplicationFormByIdQueryResponse>>>()))
+                .ThrowsAsync(exception);
 
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);

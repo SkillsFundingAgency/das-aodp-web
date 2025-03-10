@@ -2,8 +2,7 @@
 using AutoFixture.AutoMoq;
 using Moq;
 using SFA.DAS.AODP.Domain.Interfaces;
-using SFA.DAS.AODP.Application.Queries.Application.Section;
-using SFA.DAS.AODP.Domain.Application.Form;
+using SFA.DAS.AODP.Infrastructure.Cache;
 
 namespace SFA.DAS.Aodp.UnitTests.Application.Queries.Application.Section
 {
@@ -12,12 +11,13 @@ namespace SFA.DAS.Aodp.UnitTests.Application.Queries.Application.Section
         private IFixture? _fixture;
         private Mock<IApiClient>? _apiClientMock;
         private AODP.Application.Queries.Application.Section.GetApplicationSectionByIdQueryHandler _handler;
-
+        private Mock<ICacheService> _cacheServiceMock;
 
         public GetApplicationSectionByIdQueryHandlerTests()
         {
             _fixture = new Fixture().Customize(new AutoMoqCustomization());
             _apiClientMock = _fixture.Freeze<Mock<IApiClient>>();
+            _cacheServiceMock = _fixture.Freeze<Mock<ICacheService>>();
             _handler = _fixture.Create<AODP.Application.Queries.Application.Section.GetApplicationSectionByIdQueryHandler>();
         }
 
@@ -31,6 +31,15 @@ namespace SFA.DAS.Aodp.UnitTests.Application.Queries.Application.Section
 
             _apiClientMock.Setup(x => x.Get<GetApplicationSectionByIdQueryResponse>(It.IsAny<GetApplicationSectionByIdApiRequest>()))
                           .ReturnsAsync(response);
+
+            _cacheServiceMock
+                .Setup(x => x.GetAsync<GetApplicationSectionByIdQueryResponse>(
+                    It.IsAny<string>(),
+                    It.IsAny<Func<Task<GetApplicationSectionByIdQueryResponse>>>()))
+                .Callback<string, Func<Task<GetApplicationSectionByIdQueryResponse>>>(async (key, func) =>
+                {
+                    await func();
+                }).ReturnsAsync(response);
 
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);
@@ -51,7 +60,10 @@ namespace SFA.DAS.Aodp.UnitTests.Application.Queries.Application.Section
             var query = _fixture.Create<GetApplicationSectionByIdQuery>();
             var exception = _fixture.Create<Exception>();
 
-            _apiClientMock.Setup(x => x.Get<GetApplicationSectionByIdQueryResponse>(It.IsAny<GetApplicationSectionByIdApiRequest>()))
+            _cacheServiceMock
+                .Setup(x => x.GetAsync<GetApplicationSectionByIdQueryResponse>(
+                    It.IsAny<string>(),
+                    It.IsAny<Func<Task<GetApplicationSectionByIdQueryResponse>>>()))
                           .ThrowsAsync(exception);
 
             // Act

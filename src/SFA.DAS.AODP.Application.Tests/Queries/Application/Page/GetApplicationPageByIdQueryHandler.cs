@@ -3,6 +3,7 @@ using AutoFixture.AutoMoq;
 using Moq;
 using SFA.DAS.AODP.Application.Queries.Application.Page;
 using SFA.DAS.AODP.Domain.Interfaces;
+using SFA.DAS.AODP.Infrastructure.Cache;
 
 namespace SFA.DAS.Aodp.UnitTests.Application.Queries.Application.Page
 {
@@ -11,12 +12,14 @@ namespace SFA.DAS.Aodp.UnitTests.Application.Queries.Application.Page
         private IFixture? _fixture;
         private Mock<IApiClient>? _apiClientMock;
         private GetApplicationPageByIdQueryHandler _handler;
+        private Mock<ICacheService> _cacheServiceMock;
 
 
         public GetApplicationPageByIdQueryHandlerTests()
         {
             _fixture = new Fixture().Customize(new AutoMoqCustomization());
             _apiClientMock = _fixture.Freeze<Mock<IApiClient>>();
+            _cacheServiceMock = _fixture.Freeze<Mock<ICacheService>>();
             _handler = _fixture.Create<GetApplicationPageByIdQueryHandler>();
         }
 
@@ -25,8 +28,6 @@ namespace SFA.DAS.Aodp.UnitTests.Application.Queries.Application.Page
         {
             // Arrange
             var query = _fixture.Create<GetApplicationPageByIdQuery>();
-
-            //var response = _fixture.Create<GetApplicationPageByIdQueryResponse>();
 
             var response = new GetApplicationPageByIdQueryResponse()
             {
@@ -40,6 +41,15 @@ namespace SFA.DAS.Aodp.UnitTests.Application.Queries.Application.Page
 
             _apiClientMock.Setup(x => x.Get<GetApplicationPageByIdQueryResponse>(It.IsAny<GetApplicationPageByIdApiRequest>()))
                           .ReturnsAsync(response);
+
+            _cacheServiceMock
+               .Setup(x => x.GetAsync<GetApplicationPageByIdQueryResponse>(
+                   It.IsAny<string>(),
+                   It.IsAny<Func<Task<GetApplicationPageByIdQueryResponse>>>()))
+               .Callback<string, Func<Task<GetApplicationPageByIdQueryResponse>>>(async (key, func) =>
+               {
+                   await func();
+               }).ReturnsAsync(response);
 
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);
@@ -58,10 +68,12 @@ namespace SFA.DAS.Aodp.UnitTests.Application.Queries.Application.Page
         {
             // Arrange
             var query = _fixture.Create<GetApplicationPageByIdQuery>();
-            var exception = _fixture.Create<Exception>();
+            var exception = _fixture.Create<Exception>();                   
 
-            _apiClientMock.Setup(x => x.Get<GetApplicationPageByIdQueryResponse>(It.IsAny<GetApplicationPageByIdApiRequest>()))
-                          .ThrowsAsync(exception);
+            _cacheServiceMock
+              .Setup(x => x.GetAsync<GetApplicationPageByIdQueryResponse>(
+                  It.IsAny<string>(),
+                  It.IsAny<Func<Task<GetApplicationPageByIdQueryResponse>>>())).ThrowsAsync(exception);
 
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);
