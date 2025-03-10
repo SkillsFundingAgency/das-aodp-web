@@ -341,7 +341,8 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
                     ApplicationId = applicationId,
                     ApplicationReference = response.Reference,
                     OrganisationId = response.OrganisationId,
-                    ApplicationName = response.Name
+                    ApplicationName = response.Name,
+                    FormVersionId = response.FormVersionId
                 });
             }
             catch
