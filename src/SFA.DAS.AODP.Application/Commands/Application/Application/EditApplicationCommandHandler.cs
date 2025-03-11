@@ -10,7 +10,6 @@ public class EditApplicationCommandHandler : IRequestHandler<EditApplicationComm
         _apiCLient = apiCLient;
     }
 
-
     public async Task<BaseMediatrResponse<EmptyResponse>> Handle(EditApplicationCommand request, CancellationToken cancellationToken)
     {
         var response = new BaseMediatrResponse<EmptyResponse>

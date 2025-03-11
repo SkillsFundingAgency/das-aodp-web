@@ -19,6 +19,7 @@ internal class Program
             .AddAuthorization(options =>
             {
                 options.AddPolicy(PolicyConstants.IsReviewUser, policy => policy.RequireRole(RoleConstants.QFAUApprover, RoleConstants.QFAUReviewer, RoleConstants.IFATEReviewer, RoleConstants.OFQUALReviewer));
+                options.AddPolicy(PolicyConstants.IsInternalReviewUser, policy => policy.RequireRole(RoleConstants.QFAUApprover, RoleConstants.QFAUReviewer));
                 options.AddPolicy(PolicyConstants.IsApplyUser, policy => policy.RequireRole(RoleConstants.AOApply));
                 options.AddPolicy(PolicyConstants.IsAdminFormsUser, policy => policy.RequireRole(RoleConstants.QFAUFormBuilder, RoleConstants.IFATEFormBuilder));
                 options.AddPolicy(PolicyConstants.IsAdminImportUser, policy => policy.RequireRole(RoleConstants.QFAUImport));
@@ -62,6 +63,7 @@ internal class Program
         });
 
         var app = builder.Build();
+
         app.UseStatusCodePagesWithRedirects("/Error/{0}");
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
@@ -74,11 +76,6 @@ internal class Program
                 .UseHsts()
                 .UseExceptionHandler("/Home/Error");
         }
-        app.Use(async (context, next) =>
-        {
-            Console.WriteLine($"Incoming Request: {context.Request.Method} {context.Request.Path}{context.Request.QueryString}");
-            await next.Invoke();
-        });
 
         app
             .UseHealthChecks("/ping")
@@ -88,42 +85,41 @@ internal class Program
             .UseRouting()
             .UseAuthentication()
             .UseAuthorization()
-                .UseEndpoints(endpoints =>
-                {
-                    AddRoutes(endpoints);
+            .UseSession()
+            .UseEndpoints(endpoints =>
+            {
+                AddRoutes(endpoints);
 
-                })
-            .UseSession();
+            });
         app.Run();
     }
 
     private static void AddRoutes(IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapAreaControllerRoute(name: "ReviewGeneric",
-              areaName: "Review",
-                                 pattern: "Review/{controller:exists}/{action=Index}/{id?}").RequireAuthorization(PolicyConstants.IsReviewUser);
+        endpoints.MapAreaControllerRoute(name: "Review",
+                                       areaName: "Review",
+                                       pattern: "Review",
+                                       defaults: new { area = "Review", controller = "Home", action = "Index" }).AllowAnonymous();
 
-        endpoints.MapAreaControllerRoute(name: "ReviewHome",
-                                                areaName: "Review",
-                                         pattern: "Review/{controller=home}/{action=index}").
-                                         AllowAnonymous();
-        endpoints.MapAreaControllerRoute(name: "AdminGeneric",
-            areaName: "Admin",
-                               pattern: "Admin/{controller:exists}/{action=Index}/{id?}").RequireAuthorization(PolicyConstants.IsReviewUser);
 
-        endpoints.MapAreaControllerRoute(name: "AdminHome",
-                                                areaName: "Admin",
-                                         pattern: "Admin/{controller=home}/{action=index}").
-                                         AllowAnonymous();
+        endpoints.MapAreaControllerRoute(name: "Apply",
+                                       areaName: "Apply",
+                                       pattern: "Apply",
+                                       defaults: new { area = "Apply", controller = "Home", action = "Index" }).AllowAnonymous();
 
-        endpoints.MapAreaControllerRoute(name: "ApplyGeneric",
-    areaName: "Apply",
-                       pattern: "Apply/{controller:exists}/{action=Index}/{id?}").RequireAuthorization(PolicyConstants.IsReviewUser);
+        endpoints.MapAreaControllerRoute(name: "Admin",
+                               areaName: "Admin",
+                               pattern: "Admin",
+                               defaults: new { area = "Admin", controller = "Home", action = "Index" }).AllowAnonymous();
 
-        endpoints.MapAreaControllerRoute(name: "ApplyHome",
-                                                areaName: "Apply",
-                                         pattern: "Apply/{controller=home}/{action=index}").
-                                         AllowAnonymous();
+        endpoints.MapControllerRoute(name: "AdminDefaultForImport",
+                      pattern: "Admin/Import/{action=Index}/{id?}",
+                      defaults: new { area = "Admin", controller = "Import" }).RequireAuthorization(PolicyConstants.IsAdminImportUser);
+
+        endpoints.MapControllerRoute(name: "AdminDefaultForForms",
+                                    pattern: "Admin/Forms/{action=index}/{id?}",
+                                    defaults: new { area = "Admin", controller = "Forms" }).RequireAuthorization(PolicyConstants.IsAdminFormsUser);
+
 
         endpoints.MapDefaultControllerRoute();
     }

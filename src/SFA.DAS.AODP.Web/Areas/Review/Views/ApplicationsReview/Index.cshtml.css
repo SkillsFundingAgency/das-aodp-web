@@ -1,0 +1,5 @@
+﻿#app-pagaination__select-container {
+    display: flex;
+    gap: 0.2rem;
+    align-items: baseline;
+}

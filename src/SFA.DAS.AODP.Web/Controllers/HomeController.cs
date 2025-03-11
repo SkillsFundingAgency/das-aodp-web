@@ -1,10 +1,6 @@
-using System.Diagnostics;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Web.Models;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using System.Diagnostics;
 
 namespace SFA.DAS.AODP.Web.Controllers
 {

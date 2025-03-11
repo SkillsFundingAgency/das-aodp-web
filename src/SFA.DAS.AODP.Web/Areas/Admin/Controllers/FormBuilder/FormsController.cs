@@ -17,7 +17,7 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers.FormBuilder;
 [Area("Admin")]
 public class FormsController : ControllerBase
 {
-    public enum UpdateKeys { FormUpdated, }
+    public enum UpdateKeys { FormUpdated, FormPublished }
 
     public FormsController(IMediator mediator, ILogger<FormsController> logger) : base(mediator, logger)
     { }
@@ -128,6 +128,7 @@ public class FormsController : ControllerBase
             var viewModel = EditFormVersionViewModel.Map(response);
 
             ShowNotificationIfKeyExists(UpdateKeys.FormUpdated.ToString(), ViewNotificationMessageType.Success, "The form has been updated.");
+            ShowNotificationIfKeyExists(UpdateKeys.FormPublished.ToString(), ViewNotificationMessageType.Success, "The form has been published.");
 
             return View(viewModel);
         }
@@ -148,6 +149,7 @@ public class FormsController : ControllerBase
             {
                 var command = new PublishFormVersionCommand(editFormVersionViewModel.Id);
                 await Send(command);
+                TempData[UpdateKeys.FormPublished.ToString()] = true;
 
             }
             else if (editFormVersionViewModel.AdditionalFormActions.UnPublish != default)

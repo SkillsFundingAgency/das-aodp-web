@@ -1,4 +1,6 @@
-﻿namespace SFA.DAS.AODP.Web.Models.Application
+﻿using SFA.DAS.AODP.Models.Application;
+
+namespace SFA.DAS.AODP.Web.Models.Application
 {
     public class ApplicationFormViewModel
     {
@@ -10,6 +12,8 @@
         public string FormTitle { get; set; }
         public string Reference { get; set; }
         public string? QualificationNumber { get; set; }
+        public DateTime? UpdatedDate { get; set; }
+        public ApplicationStatus Status { get; set; }
 
         public bool IsCompleted { get; set; }
         public bool IsSubmitted { get; set; }
@@ -36,6 +40,8 @@
                 Owner = statusResponse.Owner,
                 Reference = statusResponse.Reference,
                 QualificationNumber = statusResponse.QualificationNumber,
+                Status = statusResponse.Status,
+                UpdatedDate = statusResponse.UpdatedDate,
                 Sections = new()
             };
 

@@ -1,4 +1,4 @@
-﻿using SFA.DAS.AODP.Application;
+﻿using SFA.DAS.AODP.Models.Application;
 
 public class GetApplicationsByOrganisationIdQueryResponse
 {
@@ -14,6 +14,7 @@ public class GetApplicationsByOrganisationIdQueryResponse
         public string Owner { get; set; }
         public string Reference { get; set; }
         public Guid FormVersionId { get; set; }
-
+        public DateTime? UpdatedDate { get; set; }
+        public ApplicationStatus Status { get; set; }
     }
 }
