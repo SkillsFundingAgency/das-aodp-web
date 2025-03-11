@@ -12,6 +12,7 @@ using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 {
     [Area("Review")]
+    [Route("{controller}/{action}")]
     [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
     public class NewController : ControllerBase
     {

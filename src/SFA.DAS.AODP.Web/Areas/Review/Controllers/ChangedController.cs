@@ -12,6 +12,7 @@ using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 {
     [Area("Review")]
+    [Route("{controller}/{action}")]
     [Authorize(Policy = PolicyConstants.IsReviewUser)]
     public class ChangedController : ControllerBase
     {
@@ -64,7 +65,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
                 return View(viewModel);
             }
-            catch
+            catch(Exception ex)
             {
                 return Redirect("/Home/Error");
             }
