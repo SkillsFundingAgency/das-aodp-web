@@ -21,45 +21,6 @@ public enum MessageType
     InternalNotesForPartners
 }
 
-// FOR POSTING
-
-public static class SendMessageTypeRule
-{
-    public static Dictionary<(UserType, string), string> Rules { get; } = new()
-    {
-         // DfE 
-        { (UserType.Qfau, "RequestInformation"), "RequestInformationFromAOByQfau" },
-        { (UserType.Qfau, "UnlockApplication"), "UnlockApplication" },
-        { (UserType.Qfau, "PutApplicationOnHold"), "PutApplicationOnHold" },
-        { (UserType.Qfau, "InternalNotes"), "InternalNotes" },
-        { (UserType.Qfau, "InternalNotesForPartners"), "InternalNotesForPartners" },
-
-         // Ofqual 
-        { (UserType.Ofqual, "RequestInformation"), "RequestInformationFromAOByOfqaul" },
-        { (UserType.Ofqual, "InternalNotesForDfE"), "InternalNotesForQfauFromOfqual" },
-
-        // SkillsEngland
-        { (UserType.SkillsEngland, "RequestInformation"), "RequestInformationFromAOBySkillsEngland" },
-        { (UserType.SkillsEngland,  "InternalNotesForDfE"), "InternalNotesForQfauFromSkillsEngland" },
-
-        // AO
-        { (UserType.AwardingOrganisation,  "ReplyToInformationRequest"), "ReplyToInformationRequest" },
-    };
-
-    public static string GetMessageType(UserType userType, string messageType)
-    {
-        if (Rules.TryGetValue((userType, messageType), out var messageTypeToSend))
-        {
-            return messageTypeToSend;
-        }
-
-        return "Uknown message type to send";
-    }
-}
-
-
-// FOR VIEWING
-
 public static class MessageTypeConfigurationRules
 {
     public static readonly Dictionary<MessageType, Func<MessageTypeConfiguration>> MessageTypeConfigurations =
