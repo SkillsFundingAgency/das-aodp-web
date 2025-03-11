@@ -44,7 +44,8 @@ public class ApplicationMessagesController : ControllerBase
                 SentAt = message.SentAt,
                 SentByName = message.SentByName,
                 SentByEmail = message.SentByEmail,
-                UserType = UserType
+                UserType = UserType,
+                MessageType = message.MessageType
             });
         }
 

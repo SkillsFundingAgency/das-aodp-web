@@ -39,11 +39,12 @@ public class ApplicationMessagesController : ControllerBase
             {
                 Id = message.MessageId,
                 Text = message.MessageText,
-                Status = message.MessageHeader,
+                Status = message.MessageHeader, // status to be renamed to MessageHeader
                 SentAt = message.SentAt,
                 SentByName = message.SentByName,
                 SentByEmail = message.SentByEmail,
-                UserType = UserType
+                UserType = UserType,
+                MessageType = message.MessageType,
             });
         }
 
