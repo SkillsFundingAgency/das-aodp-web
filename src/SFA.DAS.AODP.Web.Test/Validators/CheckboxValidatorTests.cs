@@ -31,3 +31,100 @@
 //        }
 //    }
 //}
+
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using SFA.DAS.AODP.Models.Exceptions.FormValidation;
+using SFA.DAS.AODP.Web.Models.Application;
+using SFA.DAS.AODP.Web.Validators;
+using System.Collections.Generic;
+
+public class CheckboxValidatorTests
+{
+    private readonly CheckboxValidator _sut = new();
+
+    [Fact]
+    public void Validate_Required_NoAnswerProvided_ExceptionThrown()
+    {
+        // Arrange
+        var questionId = Guid.NewGuid();
+
+        GetApplicationPageByIdQueryResponse.Question question = new()
+        {
+            Id = questionId,
+            Title = "something",
+            Required = true,
+        };
+
+        ApplicationPageViewModel.Answer answer =
+        new()
+        {
+            DateValue = null
+        };
+
+        // Act
+        var ex = Assert.Throws<QuestionValidationFailedException>(() => _sut.Validate(question, answer, new()));
+
+        // Assert
+        Assert.StartsWith("Please select at least", ex.Message);
+    }
+
+    [Fact]
+    public void Validate_Required_NotEnoughOptionsSelected_ExceptionThrown()
+    {
+        // Arrange
+        var questionId = Guid.NewGuid();
+
+        GetApplicationPageByIdQueryResponse.Question question = new()
+        {
+            Id = questionId,
+            Title = "something",
+            Required = true,
+            Checkbox = new()
+            {
+                MinNumberOfOptions = 2
+            }
+        };
+
+        ApplicationPageViewModel.Answer answer =
+        new()
+        {
+            MultipleChoiceValues = ["a"]
+        };
+
+        // Act
+        var ex = Assert.Throws<QuestionValidationFailedException>(() => _sut.Validate(question, answer, new()));
+
+        // Assert
+        Assert.StartsWith("Please select at least", ex.Message);
+    }
+
+    [Fact]
+    public void Validate_Required_TooManyOptionsSelected_ExceptionThrown()
+    {
+        // Arrange
+        var questionId = Guid.NewGuid();
+
+        GetApplicationPageByIdQueryResponse.Question question = new()
+        {
+            Id = questionId,
+            Title = "something",
+            Required = true,
+            Checkbox = new()
+            {
+                MaxNumberOfOptions = 2
+            }
+        };
+
+        ApplicationPageViewModel.Answer answer =
+        new()
+        {
+            MultipleChoiceValues = ["a", "b", "c"]
+        };
+
+        // Act
+        var ex = Assert.Throws<QuestionValidationFailedException>(() => _sut.Validate(question, answer, new()));
+
+        // Assert
+        Assert.StartsWith("Please only select up to", ex.Message);
+    }
+}
