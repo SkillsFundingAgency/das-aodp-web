@@ -2,6 +2,8 @@
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Domain.Interfaces;
 
+namespace SFA.DAS.AODP.Application.Queries.Application.Page;
+
 public class GetApplicationPageAnswersByPageIdQueryHandler : IRequestHandler<GetApplicationPageAnswersByPageIdQuery, BaseMediatrResponse<GetApplicationPageAnswersByPageIdQueryResponse>>
 {
     private readonly IApiClient _apiClient;

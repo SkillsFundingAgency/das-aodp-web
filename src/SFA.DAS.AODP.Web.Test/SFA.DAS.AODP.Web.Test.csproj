@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
@@ -26,6 +26,11 @@
 
 	<ItemGroup>
 		<Using Include="Xunit" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Areas\Admin\Controllers\FormBuilder\FormsController\" />
+	  <Folder Include="Areas\Admin\Controllers\FormBuilder\PagesController\" />
 	</ItemGroup>
 
 </Project>
