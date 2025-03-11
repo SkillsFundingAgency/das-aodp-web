@@ -11,7 +11,7 @@
     <div class="govuk-grid-column-two-thirds">
 
         <govuk-back-link class="govuk-link govuk-task-list__link"
-                         asp-action="Index"
+                         asp-action="ViewApplication"
                          asp-controller="ApplicationsReview"
                          asp-route-applicationReviewId="@Model.ApplicationReviewId">Back</govuk-back-link>
 
@@ -178,7 +178,7 @@
         <h5 class="govuk-heading-m govuk-!-margin-bottom-2">Related links</h5>
         <p class="govuk-body">
             <a class="govuk-link" rel="noreferrer noopener" target="_blank"
-               asp-action="Index"
+               asp-action="ViewApplication"
                asp-controller="ApplicationsReview"
                asp-route-applicationReviewId="@Model.ApplicationReviewId">View application (opens in new tab)</a>
         </p>
