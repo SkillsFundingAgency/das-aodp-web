@@ -120,6 +120,14 @@ internal class Program
                                     pattern: "Admin/Forms/{action=index}/{id?}",
                                     defaults: new { area = "Admin", controller = "Forms" }).RequireAuthorization(PolicyConstants.IsAdminFormsUser);
 
+        endpoints.MapControllerRoute(name: "ReviewChanged",
+                    pattern: "review/changed/{action=changed}/{id?}",
+                    defaults: new { area = "review", controller = "changed" }).RequireAuthorization(PolicyConstants.IsReviewUser);
+
+        endpoints.MapControllerRoute(name: "ReviewNew",
+                                    pattern: "review/new/{action=index}/{id?}",
+                                    defaults: new { area = "review", controller = "new" }).RequireAuthorization(PolicyConstants.IsInternalReviewUser);
+
 
         endpoints.MapDefaultControllerRoute();
     }
