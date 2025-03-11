@@ -1,23 +1,28 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview;
+using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApproval;
+using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Helpers.User;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 {
+
     [Area("Review")]
+    [Authorize(Policy = PolicyConstants.IsReviewUser)]
     public class ApplicationsReviewController : ControllerBase
     {
-
         private readonly IUserHelperService _userHelperService;
+
         public ApplicationsReviewController(ILogger<ApplicationsReviewController> logger, IMediator mediator, IUserHelperService userHelperService) : base(mediator, logger)
         {
             _userHelperService = userHelperService;
         }
 
-        [Route("review/applications-review")]
+        [Route("review/application-reviews")]
         public async Task<IActionResult> Index(ApplicationsReviewListViewModel model)
         {
 
@@ -48,7 +53,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         }
 
         [HttpPost]
-        [Route("review/applications-review")]
+        [Route("review/application-reviews")]
         public async Task<IActionResult> Search(ApplicationsReviewListViewModel model)
         {
             return RedirectToAction(nameof(Index), new ApplicationsReviewListViewModel()
@@ -60,5 +65,221 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 Status = model.Status
             });
         }
+
+        [Route("review/application-reviews/{applicationReviewId}")]
+        public async Task<IActionResult> ViewApplication(Guid applicationReviewId)
+        {
+            try
+            {
+                var userType = _userHelperService.GetUserType();
+                var review = await Send(new GetApplicationForReviewByIdQuery(applicationReviewId));
+
+                if (userType == AODP.Models.Users.UserType.Ofqual && review.SharedWithOfqual == false) return NotFound();
+                if (userType == AODP.Models.Users.UserType.SkillsEngland && review.SharedWithSkillsEngland == false) return NotFound();
+
+                return View(ApplicationReviewViewModel.Map(review, userType ));
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
+        }
+
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
+        [HttpGet]
+        [Route("review/application-reviews/{applicationReviewId}/qfau-funding")]
+        public async Task<IActionResult> QfauFundingReviewOutcome(Guid applicationReviewId)
+        {
+            try
+            {
+                var review = await Send(new GetFeedbackForApplicationReviewByIdQuery(applicationReviewId, _userHelperService.GetUserType().ToString()));
+
+                var model = new QfauFundingReviewOutcomeViewModel()
+                {
+                    ApplicationReviewId = applicationReviewId,
+                    Approved = review.Status == ApplicationStatus.Approved.ToString(),
+                    Comments = review.Comments,
+                    NewDecision = review.Status != ApplicationStatus.Approved.ToString() && review.Status != ApplicationStatus.NotApproved.ToString(),
+                };
+
+                return View(model);
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
+        }
+
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
+        [HttpPost]
+        [Route("review/application-reviews/{applicationReviewId}/qfau-funding")]
+        public async Task<IActionResult> QfauFundingReviewOutcome(QfauFundingReviewOutcomeViewModel model)
+        {
+            try
+            {
+                if (!ModelState.IsValid) return View(model);
+
+                await Send(new SaveQfauFundingReviewOutcomeCommand()
+                {
+                    ApplicationReviewId = model.ApplicationReviewId,
+                    Approved = model.Approved == true,
+                    Comments = model.Comments,
+                });
+
+                if (model.Approved == true)
+                {
+                    return RedirectToAction(nameof(QfauFundingReviewOffers), new { applicationReviewId = model.ApplicationReviewId });
+                }
+
+                return RedirectToAction(nameof(QfauFundingReviewSummary), new { applicationReviewId = model.ApplicationReviewId });
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
+        }
+
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
+        [HttpGet]
+        [Route("review/application-reviews/{applicationReviewId}/qfau-funding-offers")]
+        public async Task<IActionResult> QfauFundingReviewOffers(Guid applicationReviewId)
+        {
+            try
+            {
+                var offers = await Send(new GetFundingOffersQuery());
+                var review = await Send(new GetFeedbackForApplicationReviewByIdQuery(applicationReviewId, _userHelperService.GetUserType().ToString()));
+
+                QfauFundingReviewOutcomeOffersSelectViewModel model = new()
+                {
+                    SelectedOfferIds = review.FundedOffers?.Select(s => s.FundingOfferId).ToList() ?? [],
+                    ApplicationReviewId = applicationReviewId,
+                };
+
+                model.MapOffers(offers);
+
+                return View(model);
+
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
+        }
+
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
+        [HttpPost]
+        [Route("review/application-reviews/{applicationReviewId}/qfau-funding-offers")]
+        public async Task<IActionResult> QfauFundingReviewOffers(QfauFundingReviewOutcomeOffersSelectViewModel model)
+        {
+            try
+            {
+                if (model.SelectedOfferIds.Count == 0)
+                {
+                    ModelState.AddModelError("SelectedOfferIds", "Please select at least 1 offer.");
+                    var offers = await Send(new GetFundingOffersQuery());
+                    model.MapOffers(offers);
+                    return View(model);
+                }
+
+                await Send(new SaveQfauFundingReviewOffersCommand()
+                {
+                    ApplicationReviewId = model.ApplicationReviewId,
+                    SelectedOfferIds = model.SelectedOfferIds
+                });
+
+                return RedirectToAction(nameof(QfauFundingReviewOfferDetails), new { applicationReviewId = model.ApplicationReviewId });
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
+        }
+
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
+        [HttpGet]
+        [Route("review/application-reviews/{applicationReviewId}/qfau-funding-offers-details")]
+        public async Task<IActionResult> QfauFundingReviewOfferDetails(Guid applicationReviewId)
+        {
+            try
+            {
+                var offers = await Send(new GetFundingOffersQuery());
+                var review = await Send(new GetFeedbackForApplicationReviewByIdQuery(applicationReviewId, _userHelperService.GetUserType().ToString()));
+
+                var model = QfauFundingReviewOutcomeOfferDetailsViewModel.Map(review, offers);
+
+                return View(model);
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
+        }
+
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
+        [HttpPost]
+        [Route("review/application-reviews/{applicationReviewId}/qfau-funding-offers-details")]
+        public async Task<IActionResult> QfauFundingReviewOfferDetails(QfauFundingReviewOutcomeOfferDetailsViewModel model)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    var offers = await Send(new GetFundingOffersQuery());
+                    model.MapOffers(offers);
+
+                    return View(model);
+                }
+
+                await Send(QfauFundingReviewOutcomeOfferDetailsViewModel.Map(model));
+
+
+                return RedirectToAction(nameof(QfauFundingReviewSummary), new { applicationReviewId = model.ApplicationReviewId });
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
+        }
+
+
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
+        [HttpGet]
+        [Route("review/application-reviews/{applicationReviewId}/qfau-funding-summary")]
+        public async Task<IActionResult> QfauFundingReviewSummary(Guid applicationReviewId)
+        {
+            try
+            {
+                var offers = await Send(new GetFundingOffersQuery());
+                var review = await Send(new GetFeedbackForApplicationReviewByIdQuery(applicationReviewId, _userHelperService.GetUserType().ToString()));
+
+                var model = QfauFundingReviewOutcomeSummaryViewModel.Map(review, offers);
+                model.ApplicationReviewId = applicationReviewId;
+
+                return View(model);
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
+        }
+
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
+        [HttpGet]
+        [Route("review/application-reviews/{applicationReviewId}/qfau-funding-confirm")]
+        public async Task<IActionResult> QfauFundingReviewConfirmation(Guid applicationReviewId)
+        {
+            try
+            {
+                return View(new QfauFundingReviewConfirmationViewModel()
+                {
+                    ApplicationReviewId = applicationReviewId
+                });
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
+        }
+
     }
 }

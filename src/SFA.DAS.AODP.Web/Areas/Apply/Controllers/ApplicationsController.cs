@@ -1,9 +1,12 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Queries.Application.Form;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
+using SFA.DAS.AODP.Authentication.DfeSignInApi.Models;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Web.Areas.Admin.Controllers.FormBuilder;
+using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Filters;
 using SFA.DAS.AODP.Web.Helpers.User;
@@ -14,12 +17,13 @@ using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
 {
     [Area("Apply")]
+    [Authorize(Policy = PolicyConstants.IsApplyUser)]
     [ValidateOrganisation]
     public class ApplicationsController : ControllerBase
     {
         public enum UpdateKeys
         {
-            ApplicationDeletedKey, ApplicationSubmittedKey
+            ApplicationDeletedKey
         }
 
         private readonly IApplicationAnswersValidator _validator;
@@ -34,16 +38,16 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         }
 
         [HttpGet]
-        [Route("apply/organisations/{organisationId}")]
-        public async Task<IActionResult> Index(Guid organisationId)
+        [Route("apply/applications")]
+        public async Task<IActionResult> Index()
         {
             try
             {
+                var organisationId = Guid.Parse(_userHelperService.GetUserOrganisationId());
                 var response = await Send(new GetApplicationsByOrganisationIdQuery(organisationId));
                 ListApplicationsViewModel model = ListApplicationsViewModel.Map(response, organisationId);
 
                 ShowNotificationIfKeyExists(UpdateKeys.ApplicationDeletedKey.ToString(), ViewNotificationMessageType.Success, "The application has been deleted.");
-                ShowNotificationIfKeyExists(UpdateKeys.ApplicationSubmittedKey.ToString(), ViewNotificationMessageType.Success, "The application has been submitted.");
 
                 return View(model);
             }
@@ -105,7 +109,7 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
                 Title = createApplicationViewModel.Name,
                 FormVersionId = createApplicationViewModel.FormVersionId,
                 Owner = createApplicationViewModel.Owner,
-                OrganisationId = createApplicationViewModel.OrganisationId,
+                OrganisationId = Guid.Parse(_userHelperService.GetUserOrganisationId()),
                 QualificationNumber = createApplicationViewModel.QualificationNumber,
                 OrganisationName = _userHelperService.GetUserOrganisationName(),
                 OrganisationUkprn = _userHelperService.GetUserOrganisationUkPrn()
@@ -294,12 +298,11 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
                     model = ApplicationPageViewModel.RepopulatePageDataOnViewModel(response, model, fetchBlobFunc);
                     return View(model);
                 }
-
-                await HandleFileUploads(model);
-
                 var command = ApplicationPageViewModel.MapToCommand(model, response);
 
                 var commandResponse = await Send(command);
+
+                await HandleFileUploads(model);
 
                 bool endSection = command.Routing?.EndSection == true || response.TotalSectionPages == response.Order;
                 if (endSection) return RedirectToAction(nameof(ViewApplicationSection), new { organisationId = model.OrganisationId, applicationId = model.ApplicationId, sectionId = model.SectionId, formVersionId = model.FormVersionId });
@@ -338,7 +341,8 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
                     ApplicationId = applicationId,
                     ApplicationReference = response.Reference,
                     OrganisationId = response.OrganisationId,
-                    ApplicationName = response.Name
+                    ApplicationName = response.Name,
+                    FormVersionId = response.FormVersionId
                 });
             }
             catch
@@ -360,7 +364,7 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
                 await Send(command);
 
                 TempData[UpdateKeys.ApplicationDeletedKey.ToString()] = true;
-                return RedirectToAction(nameof(Index), new { organisationId = model.OrganisationId });
+                return RedirectToAction(nameof(Index));
             }
             catch
             {
@@ -408,11 +412,9 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
                     SubmittedBy = _userHelperService.GetUserDisplayName(),
                     SubmittedByEmail = _userHelperService.GetUserEmail(),
                 };
-
                 await Send(command);
 
-                TempData[UpdateKeys.ApplicationSubmittedKey.ToString()] = true;
-                return RedirectToAction(nameof(Index), new { organisationId = model.OrganisationId });
+                return RedirectToAction(nameof(SubmitConfirmation), new { organisationId = _userHelperService.GetUserOrganisationId(), applicationId = model.ApplicationId });
             }
             catch
             {
@@ -420,7 +422,29 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
             }
         }
 
-
+        [HttpGet]
+        [ValidateApplication]
+        [Route("apply/organisations/{organisationId}/applications/{applicationId}/submit-confirmed")]
+        public async Task<IActionResult> SubmitConfirmation(Guid applicationId)
+        {
+            try
+            {
+                var query = new GetApplicationByIdQuery(applicationId);
+                var response = await Send(query);
+                return View(new SubmitApplicationViewModel()
+                {
+                    ApplicationId = applicationId,
+                    ApplicationReference = response.Reference,
+                    OrganisationId = response.OrganisationId,
+                    FormVersionId = response.FormVersionId,
+                    ApplicationName = response.Name
+                });
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
+        }
 
         #endregion
 

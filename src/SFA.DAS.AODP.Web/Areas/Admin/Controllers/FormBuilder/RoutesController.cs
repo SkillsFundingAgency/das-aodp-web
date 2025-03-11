@@ -1,12 +1,15 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Routes;
+using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Routing;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers.FormBuilder;
 
 [Area("Admin")]
+[Authorize(Policy = PolicyConstants.IsAdminFormsUser)]
 public class RoutesController : ControllerBase
 {
     public RoutesController(IMediator mediator, ILogger<RoutesController> logger) : base(mediator, logger)

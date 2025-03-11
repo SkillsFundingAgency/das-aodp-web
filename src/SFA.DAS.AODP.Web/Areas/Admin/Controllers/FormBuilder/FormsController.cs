@@ -1,8 +1,10 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
+using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.Markdown;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Form;
@@ -11,6 +13,7 @@ using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers.FormBuilder;
 
+[Authorize(Policy = PolicyConstants.IsAdminFormsUser)]
 [Area("Admin")]
 public class FormsController : ControllerBase
 {
@@ -146,6 +149,7 @@ public class FormsController : ControllerBase
             {
                 var command = new PublishFormVersionCommand(editFormVersionViewModel.Id);
                 await Send(command);
+                TempData[UpdateKeys.FormPublished.ToString()] = true;
 
             }
             else if (editFormVersionViewModel.AdditionalFormActions.UnPublish != default)

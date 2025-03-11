@@ -3,6 +3,7 @@
 @model PaginationModel
 
 @{
+    if (Model.MaxPageNumber > 1000 || Model.CurrentPage > 1000) throw new ArgumentOutOfRangeException();
     var maxMiniPagingSize = 3;
     var maxNumberOfPages = 5;
     var blocks = new List<int>();

@@ -27,6 +27,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
             public ApplicationStatus Status { get; set; }
             public bool NewMessage { get; set; }
             public string? AwardingOrganisation { get; set; }
+            public Guid ApplicationReviewId { get; set; }
+
 
         }
 
@@ -46,8 +48,10 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
                     Status = application.Status,
                     AwardingOrganisation = application.AwardingOrganisation,
                     NewMessage = application.NewMessage,
+                    ApplicationReviewId = application.ApplicationReviewId
                 });
             }
         }
     }
+
 }
