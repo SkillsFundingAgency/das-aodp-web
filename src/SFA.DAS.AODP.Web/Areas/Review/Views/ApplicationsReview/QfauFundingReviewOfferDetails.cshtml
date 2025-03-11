@@ -32,6 +32,7 @@
                                 Id = $"Details[{i}].StartDate",
                                 Name = $"Details[{i}][StartDate]",
                                 Value = funding.StartDate,
+                                Title ="Funding start date"
                             };
 
                             var startDateError = ViewContext.ModelState.FirstOrDefault(k => k.Key == startDate.Id).Value?.Errors;
@@ -46,6 +47,7 @@
                                 Id = $"Details[{i}].EndDate",
                                 Name = $"Details[{i}][EndDate]",
                                 Value = funding.EndDate,
+                                Title = "Funding end date"
                             };
 
 
