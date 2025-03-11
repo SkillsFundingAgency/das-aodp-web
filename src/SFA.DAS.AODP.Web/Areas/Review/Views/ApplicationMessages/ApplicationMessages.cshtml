@@ -27,7 +27,7 @@
                 </div>
                 <div class="govuk-notification-banner__content">
                     <p class="govuk-notification-banner__heading">
-                        This message will be visible to the Awarding Organisation
+                        @Model.MessageInformationBanner
                     </p>
                 </div>
             </div>
@@ -119,6 +119,7 @@
                 @Html.HiddenFor(m => m.ApplicationId)
                 @Html.HiddenFor(m => m.MessageText)
                 @Html.HiddenFor(m => m.SelectedMessageType)
+                @Html.HiddenFor(m => m.MessageTypeSelectOptions)
 
                 <table class="govuk-table" style="width:100%;">
                     <colgroup>

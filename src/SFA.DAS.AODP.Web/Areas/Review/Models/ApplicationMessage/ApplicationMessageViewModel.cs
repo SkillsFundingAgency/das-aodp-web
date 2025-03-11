@@ -15,9 +15,10 @@ public class ApplicationMessagesViewModel
     public string MessageText { get; set; }
     [Required]
     public string SelectedMessageType { get; set; }
-    public string SelectedMessageTypeDisplay => MessageTypeConfigurationRules.GetMessageSharingSettings(SelectedMessageType).DisplayName;
+    public string? SelectedMessageTypeDisplay => MessageTypeConfigurationRules.GetMessageSharingSettings(SelectedMessageType).DisplayName;
     public UserType UserType { get; set; }
     public List<SelectListItem> MessageTypeSelectOptions => MessageTypeSelectOptionRules.GetMessageTypeSelectOptions(UserType);
+    public string? MessageInformationBanner => MessageTypeConfigurationRules.GetMessageSharingSettings(SelectedMessageType).MessageInformationBanner;
     public List<ApplicationMessageViewModel>? TimelineMessages { get; set; } = new();
     public MessageActions AdditionalActions { get; set; } = new();
 

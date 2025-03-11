@@ -86,7 +86,6 @@ public class ApplicationMessagesController : ControllerBase
             model.AdditionalActions.Send = false;
             model.AdditionalActions.Edit = false;
             TempData.Remove("PreviewMessage");
-            TempData.Remove("PreviewMessageType");
             TempData.Remove("EditMessage");
             return View(model);
         }
@@ -97,7 +96,6 @@ public class ApplicationMessagesController : ControllerBase
             {
                 case var _ when model.AdditionalActions.Preview:
                     TempData["PreviewMessage"] = model.MessageText;
-                    TempData["PreviewMessageType"] = model.SelectedMessageType;
                     TempData.Remove("EditMessage");
                     break;
 
@@ -108,7 +106,6 @@ public class ApplicationMessagesController : ControllerBase
 
                     TempData[NotificationKeys.MessageSentBanner.ToString()] = "Your message has been sent";
                     TempData.Remove("PreviewMessage");
-                    TempData.Remove("PreviewMessageType");
                     TempData.Remove("EditMessage");
                     break;
 

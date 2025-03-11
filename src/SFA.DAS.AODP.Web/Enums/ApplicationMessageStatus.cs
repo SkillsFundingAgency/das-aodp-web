@@ -73,6 +73,7 @@ public static class MessageTypeConfigurationRules
                 SharedWithOfqual = false,
                 SharedWithSkillsEngland = false,
                 SharedWithAwardingOrganisation = true,
+                MessageInformationBanner = "This message will be visible to the Awarding Organisation",
                 AvailableTo = [UserType.Qfau, UserType.AwardingOrganisation]    
             } },
 
@@ -84,6 +85,7 @@ public static class MessageTypeConfigurationRules
                 SharedWithOfqual = false,
                 SharedWithSkillsEngland = false,
                 SharedWithAwardingOrganisation = true,
+                MessageInformationBanner = "This message will be visible to the Awarding Organisation",
                 AvailableTo = [UserType.Qfau, UserType.AwardingOrganisation]   
             } },
 
@@ -95,6 +97,7 @@ public static class MessageTypeConfigurationRules
                 SharedWithOfqual = false,
                 SharedWithSkillsEngland = false,
                 SharedWithAwardingOrganisation = true,
+                MessageInformationBanner = "This message will be visible to the Awarding Organisation",
                 AvailableTo = [UserType.Qfau, UserType.AwardingOrganisation]
             } },
 
@@ -106,6 +109,7 @@ public static class MessageTypeConfigurationRules
                 SharedWithOfqual = true,
                 SharedWithSkillsEngland = false,
                 SharedWithAwardingOrganisation = true,
+                MessageInformationBanner = "This message will be visible to the Awarding Organisation",
                 AvailableTo = [UserType.Ofqual, UserType.AwardingOrganisation]
             } },
 
@@ -117,6 +121,7 @@ public static class MessageTypeConfigurationRules
                 SharedWithOfqual = false,
                 SharedWithSkillsEngland = true,
                 SharedWithAwardingOrganisation = true,
+                MessageInformationBanner = "This message will be visible to the Awarding Organisation",
                 AvailableTo = [UserType.SkillsEngland, UserType.AwardingOrganisation]
             } },
 
@@ -128,6 +133,7 @@ public static class MessageTypeConfigurationRules
                 SharedWithOfqual = false,
                 SharedWithSkillsEngland = false,
                 SharedWithAwardingOrganisation = false,
+                MessageInformationBanner = "This message will only be visible to DfE",
                 AvailableTo = [UserType.Qfau]
             } },
 
@@ -139,6 +145,7 @@ public static class MessageTypeConfigurationRules
                 SharedWithOfqual = true,
                 SharedWithSkillsEngland = false,
                 SharedWithAwardingOrganisation = false,
+                MessageInformationBanner = "This message will be visible to DfE",
                 AvailableTo = [UserType.Qfau, UserType.Ofqual]
             } },
 
@@ -150,6 +157,7 @@ public static class MessageTypeConfigurationRules
                 SharedWithOfqual = false,
                 SharedWithSkillsEngland = true,
                 SharedWithAwardingOrganisation = false,
+                MessageInformationBanner = "This message will be visible to DfE",
                 AvailableTo = [UserType.Qfau, UserType.SkillsEngland]
             } },
 
@@ -161,6 +169,7 @@ public static class MessageTypeConfigurationRules
                 SharedWithOfqual = true,
                 SharedWithSkillsEngland = true,
                 SharedWithAwardingOrganisation = false,
+                MessageInformationBanner = "This message will be visible to DfE, Ofqual and Skills England",
                 AvailableTo = [UserType.Qfau, UserType.Ofqual, UserType.SkillsEngland]
             } },
 
@@ -191,11 +200,12 @@ public static class MessageTypeConfigurationRules
 
 public class MessageTypeConfiguration
 {
-    public string DisplayName { get; set; }
-    public string MessageHeader { get; set; }
+    public string? DisplayName { get; set; }
+    public string? MessageHeader { get; set; }
     public bool SharedWithDfe { get; set; }
     public bool SharedWithAwardingOrganisation { get; set; }
     public bool SharedWithSkillsEngland { get; set; }
     public bool SharedWithOfqual { get; set; }
+    public string? MessageInformationBanner { get; set; }
     public List<UserType> AvailableTo { get; set; }
 }

@@ -87,6 +87,7 @@ public class ApplicationMessagesController : ControllerBase
             TempData.Remove("PreviewMessage");
             TempData.Remove("PreviewMessageType");
             TempData.Remove("EditMessage");
+            model.UserType = UserType;
             return View(model);
         }
 
