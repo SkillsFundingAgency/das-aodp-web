@@ -3,6 +3,7 @@
         public class GetChangedQualificationDetailsResponse
         {
             public int Id { get; set; }
+            public Guid QualificationId { get; set; }
             public string? Status { get; set; }
             public string? Priority { get; set; }
             public string? Changes { get; set; }

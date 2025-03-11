@@ -2,7 +2,8 @@
 
 public class GetActionTypesApiRequest : IGetApiRequest
 {
+    public string BaseUrl = "api/qualifications/GetActionTypes";
 
-    public string GetUrl => $"api/qualifications/GetActionTypes";
+    public string GetUrl => "api/qualifications/GetActionTypes";
 }
  

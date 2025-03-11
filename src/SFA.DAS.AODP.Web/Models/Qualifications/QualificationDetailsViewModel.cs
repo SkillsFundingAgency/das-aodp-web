@@ -1,4 +1,5 @@
-﻿using SFA.DAS.AODP.Application.Queries.Qualifications;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using SFA.DAS.AODP.Application.Queries.Qualifications;
 
 namespace SFA.DAS.AODP.Web.Models.Qualifications
 {
@@ -20,7 +21,7 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
         public string? SectorSubjectArea { get; set; }
         public string? Comments { get; set; }
 
-        public List<ActionTypeViewModel>? ActionTypes { get; set; }
+        public List<SelectListItem>? ActionTypes { get; set; } = new();
     }
 }
 

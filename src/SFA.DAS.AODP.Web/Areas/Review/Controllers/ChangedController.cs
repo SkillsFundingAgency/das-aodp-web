@@ -1,7 +1,7 @@
 ﻿using CsvHelper.Configuration;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Models.Qualifications;
@@ -139,21 +139,48 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
         }
 
-        public async Task<IActionResult> QualificationDetails([FromQuery] string qualificationReference,string status)
+        public async Task<IActionResult> QualificationDetails([FromQuery] string qualificationReference, string status)
         {
             if (string.IsNullOrWhiteSpace(qualificationReference))
             {
                 return Redirect("/Home/Error");
             }
 
-            var qualificationsResult = await Send(new GetChangedQualificationDetailsQuery { QualificationReference = qualificationReference,Status=status });
+            var qualificationsResult = await Send(new GetChangedQualificationDetailsQuery { QualificationReference = qualificationReference, Status = status });
 
             var viewModel = MapToViewModel(qualificationsResult);
-            
+
             var actionTypesResult = await Send(new GetActionTypesQuery());
-            viewModel.ActionTypes = actionTypesResult.ActionTypes;
+           
+            viewModel.ActionTypes = actionTypesResult.ActionTypes.Select(o =>
+                                    new SelectListItem
+                                    {
+                                        Value = o.Id.ToString(),
+                                        Text = o.Description
+                                    }).ToList();
+            viewModel.ActionTypes.Insert(0,new SelectListItem("Select Status","-1"));
             return View(viewModel);
         }
+
+       
+        public async Task<IActionResult> SaveDiscussionHistoryNote(string qualificationReferenceId, string actionTypeId, string note)
+        {
+            if (string.IsNullOrWhiteSpace(qualificationReferenceId.ToString()))
+            {
+                return Redirect("/Home/Error");
+            }
+
+            if (string.IsNullOrWhiteSpace(qualificationReferenceId.ToString()))
+            {
+                return Redirect("/Home/Error");
+            }
+
+
+            var saveNote = await Send(new SaveNoteQuery { QualificationReferenceId = new Guid(qualificationReferenceId), ActionTypeId = new Guid(actionTypeId),Notes=note});
+
+            return View(saveNote);
+        }
+
 
         public async Task<IActionResult> ExportData()
         {
