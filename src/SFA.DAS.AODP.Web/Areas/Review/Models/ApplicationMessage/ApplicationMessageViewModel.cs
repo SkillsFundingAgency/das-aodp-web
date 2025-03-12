@@ -71,7 +71,7 @@ public static class MessageTypeSelectOptionRules
             { UserType.Qfau, () => new List<SelectListItem>
                 {
                     new SelectListItem { Value = "", Text = "Choose message type" },
-                    new SelectListItem { Value = "RequestInformationFromAOByQfau", Text = "Request Information" },
+                    new SelectListItem { Value = "RequestInformationFromAOByQfau", Text = "Request Information From AO" },
                     new SelectListItem { Value = "UnlockApplication", Text = "Unlock Application" },
                     new SelectListItem { Value = "PutApplicationOnHold", Text = "Put Application On Hold" },
                     new SelectListItem { Value = "InternalNotes", Text = "Internal Notes" },
@@ -81,14 +81,14 @@ public static class MessageTypeSelectOptionRules
             { UserType.Ofqual, () => new List<SelectListItem>
                 {
                     new SelectListItem { Value = "", Text = "Choose message type" },
-                    new SelectListItem { Value = "RequestInformationFromAOByOfqaul", Text = "Request Information" },
+                    new SelectListItem { Value = "RequestInformationFromAOByOfqaul", Text = "Request Information From AO" },
                     new SelectListItem { Value = "InternalNotesForDfE", Text = "Internal Notes For DfE" }
                 }
             },
             { UserType.SkillsEngland, () => new List<SelectListItem>
                 {
                     new SelectListItem { Value = "", Text = "Choose message type" },
-                    new SelectListItem { Value = "RequestInformationFromAOBySkillsEngland", Text = "Request Information" },
+                    new SelectListItem { Value = "RequestInformationFromAOBySkillsEngland", Text = "Request Information From AO" },
                     new SelectListItem { Value = "InternalNotesForDfE", Text = "Internal Notes For DfE" }
                 }
             }

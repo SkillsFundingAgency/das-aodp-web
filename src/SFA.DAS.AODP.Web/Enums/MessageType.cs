@@ -52,38 +52,38 @@ public static class MessageTypeConfigurationRules
 
             { MessageType.RequestInformationFromAOByQfau, () => new MessageTypeConfiguration
             {
-                DisplayName = "Request Information",
+                DisplayName = "Request Information From AO",
                 MessageHeader = "Information Requested From Awarding Organisation",
                 SharedWithDfe = true,
-                SharedWithOfqual = false,
-                SharedWithSkillsEngland = false,
+                SharedWithOfqual = true,
+                SharedWithSkillsEngland = true,
                 SharedWithAwardingOrganisation = true,
-                MessageInformationBanner = "This message will be visible to the Awarding Organisation",
-                AvailableTo = [UserType.Qfau, UserType.AwardingOrganisation]
+                MessageInformationBanner = "This message will be visible to Partners and the Awarding Organisation",
+                AvailableTo = [UserType.Qfau, UserType.Ofqual, UserType.SkillsEngland, UserType.AwardingOrganisation]
             } },
 
             { MessageType.RequestInformationFromAOByOfqaul, () => new MessageTypeConfiguration
             {
-                DisplayName = "Request Information",
+                DisplayName = "Request Information From AO",
                 MessageHeader = "Information Requested From Awarding Organisation",
-                SharedWithDfe = false,
+                SharedWithDfe = true,
                 SharedWithOfqual = true,
-                SharedWithSkillsEngland = false,
+                SharedWithSkillsEngland = true,
                 SharedWithAwardingOrganisation = true,
-                MessageInformationBanner = "This message will be visible to the Awarding Organisation",
-                AvailableTo = [UserType.Ofqual, UserType.AwardingOrganisation]
+                MessageInformationBanner = "This message will be visible to Partners and the Awarding Organisation",
+                AvailableTo = [UserType.Qfau, UserType.Ofqual, UserType.SkillsEngland, UserType.AwardingOrganisation]
             } },
 
             { MessageType.RequestInformationFromAOBySkillsEngland, () => new MessageTypeConfiguration
             {
                 DisplayName = "Request Information From AO",
                 MessageHeader = "Information Requested From Awarding Organisation",
-                SharedWithDfe = false,
-                SharedWithOfqual = false,
+                SharedWithDfe = true,
+                SharedWithOfqual = true,
                 SharedWithSkillsEngland = true,
                 SharedWithAwardingOrganisation = true,
-                MessageInformationBanner = "This message will be visible to the Awarding Organisation",
-                AvailableTo = [UserType.SkillsEngland, UserType.AwardingOrganisation]
+                MessageInformationBanner = "This message will be visible to Partners and the Awarding Organisation",
+                AvailableTo = [UserType.Qfau, UserType.Ofqual, UserType.SkillsEngland, UserType.AwardingOrganisation]
             } },
 
             { MessageType.InternalNotes, () => new MessageTypeConfiguration
