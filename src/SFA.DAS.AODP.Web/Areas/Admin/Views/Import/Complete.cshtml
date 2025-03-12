@@ -1,0 +1,40 @@
+﻿@using SFA.DAS.AODP.Web.Models.Import
+@model ImportViewModel
+
+@using System.Security.Claims
+@{
+	ViewData["Title"] = "Import Data";
+}
+
+<div class="govuk-width-container">
+	<main class="govuk-main-wrapper">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+
+                <govuk-breadcrumbs collapse-on-mobile="true">
+                    <govuk-breadcrumbs-item asp-controller="Import" asp-action="Index">Home</govuk-breadcrumbs-item>
+                    <govuk-breadcrumbs-item href="#" link-target="_blank">Import qualification details</govuk-breadcrumbs-item>
+                </govuk-breadcrumbs>
+
+                <govuk-panel heading-level="2">
+                    <govuk-panel-title>Import complete</govuk-panel-title>
+                    <govuk-panel-body>
+                    </govuk-panel-body>
+                </govuk-panel>
+
+				<form asp-controller="Import" asp-action="Index" method="post">
+
+                     @Html.AntiForgeryToken()
+
+                    <div class="govuk-form-group">
+                        <p class="govuk-body">[Name] imported [Regulated Quals / Funded Quals] as DD//MM/YYYY HH:MM:SS</p>
+                    </div>
+
+                    <govuk-button type="submit">Back to Qualifications</govuk-button>
+
+                </form>
+
+			</div>
+		</div>
+	</main>
+</div>
