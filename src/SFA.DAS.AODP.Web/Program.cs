@@ -54,11 +54,7 @@ internal class Program
             config.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
         });
 
-        var aiOptions = new Microsoft.ApplicationInsights.AspNetCore.Extensions.ApplicationInsightsServiceOptions();
-        aiOptions.EnableAdaptiveSampling = false;
-        aiOptions.EnableQuickPulseMetricStream = false;
-
-        builder.Services.AddApplicationInsightsTelemetry(aiOptions);
+        builder.Services.AddApplicationInsightsTelemetry();
 
         builder.Services.Configure<FormOptions>(options =>
         {
