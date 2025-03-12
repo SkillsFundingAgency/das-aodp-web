@@ -18,10 +18,10 @@ namespace SFA.DAS.AODP.Application.Queries.Qualifications
             var response = new BaseMediatrResponse<GetQualificationDetailsQueryResponse>();
             try
             {
-                var result = await _apiClient.Get<BaseMediatrResponse<GetQualificationDetailsQueryResponse>>(new GetQualificationDetailsApiRequest(request.QualificationReference));
-                if (result != null && result.Value != null)
+                var result = await _apiClient.Get<GetQualificationDetailsQueryResponse>(new GetQualificationDetailsApiRequest(request.QualificationReference));
+                if (result != null)
                 {
-                    response.Value = result.Value;
+                    response.Value = result;
                     response.Success = true;
                 }
                 else

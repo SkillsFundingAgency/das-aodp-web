@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SFA.DAS.AODP.Application.Commands.Qualification;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
@@ -159,6 +160,22 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             return View(viewModel);
         }
 
+        [HttpPost]
+        [Route("/Review/New/QualificationDetails")]
+        public async Task<IActionResult> UpdateQualificationDetails(QualificationDetailsViewModel model)
+        {
+            if (!string.IsNullOrEmpty(model.AdditionalActions.AddDiscussionHistory))
+            {
+                var command = new AddQualificationDiscussionHistoryCommand()
+                {
+                    QualificationReference = model.QualificationReference,
+                    Notes = model.AdditionalActions.AddDiscussionHistory
+                };
+                await Send(command);
+            }
+            return RedirectToAction(nameof(QualificationDetails), new { qualificationReference = model.QualificationReference });
+        }
+
         [Route("/Review/New/ExportData")]
         public async Task<IActionResult> ExportData()
         {
@@ -223,7 +240,21 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 Category = response.Category,
                 Subject = response.Subject,
                 SectorSubjectArea = response.SectorSubjectArea,
-                Comments = response.Comments
+                Comments = response.Comments,
+                QualificationDiscussionHistories = response.QualificationDiscussionHistories?.Select(v => new Web.Models.Qualifications.QualificationDiscussionHistory()
+                {
+                    Id = v.Id,
+                    QualificationId = v.QualificationId,
+                    ActionTypeId = v.ActionTypeId,
+                    UserDisplayName = v.UserDisplayName,
+                    Notes = v.Notes,
+                    Timestamp = v.Timestamp,
+                    ActionType = new Web.Models.Qualifications.ActionType
+                    {
+                        Id = v.ActionType.Id,
+                        Description = v.ActionType.Description,
+                    }
+                }).ToList() ?? new List<Web.Models.Qualifications.QualificationDiscussionHistory>()
             };
         }
 
