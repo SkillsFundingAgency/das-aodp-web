@@ -2,6 +2,7 @@
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Domain.Interfaces;
 
+namespace SFA.DAS.AODP.Application.Queries.Application.Form;
 public class GetApplicationFormsQueryHandler : IRequestHandler<GetApplicationFormsQuery, BaseMediatrResponse<GetApplicationFormsQueryResponse>>
 {
     private readonly IApiClient _apiClient;
