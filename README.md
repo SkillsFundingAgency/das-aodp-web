@@ -28,6 +28,7 @@ RowKey: SFA.DAS.AODP.Web_1.0
 Data:  
 ```json
 {
+  "StubAuth" : "true",
   // content from latest config file
 }
 ```
