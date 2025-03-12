@@ -1,0 +1,155 @@
+﻿@using SFA.DAS.AODP.Web.Areas.Apply.Models
+@using SFA.DAS.AODP.Web.Models.Application;
+@using SFA.DAS.AODP.Web.Models.TimelineComponents;
+@model ApplicationMessagesViewModel
+
+@{
+    ViewData["Title"] = "Application Messages";
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+        <govuk-back-link class="govuk-link govuk-task-list__link"
+            asp-action="ViewApplication"
+            asp-controller="Applications"
+            asp-route-organisationId="@Model.OrganisationId"
+            asp-route-applicationId="@Model.ApplicationId"
+            asp-route-formVersionId="@Model.FormVersionId">Back</govuk-back-link>
+
+        <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
+        <h1 class="govuk-heading-l govuk-!-margin-bottom-2">Application messages</h1>
+
+        <div class="govuk-hint">
+            Request for funding
+        </div>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="govuk-error-summary" data-module="govuk-error-summary">
+                <div role="alert">
+                    <h2 class="govuk-error-summary__title">There is a problem</h2>
+                    <div class="govuk-error-summary__body">
+                        <ul class="govuk-list govuk-error-summary__list">
+                            @if (ViewData.ModelState["MessageText"]?.Errors.Count > 0)
+                            {
+                                <li>
+                                    <a>Your message cannot be empty</a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Message Box and Message Send  -->
+        @if (!Model.AdditionalActions.Preview)
+        {
+            <form asp-controller="ApplicationMessages" asp-action="ApplicationMessages" method="post" enctype="multipart/form-data">
+                @Html.HiddenFor(m => m.OrganisationId)
+                @Html.HiddenFor(m => m.ApplicationId)
+                @Html.HiddenFor(m => m.FormVersionId)
+                @Html.HiddenFor(m => m.SelectedMessageType)
+
+
+                <h1 class="govuk-label-wrapper">
+                    <label class="govuk-label govuk-label--m" for="messageText">Message</label>
+                </h1>
+                <div id="more-detail-hint" class="govuk-hint">
+                    Reply to information requests.
+                </div>
+
+                 <div class="govuk-form-group @(ViewData.ModelState["MessageText"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+                    <textarea class="govuk-textarea @(ViewData.ModelState["MessageText"]?.Errors.Count > 0 ? "govuk-textarea--error" : "")" 
+                              id="messageText" 
+                              name="MessageText" 
+                              rows="5" 
+                              aria-describedby="@(ViewData.ModelState["MessageText"]?.Errors.Count > 0 ? "messageText-error" : "more-detail-hint")">@Model.MessageText</textarea>
+                    @if (ViewData.ModelState["MessageText"]?.Errors.Count > 0)
+                    {
+                        <p id="messageText-error" class="govuk-error-message">
+                            <span class="govuk-visually-hidden">Error:</span> Type a message
+                        </p>
+                    }
+                </div>
+
+                <button type="submit" name="AdditionalActions.Preview" value="true" class="govuk-button">Preview</button>
+
+            </form>
+        }
+        else
+        {
+            <form asp-controller="ApplicationMessages" asp-action="ApplicationMessages" method="post" enctype="multipart/form-data">
+                @Html.HiddenFor(m => m.OrganisationId)
+                @Html.HiddenFor(m => m.ApplicationId)
+                @Html.HiddenFor(m => m.FormVersionId)
+                @Html.HiddenFor(m => m.MessageText)
+                @Html.HiddenFor(m => m.SelectedMessageType)
+
+                <table class="govuk-table" style="width:100%;">
+                    <colgroup>
+                        <col style="width:33.33%;">
+                        <col style="width:66.67%;">
+                    </colgroup>
+                    <tbody class="govuk-table__body">
+                        <tr class="govuk-table__row">
+                            <th scope="row" class="govuk-table__header">Message</th>
+                            <td class="govuk-table__cell">@Model.MessageText</td>
+                        </tr>
+                        <tr class="govuk-table__row">
+                            <th scope="row" class="govuk-table__header">Message type</th>
+                            <td class="govuk-table__cell">@Model.SelectedMessageTypeDisplay</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="govuk-grid-row">
+                    <div class="govuk-grid-column-three-quarters">
+                        <button type="submit" name="AdditionalActions.Send" value="true" class="govuk-button">Send message</button>
+                        <button type="submit" name="AdditionalActions.Edit" value="true" class="govuk-button govuk-button--secondary">
+                            Edit
+                        </button>
+                    </div>
+                    <div class="govuk-grid-column-one-quarter govuk-!-text-align-right">
+                        <a class="govuk-button govuk-button--secondary"
+                           asp-action="ApplicationMessages"
+                           asp-controller="ApplicationMessages"
+                           asp-route-organisationId="@Model.OrganisationId"
+                           asp-route-applicationId="@Model.ApplicationId">
+                            Cancel
+                        </a>
+                    </div>
+                </div>
+
+            </form>
+        }
+
+        <!-- Application Event Timeline  -->
+        @{
+            var timelineModel = new TimelineViewModel
+            {
+                Items = Model.TimelineMessages.Where(message => message.VisibleToUser)
+            };
+
+            <div>
+                @await Html.PartialAsync("_TimelinePartial", timelineModel)
+            </div>
+        }
+
+
+    </div>
+
+    <div class="govuk-grid-column-one-third">
+        <h5 class="govuk-heading-m govuk-!-margin-bottom-2">Related links</h5>
+        <p class="govuk-body">
+            <a class="govuk-link" rel="noreferrer noopener" target="_blank"
+                asp-action="ViewApplication"
+                asp-controller="Applications"
+                asp-route-organisationId="@Model.OrganisationId"
+                asp-route-applicationId="@Model.ApplicationId"
+                asp-route-formVersionId="@Model.FormVersionId">View application (opens in new tab)</a>
+        </p>
+    </div>
+</div>

@@ -173,19 +173,16 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         {
             try
             {
-                if (model.SelectedOfferIds.Count == 0)
-                {
-                    ModelState.AddModelError("SelectedOfferIds", "Please select at least 1 offer.");
-                    var offers = await Send(new GetFundingOffersQuery());
-                    model.MapOffers(offers);
-                    return View(model);
-                }
-
                 await Send(new SaveQfauFundingReviewOffersCommand()
                 {
                     ApplicationReviewId = model.ApplicationReviewId,
                     SelectedOfferIds = model.SelectedOfferIds
                 });
+
+                if (model.SelectedOfferIds.Count == 0)
+                {
+                    return RedirectToAction(nameof(QfauFundingReviewSummary), new { applicationReviewId = model.ApplicationReviewId });
+                }
 
                 return RedirectToAction(nameof(QfauFundingReviewOfferDetails), new { applicationReviewId = model.ApplicationReviewId });
             }

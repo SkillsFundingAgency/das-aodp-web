@@ -2,11 +2,13 @@
 using AutoFixture.AutoMoq;
 using Moq;
 using SFA.DAS.AODP.Domain.Interfaces;
+using SFA.DAS.AODP.Infrastructure.Cache;
 
 namespace SFA.DAS.Aodp.UnitTests.Application.Queries.Application.Application
 {
     public class GetApplicationMetadataByIdQueryHandlerTests
     {
+        private Mock<ICacheService> _cacheServiceMock;
         private IFixture? _fixture;
         private Mock<IApiClient>? _apiClientMock;
         private AODP.Application.Queries.Application.Application.GetApplicationMetadataByIdQueryHandler _handler;
@@ -15,6 +17,7 @@ namespace SFA.DAS.Aodp.UnitTests.Application.Queries.Application.Application
         public GetApplicationMetadataByIdQueryHandlerTests()
         {
             _fixture = new Fixture().Customize(new AutoMoqCustomization());
+            _cacheServiceMock = _fixture.Freeze<Mock<ICacheService>>();
             _apiClientMock = _fixture.Freeze<Mock<IApiClient>>();
             _handler = _fixture.Create<AODP.Application.Queries.Application.Application.GetApplicationMetadataByIdQueryHandler>();
         }
@@ -27,8 +30,14 @@ namespace SFA.DAS.Aodp.UnitTests.Application.Queries.Application.Application
 
             var response = _fixture.Create<GetApplicationMetadataByIdQueryResponse>();
 
-            _apiClientMock.Setup(x => x.Get<GetApplicationMetadataByIdQueryResponse>(It.IsAny<GetApplicationMetadataByIdRequest>()))
-                          .ReturnsAsync(response);
+            _cacheServiceMock
+              .Setup(x => x.GetAsync(
+                  It.IsAny<string>(),
+                  It.IsAny<Func<Task<GetApplicationMetadataByIdQueryResponse>>>()))
+              .Callback<string, Func<Task<GetApplicationMetadataByIdQueryResponse>>>(async (key, func) =>
+              {
+                  await func();
+              }).ReturnsAsync(response);
 
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);
@@ -49,8 +58,11 @@ namespace SFA.DAS.Aodp.UnitTests.Application.Queries.Application.Application
             var query = _fixture.Create<GetApplicationMetadataByIdQuery>();
             var exception = _fixture.Create<Exception>();
 
-            _apiClientMock.Setup(x => x.Get<GetApplicationMetadataByIdQueryResponse>(It.IsAny<GetApplicationMetadataByIdRequest>()))
-                          .ThrowsAsync(exception);
+            _cacheServiceMock
+              .Setup(x => x.GetAsync(
+                  It.IsAny<string>(),
+                  It.IsAny<Func<Task<GetApplicationMetadataByIdQueryResponse>>>()))
+              .ThrowsAsync(exception);
 
             // Act
             var result = await _handler.Handle(query, CancellationToken.None);

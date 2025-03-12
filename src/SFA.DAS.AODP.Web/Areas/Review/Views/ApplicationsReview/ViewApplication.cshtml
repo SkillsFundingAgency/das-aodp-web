@@ -28,7 +28,14 @@
                         @{
                             if (Enum.TryParse<ApplicationStatus>(currentUserReview.Status, out var status))
                             {
-                                @ApplicationStatusDisplay.Dictionary[status]
+                                @if (currentUserReview.Status == ApplicationStatus.Approved.ToString())
+                                {
+                                    <span>Approved - for one or more offers</span>
+                                }
+                                else
+                                {
+                                    @ApplicationStatusDisplay.Dictionary[status]
+                                }
                             }
                             else
                             {
@@ -109,9 +116,19 @@
                     <h2 class="govuk-heading-m">DfE funding review</h2>
                     <p class="govuk-body">Review application, make decision on approval and funding options.</p>
 
-                    <a class="govuk-button" asp-action="QfauFundingReviewSummary" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId">
-                        DfE funding review
-                    </a>
+                    @if (currentUserReview.Status == ApplicationStatus.Approved.ToString() || currentUserReview.Status == ApplicationStatus.NotApproved.ToString())
+                    {
+                        <a class="govuk-button" asp-action="QfauFundingReviewSummary" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId">
+                            DfE funding review
+                        </a>
+                    }
+                    else
+                    {
+                        <a class="govuk-button" asp-action="QfauFundingReviewOutcome" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId">
+                            DfE funding review
+                        </a>
+                    }
+
                 </div>
 
 
