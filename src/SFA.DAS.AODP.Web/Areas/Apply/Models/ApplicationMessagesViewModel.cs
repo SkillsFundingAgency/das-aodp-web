@@ -39,13 +39,7 @@ public class ApplicationMessageViewModel : TimelineItemBase
     public bool VisibleToUser => MessageTypeConfiguration.AvailableTo.Contains(UserType);
     public string MessageTypeDisplay => MessageTypeConfiguration.DisplayName;
     public string SentByEmail { get; set; }
-    public override string TimelineTitle
-    {
-        get
-        {
-            return (Status == null) ? $"{Status}" : $"Status: {Status}";
-        }
-    }
+    public override string TimelineTitle => $"{MessageHeader}";
     public override string TimelineMetadata
     {
         get

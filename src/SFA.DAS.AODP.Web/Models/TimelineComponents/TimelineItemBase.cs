@@ -3,7 +3,7 @@
 public abstract class TimelineItemBase
 {
     public Guid Id { get; set; }
-    public string Status { get; set; } // to rename to messageHeader
+    public string MessageHeader { get; set; }
     public string Text { get; set; }
     public DateTime SentAt { get; set; }
     public string SentByName { get; set; }

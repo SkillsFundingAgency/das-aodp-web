@@ -40,7 +40,7 @@ public class ApplicationMessagesController : ControllerBase
             {
                 Id = message.MessageId,
                 Text = message.MessageText,
-                Status = message.MessageHeader,
+                MessageHeader = message.MessageHeader,
                 SentAt = message.SentAt,
                 SentByName = message.SentByName,
                 SentByEmail = message.SentByEmail,
