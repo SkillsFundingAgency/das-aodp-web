@@ -15,10 +15,11 @@ public class ApplicationMessagesViewModel
     public string MessageText { get; set; }
     [Required]
     public string SelectedMessageType { get; set; }
-    public string? SelectedMessageTypeDisplay => MessageTypeConfigurationRules.GetMessageSharingSettings(SelectedMessageType).DisplayName;
+    public MessageTypeConfiguration SelectedMessageTypeConfiguration => MessageTypeConfigurationRules.GetMessageSharingSettings(SelectedMessageType);
+    public string? SelectedMessageTypeDisplay => SelectedMessageTypeConfiguration.DisplayName;
     public UserType UserType { get; set; }
     public List<SelectListItem> MessageTypeSelectOptions => MessageTypeSelectOptionRules.GetMessageTypeSelectOptions(UserType);
-    public string? MessageInformationBanner => MessageTypeConfigurationRules.GetMessageSharingSettings(SelectedMessageType).MessageInformationBanner;
+    public string? MessageInformationBanner => SelectedMessageTypeConfiguration.MessageInformationBanner;
     public List<ApplicationMessageViewModel>? TimelineMessages { get; set; } = new();
     public MessageActions AdditionalActions { get; set; } = new();
 
@@ -65,25 +66,25 @@ public static class MessageTypeSelectOptionRules
             { UserType.Qfau, () => new List<SelectListItem>
                 {
                     new SelectListItem { Value = "", Text = "Choose message type" },
-                    new SelectListItem { Value = "RequestInformationFromAOByQfau", Text = "Request Information From AO" },
-                    new SelectListItem { Value = "UnlockApplication", Text = "Unlock Application" },
-                    new SelectListItem { Value = "PutApplicationOnHold", Text = "Put Application On Hold" },
-                    new SelectListItem { Value = "InternalNotes", Text = "Internal Notes" },
-                    new SelectListItem { Value = "InternalNotesForPartners", Text = "Internal Notes For Partners" }
+                    new SelectListItem { Value = "RequestInformationFromAOByQfau", Text = "Request information from AO" },
+                    new SelectListItem { Value = "UnlockApplication", Text = "Unlock application" },
+                    new SelectListItem { Value = "PutApplicationOnHold", Text = "Put application on hold" },
+                    new SelectListItem { Value = "InternalNotes", Text = "Internal notes" },
+                    new SelectListItem { Value = "InternalNotesForPartners", Text = "Internal notes for partners" }
                 }
             },
             { UserType.Ofqual, () => new List<SelectListItem>
                 {
                     new SelectListItem { Value = "", Text = "Choose message type" },
-                    new SelectListItem { Value = "RequestInformationFromAOByOfqaul", Text = "Request Information From AO" },
-                    new SelectListItem { Value = "InternalNotesForDfE", Text = "Internal Notes For DfE" }
+                    new SelectListItem { Value = "RequestInformationFromAOByOfqaul", Text = "Request information from AO" },
+                    new SelectListItem { Value = "InternalNotesForDfE", Text = "Internal notes for DfE" }
                 }
             },
             { UserType.SkillsEngland, () => new List<SelectListItem>
                 {
                     new SelectListItem { Value = "", Text = "Choose message type" },
-                    new SelectListItem { Value = "RequestInformationFromAOBySkillsEngland", Text = "Request Information From AO" },
-                    new SelectListItem { Value = "InternalNotesForDfE", Text = "Internal Notes For DfE" }
+                    new SelectListItem { Value = "RequestInformationFromAOBySkillsEngland", Text = "Request information from AO" },
+                    new SelectListItem { Value = "InternalNotesForDfE", Text = "Internal notes for DfE" }
                 }
             }
         };
