@@ -11,6 +11,9 @@ public class ApplicationMessagesViewModel
 {
     public Guid ApplicationReviewId { get; set; }
     public Guid ApplicationId { get; set; }
+    public string Hint => (UserType == UserType.Qfau) ? 
+        "Leave messages, comments and recommendations to other DfE staff members, IfATE, Ofqual or the AO applicant owner." 
+        : "Leave messages, comments and recommendations to DfE or the AO applicant owner.";
     [Required]
     public string MessageText { get; set; }
     [Required]
@@ -77,14 +80,14 @@ public static class MessageTypeSelectOptionRules
                 {
                     new SelectListItem { Value = "", Text = "Choose message type" },
                     new SelectListItem { Value = "RequestInformationFromAOByOfqaul", Text = "Request information from AO" },
-                    new SelectListItem { Value = "InternalNotesForDfE", Text = "Internal notes for DfE" }
+                    new SelectListItem { Value = "InternalNotesForQfauFromOfqual", Text = "Internal notes for DfE" }
                 }
             },
             { UserType.SkillsEngland, () => new List<SelectListItem>
                 {
                     new SelectListItem { Value = "", Text = "Choose message type" },
                     new SelectListItem { Value = "RequestInformationFromAOBySkillsEngland", Text = "Request information from AO" },
-                    new SelectListItem { Value = "InternalNotesForDfE", Text = "Internal notes for DfE" }
+                    new SelectListItem { Value = "InternalNotesForQfauFromSkillsEngland", Text = "Internal notes for DfE" }
                 }
             }
         };
