@@ -43,12 +43,12 @@ namespace SFA.DAS.AODP.Authentication.Extensions
                 new Claim(ClaimTypes.Role, "qfau_user_reviewer"),
                 new Claim("rolecode", "qfau_user_reviewer"),
 
-                new Claim(ClaimTypes.Role, "qfau_admin_form_editor"),
-                new Claim("rolecode", "qfau_admin_form_editor"),
+                new Claim(ClaimTypes.Role, "qfau_admin_forms"),
+                new Claim("rolecode", "qfau_admin_forms"),
 
 
-                new Claim(ClaimTypes.Role, "qfau_admin_data_importer"),
-                new Claim("rolecode", "qfau_admin_data_importer"),
+                new Claim(ClaimTypes.Role, "qfau_admin_data"),
+                new Claim("rolecode", "qfau_admin_data"),
 
 
 
@@ -61,8 +61,8 @@ namespace SFA.DAS.AODP.Authentication.Extensions
                 new Claim(ClaimTypes.Role, "ifate_user_reviewer"),
                 new Claim("rolecode", "ifate_user_reviewer"),
 
-                new Claim(ClaimTypes.Role, "ifate_admin_form_editor"),
-                new Claim("rolecode", "ifate_admin_form_editor"),
+                new Claim(ClaimTypes.Role, "ifate_admin_forms"),
+                new Claim("rolecode", "ifate_admin_forms"),
 
 
                 // AO

@@ -10,6 +10,7 @@ namespace SFA.DAS.AODP.Web.Extensions.Startup
         {
             var configBuilder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
+                .AddConfiguration(configuration)
                 .AddEnvironmentVariables();
 
             if (configuration["EnvironmentName"] == "LOCAL")
