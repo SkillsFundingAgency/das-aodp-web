@@ -159,7 +159,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         {
             try
             {
-                var result = await Send(new GetNewQualificationsCsvExportQuery());
+                var result = await Send(new GetChangedQualificationsCsvExportQuery());
 
                 if (result?.QualificationExports != null)
                 {
@@ -177,15 +177,15 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
         }
 
-        private FileContentResult WriteCsvToResponse(List<QualificationExport> qualifications)
+        private FileContentResult WriteCsvToResponse(List<ChangedExport> qualifications)
         {
             var csvData = GenerateCsv(qualifications);
             var bytes = System.Text.Encoding.UTF8.GetBytes(csvData);
-            var fileName = $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}-NewQualificationsExport.csv";
+            var fileName = $"{DateTime.Now:yyyy-MM-dd-HH-mm-ss}-ChangedQualificationsExport.csv";
             return File(bytes, "text/csv", fileName);
         }
 
-        private static string GenerateCsv(List<QualificationExport> qualifications)
+        private static string GenerateCsv(List<ChangedExport> qualifications)
         {
             using (var writer = new StringWriter())
             using (var csv = new CsvHelper.CsvWriter(writer, new CsvConfiguration(CultureInfo.InvariantCulture)))
