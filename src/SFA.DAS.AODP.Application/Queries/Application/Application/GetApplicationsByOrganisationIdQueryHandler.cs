@@ -2,6 +2,8 @@
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Domain.Interfaces;
 
+namespace SFA.DAS.AODP.Application.Queries.Application.Application;
+
 public class GetApplicationsByOrganisationIdQueryHandler : IRequestHandler<GetApplicationsByOrganisationIdQuery, BaseMediatrResponse<GetApplicationsByOrganisationIdQueryResponse>>
 {
     private readonly IApiClient _apiClient;
@@ -17,7 +19,10 @@ public class GetApplicationsByOrganisationIdQueryHandler : IRequestHandler<GetAp
         response.Success = false;
         try
         {
-            var result = await _apiClient.Get<GetApplicationsByOrganisationIdQueryResponse>(new GetApplicationsByOrganisationIdApiRequest());
+            var result = await _apiClient.Get<GetApplicationsByOrganisationIdQueryResponse>(new GetApplicationsByOrganisationIdApiRequest()
+            {
+                OrganisationId = request.OrganisationId
+            });
             response.Value = result;
             response.Success = true;
         }

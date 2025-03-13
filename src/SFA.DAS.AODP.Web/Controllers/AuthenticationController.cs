@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Authentication;
+using SFA.DAS.AODP.Web.Authentication;
 
 namespace SFA.DAS.AODP.Web.Controllers
 {
@@ -28,7 +28,7 @@ namespace SFA.DAS.AODP.Web.Controllers
 
             var IsAdminFormUser = _authorizationService.AuthorizeAsync(User, PolicyConstants.IsAdminFormsUser).Result;
             if (IsAdminFormUser.Succeeded)
-                return Redirect("/admin");
+                return Redirect("/admin/forms");
 
             var IsAdminImportUser = _authorizationService.AuthorizeAsync(User, PolicyConstants.IsAdminImportUser).Result;
             if (IsAdminImportUser.Succeeded)
@@ -63,7 +63,10 @@ namespace SFA.DAS.AODP.Web.Controllers
             {
                 await HttpContext.ChallengeAsync(OpenIdConnectDefaults.AuthenticationScheme, new AuthenticationProperties { RedirectUri = "/Authentication/" });
             }
-            RedirectToAction("Index");
+            else
+            {
+                HttpContext.Response.Redirect("/authentication/index");
+            }
 
         }
     }

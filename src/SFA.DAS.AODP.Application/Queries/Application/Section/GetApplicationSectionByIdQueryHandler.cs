@@ -3,6 +3,7 @@ using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Domain.Interfaces;
 using SFA.DAS.AODP.Infrastructure.Cache;
 
+namespace SFA.DAS.AODP.Application.Queries.Application.Section;
 public class GetApplicationSectionByIdQueryHandler : IRequestHandler<GetApplicationSectionByIdQuery, BaseMediatrResponse<GetApplicationSectionByIdQueryResponse>>
 {
     private readonly IApiClient _apiClient;

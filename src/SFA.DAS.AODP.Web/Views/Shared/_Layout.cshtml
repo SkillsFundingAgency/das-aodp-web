@@ -47,14 +47,14 @@
                     <ul class="dfe-header__navigation-list">
                         <li class="dfe-header__navigation-item dfe-header__navigation-item--current">
                             <a class="dfe-header__navigation-link" href="#">
-                                Home
+                                Dashboard
                                 <svg class="dfe-icon dfe-icon__chevron-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" width="34" height="34">
                                     <path d="M15.5 12a1 1 0 0 1-.29.71l-5 5a1 1 0 0 1-1.42-1.42l4.3-4.29-4.3-4.29a1 1 0 0 1 1.42-1.42l5 5a1 1 0 0 1 .29.71z"></path>
                                 </svg>
                             </a>
                         </li>
                         <li class="dfe-header__navigation-item">
-                            <a class="dfe-header__navigation-link" asp-action="Index" asp-controller="Forms">
+                            <a class="dfe-header__navigation-link" asp-area="Admin" asp-action="Index" asp-controller="Forms">
                                 Form Management
                                 <svg class="dfe-icon dfe-icon__chevron-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" width="34" height="34">
                                     <path d="M15.5 12a1 1 0 0 1-.29.71l-5 5a1 1 0 0 1-1.42-1.42l4.3-4.29-4.3-4.29a1 1 0 0 1 1.42-1.42l5 5a1 1 0 0 1 .29.71z"></path>
@@ -62,8 +62,16 @@
                             </a>
                         </li>
                         <li class="dfe-header__navigation-item">
-                            <a class="dfe-header__navigation-link" asp-action="Index" asp-controller="Applications" asp-route-organisationId="@Guid.Empty">
+                            <a class="dfe-header__navigation-link" asp-area="Apply" asp-action="Index" asp-controller="Applications">
                                 Applications
+                                <svg class="dfe-icon dfe-icon__chevron-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" width="34" height="34">
+                                    <path d="M15.5 12a1 1 0 0 1-.29.71l-5 5a1 1 0 0 1-1.42-1.42l4.3-4.29-4.3-4.29a1 1 0 0 1 1.42-1.42l5 5a1 1 0 0 1 .29.71z"></path>
+                                </svg>
+                            </a>
+                        </li>
+                        <li class="dfe-header__navigation-item">
+                            <a class="dfe-header__navigation-link" asp-area="Review" asp-action="Index" asp-controller="ApplicationsReview">
+                                Applications Review
                                 <svg class="dfe-icon dfe-icon__chevron-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" width="34" height="34">
                                     <path d="M15.5 12a1 1 0 0 1-.29.71l-5 5a1 1 0 0 1-1.42-1.42l4.3-4.29-4.3-4.29a1 1 0 0 1 1.42-1.42l5 5a1 1 0 0 1 .29.71z"></path>
                                 </svg>
@@ -90,12 +98,12 @@
     @Html.GovUkFrontendStyleImports()
 
     <environment include="Development">
-        <link rel="stylesheet" href="~/lib/dfe-frontend/dist/dfefrontend.css">
-        <link rel="stylesheet" href="/stylesheets/application.css">
+        <link rel="stylesheet" href="~/lib/dfe-frontend/dist/dfefrontend.css?v=2025-02-27">
+        <link rel="stylesheet" href="/stylesheets/application.css?v=2025-02-27" >
     </environment>
     <environment exclude="Development">
-        <link rel="stylesheet" href="~/lib/dfe-frontend/dist/dfefrontend-2.0.0.min.css">
-        <link rel="stylesheet" href="/stylesheets/application.min.css">
+        <link rel="stylesheet" href="~/lib/dfe-frontend/dist/dfefrontend-2.0.0.min.css?v=2025-02-27">
+        <link rel="stylesheet" href="/stylesheets/application.min.css?v=2025-02-27">
     </environment>
 
 }
@@ -139,11 +147,11 @@
     @Html.GovUkFrontendScriptImports()
 
     <environment include="Development">
-        <script src="~/lib/jquery/dist/jquery.min.js"></script>
-        <script src="~/js/site.js"></script>
+        <script src="~/lib/jquery/dist/jquery.min.js?v=2025-02-27"></script>
+        <script src="~/js/site.js?v=2025-02-27"></script>
     </environment>
     <environment exclude="Development">
-        <script src="~/js/site.min.js"></script>
+        <script src="~/js/site.min.js?v=2025-02-27"></script>
     </environment>
 
 }

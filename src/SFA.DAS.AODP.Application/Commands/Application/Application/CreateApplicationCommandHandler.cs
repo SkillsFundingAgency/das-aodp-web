@@ -2,6 +2,8 @@
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Domain.Interfaces;
 
+namespace SFA.DAS.AODP.Application.Commands.Application.Application;
+
 public class CreateApplicationCommandHandler : IRequestHandler<CreateApplicationCommand, BaseMediatrResponse<CreateApplicationCommandResponse>>
 {
     private readonly IApiClient _apiCLient;

@@ -1,6 +1,6 @@
 ﻿using SFA.DAS.Configuration.AzureTableStorage;
 using System.Diagnostics.CodeAnalysis;
-namespace SFA.DAS.AODP.Web.Extensions
+namespace SFA.DAS.AODP.Web.Extensions.Startup
 {
 
     [ExcludeFromCodeCoverage]
@@ -10,6 +10,7 @@ namespace SFA.DAS.AODP.Web.Extensions
         {
             var configBuilder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
+                .AddConfiguration(configuration)
                 .AddEnvironmentVariables();
 
             if (configuration["EnvironmentName"] == "LOCAL")

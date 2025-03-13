@@ -11,5 +11,8 @@
         public const string RoleId = "roleId";
         public const string RoleName = "roleName";
         public const string RoleNumericId = "rolenumericid";
+        public const string OrganisationName = "organisationName";
+        public const string UKPrn= "ukPrn";
+        public const string LegalName = "legalName";
     }
 }

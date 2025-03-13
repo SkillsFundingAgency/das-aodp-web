@@ -31,14 +31,45 @@ namespace SFA.DAS.AODP.Authentication.Extensions
                 new Claim(CustomClaimsIdentity.DisplayName, "DfE Staff User"),
                 new Claim(CustomClaimsIdentity.Service, "QFAdmin"),
                 new Claim(CustomClaimsIdentity.UkPrn, "10000001"),
+                new Claim("ukPrn", "10000001"),
                 new Claim("organisation", "{\"id\":\"71A7429D-1875-4CDD-8FEF-A89676E661A8\"}"),
-                new Claim("roleName", "Reviewer"),
-                new Claim("roleName", "Admin"),
-                new Claim("rolenumericid", "22328"),
-                new Claim("rolecode", "QFAdmin"),
-                new Claim("roleId", "03ff5868-31cd-453e-ae9f-fad5f101124d"),
                 new Claim("email", "tester@education.gov.uk"),
-            };          
+                new Claim("organisationName", "Test Organisation"),
+
+                // QFAU
+                new Claim(ClaimTypes.Role, "qfau_user_approver"),
+                new Claim("rolecode", "qfau_user_approver"),
+
+                new Claim(ClaimTypes.Role, "qfau_user_reviewer"),
+                new Claim("rolecode", "qfau_user_reviewer"),
+
+                new Claim(ClaimTypes.Role, "qfau_admin_forms"),
+                new Claim("rolecode", "qfau_admin_forms"),
+
+
+                new Claim(ClaimTypes.Role, "qfau_admin_data"),
+                new Claim("rolecode", "qfau_admin_data"),
+
+
+
+                // OFQUAL
+                new Claim(ClaimTypes.Role, "ofqual_user_reviewer"),
+                new Claim("rolecode", "ofqual_user_reviewer"),
+
+
+                // IFATE
+                new Claim(ClaimTypes.Role, "ifate_user_reviewer"),
+                new Claim("rolecode", "ifate_user_reviewer"),
+
+                new Claim(ClaimTypes.Role, "ifate_admin_forms"),
+                new Claim("rolecode", "ifate_admin_forms"),
+
+
+                // AO
+                new Claim(ClaimTypes.Role, "ao_user"),
+                new Claim("rolecode", "ao_user"),
+
+            };
 
             var identity = new ClaimsIdentity(claims, "Provider-stub");
             var principal = new ClaimsPrincipal(identity);

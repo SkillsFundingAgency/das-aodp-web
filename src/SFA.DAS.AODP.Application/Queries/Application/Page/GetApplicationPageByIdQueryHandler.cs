@@ -3,6 +3,8 @@ using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Domain.Interfaces;
 using SFA.DAS.AODP.Infrastructure.Cache;
 
+namespace SFA.DAS.AODP.Application.Queries.Application.Page;
+
 public class GetApplicationPageByIdQueryHandler : IRequestHandler<GetApplicationPageByIdQuery, BaseMediatrResponse<GetApplicationPageByIdQueryResponse>>
 {
     private readonly IApiClient _apiClient;

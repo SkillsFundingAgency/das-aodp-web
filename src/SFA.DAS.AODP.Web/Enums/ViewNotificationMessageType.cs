@@ -1,7 +1,7 @@
-﻿namespace SFA.DAS.AODP.Web.Constants
+﻿namespace SFA.DAS.AODP.Web.Enums
 {
     public enum ViewNotificationMessageType
     {
-       Success, Error
+        Success, Error
     }
 }

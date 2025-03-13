@@ -1,0 +1,124 @@
+﻿@using SFA.DAS.AODP.Web.Models.GdsComponents
+@using System.Web
+@model PaginationModel
+
+@{
+    if (Model.MaxPageNumber > 1000 || Model.CurrentPage > 1000) throw new ArgumentOutOfRangeException();
+    var maxMiniPagingSize = 3;
+    var maxNumberOfPages = 5;
+    var blocks = new List<int>();
+
+    if (Model.MaxPageNumber <= maxNumberOfPages)
+    {
+        for (var i = 1; i <= Model.MaxPageNumber; i++)
+        {
+            blocks.Add(i);
+        }
+    }
+    else
+    {
+        if (Model.CurrentPage <= maxMiniPagingSize)
+        {
+            for (var i = 1; i <= maxMiniPagingSize; i++)
+            {
+                blocks.Add(i);
+            }
+            blocks.Add(0); // Ellipsis
+            blocks.Add(Model.MaxPageNumber);
+        }
+        else if (Model.CurrentPage > Model.MaxPageNumber - maxMiniPagingSize)
+        {
+            blocks.Add(1);
+            blocks.Add(0); // Ellipsis
+            for (var i = Model.MaxPageNumber - maxMiniPagingSize; i <= Model.MaxPageNumber; i++)
+            {
+                blocks.Add(i);
+            }
+        }
+        else
+        {
+            blocks.Add(1);
+            blocks.Add(0); // Ellipsis
+            for (var i = Model.CurrentPage - 1; i <= Model.CurrentPage + 1; i++)
+            {
+                blocks.Add(i);
+            }
+            blocks.Add(0); // Ellipsis
+            blocks.Add(Model.MaxPageNumber);
+        }
+    }
+}
+
+@{
+
+    string ModifyQueryStringValue(string p_Name, string p_NewValue)
+    {
+
+        var nameValues = HttpUtility.ParseQueryString(ViewContext.HttpContext.Request.QueryString.ToString());
+        nameValues.Set(p_Name, p_NewValue);
+        string url = ViewContext.HttpContext.Request.Path;
+
+        string updatedQueryString = "?" + nameValues.ToString();
+        return url + updatedQueryString;
+    }
+}
+
+<nav class="govuk-pagination" aria-label="Pagination">
+    @if (Model.CurrentPage > 1)
+    {
+
+        int previousPage = Model.CurrentPage - 1;
+        string previusPageUrl = ModifyQueryStringValue("Page", previousPage.ToString());
+
+        <div class="govuk-pagination__prev">
+            <a class="govuk-link govuk-pagination__link" href="@previusPageUrl" rel="prev">
+                <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+                    <path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z"></path>
+                </svg>
+                <span class="govuk-pagination__link-title">
+                    Previous<span class="govuk-visually-hidden"> page</span>
+                </span>
+            </a>
+        </div>
+    }
+
+    <ul class="govuk-pagination__list">
+        @foreach (var block in blocks)
+        {
+
+            if (block == 0)
+            {
+                <li class="govuk-pagination__item govuk-pagination__item--ellipses">
+                    &ctdot;
+                </li>
+            }
+            else
+            {
+                string pageUrl = ModifyQueryStringValue("Page", block.ToString());
+
+                <li class="govuk-pagination__item  @(Model.CurrentPage == block ? "govuk-pagination__item--current" : "")">
+                    <a class="govuk-link govuk-pagination__link" href="@pageUrl" aria-label="Page @block">
+                        @block
+                    </a>
+                </li>
+            }
+        }
+
+        @if (Model.CurrentPage < Model.MaxPageNumber)
+        {
+            int nextPage = Model.CurrentPage + 1;
+            string nextPageUrl = ModifyQueryStringValue("Page", nextPage.ToString());
+
+            <div class="govuk-pagination__next">
+                <a class="govuk-link govuk-pagination__link" href="@nextPageUrl" rel="next">
+                    <span class="govuk-pagination__link-title">
+                        Next<span class="govuk-visually-hidden"> page</span>
+                    </span>
+                    <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+                        <path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path>
+                    </svg>
+                </a>
+            </div>
+        }
+
+</nav>

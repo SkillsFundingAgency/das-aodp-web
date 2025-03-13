@@ -59,26 +59,42 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Content Update="Views\Applications\Edit.cshtml">
+	  <Content Update="Areas\Apply\Views\Applications\SubmitConfirmation.cshtml">
 	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
 	  </Content>
-	  <Content Update="Views\Shared\FormBuilder\QuestionEdit\_DateInput.cshtml">
+	  <Content Update="Areas\Apply\Views\Applications\Submit.cshtml">
 	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
 	  </Content>
-	  <Content Update="Views\Shared\FormBuilder\QuestionEdit\_File.cshtml">
+	  <Content Update="Areas\Apply\Views\Applications\Edit.cshtml">
 	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
 	  </Content>
-	  <Content Update="Views\Shared\FormBuilder\QuestionEdit\_Options.cshtml">
+	  <Content Update="Areas\Admin\Views\Shared\FormBuilder\QuestionEdit\_DateInput.cshtml">
+	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+	  </Content>
+	  <Content Update="Areas\Admin\Views\Shared\FormBuilder\QuestionEdit\_File.cshtml">
+	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+	  </Content>
+	  <Content Update="Areas\Admin\Views\Shared\FormBuilder\QuestionEdit\_Options.cshtml">
 	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
 	  </Content>
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Content Update="Views\Shared\FormBuilder\QuestionEdit\_Options.cshtml">
+	  <Content Update="Areas\Admin\Views\Shared\FormBuilder\QuestionEdit\_Options.cshtml">
+	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+	  </Content>
+	  <Content Update="Areas\Review\Views\ApplicationsReview\Index.cshtml">
+	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+	  </Content>
+	  <Content Update="Areas\Review\Views\ApplicationsReview\QfauFundingReviewSummary.cshtml">
 	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
 	  </Content>
@@ -88,6 +104,11 @@
 	  <Content Update="wwwroot\js\site.min.js">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Areas\Review\Views\Review\" />
+	  <Folder Include="Areas\Review\Views\Shared\" />
 	</ItemGroup>
 
 	<PropertyGroup>

@@ -1,0 +1,36 @@
+﻿@using SFA.DAS.AODP.Web.Models.Application
+@model SubmitApplicationViewModel;
+
+@{
+    ViewData["Title"] = "Application submitted";
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <div class="govuk-grid-row">
+            <div class="govuk-panel--confirmation govuk-panel">
+                <h1 class="govuk-panel__title">Application submitted</h1>
+                <div class="govuk-panel__body">
+                    Your submission id<br><strong>@Model.ApplicationReference.ToString().PadLeft(6, '0')</strong>
+                </div>
+            </div>
+
+            <h2 class="govuk-heading-m">
+                What happens next
+            </h2>
+
+            <p class="govuk-body">
+                We have sent your application to DfE.
+            </p>
+
+            <p class="govuk-body">
+               The will review your application and respond to you with outcome, or to ask for more information.
+            </p>
+
+            <a class="govuk-button govuk-button--secondary"
+               asp-area="Apply"
+               asp-action="Index"
+               asp-controller="Applications">Back to dashboard</a>
+        </div>
+    </div>
+</div>

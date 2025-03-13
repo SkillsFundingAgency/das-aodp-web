@@ -1,0 +1,160 @@
+﻿@using SFA.DAS.AODP.Models.Application
+@using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApproval
+@model QfauFundingReviewOutcomeSummaryViewModel;
+
+@{
+    ViewData["Title"] = "Funding review summary";
+}
+
+@if(Model.Status == ApplicationStatus.NotApproved && Model.OfferFundingDetails.Count > 0){
+    <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+        <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+                Important
+            </h2>
+        </div>
+        <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">
+                The application status is 'Not approved', but there are approved offers for the application.
+                <br /> <br/>
+                Please review the funding decision.
+            </p>
+        </div>
+    </div>
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+        <div class="govuk-grid-row">
+            <h1 class="govuk-heading-xl">
+                Offers funding summary
+                <span class="govuk-caption-l">Request for funding</span>
+            </h1>
+        </div>
+
+        <div class="govuk-grid-row">
+            <govuk-summary-list>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>
+                        Status
+                    </govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>
+                        @if(Model.Status == ApplicationStatus.Approved)
+                        {
+                            <span>Approved - for one or more offers</span>
+                        }
+                        else if (Model.Status.HasValue)
+                        {
+                            <span>@ApplicationStatusDisplay.Dictionary[Model.Status.Value]</span>
+                        }
+                    </govuk-summary-list-row-value>
+
+                    <govuk-summary-list-row-actions>
+                        <govuk-summary-list-row-action asp-action="QfauFundingReviewOutcome" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId" visually-hidden-text="name">Change</govuk-summary-list-row-action>
+                    </govuk-summary-list-row-actions>
+                </govuk-summary-list-row>
+
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>
+                        Comments
+                    </govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>
+                        @Model.Comments
+                    </govuk-summary-list-row-value>
+
+                    <govuk-summary-list-row-actions>
+                        <govuk-summary-list-row-action asp-action="QfauFundingReviewOutcome" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId" visually-hidden-text="name">Change</govuk-summary-list-row-action>
+                    </govuk-summary-list-row-actions>
+                </govuk-summary-list-row>
+
+
+                @if (Model.OfferFundingDetails.Any())
+                {
+                    <govuk-summary-list-row>
+                        <govuk-summary-list-row-key>
+                            Offers
+                        </govuk-summary-list-row-key>
+                        <govuk-summary-list-row-value>
+                            @{
+                                var fundedOfferIds = Model.OfferFundingDetails.Select(o => o.FundingOfferId);
+                                foreach (var fundedOffer in Model.FundingOffers.Where(o => fundedOfferIds.Contains(o.Id)))
+                                {
+                                    <p class="govuk-body">@fundedOffer.Name - approved</p>
+                                }
+                                @if (fundedOfferIds.Any())
+                                {
+                                    <br />
+                                }
+                                foreach (var fundedOffer in Model.FundingOffers.Where(o => !fundedOfferIds.Contains(o.Id)))
+                                {
+                                    <p class="govuk-body">@fundedOffer.Name - not approved</p>
+                                }
+
+                            }
+                        </govuk-summary-list-row-value>
+
+                        <govuk-summary-list-row-actions>
+                            <govuk-summary-list-row-action asp-action="QfauFundingReviewOffers" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId" visually-hidden-text="name">Change</govuk-summary-list-row-action>
+                        </govuk-summary-list-row-actions>
+                    </govuk-summary-list-row>
+
+                }
+               
+
+                @foreach (var detail in Model.OfferFundingDetails)
+                {
+                    var offer = Model.FundingOffers.FirstOrDefault(f => f.Id == detail.FundingOfferId) ?? new();
+
+                    <govuk-summary-list-row>
+                        <govuk-summary-list-row-key>
+                            @offer.Name start date
+                        </govuk-summary-list-row-key>
+                        <govuk-summary-list-row-value>
+                            @detail.StartDate?.ToString("dd/MM/yyyy")
+                        </govuk-summary-list-row-value>
+
+                        <govuk-summary-list-row-actions>
+                            <govuk-summary-list-row-action asp-action="QfauFundingReviewOfferDetails" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId" visually-hidden-text="name">Change</govuk-summary-list-row-action>
+                        </govuk-summary-list-row-actions>
+                    </govuk-summary-list-row>
+
+                    <govuk-summary-list-row>
+                        <govuk-summary-list-row-key>
+                            @offer.Name end date
+                        </govuk-summary-list-row-key>
+                        <govuk-summary-list-row-value>
+                            @detail.EndDate?.ToString("dd/MM/yyyy")
+                        </govuk-summary-list-row-value>
+                        <govuk-summary-list-row-actions>
+                            <govuk-summary-list-row-action asp-action="QfauFundingReviewOfferDetails" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId" visually-hidden-text="name">Change</govuk-summary-list-row-action>
+                        </govuk-summary-list-row-actions>
+                    </govuk-summary-list-row>
+
+                    <govuk-summary-list-row>
+                        <govuk-summary-list-row-key>
+                            @offer.Name comments
+                        </govuk-summary-list-row-key>
+                        <govuk-summary-list-row-value>
+                            @detail.Comments
+                        </govuk-summary-list-row-value>
+                        <govuk-summary-list-row-actions>
+                            <govuk-summary-list-row-action asp-action="QfauFundingReviewOfferDetails" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId" visually-hidden-text="name">Change</govuk-summary-list-row-action>
+                        </govuk-summary-list-row-actions>
+                    </govuk-summary-list-row>
+                }
+            </govuk-summary-list>
+            </<div>
+
+                <div class="govuk-grid-row">
+                    <a class="govuk-button" asp-action="QfauFundingReviewConfirmation" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId">
+                        Confirm
+                    </a>
+                </div>
+
+
+
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,48 @@
+﻿@using SFA.DAS.AODP.Web.Models.Application
+@model CreateApplicationViewModel
+
+@{
+    ViewData["Title"] = "Start application";
+}
+<govuk-back-link asp-controller="Applications" asp-action="Index" asp-route-organisationId="@Model.OrganisationId">Back to view all applications</govuk-back-link>
+
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
+<h1 class="govuk-heading-l">Start application for: @Model.FormTitle</h1>
+
+<form asp-controller="Applications" asp-action="Create" method="post">
+    @Html.HiddenFor(f => f.FormTitle)
+    @Html.HiddenFor(f => f.FormVersionId)
+    @Html.HiddenFor(f => f.OrganisationId)
+
+    <div class="govuk-form-group">
+        <govuk-input asp-for="@Model.Name" input-class="govuk-input--width-50" inputmode="text" spellcheck="false">
+            <govuk-input-label is-page-heading="false" class="govuk-label--s">Application Name</govuk-input-label>
+            <govuk-input-hint>Please provide the qualification title you are applying for.</govuk-input-hint>
+            @Html.RenderPartialAsync("Validation/_TextInputValidationPartial", nameof(Model.Name))
+        </govuk-input>
+    </div>
+
+    <div class="govuk-form-group">
+        <govuk-input asp-for="@Model.Owner" input-class="govuk-input--width-50" spellcheck="false">
+            <govuk-input-label is-page-heading="false" class="govuk-label--s">Application Owner</govuk-input-label>
+            <govuk-input-hint>Please provide the name of person mainly responsible for this application.</govuk-input-hint>
+            @Html.RenderPartialAsync("Validation/_TextInputValidationPartial", nameof(Model.Owner))
+        </govuk-input>
+    </div>
+
+    <div class="govuk-form-group">
+        <govuk-input asp-for="@Model.QualificationNumber" input-class="govuk-input--width-50" spellcheck="false">
+            <govuk-input-label is-page-heading="false" class="govuk-label--s">Qualification number (optional)</govuk-input-label>
+            <govuk-input-hint>Please provide the qualification number, if you have it.</govuk-input-hint>
+            @Html.RenderPartialAsync("Validation/_TextInputValidationPartial", nameof(Model.QualificationNumber))
+        </govuk-input>
+    </div>
+
+
+    <div class="govuk-button-group">
+        <button class="govuk-button" type="submit">Save</button>
+        <a class="govuk-button govuk-button--secondary" asp-action="Index" asp-controller="Applications" asp-route-organisationId="@Model.OrganisationId">Cancel</a>
+    </div>
+
+</form>

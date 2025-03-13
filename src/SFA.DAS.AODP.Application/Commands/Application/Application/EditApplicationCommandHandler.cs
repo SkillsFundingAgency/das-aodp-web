@@ -2,6 +2,8 @@
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Domain.Interfaces;
 
+namespace SFA.DAS.AODP.Application.Commands.Application.Application;
+
 public class EditApplicationCommandHandler : IRequestHandler<EditApplicationCommand, BaseMediatrResponse<EmptyResponse>>
 {
     private readonly IApiClient _apiCLient;
@@ -9,7 +11,6 @@ public class EditApplicationCommandHandler : IRequestHandler<EditApplicationComm
     {
         _apiCLient = apiCLient;
     }
-
 
     public async Task<BaseMediatrResponse<EmptyResponse>> Handle(EditApplicationCommand request, CancellationToken cancellationToken)
     {

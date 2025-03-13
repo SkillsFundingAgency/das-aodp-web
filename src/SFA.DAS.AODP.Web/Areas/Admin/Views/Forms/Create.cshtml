@@ -1,0 +1,64 @@
+﻿@model CreateFormVersionViewModel
+
+<a class="govuk-back-link"  asp-action="Index" asp-controller="Forms">
+    Back to Forms
+</a>
+
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
+<h1 class="govuk-heading-l">Create new form</h1>
+
+<form asp-controller="Forms" asp-action="Create" method="post">
+    <div class="govuk-form-group">
+        <govuk-input asp-for="@Model.Name" input-class="govuk-input--width-50" inputmode="text" pattern="[0-9]*" spellcheck="false">
+            <govuk-input-label is-page-heading="false" class="govuk-label--s">Name</govuk-input-label>
+        </govuk-input>
+    </div>
+
+    <div class="govuk-form-group">
+
+        <govuk-textarea asp-for="@Model.Description">
+            <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Description</govuk-textarea-label>
+            <govuk-textarea-hint>This field supports Markdown. </govuk-textarea-hint>
+        </govuk-textarea>
+        <partial name="~/Areas/Admin/Views/Shared/FormBuilder/Helper/_MarkdownHelper.cshtml" />
+        @if (!string.IsNullOrEmpty(Model.DescriptionPreview))
+        {
+            <div class="govuk-label govuk-label--s">Description Preview</div>
+            <div class="govuk-inset-text">
+                @Html.Raw(Model.DescriptionPreview)
+            </div>
+            <button 
+                    autofocus
+                    type="submit"
+                    class="govuk-button govuk-button--secondary"
+                    data-module="govuk-button"
+                    data-prevent-double-click="true"
+                    value="true"
+                    name="AdditionalFormActions[UpdateDescriptionPreview]">
+                Update Description Preview
+            </button>
+        }
+        else
+        {
+            <button 
+                    type="submit"
+                    class="govuk-button govuk-button--secondary"
+                    data-module="govuk-button"
+                    data-prevent-double-click="true"
+                    value="true"
+                    name="AdditionalFormActions[UpdateDescriptionPreview]">
+                Show Description Preview
+            </button>
+        }
+    </div>
+
+    <div class="govuk-button-group">
+        <govuk-button type="submit">Save</govuk-button>
+        <a class="govuk-button govuk-button--secondary"
+           asp-action="Index"
+           asp-controller="Forms">
+            Cancel
+        </a>
+    </div>
+</form>

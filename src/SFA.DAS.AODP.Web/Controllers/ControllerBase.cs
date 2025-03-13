@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application;
-using SFA.DAS.AODP.Web.Constants;
+using SFA.DAS.AODP.Web.Enums;
 
 namespace SFA.DAS.AODP.Web.Controllers;
 
@@ -25,7 +25,7 @@ public class ControllerBase(IMediator mediator, ILogger logger) : Controller
 
     protected void ShowNotificationIfKeyExists(string key, ViewNotificationMessageType type, string? message = null)
     {
-        if (TempData[key] != null)
+        if (TempData != null && TempData[key] != null)
         {
             ViewBag.NotificationType = type;
             ViewBag.NotificationMessage = message;
