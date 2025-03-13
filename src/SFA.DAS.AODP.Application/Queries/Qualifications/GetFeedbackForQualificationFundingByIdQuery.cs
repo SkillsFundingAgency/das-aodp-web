@@ -3,10 +3,10 @@ using SFA.DAS.AODP.Application;
 
 public class GetFeedbackForQualificationFundingByIdQuery : IRequest<BaseMediatrResponse<GetFeedbackForQualificationFundingByIdQueryResponse>>
 {
-    public Guid QualificationId { get; set; }
+    public Guid QualificationVersionId { get; set; }
 
-    public GetFeedbackForQualificationFundingByIdQuery(Guid qualificationId)
+    public GetFeedbackForQualificationFundingByIdQuery(Guid qualificationVersionId)
     {
-        QualificationId = qualificationId;
+        QualificationVersionId = qualificationVersionId;
     }
 }

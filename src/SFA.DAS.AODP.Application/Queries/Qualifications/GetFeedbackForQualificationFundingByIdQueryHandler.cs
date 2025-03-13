@@ -19,7 +19,7 @@ public class GetFeedbackForQualificationFundingByIdQueryHandler : IRequestHandle
 
         try
         {
-            var result = await _apiCLient.Get<GetFeedbackForQualificationFundingByIdQueryResponse>(new GetFeedbackForQualificationFundingByIdApiRequest(request.QualificationId));
+            var result = await _apiCLient.Get<GetFeedbackForQualificationFundingByIdQueryResponse>(new GetFeedbackForQualificationFundingByIdApiRequest(request.QualificationVersionId));
 
             response.Value = result;
 

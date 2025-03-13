@@ -193,20 +193,19 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
         [HttpPost]
         [Route("Review/New/QualificationDetails/{qualificationVersionId}/qualification-funding-offers")]
-        public async Task<IActionResult> QualificationFundingOffers(QfauFundingReviewOutcomeViewModel model)
+        public async Task<IActionResult> QualificationFundingOffers(QualificationFundingsOffersSelectViewModel model)
         {
             try
             {
                 if (!ModelState.IsValid) return View(model);
 
-                await Send(new SaveQfauFundingReviewOutcomeCommand()
+                await Send(new SaveQualificationsFundingOffersCommand()
                 {
-                    ApplicationReviewId = model.ApplicationReviewId,
-                    Approved = model.Approved == true,
-                    Comments = model.Comments,
+                    QualificationVersionId = model.QualificationVersionId,
+                    SelectedOfferIds = model.SelectedOfferIds
                 });
 
-                return RedirectToAction(nameof(QualificationFundingOffers), new { applicationReviewId = model.ApplicationReviewId });
+                return RedirectToAction(nameof(QualificationFundingOffers), new { qualificationVersionId = model.QualificationVersionId });
             }
             catch
             {
