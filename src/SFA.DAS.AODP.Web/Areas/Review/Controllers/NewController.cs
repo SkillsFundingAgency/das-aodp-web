@@ -26,6 +26,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             _mediator = mediator;
         }
 
+        [Route("/Review/New/Index")]
         public async Task<IActionResult> Index(int pageNumber = 0, int recordsPerPage = 10, string name = "", string organisation = "", string qan = "")
         {
             var viewModel = new NewQualificationsViewModel();
@@ -72,6 +73,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         }
 
         [HttpPost]
+        [Route("/Review/New/Search")]
         public async Task<IActionResult> Search(NewQualificationsViewModel viewModel)
         {
             try
@@ -92,6 +94,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         }
 
         [HttpGet]
+        [Route("/Review/New/Clear")]
         public async Task<IActionResult> Clear(int recordsPerPage = 10)
         {
             try
@@ -116,6 +119,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         }
 
         [HttpGet]
+        [Route("/Review/New/ChangePage")]
         public async Task<IActionResult> ChangePage(int newPage = 1, int recordsPerPage = 10, string name = "", string organisation = "", string qan = "")
         {
             try
@@ -142,6 +146,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
         }
 
+        [Route("/Review/New/QualificationDetails")]
         public async Task<IActionResult> QualificationDetails([FromQuery] string qualificationReference)
         {            
             if (string.IsNullOrWhiteSpace(qualificationReference))
@@ -155,6 +160,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             return View(viewModel);
         }
 
+        [Route("/Review/New/ExportData")]
         public async Task<IActionResult> ExportData()
         {
             try
