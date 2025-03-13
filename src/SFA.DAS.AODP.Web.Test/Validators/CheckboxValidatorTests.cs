@@ -32,11 +32,9 @@
 //    }
 //}
 
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using SFA.DAS.AODP.Models.Exceptions.FormValidation;
 using SFA.DAS.AODP.Web.Models.Application;
 using SFA.DAS.AODP.Web.Validators;
-using System.Collections.Generic;
 
 public class CheckboxValidatorTests
 {
@@ -65,7 +63,7 @@ public class CheckboxValidatorTests
         var ex = Assert.Throws<QuestionValidationFailedException>(() => _sut.Validate(question, answer, new()));
 
         // Assert
-        Assert.StartsWith("Please select at least", ex.Message);
+        Assert.Equal($"Please select at least 1 option.", ex.Message);
     }
 
     [Fact]
@@ -74,6 +72,8 @@ public class CheckboxValidatorTests
         // Arrange
         var questionId = Guid.NewGuid();
 
+        int numOptions = 2;
+
         GetApplicationPageByIdQueryResponse.Question question = new()
         {
             Id = questionId,
@@ -81,7 +81,7 @@ public class CheckboxValidatorTests
             Required = true,
             Checkbox = new()
             {
-                MinNumberOfOptions = 2
+                MinNumberOfOptions = numOptions
             }
         };
 
@@ -95,7 +95,7 @@ public class CheckboxValidatorTests
         var ex = Assert.Throws<QuestionValidationFailedException>(() => _sut.Validate(question, answer, new()));
 
         // Assert
-        Assert.StartsWith("Please select at least", ex.Message);
+        Assert.Equal($"Please select at least {numOptions} options.", ex.Message);
     }
 
     [Fact]
@@ -104,6 +104,8 @@ public class CheckboxValidatorTests
         // Arrange
         var questionId = Guid.NewGuid();
 
+        int numOptions = 2;
+
         GetApplicationPageByIdQueryResponse.Question question = new()
         {
             Id = questionId,
@@ -111,7 +113,7 @@ public class CheckboxValidatorTests
             Required = true,
             Checkbox = new()
             {
-                MaxNumberOfOptions = 2
+                MaxNumberOfOptions = numOptions
             }
         };
 
@@ -125,6 +127,7 @@ public class CheckboxValidatorTests
         var ex = Assert.Throws<QuestionValidationFailedException>(() => _sut.Validate(question, answer, new()));
 
         // Assert
-        Assert.StartsWith("Please only select up to", ex.Message);
+        Assert.Equal($"Please only select up to {numOptions} options.", ex.Message);
     }
 }
+

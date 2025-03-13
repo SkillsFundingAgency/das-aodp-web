@@ -41,6 +41,168 @@
 //        }
 //    }
 
+using Castle.Core.Logging;
+using MediatR;
+using Microsoft.Extensions.Logging;
+using Moq;
+using SFA.DAS.AODP.Web.Areas.Admin.Controllers.FormBuilder;
+using AutoFixture;
+using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
+using SFA.DAS.AODP.Application;
+using Microsoft.AspNetCore.Mvc;
+using SFA.DAS.AODP.Web.Models.FormBuilder.Form;
+using SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
+public class FormControllerTests
+{
+    private readonly Fixture _fixture = new();
+    private readonly FormsController _sut;
+    private readonly Mock<IMediator> _mediator = new();
+    private readonly Mock<ILogger<FormsController>> _logger = new();
+
+    public FormControllerTests()
+    {
+        _sut = new(_mediator.Object, _logger.Object);
+    }
+
+    [Fact]
+    public async Task Index_ReturnsViewModel()
+    {
+        // Arrange
+        var response = _fixture.Create<BaseMediatrResponse<GetAllFormVersionsQueryResponse>>();
+        response.Success = true;
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetAllFormVersionsQuery>(),default))
+            .ReturnsAsync(response);
+
+        // Act
+        IActionResult actual = await _sut.Index();
+
+        // Assert
+        ViewResult? viewResult = actual as ViewResult;
+        Assert.NotNull(viewResult);
+
+        FormVersionListViewModel? result = viewResult.ViewData.Model as FormVersionListViewModel;
+        Assert.NotNull(result);
+    }
+//    [Fact]
+//    public async Task Index_CreatingDraft()
+//    {
+//        // Arrange
+//        Guid formVersionId = Guid.NewGuid();
+
+//        Mock<FormVersionListViewModel> model = new();
+//        model.SetupAdd(s => s.AdditionalActions.CreateDraft.Value += )
+//            .Returns(formVersionId);
+
+//        var command = new CreateDraftFormVersionCommand(formVersionId);
+//        var response = _fixture.Create<CreateDraftFormVersionCommandResponse>();
+//        BaseMediatrResponse<CreateDraftFormVersionCommandResponse> wrapper = new()
+//        {
+//            Value = response,
+//            Success = true
+//        };
+        
+//        _mediator.Setup(m => m.Send(It.IsAny<CreateDraftFormVersionCommand>(), default))
+//            .Returns(Task.FromResult(wrapper));
+//        // Act
+//        IActionResult actual = await _sut.Index(model.Object);
+
+//        // Assert
+//        _mediator.Verify(m => m.Send(It.IsAny<CreateDraftFormVersionCommand>(), default), Times.Once());
+//        //Assert.Equal(response, model);
+//        ViewResult? viewResult = actual as ViewResult;
+//        Assert.NotNull(viewResult);
+
+//        FormVersionListViewModel? result = viewResult.ViewData.Model as FormVersionListViewModel;
+//        Assert.NotNull(result);
+
+//        //            if (model.AdditionalActions.CreateDraft.HasValue)
+//        //            {
+//        //                var command = new CreateDraftFormVersionCommand(model.AdditionalActions.CreateDraft.Value);
+//        //                var response = await Send(command);
+//        //                return RedirectToAction(nameof(Edit), new { formVersionId = response.FormVersionId });
+
+//        //            }
+//    }
+
+//    [Fact]
+//    public async Task Index_MoveDown()
+//    {
+//        // Arrange
+//        var response = _fixture.Create<BaseMediatrResponse<GetAllFormVersionsQueryResponse>>();
+//        response.Success = true;
+
+//        _mediator.Setup(m => m.Send(It.IsAny<GetAllFormVersionsQuery>(), default))
+//            .ReturnsAsync(response);
+
+//        // Act
+//        IActionResult actual = await _sut.Index();
+
+//        // Assert
+//        ViewResult? viewResult = actual as ViewResult;
+//        Assert.NotNull(viewResult);
+
+//        FormVersionListViewModel? result = viewResult.ViewData.Model as FormVersionListViewModel;
+//        Assert.NotNull(result);
+//    }
+
+//    [Fact]
+//    public async Task Index_MoveUp()
+//    {
+//        // Arrange
+//        //var response = _fixture.Create<BaseMediatrResponse<CreateDraftFormVersionCommandResponse>>();
+//        Guid formVersionId = Guid.NewGuid();
+
+//        var response = _fixture.Create<BaseMediatrResponse<CreateDraftFormVersionCommandResponse>>();
+//        response.Success = true;
+//        response.Value.FormVersionId = formVersionId;
+
+//        _mediator.Setup(m => m.Send(It.IsAny<CreateDraftFormVersionCommand>(), default))
+//            .ReturnsAsync(response);
+//        // Act
+//        IActionResult actual = await _sut.Index();
+
+//        // Assert
+//        ViewResult? viewResult = actual as ViewResult;
+//        Assert.NotNull(viewResult);
+
+//        FormVersionListViewModel? result = viewResult.ViewData.Model as FormVersionListViewModel;
+//        Assert.NotNull(result);
+
+//        //// Arrange
+//        //var request = _fixture.Create<GetAllFormVersionsQuery>();
+//        //var response = _fixture.Create<GetAllFormVersionsQueryResponse>();
+//        //BaseMediatrResponse<GetAllFormVersionsQueryResponse> wrapper = new()
+//        //{
+//        //    Value = response,
+//        //    Success = true
+//        //};
+
+//        //_mediatorMock
+//        //    .Setup(m => m.Send(It.IsAny<GetAllFormVersionsQuery>(), default))
+//        //    .ReturnsAsync(wrapper);
+
+//        //// Act
+//        //var result = await _controller.GetAllAsync();
+
+//        //// Assert
+//        //_mediatorMock.Verify(m => m.Send(It.IsAny<GetAllFormVersionsQuery>(), default), Times.Once());
+//        //_mediatorMock.Verify(m =>
+//        //    m.Send(
+//        //        It.IsAny<GetAllFormVersionsQuery>(), default), Times.Once());
+//        //var okResult = Assert.IsType<OkObjectResult>(result);
+//        //var model = Assert.IsAssignableFrom<GetAllFormVersionsQueryResponse>(okResult.Value);
+//        //Assert.Equal(response, model);
+//    }
+//}
+
+
+// three unit tests
+// create draft
+// movedown
+// moveup
+// type should be of redirecttoaction
+
 //    [Route("/admin/forms")]
 //    [HttpPost]
 //    public async Task<IActionResult> Index(FormVersionListViewModel model)
