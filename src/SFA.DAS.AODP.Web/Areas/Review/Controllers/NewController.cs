@@ -3,9 +3,12 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApproval;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
+using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Qualifications;
+using SFA.DAS.AODP.Web.Models.Qualifications.Fundings;
 using System.Globalization;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
@@ -18,11 +21,12 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         private readonly ILogger<NewController> _logger;
         private readonly IMediator _mediator;
         public enum NewQualDataKeys { InvalidPageParams, }
-
-        public NewController(ILogger<NewController> logger, IMediator mediator) : base(mediator, logger)
+        private readonly IUserHelperService _userHelperService;
+        public NewController(ILogger<NewController> logger, IMediator mediator, IUserHelperService userHelperService) : base(mediator, logger)
         {
             _logger = logger;
             _mediator = mediator;
+            _userHelperService = userHelperService;
         }
 
         [Route("/Review/New/Index")]
@@ -159,6 +163,58 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             return View(viewModel);
         }
 
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
+        [HttpGet]
+        [Route("Review/New/QualificationDetails/{qualificationVersionId}/qualification-funding-offers")]
+        public async Task<IActionResult> QualificationFundingOffers(Guid qualificationVersionId)
+        {
+            try
+            {
+                var offers = await Send(new GetFundingOffersQuery());
+                var review = await Send(new GetFeedbackForQualificationFundingByIdQuery(qualificationVersionId));
+
+                QualificationFundingsOffersSelectViewModel model = new()
+                {
+                    SelectedOfferIds = review.FundedOffers?.Select(s => s.FundingOfferId).ToList() ?? [],
+                    QualificationVersionId = qualificationVersionId,
+                };
+
+                model.MapOffers(offers);
+
+                return View(model);
+
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
+        }
+
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
+        [HttpPost]
+        [Route("Review/New/QualificationDetails/{qualificationVersionId}/qualification-funding-offers")]
+        public async Task<IActionResult> QualificationFundingOffers(QfauFundingReviewOutcomeViewModel model)
+        {
+            try
+            {
+                if (!ModelState.IsValid) return View(model);
+
+                await Send(new SaveQfauFundingReviewOutcomeCommand()
+                {
+                    ApplicationReviewId = model.ApplicationReviewId,
+                    Approved = model.Approved == true,
+                    Comments = model.Comments,
+                });
+
+                return RedirectToAction(nameof(QualificationFundingOffers), new { applicationReviewId = model.ApplicationReviewId });
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
+        }
+
+
         [Route("/Review/New/ExportData")]
         public async Task<IActionResult> ExportData()
         {
@@ -210,6 +266,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             return new QualificationDetailsViewModel
             {
                 Id = response.Id,
+                QualificationVersionId = response.QualificationVersionId,
                 Status = response.Status,
                 Priority = response.Priority,
                 Changes = response.Changes,
