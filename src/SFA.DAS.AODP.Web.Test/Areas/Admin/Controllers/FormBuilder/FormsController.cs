@@ -71,7 +71,7 @@ public class FormControllerTests
         var response = _fixture.Create<BaseMediatrResponse<GetAllFormVersionsQueryResponse>>();
         response.Success = true;
 
-        _mediator.Setup(m => m.Send(It.IsAny<GetAllFormVersionsQuery>(),default))
+        _mediator.Setup(m => m.Send(It.IsAny<GetAllFormVersionsQuery>(), default))
             .ReturnsAsync(response);
 
         // Act
@@ -84,6 +84,7 @@ public class FormControllerTests
         FormVersionListViewModel? result = viewResult.ViewData.Model as FormVersionListViewModel;
         Assert.NotNull(result);
     }
+}
 //    [Fact]
 //    public async Task Index_CreatingDraft()
 //    {
