@@ -1,0 +1,53 @@
+﻿@using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
+@model ShareApplicationViewModel
+
+@{
+    ViewData["Title"] = "Share application";
+}
+
+<a class="govuk-back-link"
+   asp-area="Review"
+   asp-action="ViewApplication"
+   asp-route-applicationReviewId="@Model.ApplicationReviewId"
+   asp-controller="ApplicationsReview">Back to application</a>
+
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
+<h1 class="govuk-heading-l">Application sharing management</h1>
+
+<form asp-action="ShareApplicationConfirmation" asp-controller="ApplicationsReview" method="post">
+    @Html.HiddenFor(m => m.ApplicationReviewId)
+    @Html.HiddenFor(m => m.Share)
+    @Html.HiddenFor(m => m.UserType)
+
+    <govuk-warning-text icon-fallback-text="Warning">
+
+        @{
+            var userType = string.Empty;
+            if (Model.UserType == SFA.DAS.AODP.Models.Users.UserType.Ofqual) userType = "Ofqual";
+            else if (Model.UserType == SFA.DAS.AODP.Models.Users.UserType.SkillsEngland) userType = "Skills England";
+
+            var message = $"{(Model.Share ? "Share" : "Stop sharing")} this aplication with {userType}?";
+        }
+
+        @message
+        <br />
+
+        @if(Model.Share){
+            <p>All of the submitted form content and files will be shared.</p>
+        }
+    </govuk-warning-text>
+
+    <div class="govuk-button-group">
+
+        <govuk-button class="govuk-button" type="submit">
+            Confirm
+        </govuk-button>
+
+        <a class="govuk-button govuk-button--secondary"
+           asp-area="Review"
+           asp-action="ViewApplication"
+           asp-route-applicationReviewId="@Model.ApplicationReviewId"
+           asp-controller="ApplicationsReview">Back to application</a>
+    </div>
+</form>

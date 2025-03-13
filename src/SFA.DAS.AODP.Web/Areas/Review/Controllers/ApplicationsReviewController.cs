@@ -2,9 +2,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Models.Application;
+using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApproval;
 using SFA.DAS.AODP.Web.Authentication;
+using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.User;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
@@ -15,6 +17,10 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
     [Authorize(Policy = PolicyConstants.IsReviewUser)]
     public class ApplicationsReviewController : ControllerBase
     {
+        enum UpdateKeys
+        {
+            SharingStatusUpdated
+        }
         private readonly IUserHelperService _userHelperService;
 
         public ApplicationsReviewController(ILogger<ApplicationsReviewController> logger, IMediator mediator, IUserHelperService userHelperService) : base(mediator, logger)
@@ -74,10 +80,11 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 var userType = _userHelperService.GetUserType();
                 var review = await Send(new GetApplicationForReviewByIdQuery(applicationReviewId));
 
-                if (userType == AODP.Models.Users.UserType.Ofqual && review.SharedWithOfqual == false) return NotFound();
-                if (userType == AODP.Models.Users.UserType.SkillsEngland && review.SharedWithSkillsEngland == false) return NotFound();
+                if (userType == UserType.Ofqual && review.SharedWithOfqual == false) return NotFound();
+                if (userType == UserType.SkillsEngland && review.SharedWithSkillsEngland == false) return NotFound();
 
-                return View(ApplicationReviewViewModel.Map(review, userType ));
+                ShowNotificationIfKeyExists(UpdateKeys.SharingStatusUpdated.ToString(), ViewNotificationMessageType.Success, "The application's sharing status has been updated.");
+                return View(ApplicationReviewViewModel.Map(review, userType));
             }
             catch
             {
@@ -265,18 +272,51 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         [Route("review/application-reviews/{applicationReviewId}/qfau-funding-confirm")]
         public async Task<IActionResult> QfauFundingReviewConfirmation(Guid applicationReviewId)
         {
+            return View(new QfauFundingReviewConfirmationViewModel()
+            {
+                ApplicationReviewId = applicationReviewId
+            });
+        }
+
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
+        [HttpGet]
+        [Route("review/application-reviews/{applicationReviewId}/share")]
+        public async Task<IActionResult> ShareApplicationConfirmation(Guid applicationReviewId, bool share, UserType userType)
+        {
+            return View(new ShareApplicationViewModel()
+            {
+                ApplicationReviewId = applicationReviewId,
+                Share = share,
+                UserType = userType
+            });
+
+        }
+
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
+        [HttpPost]
+        [Route("review/application-reviews/{applicationReviewId}/share")]
+        public async Task<IActionResult> ShareApplicationConfirmation(ShareApplicationViewModel model)
+        {
             try
             {
-                return View(new QfauFundingReviewConfirmationViewModel()
-                {
-                    ApplicationReviewId = applicationReviewId
-                });
+                await Send(
+                    new UpdateApplicationReviewSharingCommand()
+                    {
+                        ApplicationReviewId = model.ApplicationReviewId,
+                        ShareApplication = model.Share,
+                        ApplicationReviewUserType = model.UserType.ToString(),
+                        SentByEmail = _userHelperService.GetUserEmail(),
+                        SentByName = _userHelperService.GetUserDisplayName(),
+                        UserType = _userHelperService.GetUserType().ToString()
+                    });
+
+                TempData[UpdateKeys.SharingStatusUpdated.ToString()] = true;
+                return RedirectToAction(nameof(ViewApplication), new { applicationReviewId = model.ApplicationReviewId });
             }
             catch
             {
                 return Redirect("/Home/Error");
             }
         }
-
     }
 }

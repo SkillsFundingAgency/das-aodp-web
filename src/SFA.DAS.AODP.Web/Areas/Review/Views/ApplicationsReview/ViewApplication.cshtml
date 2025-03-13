@@ -1,4 +1,5 @@
 ﻿@using SFA.DAS.AODP.Models.Application
+@using SFA.DAS.AODP.Models.Users
 @using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
 @model ApplicationReviewViewModel;
 
@@ -7,6 +8,7 @@
 
     var currentUserReview = Model.Feedbacks.Where(f => f.UserType == Model.UserType.ToString()).First();
 }
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
@@ -112,24 +114,66 @@
             </govuk-summary-list>
             </<div>
 
-                <div class="govuk-grid-row">
-                    <h2 class="govuk-heading-m">DfE funding review</h2>
-                    <p class="govuk-body">Review application, make decision on approval and funding options.</p>
+                @if (Model.UserType == SFA.DAS.AODP.Models.Users.UserType.Qfau)
+                {
+                    <div class="govuk-grid-row">
+                        <h2 class="govuk-heading-m">DfE funding review</h2>
+                        <p class="govuk-body">Review application, make decision on approval and funding options.</p>
 
-                    @if (currentUserReview.Status == ApplicationStatus.Approved.ToString() || currentUserReview.Status == ApplicationStatus.NotApproved.ToString())
-                    {
-                        <a class="govuk-button" asp-action="QfauFundingReviewSummary" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId">
-                            DfE funding review
-                        </a>
-                    }
-                    else
-                    {
-                        <a class="govuk-button" asp-action="QfauFundingReviewOutcome" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId">
-                            DfE funding review
-                        </a>
-                    }
+                        @if (currentUserReview.Status == ApplicationStatus.Approved.ToString() || currentUserReview.Status == ApplicationStatus.NotApproved.ToString())
+                        {
+                            <a class="govuk-button" asp-action="QfauFundingReviewSummary" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId">
+                                DfE funding review
+                            </a>
+                        }
+                        else
+                        {
+                            <a class="govuk-button" asp-action="QfauFundingReviewOutcome" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId">
+                                DfE funding review
+                            </a>
+                        }
 
-                </div>
+                    </div>
+
+
+                    <div class="govuk-grid-row">
+                        <h2 class="govuk-heading-m">Skills England review</h2>
+
+                        @{
+                            var seMessage = $"{(!Model.SharedWithSkillsEngland ? "Share with Skills England" : "Unshare with Skills England")}";
+                        }
+
+                        <a class="govuk-button govuk-button--secondary" asp-action="ShareApplicationConfirmation"
+                           asp-controller="ApplicationsReview" 
+                           asp-route-applicationReviewId="@Model.ApplicationReviewId"
+                           asp-route-share="@(!Model.SharedWithSkillsEngland)"
+                           asp-route-userType="@UserType.SkillsEngland"
+                        >
+                            @seMessage
+                        </a>
+
+                    </div>
+
+                    <div class="govuk-grid-row">
+                        <h2 class="govuk-heading-m">Ofqual review</h2>
+
+                        @{
+                            var ofqualMessage = $"{(!Model.SharedWithOfqual ? "Share with Ofqual" : "Unshare with Ofqual")}";
+                        }
+
+                        <a class="govuk-button govuk-button--secondary" asp-action="ShareApplicationConfirmation"
+                           asp-controller="ApplicationsReview"
+                           asp-route-applicationReviewId="@Model.ApplicationReviewId"
+                           asp-route-share="@(!Model.SharedWithOfqual)"
+                           asp-route-userType="@UserType.Ofqual">
+                            @ofqualMessage
+                        </a>
+
+                    </div>
+
+                }
+
+
 
 
 
