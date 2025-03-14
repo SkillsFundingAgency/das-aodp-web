@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SFA.DAS.AODP.Application.Queries.Review;
 using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApproval;
@@ -278,5 +279,22 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
         }
 
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
+        [HttpGet]
+        [Route("review/application-reviews/{applicationReviewId}/details")]
+        public async Task<IActionResult> ViewApplicationReadOnlyDetails(Guid applicationReviewId)
+        {
+            try
+            {
+                var applicationDetails = await Send(new GetApplicationReadOnlyDetailsByIdQuery(applicationReviewId));
+
+                //return View(ApplicationReadOnlyDetailsViewModel.Map(applicationDetails));
+                return View(new ApplicationReadOnlyDetailsViewModel { });
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
+        }
     }
 }
