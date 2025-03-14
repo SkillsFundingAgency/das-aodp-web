@@ -175,7 +175,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
                 QualificationFundingsOffersSelectViewModel model = new()
                 {
-                    SelectedOfferIds = review.FundedOffers?.Select(s => s.FundingOfferId).ToList() ?? [],
+                    SelectedOfferIds = review.QualificationFundedOffers?.Select(s => s.FundingOfferId).ToList() ?? [],
                     QualificationVersionId = qualificationVersionId,
                 };
 
@@ -205,7 +205,27 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     SelectedOfferIds = model.SelectedOfferIds
                 });
 
-                return RedirectToAction(nameof(QualificationFundingOffers), new { qualificationVersionId = model.QualificationVersionId });
+                return RedirectToAction(nameof(QualificationFundingOffersDetails), new { qualificationVersionId = model.QualificationVersionId });
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
+        }
+
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
+        [HttpGet]
+        [Route("Review/New/{qualificationVersionId}/qualification-funding-offers-details")]
+        public async Task<IActionResult> QualificationFundingOffersDetails(Guid qualificationVersionId)
+        {
+            try
+            {
+                var offers = await Send(new GetFundingOffersQuery());
+                var review = await Send(new GetFeedbackForQualificationFundingByIdQuery(qualificationVersionId));
+
+                var model = QualificationFundingsOfferDetailsViewModel.Map(review, offers);
+
+                return View(model);
             }
             catch
             {

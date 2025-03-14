@@ -1,0 +1,71 @@
+﻿@using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApproval
+@using SFA.DAS.AODP.Web.Models.GdsComponents
+@using SFA.DAS.AODP.Web.Models.Qualifications.Fundings
+@model QualificationFundingsOfferDetailsViewModel;
+
+@{
+    ViewData["Title"] = "Funding review";
+}
+
+<partial name="_ValidationSummaryPartial" />
+
+<form asp-controller="New" asp-action="QualificationFundingOffersDetails" method="post">
+    @Html.HiddenFor(h => h.QualificationVersionId)
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            <div class="govuk-grid-row">
+                <h1 class="govuk-heading-xl">
+                    DfE funding review
+                    <span class="govuk-caption-l">Request for funding</span>
+                </h1>
+
+                @for (int i = 0; i < Model.Details.Count; i++)
+                {
+                    var funding = Model.Details[i];
+                    <input type="hidden" name="Details[@i][FundingOfferId]" value="@funding.FundingOfferId" />
+
+                    <div class="govuk-form-group">
+                        <h2 class="govuk-heading-m">Offer: @(Model.FundingOffers.FirstOrDefault(o => o.Id == funding.FundingOfferId)?.Name)</h2>
+
+                        @{
+                            var startDate = new GdsDateInputViewModel()
+                            {
+                                Id = $"Details[{i}].StartDate",
+                                Name = $"Details[{i}][StartDate]",
+                                Value = funding.StartDate,
+                                Title ="Funding start date"
+                            };
+
+                            var startDateError = ViewContext.ModelState.FirstOrDefault(k => k.Key == startDate.Id).Value?.Errors;
+                            if (startDateError != null) startDate.ErrorMessage = startDateError.FirstOrDefault()?.ErrorMessage;
+
+                            await Html.RenderPartialAsync("GdsComponents/_GdsDateInput", startDate);
+                        }
+
+                        @{
+                            var endDate = new GdsDateInputViewModel()
+                            {
+                                Id = $"Details[{i}].EndDate",
+                                Name = $"Details[{i}][EndDate]",
+                                Value = funding.EndDate,
+                                Title = "Funding end date"
+                            };
+
+
+                            var endDateError = ViewContext.ModelState.FirstOrDefault(k => k.Key == endDate.Id).Value?.Errors;
+                            if (endDateError != null) endDate.ErrorMessage = endDateError.FirstOrDefault()?.ErrorMessage;
+
+                            await Html.RenderPartialAsync("GdsComponents/_GdsDateInput", endDate);
+                        }
+
+                        <govuk-textarea asp-for="@funding.Comments" name="Details[@i][Comments]" rows="2">
+                            <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Comments</govuk-textarea-label>
+                        </govuk-textarea>
+                    </div>
+                }
+
+                <govuk-button type="submit">Save and continue</govuk-button>
+            </div>
+        </div>
+    </div>
+</form>

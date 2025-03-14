@@ -25,11 +25,11 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications.Fundings
             public string Name { get; set; }
         }
 
-        public static QualificationFundingsOfferDetailsViewModel Map(GetFeedbackForApplicationReviewByIdQueryResponse response, GetFundingOffersQueryResponse offers)
+        public static QualificationFundingsOfferDetailsViewModel Map(GetFeedbackForQualificationFundingByIdQueryResponse response, GetFundingOffersQueryResponse offers)
         {
             QualificationFundingsOfferDetailsViewModel model = new();
-
-            foreach (var funding in response.FundedOffers ?? [])
+            model.QualificationVersionId = response.QualificationVersionId;
+            foreach (var funding in response.QualificationFundedOffers ?? [])
             {
                 model.Details.Add(new()
                 {
