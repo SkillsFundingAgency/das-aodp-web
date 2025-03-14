@@ -1,5 +1,4 @@
-﻿using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApproval;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
 namespace SFA.DAS.AODP.Web.Models.Qualifications.Fundings
 {
@@ -45,11 +44,11 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications.Fundings
             return model;
         }
 
-        public static SaveQfauFundingReviewOffersDetailsCommand Map(QfauFundingReviewOutcomeOfferDetailsViewModel model)
+        public static SaveQualificationsFundingOffersDetailsCommand Map(QualificationFundingsOfferDetailsViewModel model)
         {
-            SaveQfauFundingReviewOffersDetailsCommand command = new()
+            SaveQualificationsFundingOffersDetailsCommand command = new()
             {
-                ApplicationReviewId = model.ApplicationReviewId,
+                QualificationVersionId = model.QualificationVersionId,
 
             };
 

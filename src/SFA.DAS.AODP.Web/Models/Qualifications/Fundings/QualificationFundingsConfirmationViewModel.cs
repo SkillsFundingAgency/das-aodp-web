@@ -2,6 +2,6 @@
 {
     public class QualificationFundingsConfirmationViewModel
     {
-        public Guid ApplicationReviewId { get; set; }
+        public Guid QualificationVersionId { get; set; }
     }
 }

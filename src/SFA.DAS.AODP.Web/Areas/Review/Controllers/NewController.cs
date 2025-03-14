@@ -233,6 +233,71 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
         }
 
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
+        [HttpPost]
+        [Route("Review/New/{qualificationVersionId}/qualification-funding-offers-details")]
+        public async Task<IActionResult> QualificationFundingOffersDetails(QualificationFundingsOfferDetailsViewModel model)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    var offers = await Send(new GetFundingOffersQuery());
+                    model.MapOffers(offers);
+
+                    return View(model);
+                }
+
+                await Send(QualificationFundingsOfferDetailsViewModel.Map(model));
+
+
+                return RedirectToAction(nameof(QualificationFundingOffersSummary), new { qualificationVersionId = model.QualificationVersionId });
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
+        }
+
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
+        [HttpGet]
+        [Route("Review/New/{qualificationVersionId}/qualification-funding-offers-summary")]
+        public async Task<IActionResult> QualificationFundingOffersSummary(Guid qualificationVersionId)
+        {
+            try
+            {
+                var offers = await Send(new GetFundingOffersQuery());
+                var review = await Send(new GetFeedbackForQualificationFundingByIdQuery(qualificationVersionId));
+
+                var model = QualificationFundingsOffersSummaryViewModel.Map(review, offers);
+                model.QualificationVersionId = qualificationVersionId;
+
+                return View(model);
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
+        }
+
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
+        [HttpGet]
+        [Route("Review/New/{qualificationVersionId}/qualification-funding-offers-confirm")]
+        public async Task<IActionResult> QualificationFundingOffersConfirmation(Guid qualificationVersionId)
+        {
+            try
+            {
+                return View(new QualificationFundingsConfirmationViewModel()
+                {
+                    QualificationVersionId = qualificationVersionId
+                });
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
+        }
+
 
         [Route("/Review/New/ExportData")]
         public async Task<IActionResult> ExportData()
