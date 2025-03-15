@@ -8,6 +8,22 @@
 
     var currentUserReview = Model.Feedbacks.Where(f => f.UserType == Model.UserType.ToString()).First();
 }
+
+@if (currentUserReview.NewMessage)
+{
+    <div class="govuk-notification-banner" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+        <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+                Important
+            </h2>
+        </div>
+        <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">
+                The are new messages for this application.
+            </p>
+        </div>
+    </div>
+}
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
 <div class="govuk-grid-row">
@@ -144,11 +160,10 @@
                         }
 
                         <a class="govuk-button govuk-button--secondary" asp-action="ShareApplicationConfirmation"
-                           asp-controller="ApplicationsReview" 
+                           asp-controller="ApplicationsReview"
                            asp-route-applicationReviewId="@Model.ApplicationReviewId"
                            asp-route-share="@(!Model.SharedWithSkillsEngland)"
-                           asp-route-userType="@UserType.SkillsEngland"
-                        >
+                           asp-route-userType="@UserType.SkillsEngland">
                             @seMessage
                         </a>
 
@@ -172,12 +187,21 @@
                     </div>
 
                 }
-
-
-
-
-
             </div>
         </div>
+        <div class="govuk-grid-column-one-third">
+
+            <h2 class="govuk-heading-m">Related links</h2>
+            <p class="govuk-body">
+                <a class="govuk-link" asp-action="ApplicationMessages"
+                   asp-area="Review"
+                   asp-controller="ApplicationMessages"
+                   asp-route-applicationReviewId="@Model.ApplicationReviewId"
+                   asp-route-applicationId="@Model.Id">
+                    View messages
+                </a>
+            </p>
+        </div>
     </div>
+
 </div>

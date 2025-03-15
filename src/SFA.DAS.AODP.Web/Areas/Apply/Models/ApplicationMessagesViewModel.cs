@@ -7,7 +7,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 
 namespace SFA.DAS.AODP.Web.Areas.Apply.Models;
-
 public class ApplicationMessagesViewModel
 {
     public Guid OrganisationId { get; set; }
@@ -16,7 +15,7 @@ public class ApplicationMessagesViewModel
     [Required]
     public string MessageText { get; set; }
     [Required]
-    public string SelectedMessageType => "ReplyToInformationRequest";
+    public string SelectedMessageType => MessageType.ReplyToInformationRequest.ToString();
     public string SelectedMessageTypeDisplay => MessageTypeConfigurationRules.GetMessageSharingSettings(SelectedMessageType).DisplayName;
     public UserType UserType { get; set; }
     public List<SelectListItem> MessageTypeSelectOptions => MessageTypeSelectOptionRules.GetMessageTypeSelectOptions(UserType);

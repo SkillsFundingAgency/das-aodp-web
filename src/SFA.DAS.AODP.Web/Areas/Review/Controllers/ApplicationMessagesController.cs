@@ -16,7 +16,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers;
 [Authorize(Policy = PolicyConstants.IsReviewUser)]
 public class ApplicationMessagesController : ControllerBase
 {
-    public enum NotificationKeys { MessageSentBanner }
+    public enum NotificationKeys { MessageSentBanner, MarkAsReadBanner }
     private readonly IUserHelperService _userHelperService;
     private readonly UserType UserType;
     public ApplicationMessagesController(IMediator mediator, ILogger<ApplicationMessagesController> logger, IUserHelperService userHelperService) : base(mediator, logger)
@@ -75,6 +75,7 @@ public class ApplicationMessagesController : ControllerBase
         }
 
         ShowNotificationIfKeyExists(NotificationKeys.MessageSentBanner.ToString(), ViewNotificationMessageType.Success, "Your message has been sent");
+        ShowNotificationIfKeyExists(NotificationKeys.MarkAsReadBanner.ToString(), ViewNotificationMessageType.Success, "All messages have been marked as read.");
 
         return View(model);
     }
@@ -127,6 +128,27 @@ public class ApplicationMessagesController : ControllerBase
         catch
         {
             return View(model);
+        }
+    }
+
+    [HttpPost]
+    [Route("review/{applicationReviewId}/applications/{applicationId}/messages/read")]
+    public async Task<IActionResult> ReadApplicationMessages([FromForm] MarkApplicationMessagesAsReadViewModel model)
+    {
+        try
+        {
+            await Send(new MarkAllMessagesAsReadCommand()
+            {
+                ApplicationId = model.ApplicationId,
+                UserType = _userHelperService.GetUserType().ToString()
+            });
+
+            TempData[NotificationKeys.MarkAsReadBanner.ToString()] = true;
+            return RedirectToAction(nameof(ApplicationMessages), new { model.ApplicationId, model.ApplicationReviewId });
+        }
+        catch
+        {
+            return Redirect("/Home/Error");
         }
     }
 }

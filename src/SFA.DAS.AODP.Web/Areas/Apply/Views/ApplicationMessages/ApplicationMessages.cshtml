@@ -11,11 +11,11 @@
     <div class="govuk-grid-column-two-thirds">
 
         <govuk-back-link class="govuk-link govuk-task-list__link"
-            asp-action="ViewApplication"
-            asp-controller="Applications"
-            asp-route-organisationId="@Model.OrganisationId"
-            asp-route-applicationId="@Model.ApplicationId"
-            asp-route-formVersionId="@Model.FormVersionId">Back</govuk-back-link>
+                         asp-action="ViewApplication"
+                         asp-controller="Applications"
+                         asp-route-organisationId="@Model.OrganisationId"
+                         asp-route-applicationId="@Model.ApplicationId"
+                         asp-route-formVersionId="@Model.FormVersionId">Back</govuk-back-link>
 
         <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
@@ -61,11 +61,11 @@
                     Reply to information requests.
                 </div>
 
-                 <div class="govuk-form-group @(ViewData.ModelState["MessageText"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
-                    <textarea class="govuk-textarea @(ViewData.ModelState["MessageText"]?.Errors.Count > 0 ? "govuk-textarea--error" : "")" 
-                              id="messageText" 
-                              name="MessageText" 
-                              rows="5" 
+                <div class="govuk-form-group @(ViewData.ModelState["MessageText"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+                    <textarea class="govuk-textarea @(ViewData.ModelState["MessageText"]?.Errors.Count > 0 ? "govuk-textarea--error" : "")"
+                              id="messageText"
+                              name="MessageText"
+                              rows="5"
                               aria-describedby="@(ViewData.ModelState["MessageText"]?.Errors.Count > 0 ? "messageText-error" : "more-detail-hint")">@Model.MessageText</textarea>
                     @if (ViewData.ModelState["MessageText"]?.Errors.Count > 0)
                     {
@@ -76,7 +76,6 @@
                 </div>
 
                 <button type="submit" name="AdditionalActions.Preview" value="true" class="govuk-button">Preview</button>
-
             </form>
         }
         else
@@ -126,6 +125,16 @@
             </form>
         }
 
+
+        <form asp-route-organisationId="@Model.OrganisationId" asp-route-formVersionId="@Model.FormVersionId"
+              asp-route-applicationId="@Model.ApplicationId" asp-action="ReadApplicationMessages" asp-Controller="ApplicationMessages" method="post" enctype="multipart/form-data">
+            @Html.HiddenFor(m => m.OrganisationId)
+            @Html.HiddenFor(m => m.ApplicationId)
+            @Html.HiddenFor(m => m.FormVersionId)
+            <govuk-button class="govuk-button--secondary govuk-!-margin-top-2" type="submit">Mark all messages as read</govuk-button>
+        </form>
+
+
         <!-- Application Event Timeline  -->
         @{
             var timelineModel = new TimelineViewModel
@@ -145,11 +154,11 @@
         <h5 class="govuk-heading-m govuk-!-margin-bottom-2">Related links</h5>
         <p class="govuk-body">
             <a class="govuk-link" rel="noreferrer noopener" target="_blank"
-                asp-action="ViewApplication"
-                asp-controller="Applications"
-                asp-route-organisationId="@Model.OrganisationId"
-                asp-route-applicationId="@Model.ApplicationId"
-                asp-route-formVersionId="@Model.FormVersionId">View application (opens in new tab)</a>
+               asp-action="ViewApplication"
+               asp-controller="Applications"
+               asp-route-organisationId="@Model.OrganisationId"
+               asp-route-applicationId="@Model.ApplicationId"
+               asp-route-formVersionId="@Model.FormVersionId">View application (opens in new tab)</a>
         </p>
     </div>
 </div>

@@ -6,6 +6,22 @@
     ViewData["Title"] = Model.ApplicationName;
 }
 
+@if (Model.NewMessage)
+{
+    <div class="govuk-notification-banner" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+        <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+                Important
+            </h2>
+        </div>
+        <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">
+                The are new messages for this application.
+            </p>
+        </div>
+    </div>
+}
+
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
         <govuk-back-link asp-controller="Applications" asp-action="Index" asp-route-organisationId="@Model.OrganisationId">Back to view all applications</govuk-back-link>
@@ -132,4 +148,23 @@
             </a>
         }
     </div>
+
+    @if (Model.SubmittedDate != null)
+    {
+        <div class="govuk-grid-column-one-third">
+
+            <h2 class="govuk-heading-m">Related links</h2>
+            <p class="govuk-body">
+                <a class="govuk-link" asp-action="ApplicationMessages"
+                   asp-area="Apply"
+                   asp-controller="ApplicationMessages"
+                   asp-route-applicationId="@Model.ApplicationId"
+                   asp-route-formVersionId="@Model.FormVersionId"
+                   asp-route-organisationId="@Model.OrganisationId">
+                    View messages
+                </a>
+            </p>
+        </div>
+    }
+
 </div>

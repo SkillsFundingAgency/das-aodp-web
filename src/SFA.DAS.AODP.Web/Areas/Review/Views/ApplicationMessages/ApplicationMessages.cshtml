@@ -159,6 +159,14 @@
             </form>
         }
 
+        <form asp-route-applicationReviewId="@Model.ApplicationReviewId"
+              asp-route-applicationId="@Model.ApplicationId"
+              asp-action="ReadApplicationMessages" asp-Controller="ApplicationMessages" method="post" enctype="multipart/form-data">
+            @Html.HiddenFor(m => m.ApplicationReviewId)
+            @Html.HiddenFor(m => m.ApplicationId)
+            <govuk-button class="govuk-button--secondary govuk-!-margin-top-2" type="submit">Mark all messages as read</govuk-button>
+        </form>
+
         <!-- Application Event Timeline  -->
         @{
             var timelineModel = new TimelineViewModel

@@ -10,6 +10,7 @@ using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.Markdown;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Question;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 
@@ -95,15 +96,6 @@ public class QuestionsController : ControllerBase
             };
             var response = await Send(query);
 
-
-            for (int i = 0; i < response.Options.Count; i++)
-            {
-                if (TempData.TryGetValue($"MultiChoiceError_{i}", out var error))
-                {
-                    ModelState.AddModelError($"RadioButton.MultiChoice[{i}]", error?.ToString() ?? string.Empty);
-                }
-            }
-
             var map = EditQuestionViewModel.MapToViewModel(response, formVersionId, sectionId, _formBuilderSettings);
 
             ShowNotificationIfKeyExists(QuestionUpdatedKey, ViewNotificationMessageType.Success, "The question has been updated.");
@@ -133,7 +125,10 @@ public class QuestionsController : ControllerBase
 
             if (model.Options.AdditionalFormActions.AddOption)
             {
-                model.Options.Options.Add(new());
+                model.Options.Options.Add(new()
+                {
+                    Order = model.Options.Options.Count > 0 ?  model.Options.Options.Max(o => o.Order) + 1 : 1
+                });
                 ViewBag.AutoFocusOnAddOptionButton = true;
                 return View(model);
             }
@@ -143,8 +138,8 @@ public class QuestionsController : ControllerBase
 
                 if (model.Options.Options[indexToRemove].DoesHaveAssociatedRoutes)
                 {
-                    TempData[$"MultiChoiceError_{indexToRemove}"] = "You cannot remove this option because it has associated routes.";
-                    return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId, pageId = model.PageId, questionId = model.Id });
+                    ModelState.AddModelError($"Options.Options[{indexToRemove}]", "You cannot remove this option because it has associated routes.");
+                    return View(model);
                 }
                 else
                 {

@@ -14,6 +14,7 @@ namespace SFA.DAS.AODP.Web.Models.Application
         public string? QualificationNumber { get; set; }
         public DateTime? UpdatedDate { get; set; }
         public ApplicationStatus Status { get; set; }
+        public bool NewMessage { get; set; }
 
         public bool IsCompleted { get; set; }
         public bool IsSubmitted { get; set; }
@@ -41,6 +42,7 @@ namespace SFA.DAS.AODP.Web.Models.Application
                 Reference = statusResponse.Reference,
                 QualificationNumber = statusResponse.QualificationNumber,
                 Status = statusResponse.Status,
+                NewMessage = statusResponse.NewMessage,
                 UpdatedDate = statusResponse.UpdatedDate,
                 Sections = new()
             };

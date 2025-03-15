@@ -7,12 +7,13 @@ using System.Globalization;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationMessage;
 
+
 public class ApplicationMessagesViewModel
 {
     public Guid ApplicationReviewId { get; set; }
     public Guid ApplicationId { get; set; }
-    public string Hint => (UserType == UserType.Qfau) ? 
-        "Leave messages, comments and recommendations to other DfE staff members, IfATE, Ofqual or the AO applicant owner." 
+    public string Hint => (UserType == UserType.Qfau) ?
+        "Leave messages, comments and recommendations to other DfE staff members, IfATE, Ofqual or the AO applicant owner."
         : "Leave messages, comments and recommendations to DfE or the AO applicant owner.";
     [Required]
     public string MessageText { get; set; }
@@ -69,25 +70,25 @@ public static class MessageTypeSelectOptionRules
             { UserType.Qfau, () => new List<SelectListItem>
                 {
                     new SelectListItem { Value = "", Text = "Choose message type" },
-                    new SelectListItem { Value = "RequestInformationFromAOByQfau", Text = "Request information from AO" },
-                    new SelectListItem { Value = "UnlockApplication", Text = "Unlock application" },
-                    new SelectListItem { Value = "PutApplicationOnHold", Text = "Put application on hold" },
-                    new SelectListItem { Value = "InternalNotes", Text = "Internal notes" },
-                    new SelectListItem { Value = "InternalNotesForPartners", Text = "Internal notes for partners" }
+                    new SelectListItem { Value = MessageType.RequestInformationFromAOByQfau.ToString() , Text = "Request information from AO" },
+                    new SelectListItem { Value = MessageType.UnlockApplication.ToString(), Text = "Unlock application" },
+                    new SelectListItem { Value = MessageType.PutApplicationOnHold.ToString(), Text = "Put application on hold" },
+                    new SelectListItem { Value = MessageType.InternalNotes.ToString(), Text = "Internal notes" },
+                    new SelectListItem { Value = MessageType.InternalNotesForPartners.ToString(), Text = "Internal notes for partners" }
                 }
             },
             { UserType.Ofqual, () => new List<SelectListItem>
                 {
                     new SelectListItem { Value = "", Text = "Choose message type" },
-                    new SelectListItem { Value = "RequestInformationFromAOByOfqaul", Text = "Request information from AO" },
-                    new SelectListItem { Value = "InternalNotesForQfauFromOfqual", Text = "Internal notes for DfE" }
+                    new SelectListItem { Value = MessageType.RequestInformationFromAOByOfqaul.ToString(), Text = "Request information from AO" },
+                    new SelectListItem { Value = MessageType.InternalNotesForQfauFromOfqual.ToString(), Text = "Internal notes for DfE" }
                 }
             },
             { UserType.SkillsEngland, () => new List<SelectListItem>
                 {
                     new SelectListItem { Value = "", Text = "Choose message type" },
-                    new SelectListItem { Value = "RequestInformationFromAOBySkillsEngland", Text = "Request information from AO" },
-                    new SelectListItem { Value = "InternalNotesForQfauFromSkillsEngland", Text = "Internal notes for DfE" }
+                    new SelectListItem { Value = MessageType.RequestInformationFromAOBySkillsEngland.ToString(), Text = "Request information from AO" },
+                    new SelectListItem { Value = MessageType.InternalNotesForQfauFromSkillsEngland.ToString(), Text = "Internal notes for DfE" }
                 }
             }
         };
