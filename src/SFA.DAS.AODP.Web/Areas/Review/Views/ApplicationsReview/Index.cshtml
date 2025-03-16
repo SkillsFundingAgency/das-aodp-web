@@ -171,7 +171,16 @@
                                asp-controller="ApplicationsReview">@item.Name</a>
                         </td>
                         <td class="govuk-table__cell">
-                            @ApplicationStatusDisplay.Dictionary[item.Status]
+
+                            @if (item.Status == ApplicationStatus.Approved && Model.UserType == UserType.Qfau.ToString())
+                            {
+                                <span>Approved - for one or more offers</span>
+                            }
+                            else
+                            {
+                                @ApplicationStatusDisplay.Dictionary[item.Status]
+                            }
+
                             @if (item.NewMessage)
                             {
                                 <br />

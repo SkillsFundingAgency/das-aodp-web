@@ -9,11 +9,11 @@
     <div class="govuk-grid-column-two-thirds">
         <div class="govuk-grid-row">
             <div class="govuk-panel--confirmation govuk-panel">
-                <h1 class="govuk-panel__title">Decision saved</h1>
+                <h1 class="govuk-panel__title">AO informed of decision</h1>
             </div>
 
             <p class="govuk-body">
-                You have made a decision on funding options. Your decision has been saved. Your decision can be amended anytime prior to informing the AO.
+                The AO has been informed of the funding decision made.
             </p>
 
             <h2 class="govuk-heading-m">
@@ -21,9 +21,19 @@
             </h2>
 
             <p class="govuk-body">
-                If you want to view the application details to review the application, make a change to the decision or confirm the decision and inform AO, go to application details.
+                If you want to see the confirmation of AO being informed and what funding decision was made, go to messages.
             </p>
 
+            <a class="govuk-button" asp-action="ApplicationMessages"
+               asp-area="Review"
+               asp-controller="ApplicationMessages"
+               asp-route-applicationReviewId="@Model.ApplicationReviewId">
+                View messages
+            </a>
+
+            <p class="govuk-body">
+                If you want to view the application details to view the confirmation of AO informed, go to application details.
+            </p>
 
             <a 
                class="govuk-button"

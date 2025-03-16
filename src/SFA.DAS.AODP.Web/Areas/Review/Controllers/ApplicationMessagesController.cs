@@ -26,9 +26,10 @@ public class ApplicationMessagesController : ControllerBase
     }
 
     [HttpGet]
-    [Route("review/{applicationReviewId}/applications/{applicationId}/messages")]
-    public async Task<IActionResult> ApplicationMessagesAsync(Guid applicationReviewId, Guid applicationId)
+    [Route("review/{applicationReviewId}/messages")]
+    public async Task<IActionResult> ApplicationMessagesAsync(Guid applicationReviewId)
     {
+        var applicationId = await GetApplicationIdAsync(applicationReviewId);
         var response = await Send(new GetApplicationMessagesByIdQuery(applicationId, UserType.ToString()));
         var messages = response.Messages;
 
@@ -52,7 +53,6 @@ public class ApplicationMessagesController : ControllerBase
         var model = new ApplicationMessagesViewModel
         {
             ApplicationReviewId = applicationReviewId,
-            ApplicationId = applicationId,
             TimelineMessages = timelineMessages,
             UserType = UserType
         };
@@ -81,9 +81,11 @@ public class ApplicationMessagesController : ControllerBase
     }
 
     [HttpPost]
-    [Route("review/{applicationReviewId}/applications/{applicationId}/messages")]
+    [Route("review/{applicationReviewId}/messages")]
     public async Task<IActionResult> ApplicationMessages([FromForm] ApplicationMessagesViewModel model)
     {
+        var applicationId = await GetApplicationIdAsync(model.ApplicationReviewId);
+
         if (!ModelState.IsValid)
         {
             model.AdditionalActions.Preview = false;
@@ -109,7 +111,7 @@ public class ApplicationMessagesController : ControllerBase
                 case var _ when model.AdditionalActions.Send:
                     string userEmail = _userHelperService.GetUserEmail().ToString();
                     string userName = _userHelperService.GetUserDisplayName().ToString();
-                    var messageId = await Send(new CreateApplicationMessageCommand(model.ApplicationId, model.MessageText, model.SelectedMessageType, UserType.ToString(), userEmail, userName));
+                    var messageId = await Send(new CreateApplicationMessageCommand(applicationId, model.MessageText, model.SelectedMessageType, UserType.ToString(), userEmail, userName));
 
                     TempData[NotificationKeys.MessageSentBanner.ToString()] = "Your message has been sent";
                     TempData.Remove("PreviewMessage");
@@ -123,7 +125,7 @@ public class ApplicationMessagesController : ControllerBase
                     break;
             }
 
-            return RedirectToAction(nameof(ApplicationMessages), new { model.ApplicationReviewId, model.ApplicationId });
+            return RedirectToAction(nameof(ApplicationMessages), new { model.ApplicationReviewId });
         }
         catch
         {
@@ -132,23 +134,37 @@ public class ApplicationMessagesController : ControllerBase
     }
 
     [HttpPost]
-    [Route("review/{applicationReviewId}/applications/{applicationId}/messages/read")]
+    [Route("review/{applicationReviewId}/messages/read")]
     public async Task<IActionResult> ReadApplicationMessages([FromForm] MarkApplicationMessagesAsReadViewModel model)
     {
         try
         {
+            var applicationId = await GetApplicationIdAsync(model.ApplicationReviewId);
+
             await Send(new MarkAllMessagesAsReadCommand()
             {
-                ApplicationId = model.ApplicationId,
+                ApplicationId = applicationId,
                 UserType = _userHelperService.GetUserType().ToString()
             });
 
             TempData[NotificationKeys.MarkAsReadBanner.ToString()] = true;
-            return RedirectToAction(nameof(ApplicationMessages), new { model.ApplicationId, model.ApplicationReviewId });
+            return RedirectToAction(nameof(ApplicationMessages), new { model.ApplicationReviewId });
         }
         catch
         {
             return Redirect("/Home/Error");
         }
+    }
+
+    private async Task<Guid> GetApplicationIdAsync(Guid applicationReviewId)
+    {
+        var shared = await Send(new GetApplicationReviewSharingStatusByIdQuery(applicationReviewId));
+
+        if (UserType == UserType.Ofqual || UserType == UserType.Qfau)
+        {
+            if (UserType == UserType.Ofqual && !shared.SharedWithOfqual) throw new Exception("Application not shared with Ofqual.");
+            if (UserType == UserType.SkillsEngland && !shared.SharedWithSkillsEngland) throw new Exception("Application not shared with Skills England.");
+        }
+        return shared.ApplicationId;
     }
 }

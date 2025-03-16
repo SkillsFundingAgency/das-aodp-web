@@ -35,7 +35,6 @@ public class ApplicationMessageViewModel : TimelineItemBase
     public string MessageType { get; set; }
     public UserType UserType { get; set; }
     public MessageTypeConfiguration MessageTypeConfiguration => MessageTypeConfigurationRules.GetMessageSharingSettings(MessageType);
-    public bool VisibleToUser => MessageTypeConfiguration.AvailableTo.Contains(UserType);
     public string MessageTypeDisplay => MessageTypeConfiguration.DisplayName;
     public string SentByEmail { get; set; }
     public override string TimelineTitle => $"{MessageHeader}";

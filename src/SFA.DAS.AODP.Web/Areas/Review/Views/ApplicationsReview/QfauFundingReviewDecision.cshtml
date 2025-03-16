@@ -3,11 +3,14 @@
 @model QfauFundingReviewOutcomeSummaryViewModel;
 
 @{
-    ViewData["Title"] = "Funding review summary";
+    ViewData["Title"] = "Funding review decision";
+    bool validForSubmit = true;
 }
 
 @if (Model.Status == ApplicationStatus.NotApproved && Model.OfferFundingDetails.Count > 0)
 {
+    validForSubmit = false;
+
     <div class="govuk-notification-banner" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
         <div class="govuk-notification-banner__header">
             <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
@@ -23,18 +26,40 @@
         </div>
     </div>
 }
+else if (Model.Status != ApplicationStatus.NotApproved && Model.Status != ApplicationStatus.Approved)
+{
+    validForSubmit = false;
+
+    <div class="govuk-notification-banner" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+        <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+                Important
+            </h2>
+        </div>
+        <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">
+                The application status is not valid.
+                <br /> <br />
+                Please either approve or reject the application for funding before informing the AO.
+            </p>
+        </div>
+    </div>
+}
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
 
         <div class="govuk-grid-row">
             <h1 class="govuk-heading-xl">
-                Offers funding summary
+                Summary - confirm your decision to AO
                 <span class="govuk-caption-l">Request for funding</span>
             </h1>
         </div>
 
         <div class="govuk-grid-row">
+            <p class="govuk-body">Check the funding details below.</p>
+            <p class="govuk-body">When reviewed, click inform AO of decision. This will tell the AO what you have decided and include the key details required.</p>
+
             <govuk-summary-list>
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key>
@@ -50,10 +75,6 @@
                             <span>@ApplicationStatusDisplay.Dictionary[Model.Status.Value]</span>
                         }
                     </govuk-summary-list-row-value>
-
-                    <govuk-summary-list-row-actions>
-                        <govuk-summary-list-row-action asp-action="QfauFundingReviewOutcome" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId" visually-hidden-text="name">Change</govuk-summary-list-row-action>
-                    </govuk-summary-list-row-actions>
                 </govuk-summary-list-row>
 
                 <govuk-summary-list-row>
@@ -61,10 +82,6 @@
                         Comments
                     </govuk-summary-list-row-key>
                     <govuk-summary-list-row-value style="white-space: pre-line">@Model.Comments</govuk-summary-list-row-value>
-
-                    <govuk-summary-list-row-actions>
-                        <govuk-summary-list-row-action asp-action="QfauFundingReviewOutcome" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId" visually-hidden-text="name">Change</govuk-summary-list-row-action>
-                    </govuk-summary-list-row-actions>
                 </govuk-summary-list-row>
 
 
@@ -92,10 +109,6 @@
 
                             }
                         </govuk-summary-list-row-value>
-
-                        <govuk-summary-list-row-actions>
-                            <govuk-summary-list-row-action asp-action="QfauFundingReviewOffers" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId" visually-hidden-text="name">Change</govuk-summary-list-row-action>
-                        </govuk-summary-list-row-actions>
                     </govuk-summary-list-row>
 
                 }
@@ -113,9 +126,6 @@
                             @detail.StartDate?.ToString("dd/MM/yyyy")
                         </govuk-summary-list-row-value>
 
-                        <govuk-summary-list-row-actions>
-                            <govuk-summary-list-row-action asp-action="QfauFundingReviewOfferDetails" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId" visually-hidden-text="name">Change</govuk-summary-list-row-action>
-                        </govuk-summary-list-row-actions>
                     </govuk-summary-list-row>
 
                     <govuk-summary-list-row>
@@ -125,9 +135,7 @@
                         <govuk-summary-list-row-value>
                             @detail.EndDate?.ToString("dd/MM/yyyy")
                         </govuk-summary-list-row-value>
-                        <govuk-summary-list-row-actions>
-                            <govuk-summary-list-row-action asp-action="QfauFundingReviewOfferDetails" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId" visually-hidden-text="name">Change</govuk-summary-list-row-action>
-                        </govuk-summary-list-row-actions>
+
                     </govuk-summary-list-row>
 
                     <govuk-summary-list-row>
@@ -135,18 +143,28 @@
                             @offer.Name comments
                         </govuk-summary-list-row-key>
                         <govuk-summary-list-row-value style="white-space: pre-line">@detail.Comments</govuk-summary-list-row-value>
-                        <govuk-summary-list-row-actions>
-                            <govuk-summary-list-row-action asp-action="QfauFundingReviewOfferDetails" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId" visually-hidden-text="name">Change</govuk-summary-list-row-action>
-                        </govuk-summary-list-row-actions>
                     </govuk-summary-list-row>
                 }
             </govuk-summary-list>
             </<div>
 
                 <div class="govuk-grid-row">
-                    <a class="govuk-button" asp-action="QfauFundingReviewConfirmation" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId">
-                        Confirm
-                    </a>
+                    <form asp-route-applicationReviewId="@Model.ApplicationReviewId"
+                          asp-action="QfauFundingReviewDecisionConfirmed"
+                          asp-Controller="ApplicationsReview" method="post">
+
+                        <div class="govuk-form-group govuk-!-margin-bottom-0">
+                            <govuk-button class="govuk-button" type="submit" disabled="@(!validForSubmit)">Inform AO of decision</govuk-button>
+                            <a class="govuk-button govuk-button--secondary"
+                               asp-area="Review"
+                               asp-action="ViewApplication"
+                               asp-route-applicationReviewId="@Model.ApplicationReviewId"
+                               asp-controller="ApplicationsReview">Back to application details</a>
+                        </div>
+
+                    </form>
+
+
                 </div>
 
 

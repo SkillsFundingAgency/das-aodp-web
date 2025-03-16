@@ -11,7 +11,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationMessage;
 public class ApplicationMessagesViewModel
 {
     public Guid ApplicationReviewId { get; set; }
-    public Guid ApplicationId { get; set; }
     public string Hint => (UserType == UserType.Qfau) ?
         "Leave messages, comments and recommendations to other DfE staff members, IfATE, Ofqual or the AO applicant owner."
         : "Leave messages, comments and recommendations to DfE or the AO applicant owner.";
@@ -39,9 +38,6 @@ public class ApplicationMessageViewModel : TimelineItemBase
 {
     public string MessageType { get; set; }
     public UserType UserType { get; set; }
-    public MessageTypeConfiguration MessageTypeConfiguration => MessageTypeConfigurationRules.GetMessageSharingSettings(MessageType);
-    public bool VisibleToUser => MessageTypeConfiguration.AvailableTo.Contains(UserType);
-    public string MessageTypeDisplay => MessageTypeConfiguration.DisplayName;
     public string SentByEmail { get; set; }
     public override string TimelineTitle => $"{MessageHeader}";
     public override string TimelineMetadata

@@ -35,7 +35,14 @@
                        asp-controller="Applications">@item.Name</a>
                 </td>
                 <td class="govuk-table__cell">
-                    @ApplicationStatusDisplay.Dictionary[item.Status]
+                    @if (item.Status == ApplicationStatus.Approved)
+                    {
+                        <span>Approved - for one or more offers</span>
+                    }
+                    else
+                    {
+                        @ApplicationStatusDisplay.Dictionary[item.Status]
+                    }
                     @if (item.NewMessage)
                     {
                         <br />

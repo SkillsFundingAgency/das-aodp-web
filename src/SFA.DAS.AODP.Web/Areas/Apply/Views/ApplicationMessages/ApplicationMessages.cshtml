@@ -95,7 +95,7 @@
                     <tbody class="govuk-table__body">
                         <tr class="govuk-table__row">
                             <th scope="row" class="govuk-table__header">Message</th>
-                            <td class="govuk-table__cell">@Model.MessageText</td>
+                            <td class="govuk-table__cell"><p style="white-space: pre-line">@Model.MessageText</p></td>
                         </tr>
                         <tr class="govuk-table__row">
                             <th scope="row" class="govuk-table__header">Message type</th>
@@ -139,7 +139,7 @@
         @{
             var timelineModel = new TimelineViewModel
             {
-                Items = Model.TimelineMessages.Where(message => message.VisibleToUser)
+                Items = Model.TimelineMessages
             };
 
             <div>

@@ -2,6 +2,5 @@
 
 public class MarkApplicationMessagesAsReadViewModel
 {
-    public Guid ApplicationId { get; set; }
     public Guid ApplicationReviewId { get; set; }
 }
