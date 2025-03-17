@@ -8,32 +8,33 @@ using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Areas.Apply.Models;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 using SFA.DAS.AODP.Models.Users;
+using System.Reflection;
 
 namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers;
 
 [Area("Apply")]
 [ValidateOrganisation]
+[ValidateApplication]
 public class ApplicationMessagesController : ControllerBase
 {
-    public enum NotificationKeys { MessageSentBanner, MessageVisibilityBanner }
+    public enum NotificationKeys { MessageSentBanner, MessageVisibilityBanner, MarkAsReadBanner }
     private readonly IUserHelperService _userHelperService;
-    private readonly UserType UserType; // it is meant to be AO always?
+    private readonly UserType UserType = UserType.AwardingOrganisation;
     public ApplicationMessagesController(IMediator mediator, ILogger<ApplicationMessagesController> logger, IUserHelperService userHelperService) : base(mediator, logger)
     {
         _userHelperService = userHelperService;
-        UserType = userHelperService.GetUserType();
     }
 
     [HttpGet]
     [Route("apply/organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/messages")]
-    public async Task<IActionResult> ApplicationMessagesAsync(Guid organisationId, Guid applicationId, Guid formVersionId)
+    public async Task<IActionResult> ApplicationMessages(Guid organisationId, Guid applicationId, Guid formVersionId)
     {
         var response = await Send(new GetApplicationMessagesByIdQuery(applicationId, UserType.ToString()));
         var messages = response.Messages;
 
         var timelineMessages = new List<ApplicationMessageViewModel>();
 
-        foreach (var message in messages) 
+        foreach (var message in messages)
         {
             timelineMessages.Add(new ApplicationMessageViewModel
             {
@@ -73,6 +74,7 @@ public class ApplicationMessagesController : ControllerBase
         }
 
         ShowNotificationIfKeyExists(NotificationKeys.MessageSentBanner.ToString(), ViewNotificationMessageType.Success, "Your message has been sent");
+        ShowNotificationIfKeyExists(NotificationKeys.MarkAsReadBanner.ToString(), ViewNotificationMessageType.Success, "All messages have been marked as read.");
 
         return View(model);
     }
@@ -120,7 +122,28 @@ public class ApplicationMessagesController : ControllerBase
         }
         catch
         {
-            return View(model);
+            return RedirectToAction("/Home/Error");
+        }
+    }
+
+    [HttpPost]
+    [Route("apply/organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/messages/read")]
+    public async Task<IActionResult> ReadApplicationMessages([FromForm] MarkApplicationMessagesAsReadViewModel model)
+    {
+        try
+        {
+            await Send(new MarkAllMessagesAsReadCommand()
+            {
+                ApplicationId = model.ApplicationId,
+                UserType = UserType.AwardingOrganisation.ToString()
+            });
+
+            TempData[NotificationKeys.MarkAsReadBanner.ToString()] = true;
+            return RedirectToAction(nameof(ApplicationMessages), new { model.OrganisationId, model.ApplicationId, model.FormVersionId });
+        }
+        catch
+        {
+            return Redirect("/Home/Error");
         }
     }
 }

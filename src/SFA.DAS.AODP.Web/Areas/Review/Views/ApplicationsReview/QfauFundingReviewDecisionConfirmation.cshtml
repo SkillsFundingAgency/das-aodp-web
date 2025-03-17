@@ -1,0 +1,55 @@
+﻿@using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
+@model ReviewConfirmationViewModel;
+
+@{
+    ViewData["Title"] = "Funding review confirmation";
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <div class="govuk-grid-row">
+            <div class="govuk-panel--confirmation govuk-panel">
+                <h1 class="govuk-panel__title">AO informed of decision</h1>
+            </div>
+
+            <p class="govuk-body">
+                The AO has been informed of the funding decision made.
+            </p>
+
+            <h2 class="govuk-heading-m">
+                What would you like to do next
+            </h2>
+
+            <p class="govuk-body">
+                If you want to see the confirmation of AO being informed and what funding decision was made, go to messages.
+            </p>
+
+            <a class="govuk-button" asp-action="ApplicationMessages"
+               asp-area="Review"
+               asp-controller="ApplicationMessages"
+               asp-route-applicationReviewId="@Model.ApplicationReviewId">
+                View messages
+            </a>
+
+            <p class="govuk-body">
+                If you want to view the application details to view the confirmation of AO informed, go to application details.
+            </p>
+
+            <a 
+               class="govuk-button"
+               asp-area="Review"
+               asp-action="ViewApplication"
+               asp-route-applicationReviewId="@Model.ApplicationReviewId"
+               asp-controller="ApplicationsReview">Application details</a>
+
+            <p class="govuk-body">
+                If you want to view a different application, go to dashboard.
+            </p>
+
+            <a class="govuk-button"
+               asp-area="Review"
+               asp-action="Index"
+               asp-controller="ApplicationsReview">Back to dashboard</a>
+        </div>
+    </div>
+</div>

@@ -12,6 +12,8 @@
     public bool SharedWithSkillsEngland { get; set; }
     public bool SharedWithOfqual { get; set; }
 
+    public string FormTitle { get; set; }
+
     public List<Funding> FundedOffers { get; set; } = new();
     public List<Feedback> Feedbacks { get; set; } = new();
 
@@ -22,6 +24,7 @@
         public bool NewMessage { get; set; }
         public string UserType { get; set; }
         public string? Comments { get; set; }
+        public bool LatestCommunicatedToAwardingOrganisation { get; set; }
     }
 
     public class Funding
