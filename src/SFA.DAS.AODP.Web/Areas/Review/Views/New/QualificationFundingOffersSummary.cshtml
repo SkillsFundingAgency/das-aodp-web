@@ -6,7 +6,7 @@
     ViewData["Title"] = "Funding review summary";
 }
 
-@if(!Model.Approved.Value && Model.OfferFundingDetails.Count > 0){
+@if ((Model.Approved.HasValue && !Model.Approved.Value) && Model.OfferFundingDetails.Count > 0){
     <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
         <div class="govuk-notification-banner__header">
             <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
@@ -40,7 +40,7 @@
                         Status
                     </govuk-summary-list-row-key>
                     <govuk-summary-list-row-value>
-                        @if(Model.Approved.Value)
+                        @if (Model.Approved.HasValue && Model.Approved.Value)
                         {
                             <span>Approved - for one or more offers</span>
                         }
