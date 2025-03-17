@@ -5,6 +5,7 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications.Fundings
     public class QualificationFundingsOffersSummaryViewModel
     {
         public Guid QualificationVersionId { get; set; }
+        public string? QualificationReference { get; set; }
         public string? Comments { get; set; }
         public ApplicationStatus? Status { get; set; }
         public bool Approved { get; set; }
@@ -33,6 +34,7 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications.Fundings
             Enum.TryParse(response.Status, out ApplicationStatus status);
             QualificationFundingsOffersSummaryViewModel model = new()
             {
+                QualificationReference = response.QualificationReference,
                 Approved = status == ApplicationStatus.Approved,
                 Comments = response.Comments,
                 Status = status

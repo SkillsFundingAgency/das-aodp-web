@@ -336,14 +336,14 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
         [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
         [HttpGet]
-        [Route("Review/New/{qualificationVersionId}/qualification-funding-offers-confirm")]
-        public async Task<IActionResult> QualificationFundingOffersConfirmation(Guid qualificationVersionId)
+        [Route("Review/New/{qualificationReference}/qualification-funding-offers-confirm")]
+        public async Task<IActionResult> QualificationFundingOffersConfirmation(string? qualificationReference)
         {
             try
             {
                 return View(new QualificationFundingsConfirmationViewModel()
                 {
-                    QualificationVersionId = qualificationVersionId
+                    QualificationReference = qualificationReference
                 });
             }
             catch
