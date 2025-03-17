@@ -1,9 +1,12 @@
 ﻿using SFA.DAS.AODP.Application.Queries.Review;
+using SFA.DAS.AODP.Models.Forms;
+using static SFA.DAS.AODP.Application.Queries.Review.GetApplicationReadOnlyDetailsByIdQueryResponse;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview;
 
 public class ApplicationReadOnlyDetailsViewModel
 {
+    public Guid ApplicationReviewId { get; set; }
     public Guid ApplicationId { get; set; }
     public List<Section> SectionsWithPagesAndQuestionsAndAnswers { get; set; } = new List<Section>();
 
@@ -34,7 +37,7 @@ public class ApplicationReadOnlyDetailsViewModel
 
     public class QuestionAnswer
     {
-        public string AnswerText { get; set; }
+        public string? FinalAnswer { get; set; }
     }
 
     public static ApplicationReadOnlyDetailsViewModel Map(GetApplicationReadOnlyDetailsByIdQueryResponse response)
@@ -61,7 +64,7 @@ public class ApplicationReadOnlyDetailsViewModel
                             Required = question.Required,
                             QuestionAnswers = question.QuestionAnswers.Select(answer => new QuestionAnswer
                             {
-                                AnswerText = answer.AnswerText
+                                FinalAnswer = AnswerSelector.GetReadOnlyAnswer(answer, question.Type)
                             }).ToList()
                         }).ToList()
                     }).ToList()

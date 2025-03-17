@@ -1,4 +1,6 @@
-﻿namespace SFA.DAS.AODP.Application.Queries.Review;
+﻿using SFA.DAS.AODP.Models.Forms;
+
+namespace SFA.DAS.AODP.Application.Queries.Review;
 
 public class GetApplicationReadOnlyDetailsByIdQueryResponse
 {
@@ -32,6 +34,34 @@ public class GetApplicationReadOnlyDetailsByIdQueryResponse
 
     public class QuestionAnswer
     {
-        public string AnswerText { get; set; }
+        public string? AnswerTextValue { get; set; }
+        public string? AnswerDateValue { get; set; }
+        public string? AnswerChoiceValue { get; set; }
+        public decimal? AnswerNumberValue { get; set; }
+    }
+
+    public static class AnswerSelector
+    {
+        private static readonly Dictionary<QuestionType, Func<QuestionAnswer, string>> _answerSelectors =
+            new()
+            {
+            { QuestionType.Text, answer => answer.AnswerTextValue ?? "No Answer" },
+            { QuestionType.TextArea, answer => answer.AnswerTextValue ?? "No Answer" },
+            { QuestionType.Number, answer => answer.AnswerNumberValue?.ToString() ?? "No Answer" },
+            { QuestionType.Date, answer => answer.AnswerDateValue ?? "No Answer" },
+            { QuestionType.MultiChoice, answer => answer.AnswerChoiceValue ?? "No Answer" },
+            { QuestionType.Radio, answer => answer.AnswerChoiceValue ?? "No Answer" },
+            { QuestionType.File, answer => "File TODO" }
+            };
+
+        public static string GetReadOnlyAnswer(QuestionAnswer answer, string questionType)
+        {
+            if (!Enum.TryParse(questionType, out QuestionType type) || !_answerSelectors.ContainsKey(type))
+            {
+                return "Invalid Question Type";
+            }
+
+            return _answerSelectors[type](answer);
+        }
     }
 }

@@ -7,14 +7,84 @@
 }
 
 <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
+    <div class="govuk-grid-column-full">
 
-        <div class="govuk-grid-row">
-            <h1 class="govuk-heading-xl">
-                Application Read Only Details
-                <span class="govuk-caption-l">  Application Read Only Details</span>
-            </h1>
-        </div>
+        <govuk-back-link class="govuk-link govuk-task-list__link"
+                         asp-action="ViewApplication"
+                         asp-controller="ApplicationsReview"
+                         asp-route-applicationReviewId="@Model.ApplicationReviewId">Back to application details</govuk-back-link>
 
+        <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
+        <h1 class="govuk-heading-xl govuk-!-margin-bottom-3">Application Read Only Details / Preview</h1>
+
+
+        @if (Model.SectionsWithPagesAndQuestionsAndAnswers.Any())
+        {
+            @foreach (var sec in Model.SectionsWithPagesAndQuestionsAndAnswers)
+            {
+                <h3 class="govuk-heading-l govuk-!-margin-top-3 govuk-!-margin-bottom-0">
+                    Section: @sec.Title
+                </h3>
+                <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible govuk-!-margin-top-1 govuk-!-margin-bottom-3">
+
+                <div class="govuk-inset-text govuk-!-margin-top-1">
+                    @if (sec.Pages.Any())
+                    {
+
+                        <ol class="govuk-list govuk-list--number govuk-list--spaced">
+                            @foreach (var p in sec.Pages)
+                            {
+                                <li>
+                                    <h4 class="govuk-heading-m govuk-!-margin-bottom-1">Page: @p.Title</h4>
+                                    <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible govuk-!-margin-top-0 govuk-!-margin-bottom-3">
+
+                                    @if (p.Questions.Any())
+                                    {
+                                        <ol class="govuk-list govuk-list--number">
+                                            @foreach (var question in p.Questions)
+                                            {
+                                                <li>
+                                                    <p class="govuk-body govuk-!-font-weight-bold">
+                                                        Question: @question.Title
+                                                        @if (!question.Required)
+                                                        {
+                                                            <span class="govuk-body govuk-!-font-weight-regular"> (optional)</span>
+                                                        }
+                                                    </p>
+
+                                                    @foreach (var answer in question.QuestionAnswers)
+                                                    {
+                                                        <input class="govuk-input govuk-input--width-30" name="Answer" type="text" spellcheck="false" value="@answer.FinalAnswer" disabled="" pattern="[0-9]*" inputmode="text" readonly>
+                                                    }
+
+                                                </li>
+                                            }
+                                        </ol>
+                                    }
+                                    else
+                                    {
+                                        <p class="govuk-body">No questions available for this page.</p>
+                                    }
+                                </li>
+                            }
+                        </ol>
+                    }
+                    else
+                    {
+                        <p class="govuk-body">No pages available for this section.</p>
+                    }
+                </div>
+            }
+        }
+        else
+        {
+            <p>No sections available.</p>
+        }
+
+        <a class="govuk-button govuk-button--secondary"
+           asp-action="ViewApplication"
+           asp-controller="ApplicationsReview"
+           asp-route-applicationReviewId="@Model.ApplicationReviewId">Back to application details</a>
     </div>
 </div>
