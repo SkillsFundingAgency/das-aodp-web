@@ -288,8 +288,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             {
                 var applicationDetails = await Send(new GetApplicationReadOnlyDetailsByIdQuery(applicationReviewId));
 
-                //return View(ApplicationReadOnlyDetailsViewModel.Map(applicationDetails));
-                return View(new ApplicationReadOnlyDetailsViewModel { });
+                return View(ApplicationReadOnlyDetailsViewModel.Map(applicationDetails));
             }
             catch
             {
