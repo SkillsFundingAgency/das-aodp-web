@@ -21,9 +21,7 @@ public partial class GetApplicationReadOnlyDetailsByIdQueryHandler : IRequestHan
 
         try
         {
-            var application = await _apiCLient.Get<GetApplicationForReviewByIdQueryResponse>(new GetApplicationReviewByIdApiRequest(request.ApplicationReviewId));
-
-            var result = await _apiCLient.Get<GetApplicationReadOnlyDetailsByIdQueryResponse>(new GetApplicationReadOnlyDetailsByIdApiRequest(application.Id));
+            var result = await _apiCLient.Get<GetApplicationReadOnlyDetailsByIdQueryResponse>(new GetApplicationReadOnlyDetailsByIdApiRequest(request.ApplicationReviewId));
             response.Value = result;
             response.Success = true;
         }

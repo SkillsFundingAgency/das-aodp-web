@@ -4,13 +4,13 @@ namespace SFA.DAS.AODP.Domain.Application.Review;
 
 public class GetApplicationReadOnlyDetailsByIdApiRequest : IGetApiRequest
 {
-    public Guid ApplicationId { get; set; }
+    public Guid ApplicationReviewId { get; set; }
 
-    public GetApplicationReadOnlyDetailsByIdApiRequest(Guid applicationId)
+    public GetApplicationReadOnlyDetailsByIdApiRequest(Guid applicationReviewId)
     {
-        ApplicationId = applicationId;
+        ApplicationReviewId = applicationReviewId;
     }
 
-    public string GetUrl => $"api/applications/{ApplicationId}/details";
+    public string GetUrl => $"api/application-reviews/{ApplicationReviewId}/details";
 
 }
