@@ -100,7 +100,6 @@
 
                 }
 
-
                 @foreach (var detail in Model.OfferFundingDetails)
                 {
                     var offer = Model.FundingOffers.FirstOrDefault(f => f.Id == detail.FundingOfferId) ?? new();

@@ -271,7 +271,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
         }
 
-
         [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
         [HttpGet]
         [Route("review/application-reviews/{applicationReviewId}/qfau-funding-confirm")]

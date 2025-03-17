@@ -1,4 +1,4 @@
-﻿using SFA.DAS.AODP.Models.Application;
+using SFA.DAS.AODP.Models.Application;
 
 namespace SFA.DAS.AODP.Web.Models.Application
 {
