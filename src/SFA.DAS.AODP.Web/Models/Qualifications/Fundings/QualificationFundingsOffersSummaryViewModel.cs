@@ -1,14 +1,11 @@
-﻿using SFA.DAS.AODP.Models.Application;
-
-namespace SFA.DAS.AODP.Web.Models.Qualifications.Fundings
+﻿namespace SFA.DAS.AODP.Web.Models.Qualifications.Fundings
 {
     public class QualificationFundingsOffersSummaryViewModel
     {
         public Guid QualificationVersionId { get; set; }
         public string? QualificationReference { get; set; }
         public string? Comments { get; set; }
-        public ApplicationStatus? Status { get; set; }
-        public bool Approved { get; set; }
+        public bool? Approved { get; set; }
 
         public List<OfferFunding> OfferFundingDetails { get; set; } = new();
         public List<FundingOffer> FundingOffers { get; set; } = new();
@@ -31,13 +28,11 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications.Fundings
 
         public static QualificationFundingsOffersSummaryViewModel Map(GetFeedbackForQualificationFundingByIdQueryResponse response, GetFundingOffersQueryResponse offers)
         {
-            Enum.TryParse(response.Status, out ApplicationStatus status);
             QualificationFundingsOffersSummaryViewModel model = new()
             {
                 QualificationReference = response.QualificationReference,
-                Approved = status == ApplicationStatus.Approved,
+                Approved = response.Approved,
                 Comments = response.Comments,
-                Status = status
             };
 
             foreach (var funding in response.QualificationFundedOffers ?? [])

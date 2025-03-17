@@ -3,7 +3,6 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
-using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.User;
@@ -175,9 +174,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 var model = new QualificationFundingsOffersOutcomeViewModel()
                 {
                     QualificationVersionId = qualificationVersionId,
-                    Approved = review.Status == ApplicationStatus.Approved.ToString(),
+                    Approved = review?.Approved,
                     Comments = review.Comments,
-                    NewDecision = review.Status != ApplicationStatus.Approved.ToString() && review.Status != ApplicationStatus.NotApproved.ToString(),
                 };
 
                 return View(model);

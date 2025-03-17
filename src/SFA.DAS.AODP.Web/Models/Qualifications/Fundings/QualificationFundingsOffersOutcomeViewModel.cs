@@ -9,6 +9,5 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications.Fundings
 
         [Required]
         public bool? Approved { get; set; }
-        public bool? NewDecision { get; set; }
     }
 }

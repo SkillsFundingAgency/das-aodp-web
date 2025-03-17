@@ -1,5 +1,4 @@
 ﻿@using SFA.DAS.AODP.Models.Application
-@using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApproval
 @using SFA.DAS.AODP.Web.Models.Qualifications.Fundings
 @model QualificationFundingsOffersSummaryViewModel;
 
@@ -7,7 +6,7 @@
     ViewData["Title"] = "Funding review summary";
 }
 
-@if(Model.Status == ApplicationStatus.NotApproved && Model.OfferFundingDetails.Count > 0){
+@if(!Model.Approved.Value && Model.OfferFundingDetails.Count > 0){
     <div class="govuk-notification-banner" role="region" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
         <div class="govuk-notification-banner__header">
             <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
@@ -16,7 +15,7 @@
         </div>
         <div class="govuk-notification-banner__content">
             <p class="govuk-notification-banner__heading">
-                The application status is 'Not approved', but there are approved offers for the application.
+                The qualification status is 'Not approved', but there are approved offers for the qualification.
                 <br /> <br/>
                 Please review the funding decision.
             </p>
@@ -41,13 +40,13 @@
                         Status
                     </govuk-summary-list-row-key>
                     <govuk-summary-list-row-value>
-                        @if(Model.Status == ApplicationStatus.Approved)
+                        @if(Model.Approved.Value)
                         {
                             <span>Approved - for one or more offers</span>
                         }
-                        else if (Model.Status.HasValue)
+                        else
                         {
-                            <span>@ApplicationStatusDisplay.Dictionary[Model.Status.Value]</span>
+                            <span>Not approved</span>
                         }
                     </govuk-summary-list-row-value>
 

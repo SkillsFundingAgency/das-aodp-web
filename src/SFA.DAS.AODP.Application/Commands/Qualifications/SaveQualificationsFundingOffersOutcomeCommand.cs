@@ -5,5 +5,5 @@ public class SaveQualificationsFundingOffersOutcomeCommand : IRequest<BaseMediat
 {
     public Guid QualificationVersionId { get; set; }
     public string? Comments { get; set; }
-    public bool Approved { get; set; }
+    public bool? Approved { get; set; }
 }
