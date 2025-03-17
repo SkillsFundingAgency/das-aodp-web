@@ -3,7 +3,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
-using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApproval;
+using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.User;
@@ -161,6 +161,60 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
             var viewModel = MapToViewModel(result);
             return View(viewModel);
+        }
+
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
+        [HttpGet]
+        [Route("Review/New/{qualificationVersionId}/qualification-funding-offers-outcome")]
+        public async Task<IActionResult> QualificationFundingOffersOutcome(Guid qualificationVersionId)
+        {
+            try
+            {
+                var review = await Send(new GetFeedbackForQualificationFundingByIdQuery(qualificationVersionId));
+
+                var model = new QualificationFundingsOffersOutcomeViewModel()
+                {
+                    QualificationVersionId = qualificationVersionId,
+                    Approved = review.Status == ApplicationStatus.Approved.ToString(),
+                    Comments = review.Comments,
+                    NewDecision = review.Status != ApplicationStatus.Approved.ToString() && review.Status != ApplicationStatus.NotApproved.ToString(),
+                };
+
+                return View(model);
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
+        }
+
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
+        [HttpPost]
+        [Route("Review/New/{qualificationVersionId}/qualification-funding-offers-outcome")]
+        public async Task<IActionResult> QualificationFundingOffersOutcome(QualificationFundingsOffersOutcomeViewModel model)
+        {
+            try
+            {
+                if (!ModelState.IsValid) return View(model);
+
+                await Send(new SaveQualificationsFundingOffersOutcomeCommand()
+                {
+                    QualificationVersionId = model.QualificationVersionId,
+                    Approved = model.Approved == true,
+                    Comments = model.Comments,
+                });
+
+                if (model.Approved == true)
+                {
+                    return RedirectToAction(nameof(QualificationFundingOffers), new { qualificationVersionId = model.QualificationVersionId });
+                }
+
+                return RedirectToAction(nameof(QualificationFundingOffersSummary), new { qualificationVersionId = model.QualificationVersionId });
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
         }
 
         [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]

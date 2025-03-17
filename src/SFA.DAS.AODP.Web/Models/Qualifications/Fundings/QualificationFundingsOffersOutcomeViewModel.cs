@@ -2,7 +2,7 @@
 
 namespace SFA.DAS.AODP.Web.Models.Qualifications.Fundings
 {
-    public class QualificationFundingsOutcomeViewModel
+    public class QualificationFundingsOffersOutcomeViewModel
     {
         public Guid QualificationVersionId { get; set; }
         public string? Comments { get; set; }
