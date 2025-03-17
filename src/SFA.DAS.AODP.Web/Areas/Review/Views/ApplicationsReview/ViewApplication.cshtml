@@ -10,7 +10,7 @@
 }
 
 <govuk-back-link class="govuk-link govuk-task-list__link"
-                 asp-controller="ViewApplication"
+                 asp-controller="ApplicationsReview"
                  asp-action="Index">Back</govuk-back-link>
 
 @if (currentUserReview.NewMessage)
@@ -308,7 +308,7 @@
     {
         var review = Model.Feedbacks.FirstOrDefault(f => f.UserType == UserType.Ofqual.ToString());
 
-        if (review != null)
+        if (review != null && review.Status != ApplicationStatus.InReview.ToString())
         {
             <govuk-summary-list>
                 <govuk-summary-list-row>
@@ -327,7 +327,7 @@
     {
         var review = Model.Feedbacks.FirstOrDefault(f => f.UserType == UserType.SkillsEngland.ToString());
 
-        if (review != null)
+        if (review != null && review.Status != ApplicationStatus.InReview.ToString())
         {
             <govuk-summary-list>
                 <govuk-summary-list-row>
