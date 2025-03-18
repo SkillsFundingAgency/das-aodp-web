@@ -2,11 +2,104 @@
 @{
     ViewData["Title"] = "New Qualifications";
 }
+<style>
+element.style {
+}
+media (min-width: 40.0625em) {
+    .govuk-frontend-supported .govuk-tabs__list-item {
+        position: relative;
+        margin-right: 5px;
+        margin-bottom: 0;
+        margin-left: 0;
+        padding: 10px 20px;
+        float: left;
+        background-color: #f3f2f1;
+        text-align: center;
+    }
+}
+.govuk-tabs__list-item {
+    margin-left: 25px;
+}
+user agent stylesheet
+li {
+    display: list-item;
+    text-align: -webkit-match-parent;
+    unicode-bidi: isolate;
+}
+.govuk-tabs__list {
+    padding: 0;
+    list-style: none;
+    margin: 0 0 20px;
+}
+user agent stylesheet
+ul {
+    list-style-type: disc;
+}
+media (min-width: 40.0625em) {
+    .govuk-tabs {
+        font-size: 1.1875rem;
+        line-height: 1.3157894737;
+    }
+}
+.govuk-tabs {
+    margin-top: 5px;
+    margin-bottom: 20px;
+    font-family: GDS Transport, arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-weight: 400;
+    font-size: 1rem;
+    line-height: 1.25;
+}
+.govuk-template {
+    background-color: #f3f2f1;
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+:root {
+    --govuk-frontend-version: "5.9.0";
+    --govuk-frontend-breakpoint-mobile: 20rem;
+    --govuk-frontend-breakpoint-tablet: 40.0625rem;
+    --govuk-frontend-breakpoint-desktop: 48.0625rem;
+}
+media (min-width: 40.0625em) {
+    .govuk-frontend-supported .govuk-tabs__list-item:before {
+        content: none;
+    }
+}
+.govuk-tabs__list-item:before {
+    color: #0b0c0c;
+    content: "—";
+    margin-left: -25px;
+    padding-right: 5px;
+}
+  
+</style>
 
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
 <div class="govuk-width-container">
     <main class="govuk-main-wrapper">
+        <div class="govuk-tabs">
+            <h2 class="govuk-tabs__title">
+                Contents
+            </h2>
+            <ul class="govuk-tabs__list">
+                <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+                    <a class="govuk-tabs__tab" asp-controller="new" action="index">
+                        Newly Regulated Qualifications
+                    </a>
+                </li>
+
+                <li class="govuk-tabs__list-item">
+                    <a class="govuk-tabs__tab" asp-controller="changed" action="index">
+                        Qualifications with Changes
+                    </a>
+                </li>
+
+            </ul>
+            <div class="govuk-tabs__panel" id="past-day">
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-full" id="guide-contents">
                 <div class="govuk-grid-row">
@@ -272,7 +365,7 @@
                                         <tr class="govuk-table__row">
                                             <td class="govuk-table__cell">@qualification.Reference</td>
                                             <td class="govuk-table__cell">
-                                                <a class="govuk-link" href="@Url.Action("QualificationDetails", "New", new { area = "Review", qualificationReference = qualification.Reference })">
+                                                            <a class="govuk-link" asp-asp-controller="new" asp-action="QualificationDetails" asp-route-qualificationReference="@qualification.Reference" asp-route-status="new">
                                                     @qualification.Title
                                                 </a>
                                             </td>
@@ -443,7 +536,11 @@
                         </div>
                     }
                 }
+                    </div>
+
+                </div>
             </div>
         </div>
+       
     </main>
 </div>

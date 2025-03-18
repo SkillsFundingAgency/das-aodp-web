@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Models.Qualifications;
@@ -139,18 +140,21 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
         }
 
-        public async Task<IActionResult> QualificationDetails([FromQuery] string qualificationReference)
-        {            
+
+        public async Task<IActionResult> QualificationDetails([FromQuery] string qualificationReference, string status)
+        {
             if (string.IsNullOrWhiteSpace(qualificationReference))
-            {               
+            {
                 return Redirect("/Home/Error");
             }
 
-            var result = await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });           
+            var qualificationsResult = await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference, Status = status });
 
-            var viewModel = MapToViewModel(result);
+            var viewModel = MapToViewModel(qualificationsResult);
+
             return View(viewModel);
         }
+
 
         public async Task<IActionResult> ExportData()
         {

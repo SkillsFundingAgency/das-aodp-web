@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
+using System.ComponentModel.DataAnnotations;
 
 namespace SFA.DAS.AODP.Web.Models.Qualifications
 {
@@ -7,6 +8,8 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
     {
         public int Id { get; set; }
         public string? Status { get; set; }
+        [Required]
+        public Guid? StatusId { get; set; }
         public string? Priority { get; set; }
         public string? Changes { get; set; }
         public string? QualificationReference { get; set; }
@@ -21,7 +24,8 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
         public string? SectorSubjectArea { get; set; }
         public string? Comments { get; set; }
 
-        public List<SelectListItem>? ActionTypes { get; set; } = new();
+        [Required(AllowEmptyStrings = false)]
+        public List<SelectListItem>? ActionTypes { get; set; }
     }
 }
 

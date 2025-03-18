@@ -6,6 +6,7 @@ using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 using System.Globalization;
+using System.Reflection;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
@@ -67,6 +68,33 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 return Redirect("/Home/Error");
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> QualificationDetails(QualificationDetailsViewModel viewModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                var actionTypesResult = await Send(new GetActionTypesQuery());
+
+                viewModel.ActionTypes = actionTypesResult.ActionTypes.Select(o =>
+                                        new SelectListItem
+                                        {
+                                            Value = o.Id.ToString(),
+                                            Text = o.Description
+                                        }).ToList();
+                viewModel.ActionTypes.Insert(0, new SelectListItem("Select Status", ""));
+                return View(viewModel);
+            }
+            return Redirect("/Home/Error");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> QualificationHistory()
+        {
+            return View();
+        }
+
+      
 
         [HttpPost]
         public async Task<IActionResult> Search(ChangedQualificationsViewModel viewModel)
@@ -151,18 +179,18 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             var viewModel = MapToViewModel(qualificationsResult);
 
             var actionTypesResult = await Send(new GetActionTypesQuery());
-           
+
             viewModel.ActionTypes = actionTypesResult.ActionTypes.Select(o =>
                                     new SelectListItem
                                     {
                                         Value = o.Id.ToString(),
                                         Text = o.Description
                                     }).ToList();
-            viewModel.ActionTypes.Insert(0,new SelectListItem("Select Status","-1"));
+            viewModel.ActionTypes.Insert(0, new SelectListItem("Select Status", ""));
             return View(viewModel);
         }
 
-       
+
         public async Task<IActionResult> SaveDiscussionHistoryNote(string qualificationReferenceId, string actionTypeId, string note)
         {
             if (string.IsNullOrWhiteSpace(qualificationReferenceId.ToString()))
@@ -176,7 +204,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
 
 
-            var saveNote = await Send(new SaveNoteQuery { QualificationReferenceId = new Guid(qualificationReferenceId), ActionTypeId = new Guid(actionTypeId),Notes=note});
+            var saveNote = await Send(new SaveNoteQuery { QualificationReferenceId = new Guid(qualificationReferenceId), ActionTypeId = new Guid(actionTypeId), Notes = note });
 
             return View(saveNote);
         }

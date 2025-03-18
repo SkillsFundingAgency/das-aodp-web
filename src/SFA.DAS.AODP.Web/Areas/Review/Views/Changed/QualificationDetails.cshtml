@@ -4,107 +4,174 @@
     ViewData["Title"] = "Qualification Details";
 }
 
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
 <h1 class="govuk-heading-xl">Qualification Details</h1>
-<div class="govuk-tabs" data-module="govuk-tabs">
-    <h2 class="govuk-tabs__title">
-        Contents
-    </h2>
-    <ul class="govuk-tabs__list">
-        <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
-            <a class="govuk-tabs__tab" href="#QualificationDetails">
-                Qualification Details
-            </a>
-        </li>
-    </ul>
-    @using (Html.BeginForm("SaveDiscussionHistoryNote", "Changed", FormMethod.Post))
-    {
-        @Html.Hidden("QualificationReferenceId", @Model.Id)
+<div class="govuk-width-container">
+    <main class="govuk-main-wrapper">
+        <div class="govuk-tabs">
+            <h2 class="govuk-tabs__title">
+                Contents
+            </h2>
+            <ul class="govuk-tabs__list">
+                <li class="govuk-tabs__list-item  govuk-tabs__list-item--selected">
+                    <a class="govuk-tabs__tab" asp-controller="changed" asp-action="index">
+                        Details
+                    </a>
+                </li>
 
-    <govuk-summary-list>
-            
-            <govuk-summary-list-row>
-                <govuk-summary-list-row-key>Status</govuk-summary-list-row-key>
-                <govuk-summary-list-row-value asp-for="">@Model.Status</govuk-summary-list-row-value>
-            </govuk-summary-list-row>
-            <govuk-summary-list-row>
-                <govuk-summary-list-row-key>Priority</govuk-summary-list-row-key>
-                <govuk-summary-list-row-value>@Model.Priority</govuk-summary-list-row-value>
-            </govuk-summary-list-row>
-            <govuk-summary-list-row>
-                <govuk-summary-list-row-key>Changes</govuk-summary-list-row-key>
-                <govuk-summary-list-row-value>@Model.Changes</govuk-summary-list-row-value>
-            </govuk-summary-list-row>
-            <govuk-summary-list-row>
-                <govuk-summary-list-row-key>Qualification Reference</govuk-summary-list-row-key>
-                <govuk-summary-list-row-value>@Model.QualificationReference</govuk-summary-list-row-value>
-            </govuk-summary-list-row>
-            <govuk-summary-list-row>
-                <govuk-summary-list-row-key>Awarding Organisation</govuk-summary-list-row-key>
-                <govuk-summary-list-row-value>@Model.AwardingOrganisation</govuk-summary-list-row-value>
-            </govuk-summary-list-row>
-            <govuk-summary-list-row>
-                <govuk-summary-list-row-key>Title</govuk-summary-list-row-key>
-                <govuk-summary-list-row-value>@Model.Title</govuk-summary-list-row-value>
-            </govuk-summary-list-row>
-            <govuk-summary-list-row>
-                <govuk-summary-list-row-key>Qualification Type</govuk-summary-list-row-key>
-                <govuk-summary-list-row-value>@Model.QualificationType</govuk-summary-list-row-value>
-            </govuk-summary-list-row>
-            <govuk-summary-list-row>
-                <govuk-summary-list-row-key>Level</govuk-summary-list-row-key>
-                <govuk-summary-list-row-value>@Model.Level</govuk-summary-list-row-value>
-            </govuk-summary-list-row>
-            <govuk-summary-list-row>
-                <govuk-summary-list-row-key>Proposed Changes</govuk-summary-list-row-key>
-                <govuk-summary-list-row-value>@Model.ProposedChanges</govuk-summary-list-row-value>
-            </govuk-summary-list-row>
-            <govuk-summary-list-row>
-                <govuk-summary-list-row-key>Age Group</govuk-summary-list-row-key>
-                <govuk-summary-list-row-value>@Model.AgeGroup</govuk-summary-list-row-value>
-            </govuk-summary-list-row>
-            <govuk-summary-list-row>
-                <govuk-summary-list-row-key>Category</govuk-summary-list-row-key>
-                <govuk-summary-list-row-value>@Model.Category</govuk-summary-list-row-value>
-            </govuk-summary-list-row>
-            <govuk-summary-list-row>
-                <govuk-summary-list-row-key>Subject</govuk-summary-list-row-key>
-                <govuk-summary-list-row-value>@Model.Subject</govuk-summary-list-row-value>
-            </govuk-summary-list-row>
-            <govuk-summary-list-row>
-                <govuk-summary-list-row-key>Sector Subject Area</govuk-summary-list-row-key>
-                <govuk-summary-list-row-value>@Model.SectorSubjectArea</govuk-summary-list-row-value>
-            </govuk-summary-list-row>
-            <govuk-summary-list-row>
-                <govuk-summary-list-row-key>Comments</govuk-summary-list-row-key>
-                <govuk-summary-list-row-value>
-                    <govuk-textarea name="Comments">
-                        <govuk-textarea-label class="govuk-label--s" is-page-heading="false">
-                            Leave comments and recommendations. Give as much detail as you can.
-                        </govuk-textarea-label>
-                        <govuk-textarea-value name="notes">
-                            @Model.Comments
-                        </govuk-textarea-value>
-                    </govuk-textarea>
-                </govuk-summary-list-row-value>
-            </govuk-summary-list-row>
+                <li class="govuk-tabs__list-item">
+                    <a class="govuk-tabs__tab" asp-controller="changed" asp-action="QualificationHistory" asp-routes>
+                        History
+                    </a>
+                </li>
+
+            </ul>
+            <div class="govuk-tabs__panel" >
+                <div class="govuk-grid-row">
+                    <div class="govuk-grid-column-full" id="guide-contents">
+                        @if (!ViewContext.ModelState.IsValid)
+                        {
+                            <div class="govuk-error-summary" data-module="govuk-error-summary">
+                                <div role="alert">
+                                    <h2 class="govuk-error-summary__title">
+                                        Validation Error
+                                    </h2>
+                                    <div class="govuk-error-summary__body">
+                                        <ul class="govuk-list govuk-error-summary__list">
+                                            <li>
+                                                @foreach (var ms in ViewContext.ModelState)
+                                                {
+                                                    var error = @ms.Value.Errors.FirstOrDefault();
+                                                    if (error == null) continue;
+
+                                                <li>
+                                                    <a href="#@ms.Key">@error.ErrorMessage</a>
+                                                </li>
+                                                }
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        @using (Html.BeginForm("QualificationDetails", "Changed", FormMethod.Post))
+                        {
+                            @Html.Hidden("QualificationReferenceId", @Model.Id)
+                            @Html.Hidden("statusId", @Model.StatusId)
+                            @Html.Hidden("Comments", @Model.Comments)
+                            @Html.Hidden("AwardingOrganisation", @Model.AwardingOrganisation)
+                            @Html.Hidden("Status", @Model.Status)
+                            @Html.Hidden("Priority", @Model.Priority)
+                            @Html.Hidden("Changes", @Model.Changes)
+                            @Html.Hidden("QualificationReference", @Model.QualificationReference)
+                            @Html.Hidden("Title", @Model.Title)
+                            @Html.Hidden("QualificationType", @Model.QualificationType)
+                            @Html.Hidden("Level", @Model.Level)
+                            @Html.Hidden("ProposedChanges", @Model.ProposedChanges)
+                            @Html.Hidden("AgeGroup", Model.AgeGroup)
+                            @Html.Hidden("Category", @Model.Category)
+                            @Html.Hidden("Subject", @Model.Subject)
+                            @Html.Hidden("SectorSubjectArea", @Model.SectorSubjectArea)
+                            @Html.Hidden("ActionTypes", @Model.ActionTypes)
+                            <govuk-summary-list>
+
+                                <govuk-summary-list-row>
+                                    <govuk-summary-list-row-key>Status</govuk-summary-list-row-key>
+                                    <govuk-summary-list-row-value asp-for="@Model.Status">@Model.Status</govuk-summary-list-row-value>
+                                </govuk-summary-list-row>
+                                <govuk-summary-list-row>
+                                    <govuk-summary-list-row-key>Priority</govuk-summary-list-row-key>
+                                    <govuk-summary-list-row-value>@Model.Priority</govuk-summary-list-row-value>
+                                </govuk-summary-list-row>
+                                <govuk-summary-list-row>
+                                    <govuk-summary-list-row-key>Changes</govuk-summary-list-row-key>
+                                    <govuk-summary-list-row-value>@Model.Changes</govuk-summary-list-row-value>
+                                </govuk-summary-list-row>
+                                <govuk-summary-list-row>
+                                    <govuk-summary-list-row-key>Qualification Reference</govuk-summary-list-row-key>
+                                    <govuk-summary-list-row-value>@Model.QualificationReference</govuk-summary-list-row-value>
+                                </govuk-summary-list-row>
+                                <govuk-summary-list-row>
+                                    <govuk-summary-list-row-key>Awarding Organisation</govuk-summary-list-row-key>
+                                    <govuk-summary-list-row-value>@Model.AwardingOrganisation</govuk-summary-list-row-value>
+                                </govuk-summary-list-row>
+                                <govuk-summary-list-row>
+                                    <govuk-summary-list-row-key>Title</govuk-summary-list-row-key>
+                                    <govuk-summary-list-row-value>@Model.Title</govuk-summary-list-row-value>
+                                </govuk-summary-list-row>
+                                <govuk-summary-list-row>
+                                    <govuk-summary-list-row-key>Qualification Type</govuk-summary-list-row-key>
+                                    <govuk-summary-list-row-value>@Model.QualificationType</govuk-summary-list-row-value>
+                                </govuk-summary-list-row>
+                                <govuk-summary-list-row>
+                                    <govuk-summary-list-row-key>Level</govuk-summary-list-row-key>
+                                    <govuk-summary-list-row-value>@Model.Level</govuk-summary-list-row-value>
+                                </govuk-summary-list-row>
+                                <govuk-summary-list-row>
+                                    <govuk-summary-list-row-key>Proposed Changes</govuk-summary-list-row-key>
+                                    <govuk-summary-list-row-value>@Model.ProposedChanges</govuk-summary-list-row-value>
+                                </govuk-summary-list-row>
+                                <govuk-summary-list-row>
+                                    <govuk-summary-list-row-key>Age Group</govuk-summary-list-row-key>
+                                    <govuk-summary-list-row-value>@Model.AgeGroup</govuk-summary-list-row-value>
+                                </govuk-summary-list-row>
+                                <govuk-summary-list-row>
+                                    <govuk-summary-list-row-key>Category</govuk-summary-list-row-key>
+                                    <govuk-summary-list-row-value>@Model.Category</govuk-summary-list-row-value>
+                                </govuk-summary-list-row>
+                                <govuk-summary-list-row>
+                                    <govuk-summary-list-row-key>Subject</govuk-summary-list-row-key>
+                                    <govuk-summary-list-row-value>@Model.Subject</govuk-summary-list-row-value>
+                                </govuk-summary-list-row>
+                                <govuk-summary-list-row>
+                                    <govuk-summary-list-row-key>Sector Subject Area</govuk-summary-list-row-key>
+                                    <govuk-summary-list-row-value>@Model.SectorSubjectArea</govuk-summary-list-row-value>
+                                </govuk-summary-list-row>
+                                <govuk-summary-list-row>
+                                    <govuk-summary-list-row-key>Comments</govuk-summary-list-row-key>
+                                    <govuk-summary-list-row-value>
+                                        <govuk-textarea name="Comments">
+                                            <govuk-textarea-label class="govuk-label--s" is-page-heading="false">
+                                                Leave comments and recommendations. Give as much detail as you can.
+                                            </govuk-textarea-label>
+                                            <govuk-textarea-value asp-for="@Model.Comments">
+                                                @Model.Comments
+                                            </govuk-textarea-value>
+                                        </govuk-textarea>
+                                    </govuk-summary-list-row-value>
+                                </govuk-summary-list-row>
 
 
-    </govuk-summary-list>
+                            </govuk-summary-list>
 
-    
-        <div class="govuk-form-group">
-            <label class="govuk-label" for="sort">
-                Status
-            </label>
 
-            @Html.DropDownListFor(model => model.ActionTypes, null, new { @class = "govuk-select" ,Name="actionTypeId"})
+                            <div class="govuk-form-group">
+                                <govuk-select asp-for="@Model.StatusId">
+                                    <govuk-select-label>Status</govuk-select-label>
 
-          
+                                    @foreach (var item in Model.ActionTypes)
+                                    {
+                                        <govuk-select-item value="@item.Value">
+                                            @item.Text
+                                        </govuk-select-item>
+                                    }
+                                </govuk-select>
+                            </div>
+                            <button type="submit" class="govuk-button" data-module="govuk-button">
+                                Save
+                            </button>
 
+
+
+
+                        }
+                    </div>
+                </div>
+            </div>
         </div>
-        <button type="submit" class="govuk-button" data-module="govuk-button" >
-            Save
-        </button>
-}
+    </main>
+
 </div>
+
 
