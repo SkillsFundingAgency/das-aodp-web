@@ -1,8 +1,13 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
+using SFA.DAS.AODP.Application.Commands.FormBuilder.Routes;
+using SFA.DAS.AODP.Application.Queries.FormBuilder.Pages;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Routes;
 using SFA.DAS.AODP.Web.Authentication;
+using SFA.DAS.AODP.Web.Enums;
+using SFA.DAS.AODP.Web.Models.FormBuilder.Page;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Routing;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
@@ -12,6 +17,7 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers.FormBuilder;
 [Authorize(Policy = PolicyConstants.IsAdminFormsUser)]
 public class RoutesController : ControllerBase
 {
+    public enum UpdateKeys { RouteDeleted }
     public RoutesController(IMediator mediator, ILogger<RoutesController> logger) : base(mediator, logger)
     {
     }
@@ -162,6 +168,8 @@ public class RoutesController : ControllerBase
             };
             var response = await Send(query);
 
+            ShowNotificationIfKeyExists(UpdateKeys.RouteDeleted.ToString(), ViewNotificationMessageType.Success, "The route has been deleted.");
+
             return View(new ListRoutesViewModel()
             {
                 FormVersionId = formVersionId,
@@ -173,4 +181,46 @@ public class RoutesController : ControllerBase
             return Redirect("/Home/Error");
         }
     }
+
+    #region Delete
+    [HttpGet]
+    [Route("/admin/forms/{formVersionId}/routes/sections/{sectionId}/pages/{pageId}/questions/{questionId}/delete")]
+    public async Task<IActionResult> Delete(Guid formVersionId, Guid sectionId, Guid pageId, Guid questionId)
+    {
+        return View(new DeleteRouteViewModel()
+        {
+            PageId = pageId,
+            SectionId = sectionId,
+            FormVersionId = formVersionId,
+            QuestionId = questionId
+        });
+
+    }
+
+    [HttpPost]
+    [Route("/admin/forms/{formVersionId}/routes/sections/{sectionId}/pages/{pageId}/questions/{questionId}/delete")]
+    public async Task<IActionResult> Delete(DeleteRouteViewModel model)
+    {
+        try
+        {
+            var command = new DeleteRouteCommand()
+            {
+                PageId = model.PageId,
+                SectionId = model.SectionId,
+                FormVersionId = model.FormVersionId,
+                QuestionId = model.QuestionId
+            };
+
+            await Send(command);
+
+            TempData[UpdateKeys.RouteDeleted.ToString()] = true;
+            return RedirectToAction(nameof(List), new { formVersionId = model.FormVersionId });
+        }
+        catch
+        {
+            return View(model);
+        }
+
+    }
+    #endregion
 }

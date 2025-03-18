@@ -104,6 +104,18 @@
     @if (Model.Editable)
     {
         <govuk-button type="submit">Save</govuk-button>
+
+        @if (Model.ShowDeleteButton)
+        {
+            <a asp-action="Delete"
+               asp-controller="Routes"
+               asp-route-pageId="@Model.PageId"
+               asp-route-questionId="@Model.QuestionId"
+               asp-route-sectionId="@Model.SectionId"
+               asp-route-formVersionId="@Model.FormVersionId"
+               class="govuk-button govuk-button--warning">Delete</a>
+
+        }
     }
 
 </form>

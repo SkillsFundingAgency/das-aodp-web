@@ -18,6 +18,8 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Routing
         public string PageTitle { get; set; }
         public bool Editable { get; set; }
 
+        public bool ShowDeleteButton { get; set; }
+
 
         public List<NextPageOption> NextPageOptions { get; set; } = new();
         public List<NextSectionOption> NextSectionOptions { get; set; } = new();
@@ -66,6 +68,7 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Routing
                 PageTitle = value.PageTitle,
                 SectionTitle = value.SectionTitle,
                 Editable = value.Editable,
+                ShowDeleteButton = value.Routes.Any(r => r.Id != Guid.Empty)
             };
 
             foreach (var option in value.RadioOptions?.OrderBy(o => o.Order).ToList() ?? [])
