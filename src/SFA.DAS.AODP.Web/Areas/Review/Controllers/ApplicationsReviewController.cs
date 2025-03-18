@@ -25,10 +25,12 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             SharingStatusUpdated, QanUpdated, OwnerUpdated
         }
         private readonly IUserHelperService _userHelperService;
+        private readonly UserType UserType;
 
         public ApplicationsReviewController(ILogger<ApplicationsReviewController> logger, IMediator mediator, IUserHelperService userHelperService) : base(mediator, logger)
         {
             _userHelperService = userHelperService;
+            UserType = userHelperService.GetUserType();
         }
 
         [Route("review/application-reviews")]
@@ -553,6 +555,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         {
             try
             {
+                var applicationId = await GetApplicationIdAsync(applicationReviewId);
+
                 var applicationDetails = await Send(new GetApplicationReadOnlyDetailsByIdQuery(applicationReviewId));
                 
                 var vm = ApplicationReadOnlyDetailsViewModel.Map(applicationDetails);
@@ -564,6 +568,18 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             {
                 return Redirect("/Home/Error");
             }
+        }
+
+        private async Task<Guid> GetApplicationIdAsync(Guid applicationReviewId)
+        {
+            var shared = await Send(new GetApplicationReviewSharingStatusByIdQuery(applicationReviewId));
+
+            if (UserType == UserType.Ofqual || UserType == UserType.Qfau)
+            {
+                if (UserType == UserType.Ofqual && !shared.SharedWithOfqual) throw new Exception("Application not shared with Ofqual.");
+                if (UserType == UserType.SkillsEngland && !shared.SharedWithSkillsEngland) throw new Exception("Application not shared with Skills England.");
+            }
+            return shared.ApplicationId;
         }
     }
 }
