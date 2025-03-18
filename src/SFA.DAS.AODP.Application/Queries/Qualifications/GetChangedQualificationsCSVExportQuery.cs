@@ -2,7 +2,7 @@
 
 namespace SFA.DAS.AODP.Application.Queries.Qualifications
 {
-    public class GetChangedQualificationsCsvExportQuery: IRequest<BaseMediatrResponse<GetChangedQualificationsCsvExportResponse>>
+    public class GetChangedQualificationsCsvExportQuery: IRequest<BaseMediatrResponse<GetQualificationsExportResponse>>
     {
     }
 }
