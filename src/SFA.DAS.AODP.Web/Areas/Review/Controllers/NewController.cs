@@ -341,13 +341,11 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         {
             try
             {
-                var actionTypeId = new Guid(ActionTypeDisplay.Dictionary[ActionType.NoActionRequired]);
-                var userDisplayName = _userHelperService.GetUserDisplayName();
                 await Send(new CreateQualificationDiscussionHistoryCommand()
                 {
                     QualificationVersionId = model.QualificationVersionId,
-                    ActionTypeId = actionTypeId,
-                    UserDisplayName = userDisplayName,
+                    UserDisplayName = _userHelperService.GetUserDisplayName(),
+                    ActionTypeId = new Guid(ActionTypeDisplay.Dictionary[ActionType.ActionRequired])
                 });
 
                 return RedirectToAction(nameof(QualificationFundingOffersConfirmation), new { qualificationReference = model.QualificationReference });
