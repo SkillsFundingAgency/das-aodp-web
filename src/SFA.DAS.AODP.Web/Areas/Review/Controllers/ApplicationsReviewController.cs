@@ -2,10 +2,14 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Queries.Review;
+using SFA.DAS.AODP.Application.Commands.Application.Application;
+using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Models.Application;
+using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApproval;
 using SFA.DAS.AODP.Web.Authentication;
+using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.User;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
@@ -16,6 +20,10 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
     [Authorize(Policy = PolicyConstants.IsReviewUser)]
     public class ApplicationsReviewController : ControllerBase
     {
+        enum UpdateKeys
+        {
+            SharingStatusUpdated, QanUpdated, OwnerUpdated
+        }
         private readonly IUserHelperService _userHelperService;
 
         public ApplicationsReviewController(ILogger<ApplicationsReviewController> logger, IMediator mediator, IUserHelperService userHelperService) : base(mediator, logger)
@@ -75,10 +83,13 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 var userType = _userHelperService.GetUserType();
                 var review = await Send(new GetApplicationForReviewByIdQuery(applicationReviewId));
 
-                if (userType == AODP.Models.Users.UserType.Ofqual && review.SharedWithOfqual == false) return NotFound();
-                if (userType == AODP.Models.Users.UserType.SkillsEngland && review.SharedWithSkillsEngland == false) return NotFound();
+                if (userType == UserType.Ofqual && review.SharedWithOfqual == false) return NotFound();
+                if (userType == UserType.SkillsEngland && review.SharedWithSkillsEngland == false) return NotFound();
 
-                return View(ApplicationReviewViewModel.Map(review, userType ));
+                ShowNotificationIfKeyExists(UpdateKeys.SharingStatusUpdated.ToString(), ViewNotificationMessageType.Success, "The application's sharing status has been updated.");
+                ShowNotificationIfKeyExists(UpdateKeys.QanUpdated.ToString(), ViewNotificationMessageType.Success, "The application's QAN has been updated.");
+                ShowNotificationIfKeyExists(UpdateKeys.OwnerUpdated.ToString(), ViewNotificationMessageType.Success, "The application's owner has been updated.");
+                return View(ApplicationReviewViewModel.Map(review, userType));
             }
             catch
             {
@@ -266,17 +277,273 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         [Route("review/application-reviews/{applicationReviewId}/qfau-funding-confirm")]
         public async Task<IActionResult> QfauFundingReviewConfirmation(Guid applicationReviewId)
         {
+            return View(new ReviewConfirmationViewModel()
+            {
+                ApplicationReviewId = applicationReviewId
+            });
+        }
+
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
+        [HttpGet]
+        [Route("review/application-reviews/{applicationReviewId}/qfau-funding-decision")]
+        public async Task<IActionResult> QfauFundingReviewDecision(Guid applicationReviewId)
+        {
             try
             {
-                return View(new QfauFundingReviewConfirmationViewModel()
-                {
-                    ApplicationReviewId = applicationReviewId
-                });
+                var offers = await Send(new GetFundingOffersQuery());
+                var review = await Send(new GetFeedbackForApplicationReviewByIdQuery(applicationReviewId, _userHelperService.GetUserType().ToString()));
+
+                var model = QfauFundingDecisionViewModel.Map(review, offers);
+                model.ApplicationReviewId = applicationReviewId;
+
+                return View(model);
             }
             catch
             {
                 return Redirect("/Home/Error");
             }
+        }
+
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
+        [HttpPost]
+        [Route("review/application-reviews/{applicationReviewId}/qfau-funding-decision")]
+        public async Task<IActionResult> QfauFundingReviewDecisionConfirmed(QfauFundingReviewDecisionConfirmViewModel model)
+        {
+            try
+            {
+                await Send(new SaveQfauFundingReviewDecisionCommand()
+                {
+                    ApplicationReviewId = model.ApplicationReviewId,
+                    SentByEmail = _userHelperService.GetUserEmail(),
+                    SentByName = _userHelperService.GetUserDisplayName()
+                });
+
+                return RedirectToAction(nameof(QfauFundingReviewDecisionConfirmation), new { model.ApplicationReviewId });
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
+        }
+
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
+        [HttpGet]
+        [Route("review/application-reviews/{applicationReviewId}/qfau-funding-decision-confirm")]
+        public async Task<IActionResult> QfauFundingReviewDecisionConfirmation(Guid applicationReviewId)
+        {
+            return View(new ReviewConfirmationViewModel()
+            {
+                ApplicationReviewId = applicationReviewId
+            });
+        }
+
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
+        [HttpGet]
+        [Route("review/application-reviews/{applicationReviewId}/share")]
+        public async Task<IActionResult> ShareApplicationConfirmation(Guid applicationReviewId, bool share, UserType userType)
+        {
+            return View(new ShareApplicationViewModel()
+            {
+                ApplicationReviewId = applicationReviewId,
+                Share = share,
+                UserType = userType
+            });
+
+        }
+
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
+        [HttpPost]
+        [Route("review/application-reviews/{applicationReviewId}/share")]
+        public async Task<IActionResult> ShareApplicationConfirmation(ShareApplicationViewModel model)
+        {
+            try
+            {
+                await Send(
+                    new UpdateApplicationReviewSharingCommand()
+                    {
+                        ApplicationReviewId = model.ApplicationReviewId,
+                        ShareApplication = model.Share,
+                        ApplicationReviewUserType = model.UserType.ToString(),
+                        SentByEmail = _userHelperService.GetUserEmail(),
+                        SentByName = _userHelperService.GetUserDisplayName(),
+                        UserType = _userHelperService.GetUserType().ToString()
+                    });
+
+                TempData[UpdateKeys.SharingStatusUpdated.ToString()] = true;
+                return RedirectToAction(nameof(ViewApplication), new { applicationReviewId = model.ApplicationReviewId });
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
+        }
+
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
+        [HttpPost]
+        [Route("review/application-reviews/{applicationReviewId}/update-qan")]
+        public async Task<IActionResult> UpdateQan(UpdateQanViewModel model)
+        {
+            try
+            {
+                await Send(
+                    new SaveQanCommand()
+                    {
+                        ApplicationReviewId = model.ApplicationReviewId,
+                        SentByEmail = _userHelperService.GetUserEmail(),
+                        SentByName = _userHelperService.GetUserDisplayName(),
+                        Qan = model.Qan,
+                    });
+
+                TempData[UpdateKeys.QanUpdated.ToString()] = true;
+                return RedirectToAction(nameof(ViewApplication), new { applicationReviewId = model.ApplicationReviewId });
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
+        }
+
+        [HttpPost]
+        [Route("review/application-reviews/{applicationReviewId}/update-owner")]
+        public async Task<IActionResult> UpdateOwner(UpdateOwnerViewModel model)
+        {
+            try
+            {
+                await Send(
+                    new SaveReviewOwnerUpdateCommand()
+                    {
+                        ApplicationReviewId = model.ApplicationReviewId,
+                        SentByEmail = _userHelperService.GetUserEmail(),
+                        SentByName = _userHelperService.GetUserDisplayName(),
+                        Owner = model.Owner,
+                        UserType = _userHelperService.GetUserType().ToString()
+                    });
+
+                TempData[UpdateKeys.OwnerUpdated.ToString()] = true;
+                return RedirectToAction(nameof(ViewApplication), new { applicationReviewId = model.ApplicationReviewId });
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
+        }
+
+        [Authorize(Roles = RoleConstants.OFQUALReviewer)]
+        [HttpGet]
+        [Route("review/application-reviews/{applicationReviewId}/ofqual")]
+        public async Task<IActionResult> OfqualReview(Guid applicationReviewId)
+        {
+            var review = await Send(new GetFeedbackForApplicationReviewByIdQuery(applicationReviewId, UserType.Ofqual.ToString()));
+
+            return View(new OfqualReviewViewModel()
+            {
+                ApplicationReviewId = applicationReviewId,
+                Comments = review.Comments
+            });
+        }
+
+        [HttpPost]
+        [Authorize(Roles = RoleConstants.OFQUALReviewer)]
+        [Route("review/application-reviews/{applicationReviewId}/ofqual")]
+        public async Task<IActionResult> OfqualReview([FromForm] OfqualReviewViewModel model)
+        {
+            try
+            {
+                if (!ModelState.IsValid || model.AdditionalActions.Preview || model.AdditionalActions.Edit)
+                {
+                    return View(model);
+                }
+                await Send(
+                       new SaveOfqualReviewOutcomeCommand()
+                       {
+                           ApplicationReviewId = model.ApplicationReviewId,
+                           SentByEmail = _userHelperService.GetUserEmail(),
+                           SentByName = _userHelperService.GetUserDisplayName(),
+                           Comments = model.Comments
+                       });
+
+                return RedirectToAction(nameof(OfqualReviewConfirmation), new { applicationReviewId = model.ApplicationReviewId });
+            }
+            catch
+            {
+                return View(model);
+            }
+
+        }
+
+        [Authorize(Roles = RoleConstants.OFQUALReviewer)]
+        [HttpGet]
+        [Route("review/application-reviews/{applicationReviewId}/ofqual-confirm")]
+        public async Task<IActionResult> OfqualReviewConfirmation(Guid applicationReviewId)
+        {
+            return View(new ReviewConfirmationViewModel()
+            {
+                ApplicationReviewId = applicationReviewId
+            });
+        }
+
+        [Authorize(Roles = RoleConstants.IFATEReviewer)]
+        [HttpGet]
+        [Route("review/application-reviews/{applicationReviewId}/skills-england")]
+        public async Task<IActionResult> SkillsEnglandReview(Guid applicationReviewId)
+        {
+            var review = await Send(new GetFeedbackForApplicationReviewByIdQuery(applicationReviewId, UserType.SkillsEngland.ToString()));
+
+            return View(new SkillsEnglandReviewViewModel()
+            {
+                ApplicationReviewId = applicationReviewId,
+                Comments = review.Comments,
+                Approved = review.Status == ApplicationStatus.Approved.ToString(),
+                NewDecision = review.Status != ApplicationStatus.Approved.ToString() && review.Status != ApplicationStatus.NotApproved.ToString()
+            });
+        }
+
+        [HttpPost]
+        [Authorize(Roles = RoleConstants.IFATEReviewer)]
+        [Route("review/application-reviews/{applicationReviewId}/skills-england")]
+        public async Task<IActionResult> SkillsEnglandReview([FromForm] SkillsEnglandReviewViewModel model)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(model.Comments))
+                {
+                    model.AdditionalActions.Preview = false;
+                    ModelState.AddModelError(nameof(SkillsEnglandReviewViewModel.Comments), "Please provide a comment.");
+                }
+
+                if (!ModelState.IsValid || model.AdditionalActions.Preview || model.AdditionalActions.Edit)
+                {
+                    return View(model);
+                }
+
+                await Send(
+                       new SaveSkillsEnglandReviewOutcomeCommand()
+                       {
+                           ApplicationReviewId = model.ApplicationReviewId,
+                           SentByEmail = _userHelperService.GetUserEmail(),
+                           SentByName = _userHelperService.GetUserDisplayName(),
+                           Comments = model.Comments,
+                           Approved = model.Approved ?? false
+                       });
+
+                return RedirectToAction(nameof(SkillsEnglandReviewConfirmation), new { applicationReviewId = model.ApplicationReviewId });
+            }
+            catch
+            {
+                return View(model);
+            }
+
+        }
+
+        [Authorize(Roles = RoleConstants.IFATEReviewer)]
+        [HttpGet]
+        [Route("review/application-reviews/{applicationReviewId}/skills-england-confirm")]
+        public async Task<IActionResult> SkillsEnglandReviewConfirmation(Guid applicationReviewId)
+        {
+            return View(new ReviewConfirmationViewModel()
+            {
+                ApplicationReviewId = applicationReviewId
+            });
         }
 
         [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]

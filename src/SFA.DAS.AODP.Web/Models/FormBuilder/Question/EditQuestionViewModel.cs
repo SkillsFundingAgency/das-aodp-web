@@ -144,7 +144,7 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
                         Id = option.Id,
                         Value = option.Value,
                         Order = option.Order,
-                        DoesHaveAssociatedRoutes = response.Routes.Any(r => r.Option.Value == option.Value &&
+                        DoesHaveAssociatedRoutes = response.Routes.Any(r => r.Option.Id == option.Id &&
                                                                       (r.NextPage?.Id != Guid.Empty || r.NextSection?.Id != Guid.Empty || r.EndForm == true || r.EndSection == true))
                     });
                 }

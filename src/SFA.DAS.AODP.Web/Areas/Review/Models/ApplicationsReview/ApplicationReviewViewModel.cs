@@ -2,7 +2,6 @@
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
 {
-
     public class ApplicationReviewViewModel
     {
         public UserType UserType { get; set; }
@@ -18,6 +17,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
         public bool SharedWithSkillsEngland { get; set; }
         public bool SharedWithOfqual { get; set; }
 
+        public string FormTitle { get; set; }
+
         public List<Funding> FundedOffers { get; set; } = new();
         public List<Feedback> Feedbacks { get; set; } = new();
 
@@ -28,6 +29,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
             public bool NewMessage { get; set; }
             public string UserType { get; set; }
             public string? Comments { get; set; }
+            public bool LatestCommunicatedToAwardingOrganisation { get; set; }
         }
 
         public class Funding
@@ -54,7 +56,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
                 Reference = response.Reference,
                 SharedWithOfqual = response.SharedWithOfqual,
                 SharedWithSkillsEngland = response.SharedWithSkillsEngland,
-                UserType = userType
+                UserType = userType,
+                FormTitle = response.FormTitle,
             };
 
             foreach (var feedback in response.Feedbacks)
@@ -66,6 +69,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
                     Owner = feedback.Owner,
                     Status = feedback.Status,
                     UserType = feedback.UserType,
+                    LatestCommunicatedToAwardingOrganisation = feedback.LatestCommunicatedToAwardingOrganisation
                 });
             }
 

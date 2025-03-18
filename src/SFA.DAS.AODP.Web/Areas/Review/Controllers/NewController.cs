@@ -12,6 +12,7 @@ using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 {
     [Area("Review")]
+    [Route("{controller}/{action}")]
     [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
     public class NewController : ControllerBase
     {
@@ -182,7 +183,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
         }
 
-        private FileContentResult WriteCsvToResponse(List<QualificationExport> qualifications)
+        private FileContentResult WriteCsvToResponse(IEnumerable<QualificationExport> qualifications)
         {            
             var csvData = GenerateCsv(qualifications);
             var bytes = System.Text.Encoding.UTF8.GetBytes(csvData);
@@ -190,7 +191,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             return File(bytes, "text/csv", fileName);            
         }
 
-        private static string GenerateCsv(List<QualificationExport> qualifications)
+        private static string GenerateCsv(IEnumerable<QualificationExport> qualifications)
         {
             using (var writer = new StringWriter())
             using (var csv = new CsvHelper.CsvWriter(writer, new CsvConfiguration(CultureInfo.InvariantCulture)))

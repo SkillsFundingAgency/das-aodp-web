@@ -6,7 +6,7 @@
     <ul class="govuk-list">
         @for (int i = 0; i < Model.Options.Count; i++)
         {
-            <li style="display: flex; align-items: flex-end;">
+            <li id="Options.Options[@i]" style="display: flex; align-items: flex-end;">
 
                 <div class="govuk-form-group" style="width:80%">
                     <label class="govuk-label"
@@ -14,7 +14,7 @@
 
                     <input type="hidden" name="Options[Options][@i][Id]" value="@Model.Options[i].Id" />
                     @{
-                        var key = $"RadioButton.MultiChoice[{i}]";
+                        var key = $"Options.Options[{i}]";
                         if (ViewData.ModelState[key]?.Errors.Count > 0)
                         {
                             <p id="radio-option-@i-error" class="govuk-error-message govuk-form-group--error">
