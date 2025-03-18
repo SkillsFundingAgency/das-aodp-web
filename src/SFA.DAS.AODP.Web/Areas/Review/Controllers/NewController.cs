@@ -3,7 +3,6 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
-using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Models.Qualifications;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
@@ -166,18 +165,22 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
         [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
         [HttpGet]
-        [Route("Review/New/{qualificationVersionId}/qualification-funding-offers-outcome")]
-        public async Task<IActionResult> QualificationFundingOffersOutcome(Guid qualificationVersionId)
+        [Route("Review/New/{qualificationReference}/qualification-funding-offers-outcome")]
+        public async Task<IActionResult> QualificationFundingOffersOutcome(string qualificationReference)
         {
             try
             {
-                var review = await Send(new GetFeedbackForQualificationFundingByIdQuery(qualificationVersionId));
+                var qualificationVersions = await Send(new GetQualificationVersionsForQualificationByReferenceQuery(qualificationReference));
+                var latestQualificationVersion = qualificationVersions.QualificationVersionsList
+                                                                      .OrderByDescending(q => q.Version)
+                                                                      .FirstOrDefault();
+                var feedbackForQualificationFunding = await Send(new GetFeedbackForQualificationFundingByIdQuery(latestQualificationVersion.Id));
 
                 var model = new QualificationFundingsOffersOutcomeViewModel()
                 {
-                    QualificationVersionId = qualificationVersionId,
-                    Approved = review?.Approved,
-                    Comments = review.Comments,
+                    QualificationVersionId = latestQualificationVersion.Id,
+                    Approved = feedbackForQualificationFunding?.Approved,
+                    Comments = feedbackForQualificationFunding?.Comments,
                 };
 
                 return View(model);
