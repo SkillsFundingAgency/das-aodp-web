@@ -171,18 +171,23 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             try
             {
                 var qualificationVersions = await Send(new GetQualificationVersionsForQualificationByReferenceQuery(qualificationReference));
-                var latestQualificationVersion = qualificationVersions.QualificationVersionsList
-                                                                      .OrderByDescending(q => q.Version)
-                                                                      .FirstOrDefault();
-                var feedbackForQualificationFunding = await Send(new GetFeedbackForQualificationFundingByIdQuery(latestQualificationVersion.Id));
-
-                var model = new QualificationFundingsOffersOutcomeViewModel()
+                var model = new QualificationFundingsOffersOutcomeViewModel
                 {
-                    QualificationVersionId = latestQualificationVersion.Id,
-                    Approved = feedbackForQualificationFunding?.Approved,
-                    Comments = feedbackForQualificationFunding?.Comments,
+                    QualificationReference = qualificationReference
                 };
-
+                if (qualificationVersions != null &&  qualificationVersions.QualificationVersionsList.Count != 0 )
+                {
+                    var latestQualificationVersion = qualificationVersions.QualificationVersionsList
+                                                      .OrderByDescending(q => q.Version)
+                                                      .FirstOrDefault();
+                    if(latestQualificationVersion != null)
+                    {
+                        var feedbackForQualificationFunding = await Send(new GetFeedbackForQualificationFundingByIdQuery(latestQualificationVersion.Id));
+                        model.QualificationVersionId = latestQualificationVersion.Id;
+                        model.Approved = feedbackForQualificationFunding?.Approved;
+                        model.Comments = feedbackForQualificationFunding?.Comments;
+                    }
+                }
                 return View(model);
             }
             catch
