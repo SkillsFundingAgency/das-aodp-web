@@ -3,6 +3,8 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Models.Application;
+using SFA.DAS.AODP.Models.Qualifications;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.User;
@@ -323,6 +325,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
                 var model = QualificationFundingsOffersSummaryViewModel.Map(review, offers);
                 model.QualificationVersionId = qualificationVersionId;
+                model.QualificationReference = review.QualificationReference;
 
                 return View(model);
             }
@@ -331,6 +334,31 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 return Redirect("/Home/Error");
             }
         }
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
+        [HttpPost]
+        [Route("Review/New/{qualificationVersionId}/qualification-funding-offers-summary")]
+        public async Task<IActionResult> QualificationFundingOffersSummary(QualificationFundingsOffersSummaryViewModel model)
+        {
+            try
+            {
+                var actionTypeId = new Guid(ActionTypeDisplay.Dictionary[ActionType.NoActionRequired]);
+                var userDisplayName = _userHelperService.GetUserDisplayName();
+                await Send(new CreateQualificationDiscussionHistoryCommand()
+                {
+                    QualificationVersionId = model.QualificationVersionId,
+                    ActionTypeId = actionTypeId,
+                    UserDisplayName = userDisplayName,
+                });
+
+                return RedirectToAction(nameof(QualificationFundingOffersConfirmation), new { qualificationReference = model.QualificationReference });
+
+            }
+            catch
+            {
+                return Redirect("/Home/Error");
+            }
+        }
+
 
         [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
         [HttpGet]

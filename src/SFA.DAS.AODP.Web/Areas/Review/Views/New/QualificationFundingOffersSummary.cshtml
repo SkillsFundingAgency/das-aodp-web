@@ -22,7 +22,9 @@
         </div>
     </div>
 }
-
+<form asp-controller="New" asp-action="QualificationFundingOffersSummary" method="post">
+    @Html.HiddenFor(m => m.QualificationVersionId)
+    @Html.HiddenFor(m => m.QualificationReference)
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
 
@@ -145,16 +147,9 @@
                 }
             </govuk-summary-list>
             </<div>
-
-                <div class="govuk-grid-row">
-                    <a class="govuk-button" asp-action="QualificationFundingOffersConfirmation" asp-controller="New" asp-route-qualificationReference="@Model.QualificationReference">
-                        Confirm
-                    </a>
-                </div>
-
-
-
+            <govuk-button type="submit">Confirm</govuk-button>
             </div>
         </div>
     </div>
 </div>
+</form>

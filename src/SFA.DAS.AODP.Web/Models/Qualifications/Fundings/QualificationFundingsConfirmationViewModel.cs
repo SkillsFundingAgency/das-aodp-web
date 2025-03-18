@@ -2,6 +2,7 @@
 {
     public class QualificationFundingsConfirmationViewModel
     {
+        public Guid QualificationVersionId { get; set; }
         public string? QualificationReference { get; set; }
     }
 }
