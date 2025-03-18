@@ -1,4 +1,5 @@
 ﻿@using SFA.DAS.AODP.Models.Application
+@using SFA.DAS.AODP.Models.Forms
 @using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
 @model ApplicationReadOnlyDetailsViewModel;
 
@@ -55,7 +56,82 @@
 
                                                     @foreach (var answer in question.QuestionAnswers)
                                                     {
-                                                        <input class="govuk-input govuk-input--width-30" name="Answer" type="text" spellcheck="false" value="@answer.FinalAnswer" disabled="" pattern="[0-9]*" inputmode="text" readonly>
+
+                                                        @if (question.Type == QuestionType.Text.ToString())
+                                                        {
+                                                            <input class="govuk-input govuk-input--width-30"
+                                                                   name="Answer" 
+                                                                   type="text" 
+                                                                   spellcheck="false" 
+                                                                   value="@answer.FinalAnswer" 
+                                                                   disabled=""
+                                                                   inputmode="text" 
+                                                                   readonly>
+                                                        }
+
+                                                        else if (question.Type == QuestionType.TextArea.ToString())
+                                                        {
+                                                            <textarea class="govuk-textarea"
+                                                                   name="Answer"
+                                                                   type="text"
+                                                                   spellcheck="false"
+                                                                   value="@answer.FinalAnswer"
+                                                                   disabled=""
+                                                                   inputmode="text"
+                                                                   readonly></textarea>
+                                                        }
+                                                        @if (question.Type == QuestionType.Number.ToString())
+                                                        {
+                                                            <input class="govuk-input govuk-input--width-20"
+                                                                   id=""
+                                                                   type="number"
+                                                                   inputmode="numeric"
+                                                                   value="@answer.FinalAnswer"
+                                                                   disabled=""
+                                                                   readonly>
+                                                        }
+                                                        else if (question.Type == QuestionType.Radio.ToString())
+                                                        {
+                                                            <div class="govuk-radios" data-module="govuk-radios">
+
+                                                        @*         @foreach (var option in Model.Options ?? [])
+                                                                { *@
+                                                                    <div class="govuk-radios__item" id="">
+                                                                    <input class="govuk-radios__input" id="" type="radio" value="@answer.FinalAnswer">
+                                                                    </div>
+                                                              @*   } *@
+                                                            </div>
+                                                        }
+                                                        else if (question.Type == QuestionType.MultiChoice.ToString())
+                                                        {
+                                                            <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+@* 
+                                                                @foreach (var option in Model.Options ?? [])
+                                                                {
+                                                                    <div class="govuk-checkboxes__item" id="@htmlId">
+                                                                        <input class="govuk-checkboxes__input" id="@htmlId-@option.Id" type="checkbox" value="@option.Id">
+                                                                        <label class="govuk-label govuk-checkboxes__label" for="@htmlId-@option.Id">
+                                                                            @option.Value
+                                                                        </label>
+                                                                    </div>
+                                                                } *@
+                                                            </div>
+                                                        }
+                                                        else if (question.Type == QuestionType.Date.ToString())
+                                                        {
+@* 
+                                                            var dateInputModel = new GdsDateInputViewModel()
+                                                            {
+                                                                Id = Model.Id.ToString(),
+                                                            };
+ *@
+@*                                                             await Html.RenderPartialAsync("GdsComponents/_GdsDateInput", dateInputModel); *@
+                                                        }
+                                                        else if (question.Type == QuestionType.File.ToString())
+                                                        {
+                                                            <input class="govuk-file-upload" id="" type="file" multiple>
+                                                        }
+
                                                     }
 
                                                 </li>
