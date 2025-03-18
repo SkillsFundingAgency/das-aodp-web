@@ -49,7 +49,7 @@ public class GetApplicationReadOnlyDetailsByIdQueryResponse
             { QuestionType.TextArea, answer => answer.AnswerTextValue ?? "No Answer" },
             { QuestionType.Number, answer => answer.AnswerNumberValue?.ToString() ?? "No Answer" },
             { QuestionType.Date, answer => answer.AnswerDateValue ?? "No Answer" },
-            { QuestionType.MultiChoice, answer => answer.AnswerChoiceValue ?? "No Answer" },
+            { QuestionType.MultiChoice, answer => answer.AnswerTextValue ?? "No Answer" },
             { QuestionType.Radio, answer => answer.AnswerChoiceValue ?? "No Answer" },
             { QuestionType.File, answer => "File TODO" }
             };
