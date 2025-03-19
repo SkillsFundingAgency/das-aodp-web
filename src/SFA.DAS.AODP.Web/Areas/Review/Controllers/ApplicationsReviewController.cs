@@ -1,8 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SFA.DAS.AODP.Application.Commands.Application.Application;
-using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview;
@@ -14,7 +12,6 @@ using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 {
-
     [Area("Review")]
     [Authorize(Policy = PolicyConstants.IsReviewUser)]
     public class ApplicationsReviewController : ControllerBase

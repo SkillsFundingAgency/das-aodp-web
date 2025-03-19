@@ -105,7 +105,7 @@ internal class Program
         endpoints.MapAreaControllerRoute(name: "Apply",
                                        areaName: "Apply",
                                        pattern: "Apply",
-                                       defaults: new { area = "Apply", controller = "Home", action = "Index" }).AllowAnonymous();
+                                       defaults: new { area = "Apply", controller = "Applications", action = "Index" }).AllowAnonymous();
 
         endpoints.MapAreaControllerRoute(name: "Admin",
                                areaName: "Admin",
@@ -116,9 +116,13 @@ internal class Program
                       pattern: "Admin/Import/{action=Index}/{id?}",
                       defaults: new { area = "Admin", controller = "Import" }).RequireAuthorization(PolicyConstants.IsAdminImportUser);
 
+        endpoints.MapControllerRoute(name: "AdminDefaultForOutput",
+                    pattern: "Admin/OutputFile/{action=Index}/{id?}",
+                    defaults: new { area = "Admin", controller = "OutputFile" }).RequireAuthorization(PolicyConstants.IsAdminImportUser);
+
         endpoints.MapControllerRoute(name: "AdminDefaultForForms",
-                                    pattern: "Admin/Forms/{action=index}/{id?}",
-                                    defaults: new { area = "Admin", controller = "Forms" }).RequireAuthorization(PolicyConstants.IsAdminFormsUser);
+                    pattern: "Admin/Forms/{action=index}/{id?}",
+                    defaults: new { area = "Admin", controller = "Forms" }).RequireAuthorization(PolicyConstants.IsAdminFormsUser);
 
 
         endpoints.MapDefaultControllerRoute();
