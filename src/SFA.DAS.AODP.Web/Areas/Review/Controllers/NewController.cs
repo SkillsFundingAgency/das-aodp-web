@@ -353,6 +353,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 await Send(new CreateQualificationDiscussionHistoryCommand()
                 {
                     QualificationVersionId = model.QualificationVersionId,
+                    QualificationReference = model.QualificationReference,
                     UserDisplayName = _userHelperService.GetUserDisplayName(),
                     ActionTypeId = new Guid(ActionTypeDisplay.Dictionary[ActionType.ActionRequired])
                 });
@@ -437,7 +438,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             return new QualificationDetailsViewModel
             {
                 Id = response.Id,
-                QualificationVersionId = response.QualificationVersionId,
                 Status = response.Status,
                 Priority = response.Priority,
                 Changes = response.Changes,
