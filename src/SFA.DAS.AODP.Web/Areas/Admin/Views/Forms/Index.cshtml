@@ -56,6 +56,8 @@
                                 Move Down
                             </button>
                         }
+                        <a class="govuk-button govuk-button--warning" asp-action="Delete" asp-controller="Forms" asp-route-formVersionId="@(item.DraftVersionId ?? item.PublishedVersionId)">Delete form</a>
+
                     </td>
                 </tr>
             }

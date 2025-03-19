@@ -4,23 +4,23 @@ using SFA.DAS.AODP.Domain.Interfaces;
 
 namespace SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
 
-public class DeleteFormVersionCommandHandler : IRequestHandler<DeleteFormVersionCommand, BaseMediatrResponse<DeleteFormVersionCommandResponse>>
+public class DeleteFormCommandHandler : IRequestHandler<DeleteFormCommand, BaseMediatrResponse<EmptyResponse>>
 {
     private readonly IApiClient _apiClient;
 
-    public DeleteFormVersionCommandHandler(IApiClient apiClient)
+    public DeleteFormCommandHandler(IApiClient apiClient)
     {
         _apiClient = apiClient;
     }
 
-    public async Task<BaseMediatrResponse<DeleteFormVersionCommandResponse>> Handle(DeleteFormVersionCommand request, CancellationToken cancellationToken)
+    public async Task<BaseMediatrResponse<EmptyResponse>> Handle(DeleteFormCommand request, CancellationToken cancellationToken)
     {
-        var response = new BaseMediatrResponse<DeleteFormVersionCommandResponse>();
+        var response = new BaseMediatrResponse<EmptyResponse>();
         response.Success = false;
 
         try
         {
-            var apiRequest = new DeleteFormVersionApiRequest(request.FormVersionId);
+            var apiRequest = new DeleteFormApiRequest(request.FormId);
             await _apiClient.Delete(apiRequest);
             response.Success = true;
         }
