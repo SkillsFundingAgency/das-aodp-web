@@ -17,7 +17,7 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers.FormBuilder;
 [Area("Admin")]
 public class FormsController : ControllerBase
 {
-    public enum UpdateKeys { FormUpdated, FormPublished }
+    public enum UpdateKeys { FormUpdated, FormPublished, FormDeleted }
 
     public FormsController(IMediator mediator, ILogger<FormsController> logger) : base(mediator, logger)
     { }
@@ -30,6 +30,7 @@ public class FormsController : ControllerBase
         {
             var query = new GetAllFormVersionsQuery();
             var response = await Send(query);
+            ShowNotificationIfKeyExists(UpdateKeys.FormDeleted.ToString(), ViewNotificationMessageType.Success, "The form has been deleted.");
 
             var viewModel = FormVersionListViewModel.Map(response);
 
@@ -226,30 +227,26 @@ public class FormsController : ControllerBase
     [Route("/admin/forms/{formVersionId}/delete")]
     public async Task<IActionResult> Delete(Guid formVersionId)
     {
-        try
+        var query = new GetFormVersionByIdQuery(formVersionId);
+        var response = await Send(query);
+        return View(new DeleteFormViewModel()
         {
-            var query = new GetFormVersionByIdQuery(formVersionId);
-            var response = await Send(query);
-            return View(new DeleteFormViewModel()
-            {
-                FormVersionId = formVersionId,
-                Title = response.Title
-            });
-        }
-        catch
-        {
-            return Redirect("/Home/Error");
-        }
+            FormVersionId = formVersionId,
+            FormId = response.FormId,
+            Title = response.Title
+        });
     }
 
     [HttpPost]
     [Route("/admin/forms/{formVersionId}/delete")]
-    public async Task<IActionResult> DeleteConfirmed(DeleteFormViewModel model)
+    public async Task<IActionResult> Delete(DeleteFormViewModel model)
     {
         try
         {
-            var command = new DeleteFormVersionCommand(model.FormVersionId);
+            var command = new DeleteFormCommand(model.FormId);
             await Send(command);
+
+            TempData[UpdateKeys.FormDeleted.ToString()] = true;
             return RedirectToAction(nameof(Index));
         }
         catch

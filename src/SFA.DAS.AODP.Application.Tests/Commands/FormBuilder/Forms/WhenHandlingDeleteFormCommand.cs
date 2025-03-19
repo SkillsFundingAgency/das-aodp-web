@@ -6,14 +6,14 @@ using SFA.DAS.AODP.Domain.Interfaces;
 
 namespace SFA.DAS.AODP.Application.Tests.Commands.FormBuilder.Forms
 {
-    public class WhenHandlingDeleteFormVersionCommand
+    public class WhenHandlingDeleteFormCommand
     {
         private readonly Fixture _fixture = new();
         private readonly Mock<IApiClient> _apiClient = new();
-        private readonly DeleteFormVersionCommandHandler _handler;
+        private readonly DeleteFormCommandHandler _handler;
 
 
-        public WhenHandlingDeleteFormVersionCommand()
+        public WhenHandlingDeleteFormCommand()
         {
             _handler = new(_apiClient.Object);
         }
@@ -23,18 +23,18 @@ namespace SFA.DAS.AODP.Application.Tests.Commands.FormBuilder.Forms
         {
             // Arrange
             var expectedResponse = _fixture
-                .Build<BaseMediatrResponse<DeleteFormVersionCommandResponse>>()
+                .Build<BaseMediatrResponse<EmptyResponse>>()
                 .With(w => w.Success, true)
                 .Create();
 
-            var request = _fixture.Create<DeleteFormVersionCommand>();
+            var request = _fixture.Create<DeleteFormCommand>();
 
             // Act
             var response = await _handler.Handle(request, default);
 
             // Assert
             _apiClient
-                .Verify(a => a.Delete(It.Is<DeleteFormVersionApiRequest>(r => r.FormVersionId == request.FormVersionId)));
+                .Verify(a => a.Delete(It.Is<DeleteFormApiRequest>(r => r.FormId == request.FormId)));
 
             Assert.True(response.Success);
             Assert.NotNull(response.Value);
@@ -45,9 +45,9 @@ namespace SFA.DAS.AODP.Application.Tests.Commands.FormBuilder.Forms
         {
             // Arrange
             var expectedException = _fixture.Create<Exception>();
-            var request = _fixture.Create<DeleteFormVersionCommand>();
+            var request = _fixture.Create<DeleteFormCommand>();
             _apiClient
-                .Setup(a => a.Delete(It.IsAny<DeleteFormVersionApiRequest>()))
+                .Setup(a => a.Delete(It.IsAny<DeleteFormApiRequest>()))
                 .ThrowsAsync(expectedException);
 
             // Act
