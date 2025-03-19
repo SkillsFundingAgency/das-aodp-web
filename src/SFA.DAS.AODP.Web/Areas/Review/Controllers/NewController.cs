@@ -214,12 +214,20 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 Title = response.Qual.QualificationName,
                 QualificationType = response.Type,
                 Level = response.Level,
-                ProposedChanges = response.ProposedChanges,
+                ProposedChanges = "none",
                 AgeGroup = response.AgeGroup,
-                Category = response.Category,
-                Subject = response.Subject,
-                SectorSubjectArea = response.SectorSubjectArea,
-                Comments = response.Comments
+                Category = "General Education",
+                Subject = response.Specialism,
+                SectorSubjectArea = response.Ssa,
+                Comments = "No Comment"
+                //           ProposedChanges = response.ProposedChanges,
+                //AgeGroup = response.AgeGroup,
+                //Category = response.Category,
+                //Subject = response.Subject,
+                //SectorSubjectArea = response.SectorSubjectArea,
+                //Comments = response.Comments
+
+
             };
         }
 
