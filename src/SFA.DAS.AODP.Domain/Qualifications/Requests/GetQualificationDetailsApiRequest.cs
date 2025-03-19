@@ -12,5 +12,5 @@ public class GetQualificationDetailsApiRequest : IGetApiRequest
         _status = status;   
     }
 
-    public string GetUrl => $"api/qualifications/{_status}/{_qualificationReference}";
+    public string GetUrl => $"api/qualifications/{_qualificationReference}";
 }

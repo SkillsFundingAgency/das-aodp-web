@@ -6,7 +6,7 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
 {
     public class QualificationDetailsViewModel
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string? Status { get; set; }
         [Required]
         public Guid? StatusId { get; set; }

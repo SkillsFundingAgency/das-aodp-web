@@ -174,7 +174,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 return Redirect("/Home/Error");
             }
 
-            var qualificationsResult = await Send(new GetChangedQualificationDetailsQuery { QualificationReference = qualificationReference, Status = status });
+            var qualificationsResult = await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference});
 
             var viewModel = MapToViewModel(qualificationsResult);
 
@@ -250,7 +250,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
         }
 
-        private static QualificationDetailsViewModel MapToViewModel(GetChangedQualificationDetailsResponse response)
+        private static QualificationDetailsViewModel MapToViewModel(GetQualificationDetailsQueryResponse response)
         {
             if (response == null)
             {
@@ -261,19 +261,19 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             {
                 Id = response.Id,
                 Status = response.Status,
-                Priority = response.Priority,
-                Changes = response.Changes,
-                QualificationReference = response.QualificationReference,
-                AwardingOrganisation = response.AwardingOrganisation,
-                Title = response.Title,
-                QualificationType = response.QualificationType,
+                Priority = "Not sure",
+                Changes = response.VersionFieldChanges,
+                QualificationReference = response.Qual.Qan,
+                AwardingOrganisation = response.Organisation.NameLegal,
+                Title = response.Qual.QualificationName,
+                QualificationType = response.Type,
                 Level = response.Level,
-                ProposedChanges = response.ProposedChanges,
+                ProposedChanges = "none",
                 AgeGroup = response.AgeGroup,
-                Category = response.Category,
-                Subject = response.Subject,
-                SectorSubjectArea = response.SectorSubjectArea,
-                Comments = response.Comments
+                Category = "General Education",
+                Subject = response.Specialism,
+                SectorSubjectArea = response.Ssa,
+                Comments = "No Comment"
             };
         }
 
