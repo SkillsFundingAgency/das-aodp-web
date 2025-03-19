@@ -12,6 +12,7 @@ using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.User;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
+using SFA.DAS.AODP.Infrastructure.File;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 {
@@ -26,11 +27,12 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         }
         private readonly IUserHelperService _userHelperService;
         private readonly UserType UserType;
-
-        public ApplicationsReviewController(ILogger<ApplicationsReviewController> logger, IMediator mediator, IUserHelperService userHelperService) : base(mediator, logger)
+        private readonly IFileService _fileService;
+        public ApplicationsReviewController(ILogger<ApplicationsReviewController> logger, IMediator mediator, IUserHelperService userHelperService, IFileService fileService) : base(mediator, logger)
         {
             _userHelperService = userHelperService;
             UserType = userHelperService.GetUserType();
+            _fileService = fileService;
         }
 
         [Route("review/application-reviews")]
@@ -556,8 +558,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             try
             {
                 var applicationId = await GetApplicationIdAsync(applicationReviewId);
-
-                var applicationDetails = await Send(new GetApplicationReadOnlyDetailsByIdQuery(applicationReviewId));
+                // basically, use the form preview endpoint, which lready has the QuestionIds and then make a call to get the Answers to those questionIds
+                //var blob = _fileService.GetFileAsync("files/test.docx");
+                var applicationDetails = await Send(new GetApplicationReadOnlyDetailsByIdQuery(applicationReviewId, applicationId));
                 
                 var vm = ApplicationReadOnlyDetailsViewModel.Map(applicationDetails);
                 vm.ApplicationReviewId = applicationReviewId;

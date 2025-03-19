@@ -71,14 +71,14 @@
 
                                                         else if (question.Type == QuestionType.TextArea.ToString())
                                                         {
-                                                            <textarea class="govuk-textarea"
+                                                            <input class="govuk-input govuk-input--width-30"
                                                                    name="Answer"
                                                                    type="text"
                                                                    spellcheck="false"
                                                                    value="@answer.FinalAnswer"
                                                                    disabled=""
                                                                    inputmode="text"
-                                                                   readonly></textarea>
+                                                                   readonly>
                                                         }
                                                         @if (question.Type == QuestionType.Number.ToString())
                                                         {
@@ -119,13 +119,14 @@
                                                         }
                                                         else if (question.Type == QuestionType.Date.ToString())
                                                         {
-@* 
-                                                            var dateInputModel = new GdsDateInputViewModel()
-                                                            {
-                                                                Id = Model.Id.ToString(),
-                                                            };
- *@
-@*                                                             await Html.RenderPartialAsync("GdsComponents/_GdsDateInput", dateInputModel); *@
+                                                            <input class="govuk-input govuk-input--width-20"
+                                                                   name="Answer"
+                                                                   type="text"
+                                                                   spellcheck="false"
+                                                                   value="@answer.FinalAnswer"
+                                                                   disabled=""
+                                                                   inputmode="text"
+                                                                   readonly>
                                                         }
                                                         else if (question.Type == QuestionType.File.ToString())
                                                         {

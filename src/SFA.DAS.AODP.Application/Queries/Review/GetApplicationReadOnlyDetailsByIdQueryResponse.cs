@@ -1,4 +1,5 @@
 ﻿using SFA.DAS.AODP.Models.Forms;
+using static SFA.DAS.AODP.Application.Queries.Review.GetApplicationReadOnlyDetailsByIdQueryResponse;
 
 namespace SFA.DAS.AODP.Application.Queries.Review;
 
@@ -39,29 +40,29 @@ public class GetApplicationReadOnlyDetailsByIdQueryResponse
         public string? AnswerChoiceValue { get; set; }
         public decimal? AnswerNumberValue { get; set; }
     }
+}
 
-    public static class AnswerSelector
-    {
-        private static readonly Dictionary<QuestionType, Func<QuestionAnswer, string>> _answerSelectors =
-            new()
-            {
+public static class AnswerSelector
+{
+    private static readonly Dictionary<QuestionType, Func<QuestionAnswer, string>> _answerSelectors =
+        new()
+        {
             { QuestionType.Text, answer => answer.AnswerTextValue ?? "No Answer" },
             { QuestionType.TextArea, answer => answer.AnswerTextValue ?? "No Answer" },
-            { QuestionType.Number, answer => answer.AnswerNumberValue?.ToString() ?? "No Answer" },
-            { QuestionType.Date, answer => answer.AnswerDateValue ?? "No Answer" },
+            { QuestionType.Number, answer => answer.AnswerNumberValue.HasValue ? Math.Floor(answer.AnswerNumberValue.Value).ToString() : "No Answer" },
+            { QuestionType.Date, answer => answer.AnswerDateValue != null ? DateTime.Parse(answer.AnswerDateValue).ToString("dd MMM yyyy"): "No Answer" },
             { QuestionType.MultiChoice, answer => answer.AnswerTextValue ?? "No Answer" },
             { QuestionType.Radio, answer => answer.AnswerChoiceValue ?? "No Answer" },
             { QuestionType.File, answer => "File TODO" }
-            };
+        };
 
-        public static string GetReadOnlyAnswer(QuestionAnswer answer, string questionType)
+    public static string GetReadOnlyAnswer(QuestionAnswer answer, string questionType)
+    {
+        if (!Enum.TryParse(questionType, out QuestionType type) || !_answerSelectors.ContainsKey(type))
         {
-            if (!Enum.TryParse(questionType, out QuestionType type) || !_answerSelectors.ContainsKey(type))
-            {
-                return "Invalid Question Type";
-            }
-
-            return _answerSelectors[type](answer);
+            return "Invalid Question Type";
         }
+
+        return _answerSelectors[type](answer);
     }
 }
