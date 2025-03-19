@@ -89,6 +89,7 @@ public class FormsController : ControllerBase
     {
         try
         {
+            if (!ModelState.IsValid) return View(viewModel);
             var command = new CreateFormVersionCommand
             {
                 Title = viewModel.Name,
