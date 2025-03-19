@@ -1,0 +1,36 @@
+﻿@using SFA.DAS.AODP.Web.Models.FormBuilder.Routing
+@model DeleteRouteViewModel
+
+@{
+    ViewData["Title"] = "Delete route";
+}
+
+<govuk-back-link asp-action="Configure" asp-controller="Routes" asp-route-questionId="@Model.QuestionId" asp-route-pageId="@Model.PageId" asp-route-sectionId="@Model.SectionId" asp-route-formVersionId="@Model.FormVersionId">
+    Back to route
+</govuk-back-link>
+
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
+<h1 class="govuk-heading-l">Delete route?</h1>
+
+
+<form asp-action="Delete" method="post">
+    @Html.HiddenFor(m => m.FormVersionId)
+    @Html.HiddenFor(m => m.SectionId)
+    @Html.HiddenFor(m => m.PageId)
+    @Html.HiddenFor(m => m.QuestionId)
+
+    <govuk-warning-text icon-fallback-text="Warning">
+        Are you sure you want to delete the route?
+    </govuk-warning-text>
+
+    <div class="govuk-button-group">
+
+        <govuk-button class="govuk-button--warning" type="submit">
+            Delete
+        </govuk-button>
+
+        <a class="govuk-button govuk-button--secondary" asp-action="Configure" asp-controller="Routes" asp-route-questionId="@Model.QuestionId" asp-route-pageId="@Model.PageId" asp-route-sectionId="@Model.SectionId" asp-route-formVersionId="@Model.FormVersionId">Cancel</a>
+
+    </div>
+</form>
