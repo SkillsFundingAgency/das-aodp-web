@@ -37,10 +37,10 @@ namespace SFA.DAS.AODP.Application.Tests.Queries.Qualifications
         public async Task Then_The_CommandResult_Is_Returned_As_Expected()
         {
             // Arrange
-            var expectedResponse = _fixture.Create<GetFeedbackForQualificationFundingByIdQueryResponse>();
+            var expectedResponse = _fixture.Create<BaseMediatrResponse<GetFeedbackForQualificationFundingByIdQueryResponse>>();
             var request = _fixture.Create<GetFeedbackForQualificationFundingByIdQuery>();
             _apiClientMock
-                .Setup(a => a.Get<GetFeedbackForQualificationFundingByIdQueryResponse>(It.IsAny<GetFeedbackForQualificationFundingByIdApiRequest>()))
+                .Setup(a => a.Get<BaseMediatrResponse<GetFeedbackForQualificationFundingByIdQueryResponse>>(It.IsAny<GetFeedbackForQualificationFundingByIdApiRequest>()))
                 .ReturnsAsync(expectedResponse);
 
             // Act
@@ -48,12 +48,12 @@ namespace SFA.DAS.AODP.Application.Tests.Queries.Qualifications
 
             // Assert
             _apiClientMock
-                .Verify(a => a.Get<GetFeedbackForQualificationFundingByIdQueryResponse>(It.Is<GetFeedbackForQualificationFundingByIdApiRequest>(r => r.QualificationVersionId == request.QualificationVersionId)));
+                .Verify(a => a.Get<BaseMediatrResponse<GetFeedbackForQualificationFundingByIdQueryResponse>>(It.Is<GetFeedbackForQualificationFundingByIdApiRequest>(r => r.QualificationVersionId == request.QualificationVersionId)));
 
             Assert.NotNull(response);
             Assert.True(response.Success);
             Assert.NotNull(response.Value);
-            Assert.Equal(expectedResponse, response.Value);
+            Assert.Equal(expectedResponse.Value, response.Value);
         }
 
         [Fact]
@@ -63,7 +63,7 @@ namespace SFA.DAS.AODP.Application.Tests.Queries.Qualifications
             var expectedException = _fixture.Create<Exception>();
             var request = _fixture.Create<GetFeedbackForQualificationFundingByIdQuery>();
             _apiClientMock
-                .Setup(a => a.Get<GetFeedbackForQualificationFundingByIdQueryResponse>(It.IsAny<GetFeedbackForQualificationFundingByIdApiRequest>()))
+                .Setup(a => a.Get<BaseMediatrResponse<GetFeedbackForQualificationFundingByIdQueryResponse>>(It.IsAny<GetFeedbackForQualificationFundingByIdApiRequest>()))
                 .ThrowsAsync(expectedException);
 
             // Act
