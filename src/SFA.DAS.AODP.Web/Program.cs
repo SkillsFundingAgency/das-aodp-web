@@ -66,15 +66,15 @@ internal class Program
 
         app.UseStatusCodePagesWithRedirects("/Error/{0}");
         // Configure the HTTP request pipeline.
-        if (!app.Environment.IsDevelopment())
+        if (app.Environment.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
         }
         else
         {
             app
-                .UseHsts()
-                .UseExceptionHandler("/Home/Error");
+                .UseExceptionHandler("/Home/Error")
+                .UseHsts();
         }
 
         app
