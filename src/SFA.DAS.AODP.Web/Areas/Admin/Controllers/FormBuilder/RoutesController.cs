@@ -81,8 +81,8 @@ public class RoutesController : ControllerBase
                 {
                     FormVersionId = model.FormVersionId
                 };
-                var response = await _mediator.Send(query);
-                var viewModel = CreateRouteChooseSectionAndPageViewModel.MapToViewModel(response.Value, model.FormVersionId);
+                var response = await Send(query);
+                var viewModel = CreateRouteChooseSectionAndPageViewModel.MapToViewModel(response, model.FormVersionId);
                 viewModel.ChosenSectionId = model.ChosenSectionId;
                 viewModel.ChosenPageId = model.ChosenPageId;
                 return View(viewModel);

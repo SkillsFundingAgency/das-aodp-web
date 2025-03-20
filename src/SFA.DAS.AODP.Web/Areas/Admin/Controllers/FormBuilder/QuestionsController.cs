@@ -154,7 +154,7 @@ public class QuestionsController : ControllerBase
 
 
             var command = EditQuestionViewModel.MapToCommand(model);
-            await _mediator.Send(command);
+            await Send(command);
 
 
             if (model.AdditionalActions?.SaveAndExit == true)
@@ -194,8 +194,8 @@ public class QuestionsController : ControllerBase
             QuestionId = questionId,
             SectionId = sectionId
         };
-        var routesResponse = await _mediator.Send(routesQuery);
-        if (routesResponse.Value.Routes.Any())
+        var routesResponse = await Send(routesQuery);
+        if (routesResponse.Routes.Any())
         {
             ModelState.AddModelError("", "There are routes associated with this question");
         }

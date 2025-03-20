@@ -73,8 +73,8 @@ internal class Program
         else
         {
             app
-                .UseHsts()
-                .UseExceptionHandler("/Home/Error");
+                .UseExceptionHandler("/Home/Error")
+                .UseHsts();
         }
 
         app
