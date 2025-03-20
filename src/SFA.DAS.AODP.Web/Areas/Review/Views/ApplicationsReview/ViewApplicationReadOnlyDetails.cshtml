@@ -114,16 +114,21 @@
                                                         else if (question.Type == QuestionType.MultiChoice.ToString())
                                                         {
                                                             <div class="govuk-checkboxes" data-module="govuk-checkboxes">
-@* 
-                                                                @foreach (var option in Model.Options ?? [])
+                                                                @foreach (var option in question.QuestionOptions ?? new List<ApplicationReadOnlyDetailsViewModel.QuestionOption>())
                                                                 {
-                                                                    <div class="govuk-checkboxes__item" id="@htmlId">
-                                                                        <input class="govuk-checkboxes__input" id="@htmlId-@option.Id" type="checkbox" value="@option.Id">
-                                                                        <label class="govuk-label govuk-checkboxes__label" for="@htmlId-@option.Id">
+                                                                    <div class="govuk-checkboxes__item">
+                                                                        <input 
+                                                                            class="govuk-checkboxes__input"
+                                                                            id="multi_@option.Value"
+                                                                            type="checkbox" 
+                                                                            value="@option.Value"
+                                                                            disabled 
+                                                                            @(option.Selected ? "checked" : "")>
+                                                                        <label class="govuk-label govuk-checkboxes__label" for="multi_@option.Value">
                                                                             @option.Value
                                                                         </label>
                                                                     </div>
-                                                                } *@
+                                                                }
                                                             </div>
                                                         }
                                                         else if (question.Type == QuestionType.Date.ToString())

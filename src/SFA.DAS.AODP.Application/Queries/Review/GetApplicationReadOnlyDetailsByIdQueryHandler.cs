@@ -3,6 +3,7 @@ using SFA.DAS.AODP.Application.Queries.Application.Form;
 using SFA.DAS.AODP.Domain.Application.Form;
 using SFA.DAS.AODP.Domain.Application.Review;
 using SFA.DAS.AODP.Domain.Interfaces;
+using SFA.DAS.AODP.Models.Forms;
 
 namespace SFA.DAS.AODP.Application.Queries.Review;
 
@@ -14,7 +15,8 @@ public partial class GetApplicationReadOnlyDetailsByIdQueryHandler : IRequestHan
         _apiClient = apiClient;
     }
 
-    public async Task<BaseMediatrResponse<GetApplicationReadOnlyDetailsByIdQueryResponse>> Handle(GetApplicationReadOnlyDetailsByIdQuery request, CancellationToken cancellationToken)
+    public async Task<BaseMediatrResponse<GetApplicationReadOnlyDetailsByIdQueryResponse>> Handle(
+    GetApplicationReadOnlyDetailsByIdQuery request, CancellationToken cancellationToken)
     {
         var response = new BaseMediatrResponse<GetApplicationReadOnlyDetailsByIdQueryResponse>
         {
@@ -55,39 +57,8 @@ public partial class GetApplicationReadOnlyDetailsByIdQueryHandler : IRequestHan
                                     Title = q.Title,
                                     Type = q.Type,
                                     Required = q.Required,
-                                    QuestionAnswers = matchingAnswers.SelectMany(qa => qa.QuestionAnswers ?? new List<GetApplicationQuestionAnswersByIdQueryResponse.QuestionAnswer>())
-                                        .Select(qa => new GetApplicationReadOnlyDetailsByIdQueryResponse.QuestionAnswer
-                                        {
-                                            AnswerTextValue = qa.AnswerTextValue,
-                                            AnswerDateValue = qa.AnswerDateValue,
-                                            AnswerChoiceValue = qa.AnswerChoiceValue,
-                                            AnswerNumberValue = qa.AnswerNumberValue
-                                        }).ToList(),
-                                    QuestionOptions = q.QuestionOptions.Select(option =>
-                                    {
-                                        var optionId = option.Id;
-                                        var selected = false;
-
-                                        foreach (var qa in matchingAnswers.SelectMany(qa => qa.QuestionAnswers ?? new List<GetApplicationQuestionAnswersByIdQueryResponse.QuestionAnswer>()))
-                                        {
-                                            var answerValue = qa.AnswerChoiceValue;
-                                            Guid answerGuid;
-                                            if (!string.IsNullOrEmpty(answerValue) && Guid.TryParse(answerValue, out answerGuid))
-                                            {
-                                                if (answerGuid == optionId)
-                                                {
-                                                    selected = true;
-                                                    break;
-                                                }
-                                            }
-                                        }
-
-                                        return new GetApplicationReadOnlyDetailsByIdQueryResponse.QuestionOption
-                                        {
-                                            Value = option.Value,
-                                            Selected = selected
-                                        };
-                                    }).ToList()
+                                    QuestionAnswers = ExtractQuestionAnswers(matchingAnswers),
+                                    QuestionOptions = ExtractQuestionOptions(q, matchingAnswers)
                                 };
                             }).ToList()
                         }).ToList()
@@ -104,6 +75,68 @@ public partial class GetApplicationReadOnlyDetailsByIdQueryHandler : IRequestHan
         }
 
         return response;
+    }
+
+    private List<GetApplicationReadOnlyDetailsByIdQueryResponse.QuestionAnswer> ExtractQuestionAnswers(
+       List<GetApplicationQuestionAnswersByIdQueryResponse.Question> matchingAnswers)
+    {
+        return matchingAnswers.SelectMany(qa => qa.QuestionAnswers ?? new List<GetApplicationQuestionAnswersByIdQueryResponse.QuestionAnswer>())
+            .Select(qa => new GetApplicationReadOnlyDetailsByIdQueryResponse.QuestionAnswer
+            {
+                AnswerTextValue = qa.AnswerTextValue,
+                AnswerDateValue = qa.AnswerDateValue,
+                AnswerChoiceValue = qa.AnswerChoiceValue,
+                AnswerNumberValue = qa.AnswerNumberValue
+            }).ToList();
+    }
+
+    private List<GetApplicationReadOnlyDetailsByIdQueryResponse.QuestionOption> ExtractQuestionOptions(
+        GetFormPreviewByIdQueryResponse.Question q,
+        List<GetApplicationQuestionAnswersByIdQueryResponse.Question> matchingAnswers)
+    {
+        return q.QuestionOptions.Select(option =>
+        {
+            var optionId = option.Id;
+            var selected = false;
+
+            foreach (var qa in matchingAnswers.SelectMany(qa => qa.QuestionAnswers ?? new List<GetApplicationQuestionAnswersByIdQueryResponse.QuestionAnswer>()))
+            {
+                var answerValue = qa.AnswerChoiceValue;
+
+                if (!string.IsNullOrEmpty(answerValue))
+                {
+                    if (q.Type == QuestionType.MultiChoice.ToString())
+                    {
+                        var selectedGuids = answerValue
+                            .Split(',')
+                            .Select(value => Guid.TryParse(value.Trim(), out var parsedGuid) ? parsedGuid : (Guid?)null)
+                            .Where(guid => guid.HasValue)
+                            .Select(guid => guid.Value)
+                            .ToList();
+
+                        if (selectedGuids.Contains(optionId))
+                        {
+                            selected = true;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        if (Guid.TryParse(answerValue, out var answerGuid) && answerGuid == optionId)
+                        {
+                            selected = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return new GetApplicationReadOnlyDetailsByIdQueryResponse.QuestionOption
+            {
+                Value = option.Value,
+                Selected = selected
+            };
+        }).ToList();
     }
 }
 
