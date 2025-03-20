@@ -150,10 +150,16 @@
                                                                         @foreach (var file in question.Files)
                                                                         {
                                                                             <li>
-                                                                                <span class="govuk-file-name">@file.FileName</span>
-                                                                                <a href="@file.FullPath" class="govuk-button govuk-button--warning" download>
-                                                                                    Download
-                                                                                </a>
+                                                                                <span class="govuk-file-name">@file.FileDisplayName</span>
+
+                                                                                <form method="post" asp-controller="ApplicationReviews" asp-action="ApplicationFileDownload">
+                                                                                    @Html.HiddenFor(m => m.ApplicationReviewId)
+                                                                                    <input type="hidden" name="fileName" value="@file.FileDisplayName" />
+                                                                                    <input type="hidden" name="fullPath" value="@file.FullPath" />
+                                                                                    <button type="submit" class="govuk-button govuk-button--warning">
+                                                                                        Download
+                                                                                    </button>
+                                                                                </form>
                                                                             </li>
                                                                         }
                                                                     </ul>
@@ -164,6 +170,7 @@
                                                                 }
                                                             </div>
                                                         }
+
 
 
                                                     }

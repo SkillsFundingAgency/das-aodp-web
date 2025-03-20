@@ -572,6 +572,21 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
         }
 
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
+        [HttpPost]
+        [Route("review/application-reviews/{applicationReviewId}/files/{fileName}/download")]
+        public async Task<IActionResult> ApplicationFileDownload([FromRoute] string applicationReviewId, [FromRoute] string fileName, string fullPath)
+        {
+            var fileStream = await _fileService.OpenReadStreamAsync(fullPath);
+
+            if (fileStream == null)
+            {
+                return NotFound("File not found");
+            }
+
+            return File(fileStream, "application/octet-stream", fileName);
+        }
+
         private async Task<Guid> GetApplicationIdAsync(Guid applicationReviewId)
         {
             var shared = await Send(new GetApplicationReviewSharingStatusByIdQuery(applicationReviewId));
