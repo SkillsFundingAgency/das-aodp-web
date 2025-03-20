@@ -1,5 +1,4 @@
 ﻿using SFA.DAS.AODP.Application.Queries.Review;
-using SFA.DAS.AODP.Infrastructure.File;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview;
 
@@ -33,7 +32,7 @@ public class ApplicationReadOnlyDetailsViewModel
         public bool Required { get; set; }
         public List<QuestionOption> QuestionOptions { get; set; } = new List<QuestionOption>();
         public List<QuestionAnswer> QuestionAnswers { get; set; } = new List<QuestionAnswer>();
-        public List<UploadedBlob>? Files { get; set; }
+        public List<File>? Files { get; set; }
     }
 
     public class QuestionOption
@@ -45,6 +44,14 @@ public class ApplicationReadOnlyDetailsViewModel
     public class QuestionAnswer
     {
         public string? FinalAnswer { get; set; }
+    }
+
+    public class File
+    {
+        public string FileDisplayName { get; set; }
+        public string FullPath { get; set; }
+        public string FileName { get; set; }
+        public string Extension { get; set; }
     }
 
     public static ApplicationReadOnlyDetailsViewModel Map(GetApplicationReadOnlyDetailsByIdQueryResponse response)
@@ -78,7 +85,13 @@ public class ApplicationReadOnlyDetailsViewModel
                             {
                                 FinalAnswer = AnswerSelector.GetReadOnlyAnswer(answer, question.Type)
                             }).ToList(),
-                            Files = question.Files
+                            Files = question.Files?.Select(file => new File 
+                            {
+                                FileName = file.FileName,
+                                FullPath = file.FullPath,
+                                Extension = file.Extension,
+                                FileDisplayName = response.ApplicationId.ToString() + "/" + file.FileName
+                            }).ToList()
                         }).ToList()
                     }).ToList()
                 }).ToList()
