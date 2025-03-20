@@ -19,9 +19,9 @@ public class GetFeedbackForQualificationFundingByIdQueryHandler : IRequestHandle
 
         try
         {
-            var result = await _apiCLient.Get< BaseMediatrResponse<GetFeedbackForQualificationFundingByIdQueryResponse>>(new GetFeedbackForQualificationFundingByIdApiRequest(request.QualificationVersionId));
+            var result = await _apiCLient.Get<GetFeedbackForQualificationFundingByIdQueryResponse>(new GetFeedbackForQualificationFundingByIdApiRequest(request.QualificationVersionId));
 
-            response.Value = result.Value;
+            response.Value = result;
 
             response.Success = true;
         }

@@ -19,9 +19,9 @@ public class GetQualificationVersionsForQualificationByReferenceQueryHandler : I
 
         try
         {
-            var result = await _apiCLient.Get< BaseMediatrResponse<GetQualificationVersionsForQualificationByReferenceQueryResponse>>(new GetQualificationVersionsForQualificationByReferenceApiRequest(request.QualificationReference));
+            var result = await _apiCLient.Get< GetQualificationVersionsForQualificationByReferenceQueryResponse>(new GetQualificationVersionsForQualificationByReferenceApiRequest(request.QualificationReference));
 
-            response.Value = result.Value;
+            response.Value = result;
 
             response.Success = true;
         }
