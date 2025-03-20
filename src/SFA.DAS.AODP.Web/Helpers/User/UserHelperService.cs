@@ -14,16 +14,21 @@ namespace SFA.DAS.AODP.Web.Helpers.User
             _http = http;
         }
 
+        public List<string> GetUserRoles()
+        {
+            return GetUserClaims("rolecode").Select(r => r.Value).ToList();
+        }
+
         public UserType GetUserType()
         {
-            var roles = GetUserClaims("rolecode");
+            var roles = GetUserRoles();
 
             foreach (var role in roles)
             {
-                if(RoleConstants.AoRoles.Contains(role.Value)) return UserType.AwardingOrganisation;
-                if(RoleConstants.IfateRoles.Contains(role.Value)) return UserType.SkillsEngland;
-                if(RoleConstants.OfqualRoles.Contains(role.Value)) return UserType.Ofqual;
-                if(RoleConstants.QfauRoles.Contains(role.Value)) return UserType.Qfau;
+                if(RoleConstants.AoRoles.Contains(role)) return UserType.AwardingOrganisation;
+                if(RoleConstants.IfateRoles.Contains(role)) return UserType.SkillsEngland;
+                if(RoleConstants.OfqualRoles.Contains(role)) return UserType.Ofqual;
+                if(RoleConstants.QfauRoles.Contains(role)) return UserType.Qfau;
             }
 
             throw new Exception("No user type could be identified");
