@@ -168,18 +168,22 @@ asp-action="Index">
                     <govuk-summary-list-row-value>@Model.Ssa</govuk-summary-list-row-value>
                 </govuk-summary-list-row>
             </govuk-summary-list>
-            <govuk-textarea asp-for="@Model.AdditionalActions.Note">
-                <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Comments</govuk-textarea-label>
-                <govuk-textarea-hint>Leave comments and recommendations. Give as much detail as you can. </govuk-textarea-hint>
-            </govuk-textarea>
-            <govuk-select asp-for="@Model.AdditionalActions.ProcessStatusId">
-                <govuk-select-label is-page-heading="false" class="govuk-label--s">Status</govuk-select-label>
-                <govuk-select-item value="@null">Choose status</govuk-select-item>
-                @foreach (var item in Model.ProcessStatuses)
-                {
-                    <govuk-select-item value="@item.Id">@item.Name</govuk-select-item>
-                }
-            </govuk-select>
+            <div class="govuk-form-group">
+                <govuk-textarea asp-for="@Model.AdditionalActions.Note">
+                    <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Comments</govuk-textarea-label>
+                    <govuk-textarea-hint>Leave comments and recommendations. Give as much detail as you can. </govuk-textarea-hint>
+                </govuk-textarea>
+            </div>
+            <div class="govuk-form-group">
+                <govuk-select asp-for="@Model.AdditionalActions.ProcessStatusId">
+                    <govuk-select-label is-page-heading="false" class="govuk-label--s">Status</govuk-select-label>
+                    <govuk-select-item value="@null">Choose status</govuk-select-item>
+                    @foreach (var item in Model.ProcessStatuses)
+                    {
+                        <govuk-select-item value="@item.Id">@item.Name</govuk-select-item>
+                    }
+                </govuk-select>
+            </div>
             <button
                     type="submit"
                     class="govuk-button"
