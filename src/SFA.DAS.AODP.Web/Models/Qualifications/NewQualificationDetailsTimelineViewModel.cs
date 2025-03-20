@@ -8,13 +8,6 @@ public class NewQualificationDetailsTimelineViewModel
 {
     public List<QualificationDiscussionHistory> QualificationDiscussionHistories { get; set; } = new List<QualificationDiscussionHistory>();
     public string Qan { get; set; } = string.Empty;
-    public AdditionalFormActions AdditionalActions { get; set; } = new AdditionalFormActions();
-
-    public class AdditionalFormActions
-    {
-        public string Note { get; set; } = string.Empty;
-        public bool AddNote { get; set; }
-    }
     public static implicit operator NewQualificationDetailsTimelineViewModel(GetDiscussionHistoriesForQualificationQueryResponse model)
     {
         return new NewQualificationDetailsTimelineViewModel()

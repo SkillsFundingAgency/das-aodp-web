@@ -22,7 +22,7 @@ public class GetProcessStatusesQueryHandler(IApiClient apiClient) : IRequestHand
             else
             {
                 response.Success = false;
-                response.ErrorMessage = $"Failed to get qualification discussion history for qualification ref: {request.QualificationReference}";
+                response.ErrorMessage = $"Failed to get process statuses";
             }
         }
         catch (Exception ex)

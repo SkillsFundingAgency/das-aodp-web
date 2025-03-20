@@ -67,6 +67,7 @@ public class NewQualificationDetailsViewModel
     public virtual Qualification Qual { get; set; } = null!;
     public virtual ProcessStatus ProcStatus { get; set; } = null!;
     public AdditionalFormActions AdditionalActions { get; set; } = new AdditionalFormActions();
+    public List<ProcessStatus> ProcessStatuses { get; set; } = new List<ProcessStatus>();
     public partial class LifecycleStage
     {
         public Guid Id { get; set; }
@@ -90,18 +91,6 @@ public class NewQualificationDetailsViewModel
         public Guid Id { get; set; }
         public string Qan { get; set; } = null!;
         public string? QualificationName { get; set; }
-        public List<QualificationDiscussionHistory> QualificationDiscussionHistories { get; set; } = new List<QualificationDiscussionHistory>();
-    }
-
-    public partial class QualificationDiscussionHistory
-    {
-        public Guid Id { get; set; }
-        public Guid QualificationId { get; set; }
-        public Guid ActionTypeId { get; set; }
-        public string? UserDisplayName { get; set; }
-        public string? Notes { get; set; }
-        public DateTime? Timestamp { get; set; }
-        public virtual ActionType ActionType { get; set; } = null!;
     }
 
     public class ActionType
@@ -115,12 +104,22 @@ public class NewQualificationDetailsViewModel
         public Guid Id { get; set; }
         public string? Name { get; set; }
         public int? IsOutcomeDecision { get; set; }
+
+        public static implicit operator ProcessStatus(GetProcessStatusesQueryResponse.ProcessStatus model)
+        {
+            return new ProcessStatus
+            {
+                Id = model.Id,
+                Name = model.Name,
+                IsOutcomeDecision = model.IsOutcomeDecision,
+            };
+        }
     }
 
     public class AdditionalFormActions
     {
         public string Note { get; set; } = string.Empty;
-        public bool AddNote { get; set; }
+        public Guid? ProcessStatusId { get; set; }
     }
 
     public static implicit operator NewQualificationDetailsViewModel(GetQualificationDetailsQueryResponse entity)
@@ -204,22 +203,7 @@ public class NewQualificationDetailsViewModel
             {
                 Id = entity.Qual.Id,
                 Qan = entity.Qual.Qan,
-                QualificationName = entity.Qual.QualificationName,
-                QualificationDiscussionHistories = entity.Qual.QualificationDiscussionHistories
-                    .Select(v => new QualificationDiscussionHistory
-                    {
-                        Id = v.Id,
-                        QualificationId = v.QualificationId,
-                        ActionTypeId = v.ActionTypeId,
-                        UserDisplayName = v.UserDisplayName,
-                        Notes = v.Notes,
-                        Timestamp = v.Timestamp,
-                        ActionType = new ActionType
-                        {
-                            Id = v.ActionType.Id,
-                            Description = v.ActionType.Description,
-                        }
-                    }).ToList()
+                QualificationName = entity.Qual.QualificationName
             },
             ProcStatus = new ProcessStatus()
             {

@@ -3,73 +3,58 @@
 @{
     ViewData["Title"] = "Qualification Details";
 }
-
+<a class="govuk-back-link"
+   asp-controller="New"
+   asp-action="Index">
+    Return to qualifications
+</a>
+<span class="govuk-caption-xl">
+    Newly regulated qualification
+</span>
 <h1 class="govuk-heading-xl">Qualification Details</h1>
 
-<form asp-controller="New" asp-action="QualificationDetailsTimeline" method="post">
-    @Html.HiddenFor(m => m.Qan)
-    <div class="govuk-tabs" data-module="govuk-tabs">
-        <ul class="govuk-tabs__list">
-            <li class="govuk-tabs__list-item govuk-tabs__list-item">
-                <a class="govuk-link" href="/Review/New/QualificationDetails?qualificationReference=@Model.Qan">
-                    Details
-                </a>
-            </li>
-            <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
-                <a class="govuk-link" href="/Review/New/QualificationDetails/Timeline?qualificationReference=@Model.Qan">
-                    Timeline of Qualification
-                </a>
-            </li>
-            <li class="govuk-tabs__list-item govuk-tabs__list-item">
-                <a class="govuk-link" href="/Review/New/QualificationDetails/Status?qualificationReference=@Model.Qan">
-                    Change Status
-                </a>
-            </li>
-        </ul>
-        <div class="govuk-tabs__panel" id="details">
-            <div class="aodp-timeline">
-                <ol class="aodp-timeline__items">
-                    @foreach(var item in Model.QualificationDiscussionHistories.OrderByDescending(v => v.Timestamp.GetValueOrDefault()))
-                    {
-                        <li class="aodp-timeline__item">
-
-                            @if (!string.IsNullOrEmpty(item.UserDisplayName) && !string.IsNullOrEmpty(item.FormattedTimestamp))
-                            {
-                                <span class="govuk-caption-m">
-                                    By @item.UserDisplayName, @item.FormattedTimestamp
-                                </span>
-                            }
-                            else if (!string.IsNullOrEmpty(item.UserDisplayName))
-                            {
-                                <span class="govuk-caption-m">
-                                    By @item.UserDisplayName
-                                </span>
-                            }
-                            else if (!string.IsNullOrEmpty(item.FormattedTimestamp))
-                            {
-                                <span class="govuk-caption-m">
-                                    @item.FormattedTimestamp
-                                </span>
-                            }
-                            <h1 class="govuk-heading-m">@item.ActionType.Description</h1>
-                            <p>@item.Notes</p>
-                        </li>
-                    }
-                </ol>
-            </div>
-
-            <govuk-textarea asp-for="@Model.AdditionalActions.Note">
-                <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Notes</govuk-textarea-label>
-                <govuk-textarea-hint>Leave notes here to add to the timeline of the qualification </govuk-textarea-hint>
-            </govuk-textarea>
-            <button type="submit"
-                    class="govuk-button"
-                    data-module="govuk-button"
-                    data-prevent-double-click="true"
-                    value="true"
-                    name="AdditionalActions[AddNote]">
-                Save Update
-            </button>
+<div class="govuk-tabs" data-module="govuk-tabs">
+    <ul class="govuk-tabs__list">
+        <li class="govuk-tabs__list-item govuk-tabs__list-item">
+            <a class="govuk-link" href="/Review/New/QualificationDetails?qualificationReference=@Model.Qan">
+                Details
+            </a>
+        </li>
+        <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+            <a class="govuk-link" href="/Review/New/QualificationDetails/Timeline?qualificationReference=@Model.Qan">
+                History
+            </a>
+        </li>
+    </ul>
+    <div class="govuk-tabs__panel" id="history">
+        <div class="aodp-timeline">
+            <ol class="aodp-timeline__items">
+                @foreach(var item in Model.QualificationDiscussionHistories.OrderByDescending(v => v.Timestamp.GetValueOrDefault()))
+                {
+                    <li class="aodp-timeline__item">
+                        <b>@item.ActionType.Description</b>
+                        @if (!string.IsNullOrEmpty(item.UserDisplayName) && !string.IsNullOrEmpty(item.FormattedTimestamp))
+                        {
+                            <span class="govuk-caption-m">
+                                By @item.UserDisplayName, @item.FormattedTimestamp
+                            </span>
+                        }
+                        else if (!string.IsNullOrEmpty(item.UserDisplayName))
+                        {
+                            <span class="govuk-caption-m">
+                                By @item.UserDisplayName
+                            </span>
+                        }
+                        else if (!string.IsNullOrEmpty(item.FormattedTimestamp))
+                        {
+                            <span class="govuk-caption-m">
+                                @item.FormattedTimestamp
+                            </span>
+                        }
+                        <p>@item.Notes</p>
+                    </li>
+                }
+            </ol>
         </div>
     </div>
-</form>
+</div>

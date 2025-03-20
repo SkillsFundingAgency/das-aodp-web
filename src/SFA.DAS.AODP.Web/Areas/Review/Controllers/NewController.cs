@@ -160,6 +160,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
 
             NewQualificationDetailsViewModel result = await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });
+            var procStatuses = await Send(new GetProcessStatusesQuery());
+            result.ProcessStatuses = [..procStatuses.ProcessStatuses];
             return View(result);
         }
 
@@ -167,16 +169,34 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         [HttpPost]
         public async Task<IActionResult> QualificationDetails(NewQualificationDetailsViewModel model)
         {
-            if (model.AdditionalActions.AddNote)
+            if (!string.IsNullOrEmpty(model.AdditionalActions.Note))
             {
-                await Send(new AddQualificationDiscussionHistoryCommand 
-                { 
-                    QualificationReference = model.Qual.Qan,
-                    Notes = model.AdditionalActions.Note,
-                    UserDisplayName = HttpContext.User?.Identity?.Name
-                });
+                if (model.AdditionalActions.ProcessStatusId.HasValue)
+                {
+                    await Send(new UpdateQualificationStatusCommand
+                    {
+                        QualificationReference = model.Qual.Qan,
+                        ProcessStatusId = model.AdditionalActions.ProcessStatusId.Value,
+                        Notes = model.AdditionalActions.Note,
+                        UserDisplayName = HttpContext.User?.Identity?.Name
+                    });
+                }
+                else
+                {
+                    await Send(new AddQualificationDiscussionHistoryCommand
+                    {
+                        QualificationReference = model.Qual.Qan,
+                        Notes = model.AdditionalActions.Note,
+                        UserDisplayName = HttpContext.User?.Identity?.Name
+                    });
+                }
             }
-
+            else if (model.AdditionalActions.ProcessStatusId.HasValue)
+            {
+                var procStatuses = await Send(new GetProcessStatusesQuery());
+                model.ProcessStatuses = [.. procStatuses.ProcessStatuses];
+                return View(model);
+            }
             return RedirectToAction(nameof(QualificationDetails), new { qualificationReference = model.Qual.Qan });
         }
 
@@ -191,50 +211,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             NewQualificationDetailsTimelineViewModel result = await Send(new GetDiscussionHistoriesForQualificationQuery { QualificationReference = qualificationReference });
             result.Qan = qualificationReference;
             return View(result);
-        }
-
-        [Route("/Review/New/QualificationDetails/Timeline")]
-        [HttpPost]
-        public async Task<IActionResult> QualificationDetailsTimeline(NewQualificationDetailsTimelineViewModel model)
-        {
-            if (model.AdditionalActions.AddNote)
-            {
-                await Send(new AddQualificationDiscussionHistoryCommand
-                {
-                    QualificationReference = model.Qan,
-                    Notes = model.AdditionalActions.Note,
-                    UserDisplayName = HttpContext.User?.Identity?.Name
-                });
-            }
-
-            return RedirectToAction(nameof(QualificationDetailsTimeline), new { qualificationReference = model.Qan });
-        }
-
-        [Route("/Review/New/QualificationDetails/Status")]
-        public async Task<IActionResult> QualificationDetailsStatus([FromQuery] string qualificationReference)
-        {
-            if (string.IsNullOrWhiteSpace(qualificationReference))
-            {
-                return Redirect("/Home/Error");
-            }
-
-            NewQualificationDetailsStatusViewModel result = await Send(new GetProcessStatusesQuery { QualificationReference = qualificationReference });
-            result.Qan = qualificationReference;
-            return View(result);
-        }
-
-        [Route("/Review/New/QualificationDetails/Status")]
-        [HttpPost]
-        public async Task<IActionResult> QualificationDetailsStatus(NewQualificationDetailsStatusViewModel model)
-        {
-            await Send(new AddQualificationDiscussionHistoryCommand
-            {
-                QualificationReference = model.Qan,
-                Notes = model.Note,
-                UserDisplayName = HttpContext.User?.Identity?.Name
-            });
-
-            return RedirectToAction(nameof(QualificationDetailsTimeline), new { qualificationReference = model.Qan });
         }
 
         [Route("/Review/New/ExportData")]
