@@ -3,16 +3,20 @@ using SFA.DAS.AODP.Application.Queries.Application.Form;
 using SFA.DAS.AODP.Domain.Application.Form;
 using SFA.DAS.AODP.Domain.Application.Review;
 using SFA.DAS.AODP.Domain.Interfaces;
+using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Forms;
+using System;
 
 namespace SFA.DAS.AODP.Application.Queries.Review;
 
 public partial class GetApplicationReadOnlyDetailsByIdQueryHandler : IRequestHandler<GetApplicationReadOnlyDetailsByIdQuery, BaseMediatrResponse<GetApplicationReadOnlyDetailsByIdQueryResponse>>
 {
     private readonly IApiClient _apiClient;
-    public GetApplicationReadOnlyDetailsByIdQueryHandler(IApiClient apiClient)
+    public readonly IFileService _fileService;
+    public GetApplicationReadOnlyDetailsByIdQueryHandler(IApiClient apiClient, IFileService fileService)
     {
         _apiClient = apiClient;
+        _fileService = fileService;
     }
 
     public async Task<BaseMediatrResponse<GetApplicationReadOnlyDetailsByIdQueryResponse>> Handle(
@@ -45,13 +49,13 @@ public partial class GetApplicationReadOnlyDetailsByIdQueryHandler : IRequestHan
                             Id = page.Id,
                             Order = page.Order,
                             Title = page.Title,
-                            Questions = page.Questions.Select(q =>
+                            Questions = page.Questions.Select(async q =>
                             {
                                 var matchingAnswers = questionAnswersResponse.QuestionsWithAnswers
                                     .Where(qa => qa.Id == q.Id)
                                     .ToList();
 
-                                return new GetApplicationReadOnlyDetailsByIdQueryResponse.Question
+                                var question = new GetApplicationReadOnlyDetailsByIdQueryResponse.Question
                                 {
                                     Id = q.Id,
                                     Title = q.Title,
@@ -60,7 +64,14 @@ public partial class GetApplicationReadOnlyDetailsByIdQueryHandler : IRequestHan
                                     QuestionAnswers = ExtractQuestionAnswers(matchingAnswers),
                                     QuestionOptions = ExtractQuestionOptions(q, matchingAnswers)
                                 };
-                            }).ToList()
+
+                                if (q.Type == QuestionType.File.ToString())
+                                {
+                                    question.Files = _fileService.ListBlobs(request.ApplicationId.ToString());
+                                };
+
+                                return question;
+                            }).Select(t => t.Result).ToList()
                         }).ToList()
                     }).ToList()
             };
@@ -75,6 +86,13 @@ public partial class GetApplicationReadOnlyDetailsByIdQueryHandler : IRequestHan
         }
 
         return response;
+    }
+
+    private async Task<List<string>> GetFileNamesForApplication(Guid applicationId)
+    {
+        return _fileService.ListBlobs(applicationId.ToString())
+            .Select(blob => blob.FileName)
+            .ToList();
     }
 
     private List<GetApplicationReadOnlyDetailsByIdQueryResponse.QuestionAnswer> ExtractQuestionAnswers(

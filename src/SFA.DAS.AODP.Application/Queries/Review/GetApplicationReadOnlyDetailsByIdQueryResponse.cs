@@ -1,4 +1,5 @@
-﻿using SFA.DAS.AODP.Models.Forms;
+﻿using SFA.DAS.AODP.Infrastructure.File;
+using SFA.DAS.AODP.Models.Forms;
 using static SFA.DAS.AODP.Application.Queries.Review.GetApplicationReadOnlyDetailsByIdQueryResponse;
 
 namespace SFA.DAS.AODP.Application.Queries.Review;
@@ -31,6 +32,7 @@ public class GetApplicationReadOnlyDetailsByIdQueryResponse
         public bool Required { get; set; }
         public List<QuestionOption> QuestionOptions { get; set; } = new List<QuestionOption>();
         public List<QuestionAnswer> QuestionAnswers { get; set; } = new List<QuestionAnswer>();
+        public List<UploadedBlob>? Files { get; set; }
     }
 
     public class QuestionOption
@@ -54,13 +56,12 @@ public static class AnswerSelector
     private static readonly Dictionary<QuestionType, Func<QuestionAnswer, string>> _answerSelectors =
         new()
         {
-            { QuestionType.Text, answer => answer.AnswerTextValue ?? "No Answer" },
-            { QuestionType.TextArea, answer => answer.AnswerTextValue ?? "No Answer" },
-            { QuestionType.Number, answer => answer.AnswerNumberValue.HasValue ? Math.Floor(answer.AnswerNumberValue.Value).ToString() : "No Answer" },
-            { QuestionType.Date, answer => answer.AnswerDateValue != null ? DateTime.Parse(answer.AnswerDateValue).ToString("dd MMM yyyy"): "No Answer" },
-            { QuestionType.MultiChoice, answer => answer.AnswerTextValue ?? "No Answer" },
-            { QuestionType.Radio, answer => answer.AnswerChoiceValue ?? "No Answer" },
-            { QuestionType.File, answer => "File TODO" }
+            { QuestionType.Text, answer => answer.AnswerTextValue ?? "" },
+            { QuestionType.TextArea, answer => answer.AnswerTextValue ?? "" },
+            { QuestionType.Number, answer => answer.AnswerNumberValue.HasValue ? Math.Floor(answer.AnswerNumberValue.Value).ToString() : "" },
+            { QuestionType.Date, answer => answer.AnswerDateValue != null ? DateTime.Parse(answer.AnswerDateValue).ToString("dd MMM yyyy"): "" },
+            { QuestionType.MultiChoice, answer => answer.AnswerTextValue ?? "" },
+            { QuestionType.Radio, answer => answer.AnswerChoiceValue ?? "" }
         };
 
     public static string GetReadOnlyAnswer(QuestionAnswer answer, string questionType)

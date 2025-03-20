@@ -71,14 +71,13 @@
 
                                                         else if (question.Type == QuestionType.TextArea.ToString())
                                                         {
-                                                            <input class="govuk-input govuk-input--width-30"
+                                                            <textarea class="govuk-textarea"
                                                                    name="Answer"
                                                                    type="text"
                                                                    spellcheck="false"
-                                                                   value="@answer.FinalAnswer"
                                                                    disabled=""
                                                                    inputmode="text"
-                                                                   readonly>
+                                                                      readonly>@answer.FinalAnswer</textarea>
                                                         }
                                                         @if (question.Type == QuestionType.Number.ToString())
                                                         {
@@ -144,8 +143,28 @@
                                                         }
                                                         else if (question.Type == QuestionType.File.ToString())
                                                         {
-                                                            <input class="govuk-file-upload" id="" type="file" multiple>
+                                                            <div class="govuk-file-list">
+                                                                @if (question.Files != null && question.Files.Any())
+                                                                {
+                                                                    <ul>
+                                                                        @foreach (var file in question.Files)
+                                                                        {
+                                                                            <li>
+                                                                                <span class="govuk-file-name">@file.FileName</span>
+                                                                                <a href="@file.FullPath" class="govuk-button govuk-button--warning" download>
+                                                                                    Download
+                                                                                </a>
+                                                                            </li>
+                                                                        }
+                                                                    </ul>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <p class="govuk-no-files">No files uploaded.</p>
+                                                                }
+                                                            </div>
                                                         }
+
 
                                                     }
 
