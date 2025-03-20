@@ -3,12 +3,10 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
-using SFA.DAS.AODP.Models.Qualifications;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Qualifications;
-using SFA.DAS.AODP.Web.Models.Qualifications.Fundings;
 using System.Globalization;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
@@ -22,12 +20,10 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         private readonly ILogger<NewController> _logger;
         private readonly IMediator _mediator;
         public enum NewQualDataKeys { InvalidPageParams, }
-        private readonly IUserHelperService _userHelperService;
-        public NewController(ILogger<NewController> logger, IMediator mediator, IUserHelperService userHelperService) : base(mediator, logger)
+        public NewController(ILogger<NewController> logger, IMediator mediator) : base(mediator, logger)
         {
             _logger = logger;
             _mediator = mediator;
-            _userHelperService = userHelperService;
         }
 
         [Route("/Review/New/Index")]
