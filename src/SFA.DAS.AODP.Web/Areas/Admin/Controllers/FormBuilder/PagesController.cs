@@ -6,6 +6,7 @@ using SFA.DAS.AODP.Application.Commands.FormBuilder.Questions;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Pages;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
+using SFA.DAS.AODP.Web.Models.FormBuilder.Form;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Page;
 using static SFA.DAS.AODP.Web.Helpers.ListHelper.OrderButtonHelper;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
@@ -58,19 +59,12 @@ public class PagesController : ControllerBase
     [Route("/admin/forms/{formVersionId}/sections/{sectionId}/pages/{pageId}")]
     public async Task<IActionResult> Edit(Guid pageId, Guid sectionId, Guid formVersionId)
     {
-        try
-        {
-            var query = new GetPageByIdQuery(pageId, sectionId, formVersionId);
-            var response = await Send(query);
+        var query = new GetPageByIdQuery(pageId, sectionId, formVersionId);
+        var response = await Send(query);
 
-            ShowNotificationIfKeyExists(PageUpdatedKey, ViewNotificationMessageType.Success, "The page has been updated.");
+        ShowNotificationIfKeyExists(PageUpdatedKey, ViewNotificationMessageType.Success, "The page has been updated.");
 
-            return View(EditPageViewModel.Map(response, formVersionId));
-        }
-        catch
-        {
-            return Redirect("/Home/Error");
-        }
+        return View(EditPageViewModel.Map(response, formVersionId));
     }
 
     [HttpPost]
@@ -128,8 +122,9 @@ public class PagesController : ControllerBase
                 return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId, pageId = model.PageId });
             }
         }
-        catch
+        catch (Exception ex)
         {
+            LogException(ex);
             return View(model);
         }
     }
@@ -139,23 +134,16 @@ public class PagesController : ControllerBase
     [Route("/admin/forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/preview")]
     public async Task<IActionResult> Preview(Guid pageId, Guid sectionId, Guid formVersionId)
     {
-        try
-        {
-            var query = new GetPagePreviewByIdQuery(pageId, sectionId, formVersionId);
-            var response = await Send(query);
+        var query = new GetPagePreviewByIdQuery(pageId, sectionId, formVersionId);
+        var response = await Send(query);
 
-            return View(new PreviewPageViewModel()
-            {
-                PageId = pageId,
-                SectionId = sectionId,
-                FormVersionId = formVersionId,
-                Value = response
-            });
-        }
-        catch
+        return View(new PreviewPageViewModel()
         {
-            return Redirect("/Home/Error");
-        }
+            PageId = pageId,
+            SectionId = sectionId,
+            FormVersionId = formVersionId,
+            Value = response
+        });
     }
     #endregion
 
@@ -164,23 +152,16 @@ public class PagesController : ControllerBase
     [Route("/admin/forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/delete")]
     public async Task<IActionResult> Delete(Guid formVersionId, Guid sectionId, Guid pageId)
     {
-        try
+        var query = new GetPageByIdQuery(pageId, sectionId, formVersionId);
+        var response = await Send(query);
+        return View(new DeletePageViewModel()
         {
-            var query = new GetPageByIdQuery(pageId, sectionId, formVersionId);
-            var response = await Send(query);
-            return View(new DeletePageViewModel()
-            {
-                PageId = pageId,
-                SectionId = sectionId,
-                FormVersionId = formVersionId,
-                Title = response.Title,
-                HasAssociatedRoutes = response.HasAssociatedRoutes
-            });
-        }
-        catch
-        {
-            return Redirect("/Home/Error");
-        }
+            PageId = pageId,
+            SectionId = sectionId,
+            FormVersionId = formVersionId,
+            Title = response.Title,
+            HasAssociatedRoutes = response.HasAssociatedRoutes
+        });
     }
 
     [HttpPost]
@@ -199,11 +180,11 @@ public class PagesController : ControllerBase
             await Send(command);
             return RedirectToAction("Edit", "Sections", new { formVersionId = model.FormVersionId, sectionId = model.SectionId });
         }
-        catch
+        catch (Exception ex)
         {
+            LogException(ex);
             return View(model);
         }
-
     }
     #endregion
 }

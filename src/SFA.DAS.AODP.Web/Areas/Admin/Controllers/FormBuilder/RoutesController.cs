@@ -26,23 +26,17 @@ public class RoutesController : ControllerBase
     [Route("/admin/forms/{formVersionId}/routes/sections/{sectionId}/pages/{pageId}/questions/{questionId}")]
     public async Task<IActionResult> Configure(Guid formVersionId, Guid questionId, Guid sectionId, Guid pageId)
     {
-        try
+        var query = new GetRoutingInformationForQuestionQuery()
         {
-            var query = new GetRoutingInformationForQuestionQuery()
-            {
-                FormVersionId = formVersionId,
-                PageId = pageId,
-                QuestionId = questionId,
-                SectionId = sectionId
-            };
-            var response = await Send(query);
+            FormVersionId = formVersionId,
+            PageId = pageId,
+            QuestionId = questionId,
+            SectionId = sectionId
+        };
+        var response = await Send(query);
 
-            return View(CreateRouteViewModel.MapToViewModel(response, formVersionId, sectionId, pageId));
-        }
-        catch
-        {
-            return Redirect("/Home/Error");
-        }
+        return View(CreateRouteViewModel.MapToViewModel(response, formVersionId, sectionId, pageId));
+
     }
 
     [HttpPost()]
@@ -56,8 +50,9 @@ public class RoutesController : ControllerBase
             var response = await Send(command);
             return RedirectToAction(nameof(List), new { formVersionId = model.FormVersionId });
         }
-        catch
+        catch (Exception ex)
         {
+            LogException(ex);
             return View(model);
         }
     }
@@ -65,19 +60,13 @@ public class RoutesController : ControllerBase
     [Route("/admin/forms/{formVersionId}/routes/choose-section-page")]
     public async Task<IActionResult> ChooseSection(Guid formVersionId)
     {
-        try
+        var query = new GetAvailableSectionsAndPagesForRoutingQuery()
         {
-            var query = new GetAvailableSectionsAndPagesForRoutingQuery()
-            {
-                FormVersionId = formVersionId
-            };
-            var response = await Send(query);
-            return View(CreateRouteChooseSectionAndPageViewModel.MapToViewModel(response, formVersionId));
-        }
-        catch
-        {
-            return Redirect("/Home/Error");
-        }
+            FormVersionId = formVersionId
+        };
+        var response = await Send(query);
+        return View(CreateRouteChooseSectionAndPageViewModel.MapToViewModel(response, formVersionId));
+
     }
 
     [HttpPost()]
@@ -101,8 +90,9 @@ public class RoutesController : ControllerBase
 
             return RedirectToAction(nameof(ChooseQuestion), new { formVersionId = model.FormVersionId, sectionId = model.ChosenSectionId, pageId = model.ChosenPageId });
         }
-        catch
+        catch (Exception ex)
         {
+            LogException(ex);
             return View(model);
         }
     }
@@ -111,22 +101,16 @@ public class RoutesController : ControllerBase
     [Route("/admin/forms/{formVersionId}/routes/sections/{sectionId}/pages/{pageId}/choose-question")]
     public async Task<IActionResult> ChooseQuestion(Guid formVersionId, Guid sectionId, Guid pageId)
     {
-        try
+        var query = new GetAvailableQuestionsForRoutingQuery()
         {
-            var query = new GetAvailableQuestionsForRoutingQuery()
-            {
-                FormVersionId = formVersionId,
-                SectionId = sectionId,
-                PageId = pageId
-            };
-            var response = await Send(query);
+            FormVersionId = formVersionId,
+            SectionId = sectionId,
+            PageId = pageId
+        };
+        var response = await Send(query);
 
-            return View(CreateRouteChooseQuestionViewModel.MapToViewModel(response, formVersionId, sectionId, pageId));
-        }
-        catch
-        {
-            return Redirect("/Home/Error");
-        }
+        return View(CreateRouteChooseQuestionViewModel.MapToViewModel(response, formVersionId, sectionId, pageId));
+
     }
 
     [HttpPost()]
@@ -149,8 +133,9 @@ public class RoutesController : ControllerBase
 
             return RedirectToAction(nameof(Configure), new { formVersionId = model.FormVersionId, sectionId = model.SectionId, pageId = model.PageId, questionId = model.ChosenQuestionId });
         }
-        catch
+        catch (Exception ex)
         {
+            LogException(ex);
             return View(model);
         }
     }
@@ -159,27 +144,21 @@ public class RoutesController : ControllerBase
     [Route("/admin/forms/{formVersionId}/routes")]
     public async Task<IActionResult> List(Guid formVersionId)
     {
-        try
+        var query = new GetRoutingInformationForFormQuery()
         {
-            var query = new GetRoutingInformationForFormQuery()
-            {
-                FormVersionId = formVersionId,
+            FormVersionId = formVersionId,
 
-            };
-            var response = await Send(query);
+        };
+        var response = await Send(query);
 
-            ShowNotificationIfKeyExists(UpdateKeys.RouteDeleted.ToString(), ViewNotificationMessageType.Success, "The route has been deleted.");
+        ShowNotificationIfKeyExists(UpdateKeys.RouteDeleted.ToString(), ViewNotificationMessageType.Success, "The route has been deleted.");
 
-            return View(new ListRoutesViewModel()
-            {
-                FormVersionId = formVersionId,
-                Response = response
-            });
-        }
-        catch
+        return View(new ListRoutesViewModel()
         {
-            return Redirect("/Home/Error");
-        }
+            FormVersionId = formVersionId,
+            Response = response
+        });
+
     }
 
     #region Delete
@@ -216,11 +195,11 @@ public class RoutesController : ControllerBase
             TempData[UpdateKeys.RouteDeleted.ToString()] = true;
             return RedirectToAction(nameof(List), new { formVersionId = model.FormVersionId });
         }
-        catch
+        catch (Exception ex)
         {
+            LogException(ex);
             return View(model);
         }
-
     }
     #endregion
 }

@@ -67,6 +67,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
             catch(Exception ex)
             {
+                LogException(ex);
                 return Redirect("/Home/Error");
             }
         }
@@ -85,8 +86,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     qan = viewModel.Filter.QAN
                 });
             }
-            catch
+            catch (Exception ex)
             {
+                LogException(ex);
                 return View("Index", viewModel);
             }
         }
@@ -109,8 +111,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     return View("Index");
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                LogException(ex);
                 return View("Index");
             }
         }
@@ -136,8 +139,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     return View("Index");
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                LogException(ex);
                 return View("Index");
             }
         }
@@ -172,7 +176,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while generating the CSV file.");
+                LogException(ex);
                 return Redirect("/Home/Error");
             }
         }
