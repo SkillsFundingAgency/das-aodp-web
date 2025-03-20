@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models;
 using System.Diagnostics;
 
 namespace SFA.DAS.AODP.Web.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly IUserHelperService _userHelperService;
@@ -24,7 +24,7 @@ namespace SFA.DAS.AODP.Web.Controllers
 
             if (userType == AODP.Models.Users.UserType.AwardingOrganisation)
             {
-                return Redirect("/apply");
+                return Redirect("/apply/applications");
             }
 
             return Redirect("/review");

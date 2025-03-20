@@ -26,7 +26,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 });
             }
 
-            return Redirect("/review/application-reviews");
+            return RedirectToAction("Index", "ApplicationsReview");
         }
 
         [HttpPost]
