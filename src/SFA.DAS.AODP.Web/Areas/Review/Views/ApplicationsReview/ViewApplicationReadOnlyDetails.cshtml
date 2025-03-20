@@ -92,14 +92,23 @@
                                                         }
                                                         else if (question.Type == QuestionType.Radio.ToString())
                                                         {
-                                                            <div class="govuk-radios" data-module="govuk-radios">
+                                                            <div class="govuk-radios" data-module="govuk-radios" id="@question.Id">
 
-                                                        @*         @foreach (var option in Model.Options ?? [])
-                                                                { *@
-                                                                    <div class="govuk-radios__item" id="">
-                                                                    <input class="govuk-radios__input" id="" type="radio" value="@answer.FinalAnswer">
+                                                                @foreach (var option in question.QuestionOptions ?? new List<ApplicationReadOnlyDetailsViewModel.QuestionOption>())
+                                                                {
+                                                                    <div class="govuk-radios__item">
+                                                                        <input class="govuk-radios__input"
+                                                                               id="@question.Id-@option.Value"
+                                                                               name="@question.Id-@option.Value"
+                                                                               type="radio" 
+                                                                            value="@option.Value"
+                                                                            disabled
+                                                                            @(option.Selected ? "checked" : "")>
+                                                                        <label class="govuk-label govuk-radios__label" for="@question-@option.Value">
+                                                                            @option.Value
+                                                                        </label>
                                                                     </div>
-                                                              @*   } *@
+                                                                }
                                                             </div>
                                                         }
                                                         else if (question.Type == QuestionType.MultiChoice.ToString())

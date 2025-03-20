@@ -2,7 +2,6 @@
 using static SFA.DAS.AODP.Application.Queries.Review.GetApplicationReadOnlyDetailsByIdQueryResponse;
 
 namespace SFA.DAS.AODP.Application.Queries.Review;
-
 public class GetApplicationReadOnlyDetailsByIdQueryResponse
 {
     public Guid ApplicationId { get; set; }
@@ -30,7 +29,14 @@ public class GetApplicationReadOnlyDetailsByIdQueryResponse
         public string Title { get; set; } = string.Empty;
         public string Type { get; set; }
         public bool Required { get; set; }
+        public List<QuestionOption> QuestionOptions { get; set; } = new List<QuestionOption>();
         public List<QuestionAnswer> QuestionAnswers { get; set; } = new List<QuestionAnswer>();
+    }
+
+    public class QuestionOption
+    {
+        public string Value { get; set; }
+        public bool Selected { get; set; }
     }
 
     public class QuestionAnswer
@@ -41,6 +47,7 @@ public class GetApplicationReadOnlyDetailsByIdQueryResponse
         public decimal? AnswerNumberValue { get; set; }
     }
 }
+
 
 public static class AnswerSelector
 {

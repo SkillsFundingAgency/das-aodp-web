@@ -14,8 +14,7 @@ public partial class GetApplicationReadOnlyDetailsByIdQueryHandler : IRequestHan
         _apiClient = apiClient;
     }
 
-    public async Task<BaseMediatrResponse<GetApplicationReadOnlyDetailsByIdQueryResponse>> Handle(
-    GetApplicationReadOnlyDetailsByIdQuery request, CancellationToken cancellationToken)
+    public async Task<BaseMediatrResponse<GetApplicationReadOnlyDetailsByIdQueryResponse>> Handle(GetApplicationReadOnlyDetailsByIdQuery request, CancellationToken cancellationToken)
     {
         var response = new BaseMediatrResponse<GetApplicationReadOnlyDetailsByIdQueryResponse>
         {
@@ -44,22 +43,52 @@ public partial class GetApplicationReadOnlyDetailsByIdQueryHandler : IRequestHan
                             Id = page.Id,
                             Order = page.Order,
                             Title = page.Title,
-                            Questions = page.Questions.Select(q => new GetApplicationReadOnlyDetailsByIdQueryResponse.Question
+                            Questions = page.Questions.Select(q =>
                             {
-                                Id = q.Id,
-                                Title = q.Title,
-                                Type = q.Type,
-                                Required = q.Required,
-                                QuestionAnswers = questionAnswersResponse.QuestionsWithAnswers
+                                var matchingAnswers = questionAnswersResponse.QuestionsWithAnswers
                                     .Where(qa => qa.Id == q.Id)
-                                    .Select(qa => new GetApplicationReadOnlyDetailsByIdQueryResponse.QuestionAnswer
+                                    .ToList();
+
+                                return new GetApplicationReadOnlyDetailsByIdQueryResponse.Question
+                                {
+                                    Id = q.Id,
+                                    Title = q.Title,
+                                    Type = q.Type,
+                                    Required = q.Required,
+                                    QuestionAnswers = matchingAnswers.SelectMany(qa => qa.QuestionAnswers ?? new List<GetApplicationQuestionAnswersByIdQueryResponse.QuestionAnswer>())
+                                        .Select(qa => new GetApplicationReadOnlyDetailsByIdQueryResponse.QuestionAnswer
+                                        {
+                                            AnswerTextValue = qa.AnswerTextValue,
+                                            AnswerDateValue = qa.AnswerDateValue,
+                                            AnswerChoiceValue = qa.AnswerChoiceValue,
+                                            AnswerNumberValue = qa.AnswerNumberValue
+                                        }).ToList(),
+                                    QuestionOptions = q.QuestionOptions.Select(option =>
                                     {
-                                        AnswerTextValue = qa.QuestionAnswers.FirstOrDefault()?.AnswerTextValue,
-                                        AnswerDateValue = qa.QuestionAnswers.FirstOrDefault()?.AnswerDateValue,
-                                        AnswerChoiceValue = qa.QuestionAnswers.FirstOrDefault()?.AnswerChoiceValue, // choice a list of choices?
-                                        AnswerNumberValue = qa.QuestionAnswers.FirstOrDefault()?.AnswerNumberValue
-                                    })
-                                    .ToList()
+                                        var optionId = option.Id;
+                                        var selected = false;
+
+                                        foreach (var qa in matchingAnswers.SelectMany(qa => qa.QuestionAnswers ?? new List<GetApplicationQuestionAnswersByIdQueryResponse.QuestionAnswer>()))
+                                        {
+                                            var answerValue = qa.AnswerChoiceValue;
+                                            Guid answerGuid;
+                                            if (!string.IsNullOrEmpty(answerValue) && Guid.TryParse(answerValue, out answerGuid))
+                                            {
+                                                if (answerGuid == optionId)
+                                                {
+                                                    selected = true;
+                                                    break;
+                                                }
+                                            }
+                                        }
+
+                                        return new GetApplicationReadOnlyDetailsByIdQueryResponse.QuestionOption
+                                        {
+                                            Value = option.Value,
+                                            Selected = selected
+                                        };
+                                    }).ToList()
+                                };
                             }).ToList()
                         }).ToList()
                     }).ToList()

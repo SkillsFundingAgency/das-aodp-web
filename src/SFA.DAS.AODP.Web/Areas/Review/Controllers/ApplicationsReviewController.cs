@@ -558,8 +558,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             try
             {
                 var applicationId = await GetApplicationIdAsync(applicationReviewId);
-                // basically, use the form preview endpoint, which lready has the QuestionIds and then make a call to get the Answers to those questionIds
-                //var blob = _fileService.GetFileAsync("files/test.docx");
+
                 var applicationDetails = await Send(new GetApplicationReadOnlyDetailsByIdQuery(applicationReviewId, applicationId));
                 
                 var vm = ApplicationReadOnlyDetailsViewModel.Map(applicationDetails);
