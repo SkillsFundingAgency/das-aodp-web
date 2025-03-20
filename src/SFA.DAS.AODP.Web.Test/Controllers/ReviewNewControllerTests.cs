@@ -101,7 +101,7 @@ public class ReviewNewControllerTests
                      .ReturnsAsync(queryResponse);
 
         // Act
-        var result = await _controller.QualificationDetails("Ref123");
+        var result = await _controller.QualificationDetails("","");
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -124,7 +124,7 @@ public class ReviewNewControllerTests
         // Act
         try
         {
-            var result = await _controller.QualificationDetails("Ref123");
+            var result = await _controller.QualificationDetails("","");
             Assert.Fail();
         }
         catch (Exception ex)
@@ -137,7 +137,7 @@ public class ReviewNewControllerTests
     public async Task QualificationDetails_ReturnsBadRequest_WhenQualificationReferenceIsEmpty()
     {
         // Act
-        var result = await _controller.QualificationDetails(string.Empty);
+        var result = await _controller.QualificationDetails("","");
 
         // Assert
         var badRequestResult = Assert.IsType<RedirectResult>(result);        
