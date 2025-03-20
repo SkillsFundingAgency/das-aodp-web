@@ -1,0 +1,50 @@
+﻿@model SFA.DAS.AODP.Web.Models.Qualifications.NewQualificationDetailsStatusViewModel
+
+@{
+    ViewData["Title"] = "Qualification Details";
+}
+
+<h1 class="govuk-heading-xl">Qualification Details</h1>
+
+<form asp-controller="New" asp-action="QualificationDetailsTimeline" method="post">
+    @Html.HiddenFor(m => m.Qan)
+    <div class="govuk-tabs" data-module="govuk-tabs">
+        <ul class="govuk-tabs__list">
+            <li class="govuk-tabs__list-item govuk-tabs__list-item">
+                <a class="govuk-link" href="/Review/New/QualificationDetails?qualificationReference=@Model.Qan">
+                    Details
+                </a>
+            </li>
+            <li class="govuk-tabs__list-item govuk-tabs__list-item">
+                <a class="govuk-link" href="/Review/New/QualificationDetails/Timeline?qualificationReference=@Model.Qan">
+                    Timeline of Qualification
+                </a>
+            </li>
+            <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+                <a class="govuk-link" href="/Review/New/QualificationDetails/Status?qualificationReference=@Model.Qan">
+                    Change Status
+                </a>
+            </li>
+        </ul>
+        <div class="govuk-tabs__panel" id="details">
+            <govuk-select asp-for="@Model.ProcessStatusId">
+                <govuk-select-label></govuk-select-label>
+                @foreach (var item in Model.ProcessStatuses)
+                {
+                    <govuk-select-item value="@item.Id">@item.Name</govuk-select-item>
+                }
+            </govuk-select>
+            <govuk-textarea asp-for="@Model.Note">
+                <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Notes</govuk-textarea-label>
+                <govuk-textarea-hint>Leave reasons here why the status has updated here to add to the timeline of qualifications </govuk-textarea-hint>
+            </govuk-textarea>
+            <button type="submit"
+                    class="govuk-button"
+                    data-module="govuk-button"
+                    data-prevent-double-click="true"
+            >
+                Update Status
+            </button>
+        </div>
+    </div>
+</form>

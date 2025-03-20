@@ -1,4 +1,4 @@
-﻿@model SFA.DAS.AODP.Web.Models.Qualifications.QualificationDetailsViewModel
+﻿@model SFA.DAS.AODP.Web.Models.Qualifications.NewQualificationDetailsViewModel
 
 @{
     ViewData["Title"] = "Qualification Details";
@@ -6,70 +6,103 @@
 
 <h1 class="govuk-heading-xl">Qualification Details</h1>
 
-<govuk-summary-list>
-    <govuk-summary-list-row>
-        <govuk-summary-list-row-key>Status</govuk-summary-list-row-key>
-        <govuk-summary-list-row-value>@Model.Status</govuk-summary-list-row-value>
-    </govuk-summary-list-row>
-    <govuk-summary-list-row>
-        <govuk-summary-list-row-key>Priority</govuk-summary-list-row-key>
-        <govuk-summary-list-row-value>@Model.Priority</govuk-summary-list-row-value>
-    </govuk-summary-list-row>
-    <govuk-summary-list-row>
-        <govuk-summary-list-row-key>Changes</govuk-summary-list-row-key>
-        <govuk-summary-list-row-value>@Model.Changes</govuk-summary-list-row-value>
-    </govuk-summary-list-row>
-    <govuk-summary-list-row>
-        <govuk-summary-list-row-key>Qualification Reference</govuk-summary-list-row-key>
-        <govuk-summary-list-row-value>@Model.QualificationReference</govuk-summary-list-row-value>
-    </govuk-summary-list-row>
-        <govuk-summary-list-row>
-        <govuk-summary-list-row-key>Awarding Organisation</govuk-summary-list-row-key>
-        <govuk-summary-list-row-value>@Model.AwardingOrganisation</govuk-summary-list-row-value>
-    </govuk-summary-list-row>
-    <govuk-summary-list-row>
-        <govuk-summary-list-row-key>Title</govuk-summary-list-row-key>
-        <govuk-summary-list-row-value>@Model.Title</govuk-summary-list-row-value>
-    </govuk-summary-list-row>
-        <govuk-summary-list-row>
-        <govuk-summary-list-row-key>Qualification Type</govuk-summary-list-row-key>
-        <govuk-summary-list-row-value>@Model.QualificationType</govuk-summary-list-row-value>
-    </govuk-summary-list-row>
-    <govuk-summary-list-row>
-        <govuk-summary-list-row-key>Level</govuk-summary-list-row-key>
-        <govuk-summary-list-row-value>@Model.Level</govuk-summary-list-row-value>
-    </govuk-summary-list-row>
-    <govuk-summary-list-row>
-        <govuk-summary-list-row-key>Proposed Changes</govuk-summary-list-row-key>
-        <govuk-summary-list-row-value>@Model.ProposedChanges</govuk-summary-list-row-value>
-    </govuk-summary-list-row>
-    <govuk-summary-list-row>
-        <govuk-summary-list-row-key>Age Group</govuk-summary-list-row-key>
-        <govuk-summary-list-row-value>@Model.AgeGroup</govuk-summary-list-row-value>
-    </govuk-summary-list-row>
-    <govuk-summary-list-row>
-        <govuk-summary-list-row-key>Category</govuk-summary-list-row-key>
-        <govuk-summary-list-row-value>@Model.Category</govuk-summary-list-row-value>
-    </govuk-summary-list-row>
-    <govuk-summary-list-row>
-        <govuk-summary-list-row-key>Subject</govuk-summary-list-row-key>
-        <govuk-summary-list-row-value>@Model.Subject</govuk-summary-list-row-value>
-    </govuk-summary-list-row>
-    <govuk-summary-list-row>
-        <govuk-summary-list-row-key>Sector Subject Area</govuk-summary-list-row-key>
-        <govuk-summary-list-row-value>@Model.SectorSubjectArea</govuk-summary-list-row-value>
-    </govuk-summary-list-row>
-    <govuk-summary-list-row>
-        <govuk-summary-list-row-key>Comments</govuk-summary-list-row-key>
-        <govuk-summary-list-row-value>
-            <govuk-textarea name="Comments">
-                <govuk-textarea-label class="govuk-label--l" is-page-heading="true">
-                </govuk-textarea-label>
-                <govuk-textarea-value>
-                @Model.Comments
-                </govuk-textarea-value>
+<form asp-controller="New" asp-action="QualificationDetails" method="post">
+    @Html.HiddenFor(m => m.Qual.Qan)
+    <div class="govuk-tabs" data-module="govuk-tabs">
+        <ul class="govuk-tabs__list">
+            <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+                <a class="govuk-link" href="/Review/New/QualificationDetails?qualificationReference=@Model.Qual.Qan">
+                    Details
+                </a>
+            </li>
+            <li class="govuk-tabs__list-item govuk-tabs__list-item">
+                <a class="govuk-link" href="/Review/New/QualificationDetails/Timeline?qualificationReference=@Model.Qual.Qan">
+                    Timeline of Qualification
+                </a>
+            </li>
+            <li class="govuk-tabs__list-item govuk-tabs__list-item">
+                <a class="govuk-link" href="/Review/New/QualificationDetails/Status?qualificationReference=@Model.Qual.Qan">
+                    Change Status
+                </a>
+            </li>
+        </ul>
+        <div class="govuk-tabs__panel" id="details">
+            <govuk-summary-list>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>Status</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>@Model.Status</govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>Qualification reference</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>@Model.Qual.Qan</govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>Awarding organisation</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>@Model.Organisation.NameLegal</govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>Qualification title</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>@Model.Qual.QualificationName</govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>Qualification type</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>@Model.Type</govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>Level</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>@Model.Level</govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>Age Group</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value></govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>Category</govuk-summary-list-row-key>
+                    @if (Model.NineteenPlus ?? false)
+                    {
+                        <govuk-summary-list-row-value>19+</govuk-summary-list-row-value>
+                    }
+                    else if (Model.EighteenPlus ?? false)
+                    {
+                        <govuk-summary-list-row-value>18+</govuk-summary-list-row-value>
+                    }
+                    else if (Model.SixteenToEighteen ?? false)
+                    {
+                        <govuk-summary-list-row-value>16-18</govuk-summary-list-row-value>
+                    }
+                    else if (Model.PreSixteen ?? false)
+                    {
+                        <govuk-summary-list-row-value>Pre 16</govuk-summary-list-row-value>
+                    }
+                    else
+                    {
+                        <govuk-summary-list-row-value></govuk-summary-list-row-value>
+                    }
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>Subject</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>@Model.Specialism</govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>Sector subject area</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>@Model.Ssa</govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+            </govuk-summary-list>
+            <govuk-textarea asp-for="@Model.AdditionalActions.Note">
+                <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Notes</govuk-textarea-label>
+                <govuk-textarea-hint>Leave notes here to add to the timeline of the qualification </govuk-textarea-hint>
             </govuk-textarea>
-            </govuk-summary-list-row-value>
-    </govuk-summary-list-row>
-</govuk-summary-list>
+            <button
+                    type="submit"
+                    class="govuk-button"
+                    data-module="govuk-button"
+                    data-prevent-double-click="true"
+                    value="true"
+                    name="AdditionalActions[AddNote]">
+                Save Update
+            </button>
+        </div>
+    </div>
+</form>
+
 

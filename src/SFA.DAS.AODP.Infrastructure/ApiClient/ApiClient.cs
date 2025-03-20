@@ -18,6 +18,8 @@ namespace SFA.DAS.AODP.Infrastructure.ApiClient
             _httpClient = httpClient;
             _config = config.Value;
             _httpClient.BaseAddress = new Uri(config.Value.BaseUrl);
+
+            _httpClient.Timeout = new TimeSpan(0, 0, seconds: 700);
         }
 
         public async Task<TResponse> Get<TResponse>(IGetApiRequest request)

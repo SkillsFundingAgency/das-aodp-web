@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SFA.DAS.AODP.Application.Commands.Qualification;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
@@ -154,10 +155,82 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 return Redirect("/Home/Error");
             }
 
-            var result = await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });           
+            NewQualificationDetailsViewModel result = await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });
+            return View(result);
+        }
 
-            var viewModel = MapToViewModel(result);
-            return View(viewModel);
+        [Route("/Review/New/QualificationDetails")]
+        [HttpPost]
+        public async Task<IActionResult> QualificationDetails(NewQualificationDetailsViewModel model)
+        {
+            if (model.AdditionalActions.AddNote)
+            {
+                await Send(new AddQualificationDiscussionHistoryCommand 
+                { 
+                    QualificationReference = model.Qual.Qan,
+                    Notes = model.AdditionalActions.Note,
+                    UserDisplayName = HttpContext.User?.Identity?.Name
+                });
+            }
+
+            return RedirectToAction(nameof(QualificationDetails), new { qualificationReference = model.Qual.Qan });
+        }
+
+        [Route("/Review/New/QualificationDetails/Timeline")]
+        public async Task<IActionResult> QualificationDetailsTimeline([FromQuery] string qualificationReference)
+        {
+            if (string.IsNullOrWhiteSpace(qualificationReference))
+            {
+                return Redirect("/Home/Error");
+            }
+
+            NewQualificationDetailsTimelineViewModel result = await Send(new GetDiscussionHistoriesForQualificationQuery { QualificationReference = qualificationReference });
+            result.Qan = qualificationReference;
+            return View(result);
+        }
+
+        [Route("/Review/New/QualificationDetails/Timeline")]
+        [HttpPost]
+        public async Task<IActionResult> QualificationDetailsTimeline(NewQualificationDetailsTimelineViewModel model)
+        {
+            if (model.AdditionalActions.AddNote)
+            {
+                await Send(new AddQualificationDiscussionHistoryCommand
+                {
+                    QualificationReference = model.Qan,
+                    Notes = model.AdditionalActions.Note,
+                    UserDisplayName = HttpContext.User?.Identity?.Name
+                });
+            }
+
+            return RedirectToAction(nameof(QualificationDetailsTimeline), new { qualificationReference = model.Qan });
+        }
+
+        [Route("/Review/New/QualificationDetails/Status")]
+        public async Task<IActionResult> QualificationDetailsStatus([FromQuery] string qualificationReference)
+        {
+            if (string.IsNullOrWhiteSpace(qualificationReference))
+            {
+                return Redirect("/Home/Error");
+            }
+
+            NewQualificationDetailsStatusViewModel result = await Send(new GetProcessStatusesQuery { QualificationReference = qualificationReference });
+            result.Qan = qualificationReference;
+            return View(result);
+        }
+
+        [Route("/Review/New/QualificationDetails/Status")]
+        [HttpPost]
+        public async Task<IActionResult> QualificationDetailsStatus(NewQualificationDetailsStatusViewModel model)
+        {
+            await Send(new AddQualificationDiscussionHistoryCommand
+            {
+                QualificationReference = model.Qan,
+                Notes = model.Note,
+                UserDisplayName = HttpContext.User?.Identity?.Name
+            });
+
+            return RedirectToAction(nameof(QualificationDetailsTimeline), new { qualificationReference = model.Qan });
         }
 
         [Route("/Review/New/ExportData")]
@@ -199,33 +272,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 csv.WriteRecords(qualifications);
                 return writer.ToString();
             }
-        }      
-
-        private static QualificationDetailsViewModel MapToViewModel(GetQualificationDetailsQueryResponse response)
-        {
-            if (response == null)
-            {
-                return null;
-            }
-
-            return new QualificationDetailsViewModel
-            {
-                Id = response.Id,
-                Status = response.Status,
-                Priority = response.Priority,
-                Changes = response.Changes,
-                QualificationReference = response.QualificationReference,
-                AwardingOrganisation = response.AwardingOrganisation,
-                Title = response.Title,
-                QualificationType = response.QualificationType,
-                Level = response.Level,
-                ProposedChanges = response.ProposedChanges,
-                AgeGroup = response.AgeGroup,
-                Category = response.Category,
-                Subject = response.Subject,
-                SectorSubjectArea = response.SectorSubjectArea,
-                Comments = response.Comments
-            };
         }
 
         private class CsvExportResult
