@@ -9,6 +9,7 @@ namespace SFA.DAS.AODP.Web.Helpers.User
         string GetUserOrganisationId();
         string GetUserOrganisationName();
         string GetUserOrganisationUkPrn();
+        List<string> GetUserRoles();
         UserType GetUserType();
     }
 }
