@@ -45,8 +45,9 @@ public class SectionsController : ControllerBase
             var response = await Send(command);
             return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = response.Id });
         }
-        catch
+        catch (Exception ex)
         {
+            LogException(ex);
             return View(model);
         }
     }
@@ -56,19 +57,13 @@ public class SectionsController : ControllerBase
     [Route("/admin/forms/{formVersionId}/sections/{sectionId}")]
     public async Task<IActionResult> Edit(Guid formVersionId, Guid sectionId)
     {
-        try
-        {
-            var sectionQuery = new GetSectionByIdQuery(sectionId, formVersionId);
-            var response = await Send(sectionQuery);
+        var sectionQuery = new GetSectionByIdQuery(sectionId, formVersionId);
+        var response = await Send(sectionQuery);
 
-            ShowNotificationIfKeyExists(SectionUpdatedKey, ViewNotificationMessageType.Success, "The section has been updated.");
+        ShowNotificationIfKeyExists(SectionUpdatedKey, ViewNotificationMessageType.Success, "The section has been updated.");
 
-            return View(EditSectionViewModel.Map(response));
-        }
-        catch
-        {
-            return Redirect("/Home/Error");
-        }
+        return View(EditSectionViewModel.Map(response));
+
     }
 
     [HttpPost]
@@ -121,8 +116,9 @@ public class SectionsController : ControllerBase
                 return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId });
             }
         }
-        catch
+        catch (Exception ex)
         {
+            LogException(ex);
             return View(model);
         }
     }
@@ -133,22 +129,16 @@ public class SectionsController : ControllerBase
     [Route("/admin/forms/{formVersionId}/sections/{sectionId}/delete")]
     public async Task<IActionResult> Delete(Guid sectionId, Guid formVersionId)
     {
-        try
+        var query = new GetSectionByIdQuery(sectionId, formVersionId);
+        var response = await Send(query);
+        return View(new DeleteSectionViewModel()
         {
-            var query = new GetSectionByIdQuery(sectionId, formVersionId);
-            var response = await Send(query);
-            return View(new DeleteSectionViewModel()
-            {
-                Title = response.Title,
-                SectionId = sectionId,
-                FormVersionId = formVersionId,
-                HasAssociatedRoutes = response.HasAssociatedRoutes
-            });
-        }
-        catch
-        {
-            return Redirect("/Home/Error");
-        }
+            Title = response.Title,
+            SectionId = sectionId,
+            FormVersionId = formVersionId,
+            HasAssociatedRoutes = response.HasAssociatedRoutes
+        });
+
     }
 
     [HttpPost, ActionName("Delete")]
@@ -165,8 +155,9 @@ public class SectionsController : ControllerBase
             var deleteResponse = await _mediator.Send(command);
             return RedirectToAction("Edit", "Forms", new { formVersionId = model.FormVersionId });
         }
-        catch
+        catch (Exception ex)
         {
+            LogException(ex);
             return View(model);
         }
     }

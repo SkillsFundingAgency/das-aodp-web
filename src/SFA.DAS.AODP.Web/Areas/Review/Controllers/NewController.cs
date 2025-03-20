@@ -66,8 +66,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 
                 return View(viewModel);
             }
-            catch
+            catch (Exception ex)
             {
+                LogException(ex);
                 return Redirect("/Home/Error");
             }
         }
@@ -87,8 +88,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                         qan = viewModel.Filter.QAN
                     });               
             }
-            catch
+            catch(Exception ex)
             {
+                LogException(ex);
                 return View("Index", viewModel);
             }
         }
@@ -112,8 +114,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     return View("Index");
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                LogException(ex);
                 return View("Index");
             }
         }
@@ -140,8 +143,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     return View("Index");
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                LogException(ex);
                 return View("Index");
             }
         }
