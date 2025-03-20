@@ -26,7 +26,7 @@ public class HomeControllerTests
 
         // Assert
         var redirect = Assert.IsType<RedirectResult>(result);
-        Assert.Equal("/apply", redirect.Url);
+        Assert.Equal("/apply/applications", redirect.Url);
     }
 
     [Theory]

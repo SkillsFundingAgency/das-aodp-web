@@ -46,12 +46,8 @@ public class PagesController : ControllerBase
 
         };
 
-        var response = await _mediator.Send(command);
-        if (response.Success)
-        {
-            return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId, pageId = response.Value.Id });
-        }
-        return View(model);
+        var response = await Send(command);
+        return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId, pageId = response.Id });
     }
     #endregion
 
