@@ -19,7 +19,7 @@ public class PagesController : ControllerBase
 {
     private const string PageUpdatedKey = nameof(PageUpdatedKey);
 
-    public PagesController(IMediator mediator, ILogger<FormsController> logger) : base(mediator, logger)
+    public PagesController(IMediator mediator, ILogger<PagesController> logger) : base(mediator, logger)
     {
     }
 

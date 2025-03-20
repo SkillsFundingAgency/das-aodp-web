@@ -30,7 +30,7 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         private readonly IFileService _fileService;
         private readonly IUserHelperService _userHelperService;
 
-        public ApplicationsController(IMediator mediator, IApplicationAnswersValidator validator, ILogger<FormsController> logger, IFileService fileService, IUserHelperService userHelperService) : base(mediator, logger)
+        public ApplicationsController(IMediator mediator, IApplicationAnswersValidator validator, ILogger<ApplicationsController> logger, IFileService fileService, IUserHelperService userHelperService) : base(mediator, logger)
         {
             _validator = validator;
             _fileService = fileService;

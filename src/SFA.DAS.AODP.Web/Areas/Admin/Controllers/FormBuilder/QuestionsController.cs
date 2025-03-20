@@ -24,7 +24,7 @@ public class QuestionsController : ControllerBase
 
     private readonly FormBuilderSettings _formBuilderSettings;
 
-    public QuestionsController(IMediator mediator, ILogger<FormsController> logger, IOptions<FormBuilderSettings> formBuilderSettings) : base(mediator, logger)
+    public QuestionsController(IMediator mediator, ILogger<QuestionsController> logger, IOptions<FormBuilderSettings> formBuilderSettings) : base(mediator, logger)
     {
         _formBuilderSettings = formBuilderSettings.Value;
     }
