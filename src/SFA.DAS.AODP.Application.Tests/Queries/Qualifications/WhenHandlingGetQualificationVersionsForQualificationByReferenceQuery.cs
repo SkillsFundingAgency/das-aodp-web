@@ -37,10 +37,10 @@ namespace SFA.DAS.AODP.Application.Tests.Queries.Qualifications
         public async Task Then_The_CommandResult_Is_Returned_As_Expected()
         {
             // Arrange
-            var expectedResponse = _fixture.Create<BaseMediatrResponse<GetQualificationVersionsForQualificationByReferenceQueryResponse>>();
+            var expectedResponse = _fixture.Create<GetQualificationVersionsForQualificationByReferenceQueryResponse>();
             var request = _fixture.Create<GetQualificationVersionsForQualificationByReferenceQuery>();
             _apiClientMock
-                .Setup(a => a.Get<BaseMediatrResponse<GetQualificationVersionsForQualificationByReferenceQueryResponse>>(It.IsAny<GetQualificationVersionsForQualificationByReferenceApiRequest>()))
+                .Setup(a => a.Get<GetQualificationVersionsForQualificationByReferenceQueryResponse>(It.IsAny<GetQualificationVersionsForQualificationByReferenceApiRequest>()))
                 .ReturnsAsync(expectedResponse);
 
             // Act
@@ -48,12 +48,12 @@ namespace SFA.DAS.AODP.Application.Tests.Queries.Qualifications
 
             // Assert
             _apiClientMock
-                .Verify(a => a.Get<BaseMediatrResponse<GetQualificationVersionsForQualificationByReferenceQueryResponse>>(It.Is<GetQualificationVersionsForQualificationByReferenceApiRequest>(r => r.QualificationReference == request.QualificationReference)));
+                .Verify(a => a.Get<GetQualificationVersionsForQualificationByReferenceQueryResponse>(It.Is<GetQualificationVersionsForQualificationByReferenceApiRequest>(r => r.QualificationReference == request.QualificationReference)));
 
             Assert.NotNull(response);
             Assert.True(response.Success);
             Assert.NotNull(response.Value);
-            Assert.Equal(expectedResponse.Value, response.Value);
+            Assert.Equal(expectedResponse, response.Value);
         }
 
         [Fact]
@@ -63,7 +63,7 @@ namespace SFA.DAS.AODP.Application.Tests.Queries.Qualifications
             var expectedException = _fixture.Create<Exception>();
             var request = _fixture.Create<GetQualificationVersionsForQualificationByReferenceQuery>();
             _apiClientMock
-                .Setup(a => a.Get<BaseMediatrResponse<GetQualificationVersionsForQualificationByReferenceQueryResponse>>(It.IsAny<GetQualificationVersionsForQualificationByReferenceApiRequest>()))
+                .Setup(a => a.Get<GetQualificationVersionsForQualificationByReferenceQueryResponse>(It.IsAny<GetQualificationVersionsForQualificationByReferenceApiRequest>()))
                 .ThrowsAsync(expectedException);
 
             // Act
