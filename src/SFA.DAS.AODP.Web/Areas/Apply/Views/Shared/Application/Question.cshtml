@@ -49,31 +49,31 @@
     @if (Model.Type == QuestionType.Text)
     {
         <input class="govuk-input @inputErrorClass"
-        id="@questionHtmlId"
-        name="Questions[@(Model.Order - 1)][Answer][TextValue]"
-        value="@Model.Answer?.TextValue"
-        type="text"
-        aria-describedby="@ariaDescribedBy">
+               id="@questionHtmlId"
+               name="Questions[@(Model.Order - 1)][Answer][TextValue]"
+               value="@Model.Answer?.TextValue"
+               type="text"
+               aria-describedby="@ariaDescribedBy">
     }
     else if (Model.Type == QuestionType.Number)
     {
         <input class="govuk-input govuk-input--width-20 @inputErrorClass"
-        id="@questionHtmlId"
-        name="Questions[@(Model.Order - 1)][Answer][NumberValue]"
-        value=@Model.Answer?.NumberValue?.ToString()?.Replace(".00","")
-        type="number"
-        inputmode="numeric"
-        aria-describedby="@ariaDescribedBy">
+               id="@questionHtmlId"
+               name="Questions[@(Model.Order - 1)][Answer][NumberValue]"
+               value=@Model.Answer?.NumberValue?.ToString()?.Replace(".00","")
+               type="number"
+               inputmode="numeric"
+               aria-describedby="@ariaDescribedBy">
     }
 
 
     else if (Model.Type == QuestionType.TextArea)
     {
         <textarea class="govuk-textarea @inputErrorClass"
-        id="@questionHtmlId"
-        name="Questions[@(Model.Order - 1)][Answer][TextValue]"
-        type="text"
-        aria-describedby="@ariaDescribedBy">@Model.Answer?.TextValue</textarea>
+                  id="@questionHtmlId"
+                  name="Questions[@(Model.Order - 1)][Answer][TextValue]"
+                  type="text"
+                  aria-describedby="@ariaDescribedBy">@Model.Answer?.TextValue</textarea>
     }
 
     else if (Model.Type == QuestionType.Radio)
@@ -99,11 +99,11 @@
             {
                 <div class="govuk-checkboxes__item">
                     <input @(Model.Answer?.MultipleChoiceValues?.Contains(option.Id.ToString()) == true ? "checked" : "")
-                    class="govuk-checkboxes__input"
-                    id="@questionHtmlId-@option.Id"
-                    name="Questions[@(Model.Order - 1)][Answer][MultipleChoiceValues]"
-                    type="checkbox"
-                    value="@option.Id">
+                           class="govuk-checkboxes__input"
+                           id="@questionHtmlId-@option.Id"
+                           name="Questions[@(Model.Order - 1)][Answer][MultipleChoiceValues]"
+                           type="checkbox"
+                           value="@option.Id">
 
                     <label class="govuk-label govuk-checkboxes__label" for="@questionHtmlId-@option.Id">
                         @option.Value
@@ -126,29 +126,38 @@
 
     else if (Model.Type == QuestionType.File)
     {
-        <input class="govuk-file-upload"
-        name="Questions[@(Model.Order - 1)].Answer.FormFiles"
-        id="@questionHtmlId"
-        type="file"
-        multiple>
+        @if (!ViewBag.IsSubmitted)
+        {
+            <input class="govuk-file-upload"
+                   name="Questions[@(Model.Order - 1)].Answer.FormFiles"
+                   id="@questionHtmlId"
+                   type="file"
+                   multiple>
+        }
 
         @if (Model.UploadedFiles.Any())
         {
-            <p class="govuk-body govuk-!-static-margin-top-1"><strong>Note that clicking 'Remove file' will immediately remove the file from the system.</strong></p>
-
+            @if (!ViewBag.IsSubmitted)
+            {
+                <p class="govuk-body govuk-!-static-margin-top-1"><strong>Note that clicking 'Remove file' will immediately remove the file from the system.</strong></p>
+            }
             <ul class="govuk-list govuk-list--bullet">
                 @foreach (var file in Model.UploadedFiles)
                 {
                     <li>
                         @file.DisplayName
-                        <button type="submit"
-                        class="govuk-button govuk-button--warning"
-                        data-module="govuk-button"
-                        data-prevent-double-click="true"
-                        value="@file.FullPath"
-                        name="RemoveFile">
-                            Remove file <span class="govuk-visually-hidden">@file.DisplayName</span>
-                        </button>
+
+                        @if (!ViewBag.IsSubmitted)
+                        {
+                            <button type="submit"
+                                    class="govuk-button govuk-button--warning"
+                                    data-module="govuk-button"
+                                    data-prevent-double-click="true"
+                                    value="@file.FullPath"
+                                    name="RemoveFile">
+                                Remove file <span class="govuk-visually-hidden">@file.DisplayName</span>
+                            </button>
+                        }
                     </li>
                 }
             </ul>
