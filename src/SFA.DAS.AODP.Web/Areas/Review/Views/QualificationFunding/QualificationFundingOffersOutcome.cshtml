@@ -5,7 +5,7 @@
     ViewData["Title"] = "Funding review";
 }
 
-<form asp-controller="QualificationFunding" asp-action="QualificationFundingOffersOutcome" method="post">
+<form asp-controller="QualificationFunding" asp-action="QualificationFundingOffersOutcome" asp-area="Review" method="post">
     @Html.HiddenFor(m => m.QualificationVersionId)
     @Html.HiddenFor(m => m.QualificationReference)
     <div class="govuk-grid-row">

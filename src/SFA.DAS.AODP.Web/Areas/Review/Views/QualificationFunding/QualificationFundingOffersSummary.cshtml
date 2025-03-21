@@ -22,7 +22,7 @@
         </div>
     </div>
 }
-<form asp-controller="QualificationFunding" asp-action="QualificationFundingOffersSummary" method="post">
+<form asp-controller="QualificationFunding" asp-action="QualificationFundingOffersSummary" asp-area="Review" method="post">
     @Html.HiddenFor(m => m.QualificationVersionId)
     @Html.HiddenFor(m => m.QualificationReference)
 <div class="govuk-grid-row">
@@ -53,7 +53,7 @@
                     </govuk-summary-list-row-value>
 
                     <govuk-summary-list-row-actions>
-                            <govuk-summary-list-row-action asp-action="QualificationFundingOffersOutcome" asp-controller="QualificationFunding" asp-route-qualificationReference="@Model.QualificationReference" visually-hidden-text="name">Change</govuk-summary-list-row-action>
+                            <govuk-summary-list-row-action asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersOutcome" asp-route-qualificationReference="@Model.QualificationReference" visually-hidden-text="name">Change</govuk-summary-list-row-action>
                     </govuk-summary-list-row-actions>
                 </govuk-summary-list-row>
 
@@ -66,7 +66,7 @@
                     </govuk-summary-list-row-value>
 
                     <govuk-summary-list-row-actions>
-                            <govuk-summary-list-row-action asp-action="QualificationFundingOffersOutcome" asp-controller="QualificationFunding" asp-route-qualificationReference="@Model.QualificationReference" visually-hidden-text="name">Change</govuk-summary-list-row-action>
+                            <govuk-summary-list-row-action asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersOutcome" asp-route-qualificationReference="@Model.QualificationReference" visually-hidden-text="name">Change</govuk-summary-list-row-action>
                     </govuk-summary-list-row-actions>
                 </govuk-summary-list-row>
 
@@ -97,7 +97,7 @@
                         </govuk-summary-list-row-value>
 
                         <govuk-summary-list-row-actions>
-                                <govuk-summary-list-row-action asp-action="QualificationFundingOffers" asp-controller="QualificationFunding" asp-route-qualificationVersionId="@Model.QualificationVersionId" visually-hidden-text="name">Change</govuk-summary-list-row-action>
+                                <govuk-summary-list-row-action asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffers" asp-route-qualificationVersionId="@Model.QualificationVersionId" visually-hidden-text="name">Change</govuk-summary-list-row-action>
                         </govuk-summary-list-row-actions>
                     </govuk-summary-list-row>
 
@@ -117,7 +117,7 @@
                         </govuk-summary-list-row-value>
 
                         <govuk-summary-list-row-actions>
-                                <govuk-summary-list-row-action asp-action="QualificationFundingOffersDetails" asp-controller="QualificationFunding" asp-route-qualificationVersionId="@Model.QualificationVersionId" visually-hidden-text="name">Change</govuk-summary-list-row-action>
+                                <govuk-summary-list-row-action asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersDetails" asp-route-qualificationVersionId="@Model.QualificationVersionId" visually-hidden-text="name">Change</govuk-summary-list-row-action>
                         </govuk-summary-list-row-actions>
                     </govuk-summary-list-row>
 
@@ -129,7 +129,7 @@
                             @detail.EndDate?.ToString("dd/MM/yyyy")
                         </govuk-summary-list-row-value>
                         <govuk-summary-list-row-actions>
-                                <govuk-summary-list-row-action asp-action="QualificationFundingOffersDetails" asp-controller="QualificationFunding" asp-route-qualificationVersionId="@Model.QualificationVersionId" visually-hidden-text="name">Change</govuk-summary-list-row-action>
+                                <govuk-summary-list-row-action asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersDetails" asp-route-qualificationVersionId="@Model.QualificationVersionId" visually-hidden-text="name">Change</govuk-summary-list-row-action>
                         </govuk-summary-list-row-actions>
                     </govuk-summary-list-row>
 
@@ -141,7 +141,7 @@
                             @detail.Comments
                         </govuk-summary-list-row-value>
                         <govuk-summary-list-row-actions>
-                                <govuk-summary-list-row-action asp-action="QualificationFundingOffersDetails" asp-controller="QualificationFunding" asp-route-qualificationVersionId="@Model.QualificationVersionId" visually-hidden-text="name">Change</govuk-summary-list-row-action>
+                                <govuk-summary-list-row-action asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersDetails" asp-route-qualificationVersionId="@Model.QualificationVersionId" visually-hidden-text="name">Change</govuk-summary-list-row-action>
                         </govuk-summary-list-row-actions>
                     </govuk-summary-list-row>
                 }
