@@ -1,0 +1,37 @@
+﻿@using SFA.DAS.AODP.Web.Models.Import
+@model CompleteViewModel
+
+@using System.Security.Claims
+@{
+	ViewData["Title"] = "Import Data";
+}
+
+<div class="govuk-width-container">
+	<main class="govuk-main-wrapper">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+                <div class="govuk-grid-row">
+                    <govuk-breadcrumbs collapse-on-mobile="true">
+                        <govuk-breadcrumbs-item asp-controller="Home" asp-action="Index" asp-area="Review" >Home</govuk-breadcrumbs-item>
+                        <govuk-breadcrumbs-item asp-action="Index" asp-controller="Import" asp-area="Admin" link-target="_blank">Import qualification details</govuk-breadcrumbs-item>
+                    </govuk-breadcrumbs>
+                </div>
+
+                <div class="govuk-grid-row">
+                <govuk-panel heading-level="2">
+                    <govuk-panel-title>Import complete</govuk-panel-title>
+                    <govuk-panel-body>
+                    </govuk-panel-body>
+                </govuk-panel>
+                </div>
+                <div class="govuk-grid-row">
+                    <div class="govuk-form-group">
+                        <p class="govuk-body">@Model.UserName imported @Model.ImportType at @Model.SubmittedTime.ToShortDateString() @Model.SubmittedTime.ToShortTimeString()</p>
+                    </div>
+
+                    <govuk-button class="govuk-button--secondary" asp-action="Index" asp-controller="Home" asp-area="Review">Back to qualifications</govuk-button>
+                </div>              
+			</div>
+		</div>
+	</main>
+</div>
