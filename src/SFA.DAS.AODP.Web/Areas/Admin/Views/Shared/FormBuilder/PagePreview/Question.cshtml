@@ -24,7 +24,8 @@
         <input class="govuk-input"
                id="@htmlId"
                type="text"
-               aria-describedby="question-@Model.Id-hint">
+               aria-describedby="question-@Model.Id-hint"
+               autocomplete="off">
     }
 
     else if (Model.Type == QuestionType.TextArea.ToString())
@@ -40,7 +41,8 @@
                id="@htmlId"
                type="number"
                inputmode="numeric"
-               aria-describedby="question-@Model.Id-hint">
+               aria-describedby="question-@Model.Id-hint"
+               autocomplete="off">
     }
     else if (Model.Type == QuestionType.Radio.ToString())
     {
