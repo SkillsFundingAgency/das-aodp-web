@@ -72,4 +72,12 @@
             </govuk-summary-list-row-value>
     </govuk-summary-list-row>
 </govuk-summary-list>
+<div class="govuk-grid-row">
+    <h2 class="govuk-heading-m">DfE funding review</h2>
+    <p class="govuk-body">Qualification funding, make decision on approval and funding options.</p>
+
+    <a class="govuk-button" asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersOutcome" asp-route-qualificationReference="@Model.QualificationReference">
+        DfE funding review
+    </a>
+</div>
 

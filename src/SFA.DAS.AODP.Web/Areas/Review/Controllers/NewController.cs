@@ -19,7 +19,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         private readonly ILogger<NewController> _logger;
         private readonly IMediator _mediator;
         public enum NewQualDataKeys { InvalidPageParams, }
-
         public NewController(ILogger<NewController> logger, IMediator mediator) : base(mediator, logger)
         {
             _logger = logger;

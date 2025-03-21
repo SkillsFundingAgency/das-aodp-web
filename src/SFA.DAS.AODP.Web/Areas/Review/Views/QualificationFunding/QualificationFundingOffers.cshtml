@@ -1,0 +1,39 @@
+﻿@using SFA.DAS.AODP.Web.Models.Qualifications.Fundings
+@model QualificationFundingsOffersSelectViewModel;
+
+@{
+    ViewData["Title"] = "Funding review";
+}
+
+<form asp-controller="QualificationFunding" asp-action="QualificationFundingOffers" asp-area="Review" method="post">
+    @Html.HiddenFor(m => m.QualificationVersionId)
+    <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+            <div class="govuk-grid-row">
+                <h1 class="govuk-heading-xl">
+                    DfE funding review
+                    <span class="govuk-caption-l">Request for funding</span>
+                </h1>
+
+                <div class="govuk-form-group">
+                    <govuk-checkboxes name="SelectedOfferIds" asp-for="@Model.SelectedOfferIds">
+                        <govuk-checkboxes-fieldset>
+                            <govuk-checkboxes-fieldset-legend is-page-heading="true" class="govuk-fieldset__legend--l">
+                                What form of funding will you offer for this qualification?
+                            </govuk-checkboxes-fieldset-legend>
+                            @Html.RenderPartialAsync("Validation/_CheckboxValidationPartial", nameof(Model.SelectedOfferIds))
+
+                            @foreach (var offer in Model.FundingOffers)
+                            {
+                                <govuk-checkboxes-item checked="@Model.SelectedOfferIds.Contains(offer.Id)" value="@offer.Id">@offer.Name</govuk-checkboxes-item>
+                            }
+                        </govuk-checkboxes-fieldset>
+
+                    </govuk-checkboxes>
+                </div>
+
+                <govuk-button type="submit">Save and continue</govuk-button>
+            </div>
+        </div>
+    </div>
+</form>
