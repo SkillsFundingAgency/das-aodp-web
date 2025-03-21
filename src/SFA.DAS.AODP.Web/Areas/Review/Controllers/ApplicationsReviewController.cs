@@ -342,6 +342,12 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         [Route("review/application-reviews/{applicationReviewId}/ofqual")]
         public async Task<IActionResult> OfqualReview([FromForm] OfqualReviewViewModel model)
         {
+            if (string.IsNullOrWhiteSpace(model.Comments))
+            {
+                model.AdditionalActions.Preview = false;
+                ModelState.AddModelError(nameof(OfqualReviewViewModel.Comments), "Please provide a comment.");
+            }
+
             if (!ModelState.IsValid || model.AdditionalActions.Preview || model.AdditionalActions.Edit)
             {
                 return View(model);
