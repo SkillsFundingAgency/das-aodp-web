@@ -15,6 +15,7 @@ namespace SFA.DAS.AODP.Web.Models.Application
         public DateTime? UpdatedDate { get; set; }
         public ApplicationStatus Status { get; set; }
         public bool NewMessage { get; set; }
+        public bool VisibleToReviewers { get; set; }
 
         public bool IsCompleted { get; set; }
         public bool IsSubmitted { get; set; }
@@ -44,6 +45,7 @@ namespace SFA.DAS.AODP.Web.Models.Application
                 Status = statusResponse.Status,
                 NewMessage = statusResponse.NewMessage,
                 UpdatedDate = statusResponse.UpdatedDate,
+                VisibleToReviewers = statusResponse.ReviewExists,
                 Sections = new()
             };
 
