@@ -70,16 +70,35 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
                 case "Funded Qualifications": jobName = JobNames.FundedQualifications.ToString(); break;
                 default: break;
             }
-            
-            try
+
+            var jobAlreadyRunning = false;
+            var jobRunningResponse = await Send(new GetJobRunsQuery { JobName = jobName });
+            if (jobRunningResponse?.JobRuns != null && jobRunningResponse.JobRuns.Any())
             {
-                var response = await Send(new RequestJobRunCommand { JobName = jobName, UserName = userName });                
+                var lastJobRun = jobRunningResponse.JobRuns.OrderByDescending(o => o.StartTime).FirstOrDefault();
+
+                if (lastJobRun.Status == JobStatus.Running.ToString()
+                    || lastJobRun.Status == JobStatus.RequestSent.ToString()
+                    || lastJobRun.Status == JobStatus.Requested.ToString())
+                {
+                    jobAlreadyRunning = true;
+                    userName = lastJobRun.User;
+                    timeSubmitted = lastJobRun.StartTime;
+                }
             }
-            catch (Exception ex)
+
+            if (!jobAlreadyRunning)
             {
-                LogException(ex);
-                TempData[SendKeys.RequestFailed.ToString()] = true;
-                return RedirectToAction("ConfirmImportSelection", new ImportRequestViewModel() { ImportType = viewModel.ImportType});
+                try
+                {
+                    var response = await Send(new RequestJobRunCommand { JobName = jobName, UserName = userName });
+                }
+                catch (Exception ex)
+                {
+                    LogException(ex);
+                    TempData[SendKeys.RequestFailed.ToString()] = true;
+                    return RedirectToAction("ConfirmImportSelection", new ImportRequestViewModel() { ImportType = viewModel.ImportType });
+                }
             }
 
             var submitImportRequestViewModel = new SubmitImportRequestViewModel() 

@@ -87,6 +87,18 @@ public class ImportControllerTests
                                                                             && i.UserName == userName), default))
                      .ReturnsAsync(queryResponse);
 
+        var body = _fixture.Build<GetJobRunsQueryResponse>()
+            .With(w => w.JobRuns, new List<JobRun>())
+            .Create();
+
+        var currentJobRuns = _fixture.Build<BaseMediatrResponse<GetJobRunsQueryResponse>>()
+            .With(w => w.Value, body)
+            .With(w => w.Success, true)
+            .Create();
+     
+        _mediatorMock.Setup(m => m.Send(It.Is<GetJobRunsQuery>(i => i.JobName == JobNames.RegulatedQualifications.ToString()), default))
+                     .ReturnsAsync(currentJobRuns);
+
         // Act
         var result = await _controller.ConfirmImportSelection(viewModel);
 
@@ -95,6 +107,46 @@ public class ImportControllerTests
         Assert.Equal("SubmitImportRequest", viewResult.ViewName);
         var model = Assert.IsAssignableFrom<SubmitImportRequestViewModel>(viewResult.ViewData.Model);              
         Assert.Equal(userName, model.UserName);
+        Assert.Equal(viewModel.ImportType, model.ImportType);
+        Assert.Equal(JobStatus.Requested.ToString(), model.Status);
+    }
+
+    [Fact]
+    public async Task ConfirmImportSelection_ReturnsViewResult_JobsAlreadyRunning()
+    {
+        // Arrange
+        var viewModel = _fixture.Build<ConfirmImportRequestViewModel>()
+                            .With(w => w.ImportType, "Regulated Qualifications")
+                            .Create();
+
+        var userName = "TestUser";
+        _userHelpService.Setup(s => s.GetUserDisplayName()).Returns(userName);
+
+
+        var currentRun = _fixture.Build<JobRun>()
+                                    .With(w => w.Status, JobStatus.Running.ToString())
+                                    .With(w => w.StartTime, DateTime.Now)
+                                    .Create();
+
+        var body = _fixture.Build<GetJobRunsQueryResponse>()
+            .With(w => w.JobRuns, new List<JobRun>() { currentRun })
+            .Create();
+
+        var currentJobRuns = _fixture.Build<BaseMediatrResponse<GetJobRunsQueryResponse>>()
+            .With(w => w.Value, body)
+            .Create();
+        
+        _mediatorMock.Setup(m => m.Send(It.Is<GetJobRunsQuery>(i => i.JobName == JobNames.RegulatedQualifications.ToString()), default))
+                     .ReturnsAsync(currentJobRuns);
+
+        // Act
+        var result = await _controller.ConfirmImportSelection(viewModel);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.Equal("SubmitImportRequest", viewResult.ViewName);
+        var model = Assert.IsAssignableFrom<SubmitImportRequestViewModel>(viewResult.ViewData.Model);
+        Assert.Equal(currentRun.User, model.UserName);
         Assert.Equal(viewModel.ImportType, model.ImportType);
         Assert.Equal(JobStatus.Requested.ToString(), model.Status);
     }
