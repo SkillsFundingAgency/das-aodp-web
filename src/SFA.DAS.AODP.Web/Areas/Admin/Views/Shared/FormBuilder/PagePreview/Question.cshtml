@@ -48,9 +48,9 @@
     {
         <div class="govuk-radios" data-module="govuk-radios">
 
-            @foreach (var (option, i) in Model.Options.OrderBy(o => o.Order).Select((v, i) => (v, i)) ?? [])
+            @foreach (var option in Model.Options ?? [])
             {
-                <div class="govuk-radios__item" id="@htmlId.@i">
+                <div class="govuk-radios__item" id="@htmlId.@option.Order">
                     <input class="govuk-radios__input" id="@htmlId-@option.Id" type="radio" value="@option.Id">
                     <label class="govuk-label govuk-radios__label" for="@htmlId-@option.Id">
                         @option.Value
@@ -63,9 +63,9 @@
     {
         <div class="govuk-checkboxes" data-module="govuk-checkboxes">
 
-            @foreach (var (option,i) in Model.Options.OrderBy(o => o.Order).Select((v ,i) => (v,i)) ?? [])
+            @foreach (var option in Model.Options ?? [])
             {
-                <div class="govuk-checkboxes__item" id="@htmlId.@i">
+                <div class="govuk-checkboxes__item" id="@htmlId.@option.Order">
                     <input class="govuk-checkboxes__input" id="@htmlId-@option.Id" type="checkbox" value="@option.Id">
                     <label class="govuk-label govuk-checkboxes__label" for="@htmlId-@option.Id">
                         @option.Value
