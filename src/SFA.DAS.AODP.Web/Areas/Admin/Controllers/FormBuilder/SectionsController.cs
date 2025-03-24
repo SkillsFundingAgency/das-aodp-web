@@ -95,7 +95,7 @@ public class SectionsController : ControllerBase
                     SectionId = model.SectionId,
                     PageId = model.AdditionalActions.MoveDown ?? Guid.Empty,
                 };
-                await _mediator.Send(command);
+                await Send(command);
 
                 TempData[UpdateTempDataKeys.FocusItemId.ToString()] = command.PageId.ToString();
                 TempData[UpdateTempDataKeys.Directon.ToString()] = OrderDirection.Down.ToString();
@@ -111,7 +111,7 @@ public class SectionsController : ControllerBase
                     Id = model.SectionId
                 };
 
-                var response = await _mediator.Send(command);
+                await Send(command);
                 TempData[SectionUpdatedKey] = true;
                 return RedirectToAction("Edit", new { formVersionId = model.FormVersionId, sectionId = model.SectionId });
             }
@@ -152,7 +152,7 @@ public class SectionsController : ControllerBase
                 FormVersionId = model.FormVersionId,
                 SectionId = model.SectionId
             };
-            var deleteResponse = await _mediator.Send(command);
+            await Send(command);
             return RedirectToAction("Edit", "Forms", new { formVersionId = model.FormVersionId });
         }
         catch (Exception ex)
