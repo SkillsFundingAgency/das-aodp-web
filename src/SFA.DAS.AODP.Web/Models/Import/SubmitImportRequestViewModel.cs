@@ -26,8 +26,9 @@ namespace SFA.DAS.AODP.Web.Models.Import
                 {
                     joinWord = "since";
                 }
-                
-                return $"{Status} {joinWord} {SubmittedTime.ToShortDateString()} {SubmittedTime.ToShortTimeString()} by {UserName}";
+                var status = Status == JobStatus.RequestSent.ToString() ? "Job Created" : Status;
+
+                return $"{status} {joinWord} {SubmittedTime.ToShortDateString()} {SubmittedTime.ToShortTimeString()} by {UserName}";
             }
         }
         public string JobName { get; set; } = string.Empty;

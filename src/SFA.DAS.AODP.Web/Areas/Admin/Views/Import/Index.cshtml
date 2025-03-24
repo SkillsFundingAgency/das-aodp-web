@@ -52,8 +52,12 @@
                     </div>
 
                     <div class="govuk-grid-row">
-                        <govuk-button type="submit">Continue</govuk-button>
-                        <govuk-button class="govuk-button--secondary" asp-action="Index" asp-controller="Home" asp-area="Review">Back to qualifications</govuk-button>
+                        <div class="govuk-form-group">
+                            <govuk-button type="submit">Continue</govuk-button>
+                            <a class="govuk-button govuk-button--secondary" asp-action="Index" asp-controller="Home" asp-area="Review">
+                                Back to qualifications
+                            </a>
+                        </div>
                     </div>
                 </form>
 

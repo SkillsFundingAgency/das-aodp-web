@@ -28,8 +28,10 @@
                     <div class="govuk-form-group">
                         <p class="govuk-body">@Model.UserName imported @Model.ImportType at @Model.CompletedTime.ToShortDateString() @Model.CompletedTime.ToShortTimeString()</p>
                     </div>
-
-                    <govuk-button class="govuk-button--secondary" asp-action="Index" asp-controller="Home" asp-area="Review">Back to qualifications</govuk-button>
+                   
+                    <a class="govuk-button govuk-button--secondary" asp-action="Index" asp-controller="Home" asp-area="Review">
+                        Back to qualifications
+                    </a>
                 </div>              
 			</div>
 		</div>
