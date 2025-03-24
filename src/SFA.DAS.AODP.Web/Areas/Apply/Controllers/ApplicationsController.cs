@@ -255,7 +255,7 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
 
                 var commandResponse = await Send(command);
 
-                await HandleFileUploads(model, response);
+                await HandleFileUploads(model, cachedApplicationPage);
 
                 bool endSection = command.Routing?.EndSection == true || cachedApplicationPage.TotalSectionPages == cachedApplicationPage.Order;
                 if (endSection) return RedirectToAction(nameof(ViewApplicationSection), new { organisationId = model.OrganisationId, applicationId = model.ApplicationId, sectionId = model.SectionId, formVersionId = model.FormVersionId });
