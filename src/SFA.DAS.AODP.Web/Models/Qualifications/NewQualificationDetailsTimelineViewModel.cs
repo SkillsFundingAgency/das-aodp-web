@@ -23,6 +23,7 @@ public class NewQualificationDetailsTimelineViewModel
         public string? UserDisplayName { get; set; }
         public string? Notes { get; set; }
         public DateTime? Timestamp { get; set; }
+        public string? Title { get; set; }
         public virtual ActionType ActionType { get; set; } = null!;
         public string FormattedTimestamp
         {
@@ -42,6 +43,7 @@ public class NewQualificationDetailsTimelineViewModel
                 UserDisplayName = model.UserDisplayName,
                 Notes = model.Notes,
                 Timestamp = model.Timestamp,
+                Title = model.Title,
                 ActionType = new ActionType
                 {
                     Id = model.ActionType.Id,

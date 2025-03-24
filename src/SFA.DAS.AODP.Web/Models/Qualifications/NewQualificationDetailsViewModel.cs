@@ -1,4 +1,5 @@
-﻿using SFA.DAS.AODP.Application.Queries.Qualifications;
+﻿using Microsoft.AspNetCore.Razor.TagHelpers;
+using SFA.DAS.AODP.Application.Queries.Qualifications;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SFA.DAS.AODP.Web.Models.Qualifications;
@@ -118,6 +119,7 @@ public class NewQualificationDetailsViewModel
 
     public class AdditionalFormActions
     {
+        [HtmlAttributeName("comment")]
         public string Note { get; set; } = string.Empty;
         public Guid? ProcessStatusId { get; set; }
     }

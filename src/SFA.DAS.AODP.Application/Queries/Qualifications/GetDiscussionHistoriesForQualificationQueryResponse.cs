@@ -12,6 +12,7 @@ public class GetDiscussionHistoriesForQualificationQueryResponse
         public string? UserDisplayName { get; set; }
         public string? Notes { get; set; }
         public DateTime? Timestamp { get; set; }
+        public string? Title { get; set; }
         public virtual ActionType ActionType { get; set; } = null!;
     }
     public class ActionType

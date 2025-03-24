@@ -34,6 +34,11 @@
     border-top: 3px solid #1d70b8;
 }
 
+.govuk-textarea {
+    /* 75% the max width of .govuk-width-container  */
+    max-width: 720px;
+}
+
 
 @media (min-width: 40.0625em) {
     .govuk-main-wrapper {
