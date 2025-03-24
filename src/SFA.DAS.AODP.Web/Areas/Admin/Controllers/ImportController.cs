@@ -7,6 +7,7 @@ using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Import;
+using System.Reflection;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
@@ -69,8 +70,7 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
                 case "Funded Qualifications": jobName = JobNames.FundedQualifications.ToString(); break;
                 default: break;
             }
-
-            var requestStatus = $"Requested on {timeSubmitted.ToShortDateString()} at {timeSubmitted.ToShortTimeString()} by {userName}";
+            
             try
             {
                 var response = await Send(new RequestJobRunCommand { JobName = jobName, UserName = userName });                
@@ -87,18 +87,18 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
                 ImportType = viewModel.ImportType, 
                 SubmittedTime = timeSubmitted, 
                 UserName = userName, 
-                Status = requestStatus, 
+                Status = JobStatus.Requested.ToString(), 
                 JobName = jobName 
             };
 
-            return RedirectToAction("SubmitImportRequest", submitImportRequestViewModel);
+            return View("SubmitImportRequest", submitImportRequestViewModel);
         }
 
         [HttpGet]
         [Route("/admin/import/submitimportrequest")]
         public IActionResult SubmitImportRequest(SubmitImportRequestViewModel viewModel)
         {
-            ShowNotificationIfKeyExists(SendKeys.JobStatusFailed.ToString(), ViewNotificationMessageType.Error, "Failed to retrieve job status.");
+            ShowNotificationIfKeyExists(SendKeys.JobStatusFailed.ToString(), ViewNotificationMessageType.Error, "Failed to retrieve job status.");           
             return View(viewModel);
         }
         
@@ -114,26 +114,73 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
 
             try
             {
-                var response = await Send(new GetJobQuery { JobName = model.JobName });
-                if (response.Id != Guid.Empty)
+                JobRun lastJobRun = new JobRun();
+
+                if (model.JobRunId == Guid.Empty)
                 {
-                    var joinWord = "at";
-                    var jobTime = model.SubmittedTime;
-                    if (response.Status == JobStatus.Running.ToString())
+                    var response = await Send(new GetJobRunsQuery { JobName = model.JobName });
+                    if (response?.JobRuns != null && response.JobRuns.Any())
                     {
-                        joinWord = "since";                                  
+                        lastJobRun = response.JobRuns.OrderByDescending(o => o.StartTime).First();                                             
                     }
                     else
                     {
-                        jobTime = response.LastRunTime ?? model.SubmittedTime;
+                        TempData[SendKeys.JobStatusFailed.ToString()] = true;                 
                     }
-
-                    model.Status = $"{response.Status} {joinWord} {jobTime.ToShortDateString()} {jobTime.ToShortTimeString()} by {model.UserName}";
-                    
-                    if (response.Status == JobStatus.Completed.ToString())
+                }
+                else
+                {
+                    var response = await Send(new GetJobRunByIdQuery(model.JobRunId));
+                    if (response != null)
                     {
-                        RedirectToAction("Complete", new CompleteViewModel() { Status = model.Status, ImportType = model.ImportType, JobName = model.JobName, SubmittedTime = model.SubmittedTime, UserName = model.UserName });
+                        lastJobRun = new JobRun()
+                        {
+                            Id = response.Id,
+                            EndTime = response.EndTime,
+                            JobId = response.JobId,
+                            RecordsProcessed = response.RecordsProcessed,
+                            StartTime = response.StartTime,
+                            Status = response.Status,
+                            User = response.User,
+                        };                        
                     }
+                    else
+                    {
+                        TempData[SendKeys.JobStatusFailed.ToString()] = true;           
+                    }
+                }
+
+                model.JobRunId = lastJobRun.Id;
+                model.SubmittedTime = lastJobRun.StartTime;
+                model.Status = lastJobRun.Status;
+                model.UserName = lastJobRun.User;
+                if (lastJobRun.Status == JobStatus.Completed.ToString())
+                {
+                    return RedirectToAction("Complete", new CompleteViewModel() { Status = model.Status, ImportType = model.ImportType, JobName = model.JobName, JobRunId = model.JobRunId });
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+                TempData[SendKeys.JobStatusFailed.ToString()] = true;      
+            }
+
+
+            return View("SubmitImportRequest", model);
+        }
+
+        [HttpGet]
+        [Route("/admin/import/complete")]
+        public async Task<IActionResult> Complete(CompleteViewModel viewModel)
+        {
+            try
+            {
+                var response = await Send(new GetJobRunByIdQuery(viewModel.JobRunId));
+                if (response != null)
+                {
+                    viewModel.Status = response.Status;                   
+                    viewModel.CompletedTime = response.EndTime ?? DateTime.Now;
+                    viewModel.UserName = response.User;                    
                 }
                 else
                 {
@@ -146,14 +193,6 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
                 TempData[SendKeys.JobStatusFailed.ToString()] = true;
             }
 
-
-            return View("SubmitImportRequest", model);
-        }
-
-        [HttpGet]
-        [Route("/admin/import/complete")]
-        public IActionResult Complete(CompleteViewModel viewModel)
-        {
             return View(viewModel);
         }
     }
