@@ -4,6 +4,7 @@
 
 @{
     ViewData["Title"] = Model.Title;
+    ViewBag.IsSubmitted = Model.IsSubmitted;
 }
 
 <div class="govuk-grid-row">
@@ -62,35 +63,41 @@
 
 
         <form asp-controller="Applications" asp-action="ApplicationPage" method="post" enctype="multipart/form-data">
+            <fieldset class="govuk-fieldset" disabled="@Model.IsSubmitted">
+                @Html.HiddenFor(m => m.OrganisationId)
+                @Html.HiddenFor(m => m.PageId)
+                @Html.HiddenFor(m => m.FormVersionId)
+                @Html.HiddenFor(m => m.ApplicationId)
+                @Html.HiddenFor(m => m.SectionId)
+                @Html.HiddenFor(m => m.Order)
+                @if (Model.Questions.Count == 1)
+                {
+                    <span class="govuk-caption-xl">@Model.Title</span>
+                }
+                else
+                {
+                    <h1 class="govuk-heading-l">@Model.Title</h1>
+                }
 
-            @Html.HiddenFor(m => m.OrganisationId)
-            @Html.HiddenFor(m => m.PageId)
-            @Html.HiddenFor(m => m.FormVersionId)
-            @Html.HiddenFor(m => m.ApplicationId)
-            @Html.HiddenFor(m => m.SectionId)
-            @Html.HiddenFor(m => m.Order)
-
-
-            @if (Model.Questions.Count == 1)
+                @for (int i = 0; i < Model.Questions.Count; i++)
+                {
+                    await Html.RenderPartialAsync("Application/Question", Model.Questions[i]);
+                }
+            </fieldset>
+            @if (Model.IsSubmitted)
             {
-                <span class="govuk-caption-xl">@Model.Title</span>
+                <a class="govuk-button govuk-button--secondary"
+                                 asp-action="ViewApplicationSection"
+                                 asp-route-sectionId="@Model.SectionId"
+                                 asp-controller="Applications"
+                                 asp-route-formVersionId="@Model.FormVersionId"
+                                 asp-route-organisationId="@Model.OrganisationId"
+                                 asp-route-applicationId="@Model.ApplicationId">Back to view section</a>
             }
             else
             {
-                <h1 class="govuk-heading-l">@Model.Title</h1>
+                <govuk-button type="submit">Save and continue</govuk-button>
             }
-
-            @for (int i = 0; i < Model.Questions.Count; i++)
-            {
-
-
-                await Html.RenderPartialAsync("Application/Question", Model.Questions[i]);
-
-
-            }
-
-            <govuk-button type="submit">Save and continue</govuk-button>
-
         </form>
 
     </div>
