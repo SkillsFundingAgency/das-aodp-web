@@ -127,8 +127,9 @@ public class ApplicationMessagesController : ControllerBase
 
             return RedirectToAction(nameof(ApplicationMessages), new { model.ApplicationReviewId });
         }
-        catch
+        catch (Exception ex)
         {
+            LogException(ex);
             return View(model);
         }
     }
@@ -137,23 +138,17 @@ public class ApplicationMessagesController : ControllerBase
     [Route("review/{applicationReviewId}/messages/read")]
     public async Task<IActionResult> ReadApplicationMessages([FromForm] MarkApplicationMessagesAsReadViewModel model)
     {
-        try
-        {
-            var applicationId = await GetApplicationIdAsync(model.ApplicationReviewId);
+        var applicationId = await GetApplicationIdAsync(model.ApplicationReviewId);
 
-            await Send(new MarkAllMessagesAsReadCommand()
-            {
-                ApplicationId = applicationId,
-                UserType = _userHelperService.GetUserType().ToString()
-            });
-
-            TempData[NotificationKeys.MarkAsReadBanner.ToString()] = true;
-            return RedirectToAction(nameof(ApplicationMessages), new { model.ApplicationReviewId });
-        }
-        catch
+        await Send(new MarkAllMessagesAsReadCommand()
         {
-            return Redirect("/Home/Error");
-        }
+            ApplicationId = applicationId,
+            UserType = _userHelperService.GetUserType().ToString()
+        });
+
+        TempData[NotificationKeys.MarkAsReadBanner.ToString()] = true;
+        return RedirectToAction(nameof(ApplicationMessages), new { model.ApplicationReviewId });
+
     }
 
     private async Task<Guid> GetApplicationIdAsync(Guid applicationReviewId)

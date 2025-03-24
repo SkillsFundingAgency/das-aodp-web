@@ -1,33 +1,49 @@
-//using System.Diagnostics;
-//using Microsoft.AspNetCore.Authentication.Cookies;
-//using Microsoft.AspNetCore.Authentication;
-//using Microsoft.AspNetCore.Authorization;
-//using Microsoft.AspNetCore.Mvc;
-//using SFA.DAS.AODP.Web.Models;
-//using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-//using Microsoft.Extensions.Logging;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Moq;
+using SFA.DAS.AODP.Models.Users;
+using SFA.DAS.AODP.Web.Helpers.User;
 
-//namespace SFA.DAS.AODP.Web.Controllers
-//{
-//    public class HomeControllerTests : Controller
-//    {
-//        private readonly ILogger<HomeControllerTests> _logger;
+namespace SFA.DAS.AODP.Web.Test.Controllers;
 
-//        public HomeControllerTests(ILogger<HomeControllerTests> logger)
-//        {
-//            _logger = logger;
-//        }
+public class HomeControllerTests
+{
+    private readonly Mock<IUserHelperService> _userHelperServiceMock = new();
+    private readonly Mock<ILogger<Web.Controllers.HomeController>> _loggerMock = new();
+    private readonly Web.Controllers.HomeController _controller;
 
-//        public IActionResult Index()
-//        {
-//            return View();
-//        }
+    public HomeControllerTests() => _controller = new(_loggerMock.Object,_userHelperServiceMock.Object);
 
-//        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-//        public IActionResult Error()
-//        {
-//            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-//        }
+    [Fact]
+    public async Task Index_ReturnsApply_WhenUserIsAo()
+    {
+        // Arrange
+        _userHelperServiceMock.Setup(m => m.GetUserType())
+                     .Returns(AODP.Models.Users.UserType.AwardingOrganisation);
 
-//    }
-//}
+        // Act
+        var result = _controller.Index();
+
+        // Assert
+        var redirect = Assert.IsType<RedirectResult>(result);
+        Assert.Equal("/apply/applications", redirect.Url);
+    }
+
+    [Theory]
+    [InlineData(UserType.Ofqual)]
+    [InlineData(UserType.Qfau)]
+    [InlineData(UserType.SkillsEngland)]
+    public async Task Index_ReturnsReview_WhenUserIsNotAo(UserType userType)
+    {
+        // Arrange
+        _userHelperServiceMock.Setup(m => m.GetUserType())
+                     .Returns(userType);
+
+        // Act
+        var result = _controller.Index();
+
+        // Assert
+        var redirect = Assert.IsType<RedirectResult>(result);
+        Assert.Equal("/review", redirect.Url);
+    }
+}

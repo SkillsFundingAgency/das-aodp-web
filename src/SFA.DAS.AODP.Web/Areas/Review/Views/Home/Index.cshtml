@@ -1,4 +1,9 @@
-﻿@{
+﻿@using SFA.DAS.AODP.Web.Areas.Review.Models.Home
+@using SFA.DAS.AODP.Web.Authentication
+@using static SFA.DAS.AODP.Web.Areas.Review.Models.Home.ReviewHomeViewModel
+@model ReviewHomeViewModel
+@{
+
     ViewData["Title"] = "Review";
 }
 
@@ -6,37 +11,67 @@
     <main class="govuk-main-wrapper">
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds" id="guide-contents">
-
-                <div class="gem-c-heading govuk-!-margin-bottom-6">
-
-                    <h1 class="gem-c-heading__text govuk-heading-l">
-                        Review qualifications for funding approval
+                <div class="govuk-grid-row">
+                    <h1 class="govuk-heading-xl">
+                        What do you want to do?
+                        <span class="govuk-caption-l">Choose from the options what you would like to do.</span>
                     </h1>
                 </div>
-                <p>Use this service to review qualifications to decide if they meet the criteria for funding approval.</p>
-                <p>
-                    <h3>Review New Qualifications</h3>
-                    <a asp-controller="New" asp-action="Index" asp-area="Review" role="button" draggable="false" class="govuk-button govuk-button--start" data-module="govuk-button">
-                        Start now
-                        <svg class="govuk-button__start-icon" xmlns="http://www.w3.org/2000/svg" width="17.5" height="19" viewBox="0 0 33 40" aria-hidden="true" focusable="false">
-                            <path fill="currentColor" d="M0 0h13l20 20-20 20H0l20-20z"></path>
-                        </svg>
-                    </a>
-                </p>                
-                <p>
-                    <h3>Review Changed Qualifications</h3>
-                    <a asp-controller="changed" asp-action="index" role="button" draggable="false" class="govuk-button govuk-button--start" data-module="govuk-button">
-                        Start now
-                        <svg class="govuk-button__start-icon" xmlns="http://www.w3.org/2000/svg" width="17.5" height="19" viewBox="0 0 33 40" aria-hidden="true" focusable="false">
-                            <path fill="currentColor" d="M0 0h13l20 20-20 20H0l20-20z"></path>
-                        </svg>
-                    </a>
-                </p>
-                <govuk-inset-text>
-                    You'll need a DfE account to use this service. If you don't have a DfE account , you can create one now.
-                    <br /><br />
-                    <a class="govuk-link" href="https://profile.signin.education.gov.uk/register">Create a new DfE account</a>
-                </govuk-inset-text>
+
+                <div class="govuk-grid-row">
+                    <form asp-action="Index">
+
+                        <govuk-radios asp-for="SelectedOption">
+
+                            @if (Model.UserRoles.Contains(RoleConstants.QFAUReviewer) || Model.UserRoles.Contains(RoleConstants.QFAUApprover))
+                            {
+                                <govuk-radios-item value="@Options.ApplicationsReview">
+                                    Review funding requests
+                                    <govuk-radios-item-hint>Review funding applications submitted by AOs</govuk-radios-item-hint>
+                                </govuk-radios-item>
+
+                                <govuk-radios-item value="@Options.NewQualifications">
+                                    Review newly regulated qualifications
+                                    <govuk-radios-item-hint>Review newly regulated qualifications for this cycle.</govuk-radios-item-hint>
+                                </govuk-radios-item>
+
+                                <govuk-radios-item value="@Options.ChangedQualifications">
+                                    Review regulated qualifications with changes
+                                    <govuk-radios-item-hint>Review regulated qualifications with changes for this cycle.</govuk-radios-item-hint>
+                                </govuk-radios-item>
+                            }
+
+                            @if (Model.UserRoles.Contains(RoleConstants.QFAUImport))
+                            {
+                                <govuk-radios-item value="@Options.ImportData">
+                                    Import data
+                                    <govuk-radios-item-hint>Import data from funded qualifications or regulated qualifications.</govuk-radios-item-hint>
+                                </govuk-radios-item>
+                            }
+
+                            @if (Model.UserRoles.Contains(RoleConstants.QFAUFormBuilder))
+                            {
+                                <govuk-radios-item value="@Options.FormsManagement">
+                                    Create a submission form
+                                    <govuk-radios-item-hint>Create a form for AOs to submit their applications for qualification funding.</govuk-radios-item-hint>
+                                </govuk-radios-item>
+                            }
+
+                            @if (Model.UserRoles.Contains(RoleConstants.QFAUImport))
+                            {
+                                <govuk-radios-item value="@Options.OutputFile">
+                                    Create an output file
+                                    <govuk-radios-item-hint>Create an output file to store all funding decisions made</govuk-radios-item-hint>
+                                </govuk-radios-item>
+                            }
+                        </govuk-radios>
+
+                        <govuk-button type="submit">Continue</govuk-button>
+
+                    </form>
+
+                </div>
+
             </div>
         </div>
     </main>

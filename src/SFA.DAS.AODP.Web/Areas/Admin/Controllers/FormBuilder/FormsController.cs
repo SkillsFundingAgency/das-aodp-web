@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Sections;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
+using SFA.DAS.AODP.Common.Exceptions;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.Markdown;
@@ -17,7 +18,7 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers.FormBuilder;
 [Area("Admin")]
 public class FormsController : ControllerBase
 {
-    public enum UpdateKeys { FormUpdated, FormPublished }
+    public enum UpdateKeys { FormUpdated, FormPublished, FormDeleted }
 
     public FormsController(IMediator mediator, ILogger<FormsController> logger) : base(mediator, logger)
     { }
@@ -26,19 +27,13 @@ public class FormsController : ControllerBase
     [Route("/admin/forms")]
     public async Task<IActionResult> Index()
     {
-        try
-        {
-            var query = new GetAllFormVersionsQuery();
-            var response = await Send(query);
+        var query = new GetAllFormVersionsQuery();
+        var response = await Send(query);
+        ShowNotificationIfKeyExists(UpdateKeys.FormDeleted.ToString(), ViewNotificationMessageType.Success, "The form has been deleted.");
 
-            var viewModel = FormVersionListViewModel.Map(response);
+        var viewModel = FormVersionListViewModel.Map(response);
 
-            return View(viewModel);
-        }
-        catch
-        {
-            return Redirect("/Home/Error");
-        }
+        return View(viewModel);
     }
 
     [Route("/admin/forms")]
@@ -71,8 +66,9 @@ public class FormsController : ControllerBase
 
             return RedirectToAction(nameof(Index));
         }
-        catch
+        catch (Exception ex)
         {
+            LogException(ex);
             return View(model);
         }
     }
@@ -93,6 +89,7 @@ public class FormsController : ControllerBase
     {
         try
         {
+            if (!ModelState.IsValid) return View(viewModel);
             var command = new CreateFormVersionCommand
             {
                 Title = viewModel.Name,
@@ -108,8 +105,9 @@ public class FormsController : ControllerBase
             var response = await Send(command);
             return RedirectToAction(nameof(Edit), new { formVersionId = response.Id });
         }
-        catch
+        catch (Exception ex)
         {
+            LogException(ex);
             return View(viewModel);
         }
     }
@@ -120,23 +118,15 @@ public class FormsController : ControllerBase
     [Route("/admin/forms/{formVersionId}")]
     public async Task<IActionResult> Edit(Guid formVersionId)
     {
-        try
-        {
-            var formVersionQuery = new GetFormVersionByIdQuery(formVersionId);
-            var response = await Send(formVersionQuery);
+        var formVersionQuery = new GetFormVersionByIdQuery(formVersionId);
+        var response = await Send(formVersionQuery);
 
-            var viewModel = EditFormVersionViewModel.Map(response);
+        var viewModel = EditFormVersionViewModel.Map(response);
 
-            ShowNotificationIfKeyExists(UpdateKeys.FormUpdated.ToString(), ViewNotificationMessageType.Success, "The form has been updated.");
-            ShowNotificationIfKeyExists(UpdateKeys.FormPublished.ToString(), ViewNotificationMessageType.Success, "The form has been published.");
+        ShowNotificationIfKeyExists(UpdateKeys.FormUpdated.ToString(), ViewNotificationMessageType.Success, "The form has been updated.");
+        ShowNotificationIfKeyExists(UpdateKeys.FormPublished.ToString(), ViewNotificationMessageType.Success, "The form has been published.");
 
-            return View(viewModel);
-        }
-        catch
-        {
-            return Redirect("/Home/Error");
-        }
-
+        return View(viewModel);
     }
 
     [HttpPost]
@@ -215,8 +205,9 @@ public class FormsController : ControllerBase
             }
             return RedirectToAction(nameof(Edit), new { formVersionId = editFormVersionViewModel.Id });
         }
-        catch
+        catch (Exception ex)
         {
+            LogException(ex);
             return View(editFormVersionViewModel);
         }
     }
@@ -226,34 +217,31 @@ public class FormsController : ControllerBase
     [Route("/admin/forms/{formVersionId}/delete")]
     public async Task<IActionResult> Delete(Guid formVersionId)
     {
-        try
+        var query = new GetFormVersionByIdQuery(formVersionId);
+        var response = await Send(query);
+        return View(new DeleteFormViewModel()
         {
-            var query = new GetFormVersionByIdQuery(formVersionId);
-            var response = await Send(query);
-            return View(new DeleteFormViewModel()
-            {
-                FormVersionId = formVersionId,
-                Title = response.Title
-            });
-        }
-        catch
-        {
-            return Redirect("/Home/Error");
-        }
+            FormVersionId = formVersionId,
+            FormId = response.FormId,
+            Title = response.Title
+        });
     }
 
     [HttpPost]
     [Route("/admin/forms/{formVersionId}/delete")]
-    public async Task<IActionResult> DeleteConfirmed(DeleteFormViewModel model)
+    public async Task<IActionResult> Delete(DeleteFormViewModel model)
     {
         try
         {
-            var command = new DeleteFormVersionCommand(model.FormVersionId);
+            var command = new DeleteFormCommand(model.FormId);
             await Send(command);
+
+            TempData[UpdateKeys.FormDeleted.ToString()] = true;
             return RedirectToAction(nameof(Index));
         }
-        catch
+        catch (Exception ex)
         {
+            LogException(ex);
             return View(model);
         }
     }

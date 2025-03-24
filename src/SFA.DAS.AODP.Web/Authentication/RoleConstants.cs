@@ -13,7 +13,7 @@ static class RoleConstants
 
 
     public static string[] QfauRoles = [QFAUApprover, QFAUReviewer, QFAUFormBuilder, QFAUImport];
-    public static string[] IfateRoles = [IFATEFormBuilder, IFATEFormBuilder];
+    public static string[] IfateRoles = [IFATEFormBuilder, IFATEReviewer];
     public static string[] OfqualRoles = [OFQUALReviewer];
     public static string[] AoRoles = [AOApply];
 }

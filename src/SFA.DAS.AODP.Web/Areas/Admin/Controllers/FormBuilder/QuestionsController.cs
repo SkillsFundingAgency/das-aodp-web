@@ -24,7 +24,7 @@ public class QuestionsController : ControllerBase
 
     private readonly FormBuilderSettings _formBuilderSettings;
 
-    public QuestionsController(IMediator mediator, ILogger<FormsController> logger, IOptions<FormBuilderSettings> formBuilderSettings) : base(mediator, logger)
+    public QuestionsController(IMediator mediator, ILogger<QuestionsController> logger, IOptions<FormBuilderSettings> formBuilderSettings) : base(mediator, logger)
     {
         _formBuilderSettings = formBuilderSettings.Value;
     }
@@ -72,8 +72,9 @@ public class QuestionsController : ControllerBase
                 questionId = response.Id
             });
         }
-        catch
+        catch (Exception ex)
         {
+            LogException(ex);
             return View(model);
         }
     }
@@ -85,27 +86,22 @@ public class QuestionsController : ControllerBase
     [Route("/admin/forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/questions/{questionId}")]
     public async Task<IActionResult> Edit(Guid formVersionId, Guid sectionId, Guid pageId, Guid questionId)
     {
-        try
+
+        var query = new GetQuestionByIdQuery()
         {
-            var query = new GetQuestionByIdQuery()
-            {
-                PageId = pageId,
-                SectionId = sectionId,
-                FormVersionId = formVersionId,
-                QuestionId = questionId
-            };
-            var response = await Send(query);
+            PageId = pageId,
+            SectionId = sectionId,
+            FormVersionId = formVersionId,
+            QuestionId = questionId
+        };
+        var response = await Send(query);
 
-            var map = EditQuestionViewModel.MapToViewModel(response, formVersionId, sectionId, _formBuilderSettings);
+        var map = EditQuestionViewModel.MapToViewModel(response, formVersionId, sectionId, _formBuilderSettings);
 
-            ShowNotificationIfKeyExists(QuestionUpdatedKey, ViewNotificationMessageType.Success, "The question has been updated.");
+        ShowNotificationIfKeyExists(QuestionUpdatedKey, ViewNotificationMessageType.Success, "The question has been updated.");
 
-            return View(map);
-        }
-        catch
-        {
-            return Redirect("/Home/Error");
-        }
+        return View(map);
+
     }
 
     [HttpPost()]
@@ -127,7 +123,7 @@ public class QuestionsController : ControllerBase
             {
                 model.Options.Options.Add(new()
                 {
-                    Order = model.Options.Options.Count > 0 ?  model.Options.Options.Max(o => o.Order) + 1 : 1
+                    Order = model.Options.Options.Count > 0 ? model.Options.Options.Max(o => o.Order) + 1 : 1
                 });
                 ViewBag.AutoFocusOnAddOptionButton = true;
                 return View(model);
@@ -158,7 +154,7 @@ public class QuestionsController : ControllerBase
 
 
             var command = EditQuestionViewModel.MapToCommand(model);
-            await _mediator.Send(command);
+            await Send(command);
 
 
             if (model.AdditionalActions?.SaveAndExit == true)
@@ -177,8 +173,9 @@ public class QuestionsController : ControllerBase
             }
 
         }
-        catch
+        catch (Exception ex)
         {
+            LogException(ex);
             return View(model);
         }
     }
@@ -190,39 +187,33 @@ public class QuestionsController : ControllerBase
     [Route("/admin/forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/questions/{questionId}/delete")]
     public async Task<IActionResult> Delete(Guid formVersionId, Guid sectionId, Guid pageId, Guid questionId)
     {
-        try
+        var routesQuery = new GetRoutingInformationForQuestionQuery()
         {
-            var routesQuery = new GetRoutingInformationForQuestionQuery()
-            {
-                FormVersionId = formVersionId,
-                PageId = pageId,
-                QuestionId = questionId,
-                SectionId = sectionId
-            };
-            var routesResponse = await _mediator.Send(routesQuery);
-            if (routesResponse.Value.Routes.Any())
-            {
-                ModelState.AddModelError("", "There are routes associated with this question");
-            }
-
-            var query = new GetQuestionByIdQuery()
-            {
-                PageId = pageId,
-                SectionId = sectionId,
-                FormVersionId = formVersionId,
-                QuestionId = questionId
-            };
-
-            var response = await Send(query);
-
-            var vm = DeleteQuestionViewModel.MapToViewModel(response, formVersionId, sectionId);
-
-            return View(vm);
-        }
-        catch
+            FormVersionId = formVersionId,
+            PageId = pageId,
+            QuestionId = questionId,
+            SectionId = sectionId
+        };
+        var routesResponse = await Send(routesQuery);
+        if (routesResponse.Routes.Any())
         {
-            return Redirect("/Home/Error");
+            ModelState.AddModelError("", "There are routes associated with this question");
         }
+
+        var query = new GetQuestionByIdQuery()
+        {
+            PageId = pageId,
+            SectionId = sectionId,
+            FormVersionId = formVersionId,
+            QuestionId = questionId
+        };
+
+        var response = await Send(query);
+
+        var vm = DeleteQuestionViewModel.MapToViewModel(response, formVersionId, sectionId);
+
+        return View(vm);
+
     }
 
     [HttpPost()]
@@ -244,8 +235,9 @@ public class QuestionsController : ControllerBase
 
             return RedirectToAction("Edit", "Pages", new { formVersionId, sectionId, pageId });
         }
-        catch
+        catch (Exception ex)
         {
+            LogException(ex);
             return View(model);
         }
     }
