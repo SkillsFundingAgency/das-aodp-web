@@ -40,7 +40,8 @@
                            name="@day"
                            type="text"
                            value="@Model.Value?.Day"
-                           inputmode="numeric">
+                           inputmode="numeric"
+                    @(Model.ReadOnly ? "disabled" : "")>
                 </div>
             </div>
 
@@ -54,7 +55,8 @@
                            name="@month"
                            type="text"
                            value="@Model.Value?.Month"
-                           inputmode="numeric">
+                           inputmode="numeric"
+                           @(Model.ReadOnly ? "disabled": "")>
                 </div>
             </div>
 
@@ -68,7 +70,8 @@
                            name="@year"
                            type="text"
                            value="@Model.Value?.Year"
-                           inputmode="numeric">
+                           inputmode="numeric"
+                    @(Model.ReadOnly ? "disabled" : "")>
                 </div>
             </div>
 

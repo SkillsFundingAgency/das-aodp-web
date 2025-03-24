@@ -13,6 +13,7 @@ using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.User;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 using SFA.DAS.AODP.Infrastructure.File;
+using SFA.DAS.AODP.Application.Queries.Application.Form;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 {
@@ -555,39 +556,34 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         [Route("review/application-reviews/{applicationReviewId}/details")]
         public async Task<IActionResult> ViewApplicationReadOnlyDetails(Guid applicationReviewId)
         {
-            try
-            {
-                var applicationId = await GetApplicationIdAsync(applicationReviewId);
+            var applicationId = await GetApplicationIdWithAccessValidation(applicationReviewId);
+            var form = await Send(new GetFormPreviewByIdQuery(applicationId));
+            var applicationDetails = await Send(new GetApplicationFormByReviewIdQuery(applicationReviewId));
+            var files = _fileService.ListBlobs(applicationId.ToString());
 
-                var applicationDetails = await Send(new GetApplicationReadOnlyDetailsByIdQuery(applicationReviewId, applicationId));
-                
-                var vm = ApplicationReadOnlyDetailsViewModel.Map(applicationDetails);
-                vm.ApplicationReviewId = applicationReviewId;
+            var vm = ApplicationReadOnlyDetailsViewModel.Map(form, applicationDetails, files);
+            vm.ApplicationReviewId = applicationReviewId;
 
-                return View(vm);
-            }
-            catch
-            {
-                return Redirect("/Home/Error");
-            }
+            return View(vm);
         }
 
         [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
         [HttpPost]
-        [Route("review/application-reviews/{applicationReviewId}/files/{fileName}/download")]
-        public async Task<IActionResult> ApplicationFileDownload([FromRoute] string applicationReviewId, [FromRoute] string fileName, string fullPath)
+        [Route("review/application-reviews/{applicationReviewId}/details")]
+        public async Task<IActionResult> ApplicationFileDownload(ApplicationFileDownloadViewModel model)
         {
-            var fileStream = await _fileService.OpenReadStreamAsync(fullPath);
-
-            if (fileStream == null)
+            var applicationId = await GetApplicationIdWithAccessValidation(model.ApplicationReviewId);
+            if (!model.FilePath.StartsWith(applicationId.ToString()))
             {
-                return NotFound("File not found");
+                return BadRequest();
             }
 
-            return File(fileStream, "application/octet-stream", fileName);
+            var file = await _fileService.GetBlobDetails(model.FilePath.ToString());
+            var fileStream = await _fileService.OpenReadStreamAsync(model.FilePath);
+            return File(fileStream, "application/octet-stream", file.FileNameWithPrefix);
         }
 
-        private async Task<Guid> GetApplicationIdAsync(Guid applicationReviewId)
+        private async Task<Guid> GetApplicationIdWithAccessValidation(Guid applicationReviewId)
         {
             var shared = await Send(new GetApplicationReviewSharingStatusByIdQuery(applicationReviewId));
 

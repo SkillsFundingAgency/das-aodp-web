@@ -1,4 +1,7 @@
-﻿using SFA.DAS.AODP.Application.Queries.Review;
+﻿using SFA.DAS.AODP.Application.Queries.Application.Form;
+using SFA.DAS.AODP.Application.Queries.Review;
+using SFA.DAS.AODP.Infrastructure.File;
+using SFA.DAS.AODP.Models.Forms;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview;
 
@@ -6,7 +9,7 @@ public class ApplicationReadOnlyDetailsViewModel
 {
     public Guid ApplicationReviewId { get; set; }
     public Guid ApplicationId { get; set; }
-    public List<Section> SectionsWithPagesAndQuestionsAndAnswers { get; set; } = new List<Section>();
+    public List<Section> Sections { get; set; } = new List<Section>();
 
     public class Section
     {
@@ -30,20 +33,27 @@ public class ApplicationReadOnlyDetailsViewModel
         public string Title { get; set; } = string.Empty;
         public string Type { get; set; }
         public bool Required { get; set; }
+        public int Order { get; set; }
         public List<QuestionOption> QuestionOptions { get; set; } = new List<QuestionOption>();
-        public List<QuestionAnswer> QuestionAnswers { get; set; } = new List<QuestionAnswer>();
-        public List<File>? Files { get; set; }
+        public Answer? Answer { get; set; } = new Answer();
     }
 
     public class QuestionOption
     {
+        public Guid Id { get; set; }
         public string Value { get; set; }
-        public bool Selected { get; set; }
+        public int Order { get; set; }
     }
 
-    public class QuestionAnswer
+    public class Answer
     {
-        public string? FinalAnswer { get; set; }
+        public string? TextValue { get; set; }
+        public decimal? NumberValue { get; set; }
+        public DateOnly? DateValue { get; set; }
+        public List<string>? MultipleChoiceValue { get; set; }
+        public string? RadioChoiceValue { get; set; }
+        public List<File>? Files { get; set; }
+
     }
 
     public class File
@@ -54,12 +64,12 @@ public class ApplicationReadOnlyDetailsViewModel
         public string Extension { get; set; }
     }
 
-    public static ApplicationReadOnlyDetailsViewModel Map(GetApplicationReadOnlyDetailsByIdQueryResponse response)
+    public static ApplicationReadOnlyDetailsViewModel Map(GetFormPreviewByIdQueryResponse form, GetApplicationFormByReviewIdQueryResponse answers, List<UploadedBlob> files)
     {
-        return new ApplicationReadOnlyDetailsViewModel
+        var model = new ApplicationReadOnlyDetailsViewModel
         {
-            ApplicationId = response.ApplicationId,
-            SectionsWithPagesAndQuestionsAndAnswers = response.SectionsWithPagesAndQuestionsAndAnswers
+            ApplicationId = answers.ApplicationId,
+            Sections = form.SectionsWithPagesAndQuestions
                 .Select(section => new Section
                 {
                     Id = section.Id,
@@ -76,25 +86,45 @@ public class ApplicationReadOnlyDetailsViewModel
                             Title = question.Title,
                             Type = question.Type,
                             Required = question.Required,
+                            Order = question.Order,
                             QuestionOptions = question.QuestionOptions.Select(option => new QuestionOption
                             {
+                                Id = option.Id,
+                                Order = option.Order,
                                 Value = option.Value,
-                                Selected = option.Selected
                             }).ToList(),
-                            QuestionAnswers = question.QuestionAnswers.Select(answer => new QuestionAnswer
-                            {
-                                FinalAnswer = AnswerSelector.GetReadOnlyAnswer(answer, question.Type)
-                            }).ToList(),
-                            Files = question.Files?.Select(file => new File 
-                            {
-                                FileName = file.FileName,
-                                FullPath = file.FullPath,
-                                Extension = file.Extension,
-                                FileDisplayName = response.ApplicationId.ToString() + "/" + file.FileName
-                            }).ToList()
+                            Answer = GetAnswer(question, answers, files)
                         }).ToList()
                     }).ToList()
                 }).ToList()
+        };
+
+        return model;
+    }
+
+    private static Answer? GetAnswer(GetFormPreviewByIdQueryResponse.Question question, GetApplicationFormByReviewIdQueryResponse answers, List<UploadedBlob> files)
+    {
+        if (question.Type == QuestionType.File.ToString()) return new Answer()
+        {
+            Files = files.Where(f => f.FullPath.StartsWith($"{answers.ApplicationId}/{question.Id}")).ToList().Select(s => new File()
+            {
+                Extension = s.Extension,
+                FileDisplayName = s.FileNameWithPrefix,
+                FullPath = s.FullPath,
+                FileName = s.FileName,
+            }).ToList()
+        };
+
+        var answer = answers.QuestionsWithAnswers.FirstOrDefault(q => q.Id == question.Id)?.Answer;
+        if (answer == null) return null;
+
+        return new()
+        {
+            DateValue = answer.DateValue,
+            TextValue = answer.TextValue,
+            NumberValue = answer.NumberValue,
+            MultipleChoiceValue = answer.MultipleChoiceValue,
+            RadioChoiceValue = answer.RadioChoiceValue
         };
     }
 }

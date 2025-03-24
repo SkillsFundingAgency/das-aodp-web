@@ -38,9 +38,11 @@ public class ApplicationFormPreviewViewModel
                         Title = q.Title,
                         Type = q.Type,
                         Required = q.Required,
+                        Order = q.Order,
                         QuestionOptions = q.QuestionOptions.Select(opt => new QuestionOptionViewModel
                         {
-                            Value = opt.Value
+                            Value = opt.Value,
+                            Order = opt.Order,
                         }).ToList()
                     }).ToList()
                 }).ToList()
@@ -72,11 +74,13 @@ public class ApplicationFormPreviewViewModel
         public string Title { get; set; } = string.Empty;
         public string Type { get; set; }
         public bool Required { get; set; }
+        public int Order { get; set; }
         public List<QuestionOptionViewModel> QuestionOptions { get; set; } = new List<QuestionOptionViewModel>();
     }
 
     public class QuestionOptionViewModel
     {
         public string Value { get; set; }
+        public int Order { get; set; }
     }
 }

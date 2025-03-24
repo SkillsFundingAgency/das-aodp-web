@@ -1,10 +1,11 @@
 ﻿@using SFA.DAS.AODP.Models.Application
 @using SFA.DAS.AODP.Models.Forms
 @using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
+@using SFA.DAS.AODP.Web.Models.GdsComponents
 @model ApplicationReadOnlyDetailsViewModel;
 
 @{
-    ViewData["Title"] = "Application Read Only Details";
+    ViewData["Title"] = "Application form";
 }
 
 <div class="govuk-grid-row">
@@ -17,15 +18,15 @@
 
         <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
-        <h1 class="govuk-heading-xl govuk-!-margin-bottom-3">Application Read Only Details / Preview</h1>
+        <h1 class="govuk-heading-xl govuk-!-margin-bottom-3">Application form</h1>
 
 
-        @if (Model.SectionsWithPagesAndQuestionsAndAnswers.Any())
+        @if (Model.Sections.Any())
         {
-            @foreach (var sec in Model.SectionsWithPagesAndQuestionsAndAnswers)
+            @foreach (var sec in Model.Sections.OrderBy(o => o.Order))
             {
                 <h3 class="govuk-heading-l govuk-!-margin-top-3 govuk-!-margin-bottom-0">
-                    Section: @sec.Title
+                    @(sec.Order). Section: @sec.Title
                 </h3>
                 <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible govuk-!-margin-top-1 govuk-!-margin-bottom-3">
 
@@ -34,7 +35,7 @@
                     {
 
                         <ol class="govuk-list govuk-list--number govuk-list--spaced">
-                            @foreach (var p in sec.Pages)
+                            @foreach (var p in sec.Pages.OrderBy(o => o.Order))
                             {
                                 <li>
                                     <h4 class="govuk-heading-m govuk-!-margin-bottom-1">Page: @p.Title</h4>
@@ -43,139 +44,9 @@
                                     @if (p.Questions.Any())
                                     {
                                         <ol class="govuk-list govuk-list--number">
-                                            @foreach (var question in p.Questions)
+                                            @foreach (var question in p.Questions.OrderBy(o => o.Order))
                                             {
-                                                <li>
-                                                    <p class="govuk-body govuk-!-font-weight-bold">
-                                                        Question: @question.Title
-                                                        @if (!question.Required)
-                                                        {
-                                                            <span class="govuk-body govuk-!-font-weight-regular"> (optional)</span>
-                                                        }
-                                                    </p>
-
-                                                    @foreach (var answer in question.QuestionAnswers)
-                                                    {
-
-                                                        @if (question.Type == QuestionType.Text.ToString())
-                                                        {
-                                                            <input class="govuk-input govuk-input--width-30"
-                                                                   name="Answer" 
-                                                                   type="text" 
-                                                                   spellcheck="false" 
-                                                                   value="@answer.FinalAnswer" 
-                                                                   disabled=""
-                                                                   inputmode="text" 
-                                                                   readonly>
-                                                        }
-
-                                                        else if (question.Type == QuestionType.TextArea.ToString())
-                                                        {
-                                                            <textarea class="govuk-textarea"
-                                                                   name="Answer"
-                                                                   type="text"
-                                                                   spellcheck="false"
-                                                                   disabled=""
-                                                                   inputmode="text"
-                                                                      readonly>@answer.FinalAnswer</textarea>
-                                                        }
-                                                        @if (question.Type == QuestionType.Number.ToString())
-                                                        {
-                                                            <input class="govuk-input govuk-input--width-20"
-                                                                   id=""
-                                                                   type="number"
-                                                                   inputmode="numeric"
-                                                                   value="@answer.FinalAnswer"
-                                                                   disabled=""
-                                                                   readonly>
-                                                        }
-                                                        else if (question.Type == QuestionType.Radio.ToString())
-                                                        {
-                                                            <div class="govuk-radios" data-module="govuk-radios" id="@question.Id">
-
-                                                                @foreach (var option in question.QuestionOptions ?? new List<ApplicationReadOnlyDetailsViewModel.QuestionOption>())
-                                                                {
-                                                                    <div class="govuk-radios__item">
-                                                                        <input class="govuk-radios__input"
-                                                                               id="@question.Id-@option.Value"
-                                                                               name="@question.Id-@option.Value"
-                                                                               type="radio" 
-                                                                            value="@option.Value"
-                                                                            disabled
-                                                                            @(option.Selected ? "checked" : "")>
-                                                                        <label class="govuk-label govuk-radios__label" for="@question-@option.Value">
-                                                                            @option.Value
-                                                                        </label>
-                                                                    </div>
-                                                                }
-                                                            </div>
-                                                        }
-                                                        else if (question.Type == QuestionType.MultiChoice.ToString())
-                                                        {
-                                                            <div class="govuk-checkboxes" data-module="govuk-checkboxes">
-                                                                @foreach (var option in question.QuestionOptions ?? new List<ApplicationReadOnlyDetailsViewModel.QuestionOption>())
-                                                                {
-                                                                    <div class="govuk-checkboxes__item">
-                                                                        <input 
-                                                                            class="govuk-checkboxes__input"
-                                                                            id="multi_@option.Value"
-                                                                            type="checkbox" 
-                                                                            value="@option.Value"
-                                                                            disabled 
-                                                                            @(option.Selected ? "checked" : "")>
-                                                                        <label class="govuk-label govuk-checkboxes__label" for="multi_@option.Value">
-                                                                            @option.Value
-                                                                        </label>
-                                                                    </div>
-                                                                }
-                                                            </div>
-                                                        }
-                                                        else if (question.Type == QuestionType.Date.ToString())
-                                                        {
-                                                            <input class="govuk-input govuk-input--width-20"
-                                                                   name="Answer"
-                                                                   type="text"
-                                                                   spellcheck="false"
-                                                                   value="@answer.FinalAnswer"
-                                                                   disabled=""
-                                                                   inputmode="text"
-                                                                   readonly>
-                                                        }
-                                                        else if (question.Type == QuestionType.File.ToString())
-                                                        {
-                                                            <div class="govuk-file-list">
-                                                                @if (question.Files != null && question.Files.Any())
-                                                                {
-                                                                    <ul>
-                                                                        @foreach (var file in question.Files)
-                                                                        {
-                                                                            <li>
-                                                                                <span class="govuk-file-name">@file.FileDisplayName</span>
-
-                                                                                <form method="post" asp-controller="ApplicationReviews" asp-action="ApplicationFileDownload">
-                                                                                    @Html.HiddenFor(m => m.ApplicationReviewId)
-                                                                                    <input type="hidden" name="fileName" value="@file.FileDisplayName" />
-                                                                                    <input type="hidden" name="fullPath" value="@file.FullPath" />
-                                                                                    <button type="submit" class="govuk-button govuk-button--warning">
-                                                                                        Download
-                                                                                    </button>
-                                                                                </form>
-                                                                            </li>
-                                                                        }
-                                                                    </ul>
-                                                                }
-                                                                else
-                                                                {
-                                                                    <p class="govuk-no-files">No files uploaded.</p>
-                                                                }
-                                                            </div>
-                                                        }
-
-
-
-                                                    }
-
-                                                </li>
+                                                await RenderQuestion(question);
                                             }
                                         </ol>
                                     }
@@ -205,3 +76,137 @@
            asp-route-applicationReviewId="@Model.ApplicationReviewId">Back to application details</a>
     </div>
 </div>
+
+@{
+    async Task RenderQuestion(ApplicationReadOnlyDetailsViewModel.Question question)
+    {
+        string questionHtmlId = $"question-{question.Id}";
+        string questionLabelHtmlId = $"label-{questionHtmlId}";
+
+        <li>
+            <p id="@questionLabelHtmlId" class="govuk-body govuk-!-font-weight-bold govuk-!-margin-top-3 govuk-!-margin-bottom-3">
+                Question: @question.Title
+                @if (!question.Required)
+                {
+                    <span class="govuk-body govuk-!-font-weight-regular"> (optional)</span>
+                }
+            </p>
+
+            @{
+                var answer = question.Answer;
+
+                @if (question.Type == QuestionType.Text.ToString())
+                {
+                    <input class="govuk-input"
+                           id="@questionHtmlId"
+                           name="@questionHtmlId"
+                           value="@answer?.TextValue"
+                           type="text"
+                           disabled>
+                }
+
+                else if (question.Type == QuestionType.TextArea.ToString())
+                {
+                    <textarea class="govuk-textarea govuk-!-margin-bottom-1"
+                              id="@questionHtmlId"
+                              name="@questionHtmlId"
+                              type="text"
+                              disabled>@answer?.TextValue</textarea>
+                }
+                else if (question.Type == QuestionType.Number.ToString())
+                {
+                    <input class="govuk-input govuk-input--width-20"
+                           id="@questionHtmlId"
+                           name="@questionHtmlId"
+                           value=@answer?.NumberValue?.ToString()?.Replace(".00","")
+                           type="number"
+                           inputmode="numeric"
+                           disabled>
+                }
+                else if (question.Type == QuestionType.Radio.ToString())
+                {
+                    <div class="govuk-radios" data-module="govuk-radios" id="@questionHtmlId">
+
+                        @foreach (var option in question.QuestionOptions?.OrderBy(o => o.Order).ToList() ?? [])
+                        {
+                            <div class="govuk-radios__item">
+                                <div class="govuk-radios__item">
+                                    <input disabled @(answer?.RadioChoiceValue == option.Id.ToString() ? "checked" : "")
+                                           class="govuk-radios__input"
+                                           id="@questionHtmlId-@option.Id"
+                                           name="@questionHtmlId-@option.Id"
+                                           type="radio"
+                                           value="@option.Id">
+                                    <label class="govuk-label govuk-radios__label" for="@questionHtmlId-@option.Id">
+                                        @option.Value
+                                    </label>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else if (question.Type == QuestionType.MultiChoice.ToString())
+                {
+                    <div class="govuk-checkboxes" data-module="govuk-checkboxes" id="@questionHtmlId">
+                        @foreach (var option in question.QuestionOptions.OrderBy(o => o.Order).ToList() ?? [])
+                        {
+                            <div class="govuk-checkboxes__item">
+                                <input disabled @(answer?.MultipleChoiceValue?.Contains(option.Id.ToString()) == true ? "checked" : "")
+                                       class="govuk-checkboxes__input"
+                                       id="@questionHtmlId-@option.Id"
+                                       id="@questionHtmlId-@option.Id"
+                                       type="checkbox"
+                                       value="@option.Id">
+
+                                <label class="govuk-label govuk-checkboxes__label" for="@questionHtmlId-@option.Id">
+                                    @option.Value
+                                </label>
+                            </div>
+                        }
+                    </div>
+                }
+                else if (question.Type == QuestionType.Date.ToString())
+                {
+                    var dateInputModel = new GdsDateInputViewModel()
+                    {
+                        Id = questionHtmlId,
+                        Name = questionHtmlId,
+                        Value = answer?.DateValue,
+                        ReadOnly = true
+                    };
+                    await Html.RenderPartialAsync("GdsComponents/_GdsDateInput", dateInputModel);
+                }
+                else if (question.Type == QuestionType.File.ToString())
+                {
+                    <div class="govuk-file-list">
+                        @if (answer.Files != null && answer.Files.Any())
+                        {
+                            <ul>
+                                @foreach (var file in answer.Files)
+                                {
+                                    <li>
+                                        <span class="govuk-file-name">@file.FileDisplayName</span>
+
+                                        <form method="post" asp-route-applicationReviewId="@Model.ApplicationReviewId" asp-area="Review" asp-controller="ApplicationsReview" asp-action="ApplicationFileDownload">
+                                            @Html.HiddenFor(m => m.ApplicationReviewId)
+                                            <input type="hidden" name="FilePath" value="@file.FullPath" />
+                                            <button type="submit" class="govuk-button govuk-button--secondary">
+                                                Download
+                                            </button>
+                                        </form>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <p class="govuk-no-files">No files uploaded.</p>
+                        }
+                    </div>
+                }
+            }
+
+        </li>
+    }
+
+}

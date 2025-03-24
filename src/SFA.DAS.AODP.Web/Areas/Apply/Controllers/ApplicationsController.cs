@@ -302,7 +302,7 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
 
                 var commandResponse = await Send(command);
 
-                await HandleFileUploads(model);
+                await HandleFileUploads(model, response);
 
                 bool endSection = command.Routing?.EndSection == true || response.TotalSectionPages == response.Order;
                 if (endSection) return RedirectToAction(nameof(ViewApplicationSection), new { organisationId = model.OrganisationId, applicationId = model.ApplicationId, sectionId = model.SectionId, formVersionId = model.FormVersionId });
@@ -470,14 +470,16 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
             }
         }
         #endregion
-        private async Task HandleFileUploads(ApplicationPageViewModel viewModel)
+
+        private async Task HandleFileUploads(ApplicationPageViewModel viewModel, GetApplicationPageByIdQueryResponse response)
         {
             foreach (var question in viewModel.Questions?.Where(q => q.Type == AODP.Models.Forms.QuestionType.File) ?? [])
             {
+                var prefix = response.Questions.First(r => r.Id == question.Id).FileUpload?.FileNamePrefix ?? string.Empty;
                 foreach (var file in question.Answer?.FormFiles ?? [])
                 {
                     using var stream = file.OpenReadStream();
-                    await _fileService.UploadFileAsync($"{viewModel.ApplicationId}/{question.Id}", file.FileName, stream, file.ContentType);
+                    await _fileService.UploadFileAsync($"{viewModel.ApplicationId}/{question.Id}", file.FileName, stream, file.ContentType, prefix);
                 }
             }
         }
