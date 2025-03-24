@@ -40,7 +40,7 @@
         <input class="govuk-input govuk-input--width-20"
                id="@htmlId"
                type="number"
-               inputmode="numeric"
+               inputmode="numeric"hhow 
                aria-describedby="question-@Model.Id-hint"
                autocomplete="off">
     }
@@ -48,9 +48,9 @@
     {
         <div class="govuk-radios" data-module="govuk-radios">
 
-            @foreach (var option in Model.Options ?? [])
+            @foreach (var (option, i) in Model.Options.OrderBy(o => o.Order).Select((v, i) => (v, i)) ?? [])
             {
-                <div class="govuk-radios__item" id="@htmlId">
+                <div class="govuk-radios__item" id="@htmlId.@i">
                     <input class="govuk-radios__input" id="@htmlId-@option.Id" type="radio" value="@option.Id">
                     <label class="govuk-label govuk-radios__label" for="@htmlId-@option.Id">
                         @option.Value
@@ -63,12 +63,12 @@
     {
         <div class="govuk-checkboxes" data-module="govuk-checkboxes">
 
-            @foreach (var option in Model.Options ?? [])
+            @foreach (var (option, i) in Model.Options.OrderBy(o => o.Order).Select((v, i) => (v, i)) ?? [])
             {
-                <div class="govuk-checkboxes__item" id="@htmlId">
+                <div class="govuk-checkboxes__item" id="@htmlId.@i">
                     <input class="govuk-checkboxes__input" id="@htmlId-@option.Id" type="checkbox" value="@option.Id">
                     <label class="govuk-label govuk-checkboxes__label" for="@htmlId-@option.Id">
-                        @option.Value
+                        @option.Value 
                     </label>
                 </div>
             }
