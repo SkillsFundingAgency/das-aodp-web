@@ -13,6 +13,6 @@ namespace SFA.DAS.AODP.Domain.Import
 
         public object Data { get; set; }
 
-        public string PostUrl => $"/api/job/requestrun";
+        public string PostUrl => $"api/job/request-run";
     }
 }
