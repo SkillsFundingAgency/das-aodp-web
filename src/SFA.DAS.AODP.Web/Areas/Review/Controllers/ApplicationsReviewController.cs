@@ -482,7 +482,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         {
             var shared = await Send(new GetApplicationReviewSharingStatusByIdQuery(applicationReviewId));
 
-            if (UserType == UserType.Ofqual || UserType == UserType.Qfau)
+            if (UserType == UserType.Ofqual || UserType == UserType.SkillsEngland)
             {
                 if (UserType == UserType.Ofqual && !shared.SharedWithOfqual) throw new Exception("Application not shared with Ofqual.");
                 if (UserType == UserType.SkillsEngland && !shared.SharedWithSkillsEngland) throw new Exception("Application not shared with Skills England.");
