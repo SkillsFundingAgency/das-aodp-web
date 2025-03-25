@@ -114,7 +114,7 @@
             @foreach (var (item, i) in Model.Sections.OrderBy(o => o.Order).Select((v, i) => (v, i)))
             {
                 <tr class="govuk-table__row">
-                    <td>@item.Order</td>
+                    <th scope="row">@item.Order</th>
                     <td>@item.Title</td>
                     <td>
                         <a class="govuk-button"
