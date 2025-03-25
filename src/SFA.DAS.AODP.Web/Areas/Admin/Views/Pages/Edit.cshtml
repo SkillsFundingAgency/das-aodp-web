@@ -1,6 +1,10 @@
 ﻿@using SFA.DAS.AODP.Web.Helpers.ListHelper
 @model EditPageViewModel
 
+@{
+    ViewData["Title"] = "Edit Page";
+}
+
 <a class="govuk-back-link" asp-action="Edit" asp-controller="Sections" asp-route-formVersionId="@Model.FormVersionId" asp-route-sectionId="@Model.SectionId">
     Back to Section
 </a>
@@ -12,7 +16,7 @@
 <form asp-action="Edit" method="post">
 
     <div class="govuk-form-group">
-        <govuk-input disabled="@(!Model.Editable)" asp-for="@Model.Title" input-class="govuk-input--width-50" inputmode="text" pattern="[0-9]*" spellcheck="false">
+        <govuk-input disabled="@(!Model.Editable)" asp-for="@Model.Title" input-class="govuk-input--width-50" inputmode="text" pattern="[0-9]*" spellcheck="false" autocomplete="off">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Name</govuk-input-label>
         </govuk-input>
     </div>
@@ -52,7 +56,7 @@
             @foreach (var (item, i) in Model.Questions.OrderBy(o => o.Order).Select((v, i) => (v, i)))
             {
                 <tr class="govuk-table__row">
-                    <td>@item.Order</td>
+                    <th scope="row">@item.Order</th>
                     <td>@item.Title</td>
                     <td>
                         <a class="govuk-button"
