@@ -1,0 +1,47 @@
+﻿@using SFA.DAS.AODP.Models.Application
+@using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApproval
+@using SFA.DAS.AODP.Web.Models.Qualifications.Fundings
+@model QualificationFundingsConfirmationViewModel;
+
+@{
+    ViewData["Title"] = "Qualification funding review confirmation";
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <div class="govuk-grid-row">
+            <div class="govuk-panel--confirmation govuk-panel">
+                <h1 class="govuk-panel__title">Decision saved</h1>
+            </div>
+
+            <p class="govuk-body">
+                You have made a decision on funding options. Your decision has been saved. Your decision can be amended anytime prior to informing the AO.
+            </p>
+
+            <h2 class="govuk-heading-m">
+                What would you like to do next
+            </h2>
+
+            <p class="govuk-body">
+                If you want to view the qualification details to review the qualification, make a change to the decision or confirm the decision and inform AO, go to qualification details.
+            </p>
+
+
+            <a 
+               class="govuk-button"
+               asp-area="Review"
+               asp-action="QualificationDetails"
+               asp-route-qualificationReference="@Model.QualificationReference"
+               asp-controller="New">Qualification details</a>
+
+            <p class="govuk-body">
+                If you want to view a different qualification, go to dashboard.
+            </p>
+
+            <a class="govuk-button"
+               asp-area="Review"
+               asp-action="Index"
+               asp-controller="New">Back to dashboard</a>
+        </div>
+    </div>
+</div>

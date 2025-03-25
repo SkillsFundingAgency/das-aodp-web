@@ -1,13 +1,10 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SFA.DAS.AODP.Application.Commands.FormBuilder.Pages;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Routes;
-using SFA.DAS.AODP.Application.Queries.FormBuilder.Pages;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Routes;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
-using SFA.DAS.AODP.Web.Models.FormBuilder.Page;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Routing;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
@@ -81,8 +78,8 @@ public class RoutesController : ControllerBase
                 {
                     FormVersionId = model.FormVersionId
                 };
-                var response = await _mediator.Send(query);
-                var viewModel = CreateRouteChooseSectionAndPageViewModel.MapToViewModel(response.Value, model.FormVersionId);
+                var response = await Send(query);
+                var viewModel = CreateRouteChooseSectionAndPageViewModel.MapToViewModel(response, model.FormVersionId);
                 viewModel.ChosenSectionId = model.ChosenSectionId;
                 viewModel.ChosenPageId = model.ChosenPageId;
                 return View(viewModel);
