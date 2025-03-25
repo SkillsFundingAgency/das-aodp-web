@@ -1,0 +1,44 @@
+﻿@using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
+@model ReviewConfirmationViewModel;
+
+@{
+    ViewData["Title"] = "Review confirmation";
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <div class="govuk-grid-row">
+            <div class="govuk-panel--confirmation govuk-panel">
+                <h1 class="govuk-panel__title">Comments saved</h1>
+            </div>
+
+            <p class="govuk-body">
+                Your comments have been saved.
+            </p>
+
+            <h2 class="govuk-heading-m">
+                What would you like to do next
+            </h2>
+
+            <p class="govuk-body">
+                If you want to view the application details to review the application, go to application details.
+            </p>
+
+            <a 
+               class="govuk-button"
+               asp-area="Review"
+               asp-action="ViewApplication"
+               asp-route-applicationReviewId="@Model.ApplicationReviewId"
+               asp-controller="ApplicationsReview">Application details</a>
+
+            <p class="govuk-body">
+                If you want to view a different application, go to dashboard.
+            </p>
+
+            <a class="govuk-button"
+               asp-area="Review"
+               asp-action="Index"
+               asp-controller="ApplicationsReview">Back to dashboard</a>
+        </div>
+    </div>
+</div>

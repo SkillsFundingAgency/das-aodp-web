@@ -1,8 +1,10 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SFA.DAS.AODP.Application.Commands.FormBuilder.Routes;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Routes;
 using SFA.DAS.AODP.Web.Authentication;
+using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Routing;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
@@ -12,6 +14,7 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers.FormBuilder;
 [Authorize(Policy = PolicyConstants.IsAdminFormsUser)]
 public class RoutesController : ControllerBase
 {
+    public enum UpdateKeys { RouteDeleted }
     public RoutesController(IMediator mediator, ILogger<RoutesController> logger) : base(mediator, logger)
     {
     }
@@ -20,23 +23,17 @@ public class RoutesController : ControllerBase
     [Route("/admin/forms/{formVersionId}/routes/sections/{sectionId}/pages/{pageId}/questions/{questionId}")]
     public async Task<IActionResult> Configure(Guid formVersionId, Guid questionId, Guid sectionId, Guid pageId)
     {
-        try
+        var query = new GetRoutingInformationForQuestionQuery()
         {
-            var query = new GetRoutingInformationForQuestionQuery()
-            {
-                FormVersionId = formVersionId,
-                PageId = pageId,
-                QuestionId = questionId,
-                SectionId = sectionId
-            };
-            var response = await Send(query);
+            FormVersionId = formVersionId,
+            PageId = pageId,
+            QuestionId = questionId,
+            SectionId = sectionId
+        };
+        var response = await Send(query);
 
-            return View(CreateRouteViewModel.MapToViewModel(response, formVersionId, sectionId, pageId));
-        }
-        catch
-        {
-            return Redirect("/Home/Error");
-        }
+        return View(CreateRouteViewModel.MapToViewModel(response, formVersionId, sectionId, pageId));
+
     }
 
     [HttpPost()]
@@ -50,8 +47,9 @@ public class RoutesController : ControllerBase
             var response = await Send(command);
             return RedirectToAction(nameof(List), new { formVersionId = model.FormVersionId });
         }
-        catch
+        catch (Exception ex)
         {
+            LogException(ex);
             return View(model);
         }
     }
@@ -59,19 +57,13 @@ public class RoutesController : ControllerBase
     [Route("/admin/forms/{formVersionId}/routes/choose-section-page")]
     public async Task<IActionResult> ChooseSection(Guid formVersionId)
     {
-        try
+        var query = new GetAvailableSectionsAndPagesForRoutingQuery()
         {
-            var query = new GetAvailableSectionsAndPagesForRoutingQuery()
-            {
-                FormVersionId = formVersionId
-            };
-            var response = await Send(query);
-            return View(CreateRouteChooseSectionAndPageViewModel.MapToViewModel(response, formVersionId));
-        }
-        catch
-        {
-            return Redirect("/Home/Error");
-        }
+            FormVersionId = formVersionId
+        };
+        var response = await Send(query);
+        return View(CreateRouteChooseSectionAndPageViewModel.MapToViewModel(response, formVersionId));
+
     }
 
     [HttpPost()]
@@ -86,8 +78,8 @@ public class RoutesController : ControllerBase
                 {
                     FormVersionId = model.FormVersionId
                 };
-                var response = await _mediator.Send(query);
-                var viewModel = CreateRouteChooseSectionAndPageViewModel.MapToViewModel(response.Value, model.FormVersionId);
+                var response = await Send(query);
+                var viewModel = CreateRouteChooseSectionAndPageViewModel.MapToViewModel(response, model.FormVersionId);
                 viewModel.ChosenSectionId = model.ChosenSectionId;
                 viewModel.ChosenPageId = model.ChosenPageId;
                 return View(viewModel);
@@ -95,8 +87,9 @@ public class RoutesController : ControllerBase
 
             return RedirectToAction(nameof(ChooseQuestion), new { formVersionId = model.FormVersionId, sectionId = model.ChosenSectionId, pageId = model.ChosenPageId });
         }
-        catch
+        catch (Exception ex)
         {
+            LogException(ex);
             return View(model);
         }
     }
@@ -105,22 +98,16 @@ public class RoutesController : ControllerBase
     [Route("/admin/forms/{formVersionId}/routes/sections/{sectionId}/pages/{pageId}/choose-question")]
     public async Task<IActionResult> ChooseQuestion(Guid formVersionId, Guid sectionId, Guid pageId)
     {
-        try
+        var query = new GetAvailableQuestionsForRoutingQuery()
         {
-            var query = new GetAvailableQuestionsForRoutingQuery()
-            {
-                FormVersionId = formVersionId,
-                SectionId = sectionId,
-                PageId = pageId
-            };
-            var response = await Send(query);
+            FormVersionId = formVersionId,
+            SectionId = sectionId,
+            PageId = pageId
+        };
+        var response = await Send(query);
 
-            return View(CreateRouteChooseQuestionViewModel.MapToViewModel(response, formVersionId, sectionId, pageId));
-        }
-        catch
-        {
-            return Redirect("/Home/Error");
-        }
+        return View(CreateRouteChooseQuestionViewModel.MapToViewModel(response, formVersionId, sectionId, pageId));
+
     }
 
     [HttpPost()]
@@ -143,8 +130,9 @@ public class RoutesController : ControllerBase
 
             return RedirectToAction(nameof(Configure), new { formVersionId = model.FormVersionId, sectionId = model.SectionId, pageId = model.PageId, questionId = model.ChosenQuestionId });
         }
-        catch
+        catch (Exception ex)
         {
+            LogException(ex);
             return View(model);
         }
     }
@@ -153,24 +141,62 @@ public class RoutesController : ControllerBase
     [Route("/admin/forms/{formVersionId}/routes")]
     public async Task<IActionResult> List(Guid formVersionId)
     {
+        var query = new GetRoutingInformationForFormQuery()
+        {
+            FormVersionId = formVersionId,
+
+        };
+        var response = await Send(query);
+
+        ShowNotificationIfKeyExists(UpdateKeys.RouteDeleted.ToString(), ViewNotificationMessageType.Success, "The route has been deleted.");
+
+        return View(new ListRoutesViewModel()
+        {
+            FormVersionId = formVersionId,
+            Response = response
+        });
+
+    }
+
+    #region Delete
+    [HttpGet]
+    [Route("/admin/forms/{formVersionId}/routes/sections/{sectionId}/pages/{pageId}/questions/{questionId}/delete")]
+    public async Task<IActionResult> Delete(Guid formVersionId, Guid sectionId, Guid pageId, Guid questionId)
+    {
+        return View(new DeleteRouteViewModel()
+        {
+            PageId = pageId,
+            SectionId = sectionId,
+            FormVersionId = formVersionId,
+            QuestionId = questionId
+        });
+
+    }
+
+    [HttpPost]
+    [Route("/admin/forms/{formVersionId}/routes/sections/{sectionId}/pages/{pageId}/questions/{questionId}/delete")]
+    public async Task<IActionResult> Delete(DeleteRouteViewModel model)
+    {
         try
         {
-            var query = new GetRoutingInformationForFormQuery()
+            var command = new DeleteRouteCommand()
             {
-                FormVersionId = formVersionId,
-
+                PageId = model.PageId,
+                SectionId = model.SectionId,
+                FormVersionId = model.FormVersionId,
+                QuestionId = model.QuestionId
             };
-            var response = await Send(query);
 
-            return View(new ListRoutesViewModel()
-            {
-                FormVersionId = formVersionId,
-                Response = response
-            });
+            await Send(command);
+
+            TempData[UpdateKeys.RouteDeleted.ToString()] = true;
+            return RedirectToAction(nameof(List), new { formVersionId = model.FormVersionId });
         }
-        catch
+        catch (Exception ex)
         {
-            return Redirect("/Home/Error");
+            LogException(ex);
+            return View(model);
         }
     }
+    #endregion
 }

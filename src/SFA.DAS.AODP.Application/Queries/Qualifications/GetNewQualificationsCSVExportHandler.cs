@@ -4,7 +4,7 @@ using SFA.DAS.AODP.Domain.Qualifications.Requests;
 
 namespace SFA.DAS.AODP.Application.Queries.Qualifications
 {
-    public class GetNewQualificationsCsvExportHandler : IRequestHandler<GetNewQualificationsCsvExportQuery, BaseMediatrResponse<GetNewQualificationsCsvExportResponse>>
+    public class GetNewQualificationsCsvExportHandler : IRequestHandler<GetNewQualificationsCsvExportQuery, BaseMediatrResponse<GetQualificationsExportResponse>>
     {
         private readonly IApiClient _apiClient;
 
@@ -13,31 +13,23 @@ namespace SFA.DAS.AODP.Application.Queries.Qualifications
             _apiClient = apiClient;
         }
 
-        public async Task<BaseMediatrResponse<GetNewQualificationsCsvExportResponse>> Handle(GetNewQualificationsCsvExportQuery request, CancellationToken cancellationToken)
+        public async Task<BaseMediatrResponse<GetQualificationsExportResponse>> Handle(GetNewQualificationsCsvExportQuery request, CancellationToken cancellationToken)
         {
-            var response = new BaseMediatrResponse<GetNewQualificationsCsvExportResponse>();
+            var response = new BaseMediatrResponse<GetQualificationsExportResponse>();
 
             try
             {
-                var result = await _apiClient.Get<BaseMediatrResponse<GetNewQualificationsCsvExportResponse>>(new GetNewQualificationCsvExportApiRequest());
-                if (result == null)
+                var result = await _apiClient.Get<GetQualificationsExportResponse>(new GetNewQualificationCsvExportApiRequest());
+                if (result?.QualificationExports == null)
                 {
                     response.Success = false;
-                    response.ErrorMessage = "No new qualifications found.";
-                }
-                else if (result.Value.QualificationExports.Any())
-                {
-                    response.Value = new GetNewQualificationsCsvExportResponse
-                    {
-                        QualificationExports = result.Value.QualificationExports
-                    };
-                    response.Success = true;
+                    response.ErrorMessage = "No New qualifications found.";
                 }
                 else
                 {
-                    response.Value = new GetNewQualificationsCsvExportResponse
+                    response.Value = new GetQualificationsExportResponse
                     {
-                        QualificationExports = new List<QualificationExport>()
+                        QualificationExports = result.QualificationExports
                     };
                     response.Success = true;
                 }

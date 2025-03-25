@@ -3,9 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Queries.Application.Form;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
-using SFA.DAS.AODP.Authentication.DfeSignInApi.Models;
 using SFA.DAS.AODP.Infrastructure.File;
-using SFA.DAS.AODP.Web.Areas.Admin.Controllers.FormBuilder;
+using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Filters;
@@ -30,7 +29,7 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         private readonly IFileService _fileService;
         private readonly IUserHelperService _userHelperService;
 
-        public ApplicationsController(IMediator mediator, IApplicationAnswersValidator validator, ILogger<FormsController> logger, IFileService fileService, IUserHelperService userHelperService) : base(mediator, logger)
+        public ApplicationsController(IMediator mediator, IApplicationAnswersValidator validator, ILogger<ApplicationsController> logger, IFileService fileService, IUserHelperService userHelperService) : base(mediator, logger)
         {
             _validator = validator;
             _fileService = fileService;
@@ -41,57 +40,36 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         [Route("apply/applications")]
         public async Task<IActionResult> Index()
         {
-            try
-            {
-                var organisationId = Guid.Parse(_userHelperService.GetUserOrganisationId());
-                var response = await Send(new GetApplicationsByOrganisationIdQuery(organisationId));
-                ListApplicationsViewModel model = ListApplicationsViewModel.Map(response, organisationId);
+            var organisationId = Guid.Parse(_userHelperService.GetUserOrganisationId());
+            var response = await Send(new GetApplicationsByOrganisationIdQuery(organisationId));
+            ListApplicationsViewModel model = ListApplicationsViewModel.Map(response, organisationId);
 
-                ShowNotificationIfKeyExists(UpdateKeys.ApplicationDeletedKey.ToString(), ViewNotificationMessageType.Success, "The application has been deleted.");
+            ShowNotificationIfKeyExists(UpdateKeys.ApplicationDeletedKey.ToString(), ViewNotificationMessageType.Success, "The application has been deleted.");
 
-                return View(model);
-            }
-            catch
-            {
-                return Redirect("/Home/Error");
-            }
+            return View(model);
         }
 
         [HttpGet]
         [Route("apply/organisations/{organisationId}/forms")]
         public async Task<IActionResult> AvailableFormsAsync(Guid organisationId)
         {
-            try
-            {
-                var formsResponse = await Send(new GetApplicationFormsQuery());
-                ListAvailableFormsViewModel model = ListAvailableFormsViewModel.Map(formsResponse, organisationId);
-                return View(model);
-            }
-            catch
-            {
-                return Redirect("/Home/Error");
-            }
+            var formsResponse = await Send(new GetApplicationFormsQuery());
+            ListAvailableFormsViewModel model = ListAvailableFormsViewModel.Map(formsResponse, organisationId);
+            return View(model);
         }
 
         [HttpGet]
         [Route("apply/organisations/{organisationId}/forms/{formVersionId}/Create")]
         public async Task<IActionResult> Create(Guid organisationId, Guid formVersionId)
         {
-            try
-            {
-                var formVersion = await Send(new GetFormVersionByIdQuery(formVersionId));
+            var formVersion = await Send(new GetFormVersionByIdQuery(formVersionId));
 
-                return View(new CreateApplicationViewModel()
-                {
-                    OrganisationId = organisationId,
-                    FormVersionId = formVersionId,
-                    FormTitle = formVersion.Title
-                });
-            }
-            catch
+            return View(new CreateApplicationViewModel()
             {
-                return Redirect("/Home/Error");
-            }
+                OrganisationId = organisationId,
+                FormVersionId = formVersionId,
+                FormTitle = formVersion.Title
+            });
         }
 
 
@@ -121,8 +99,9 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
 
                 return RedirectToAction(nameof(ViewApplication), new { organisationId = createApplicationViewModel.OrganisationId, applicationId = response.Id, formVersionId = createApplicationViewModel.FormVersionId });
             }
-            catch
+            catch (Exception ex)
             {
+                LogException(ex);
                 return View(createApplicationViewModel);
             }
         }
@@ -132,24 +111,17 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         [Route("apply/organisations/{organisationId}/applications/{applicationId}/Edit")]
         public async Task<IActionResult> Edit(Guid organisationId, Guid applicationId)
         {
-            try
-            {
-                var application = await Send(new GetApplicationByIdQuery(applicationId));
+            var application = await Send(new GetApplicationByIdQuery(applicationId));
 
-                return View(new EditApplicationViewModel()
-                {
-                    OrganisationId = organisationId,
-                    FormVersionId = application.FormVersionId,
-                    Name = application.Name,
-                    ApplicationId = applicationId,
-                    Owner = application.Owner,
-                    QualificationNumber = application.QualificationNumber
-                });
-            }
-            catch
+            return View(new EditApplicationViewModel()
             {
-                return Redirect("/Home/Error");
-            }
+                OrganisationId = organisationId,
+                FormVersionId = application.FormVersionId,
+                Name = application.Name,
+                ApplicationId = applicationId,
+                Owner = application.Owner,
+                QualificationNumber = application.QualificationNumber
+            });
         }
 
 
@@ -183,8 +155,9 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
                     formVersionId = editApplicationViewModel.FormVersionId
                 });
             }
-            catch
+            catch (Exception ex)
             {
+                LogException(ex);
                 return View(editApplicationViewModel);
             }
         }
@@ -195,20 +168,13 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         [Route("apply/organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}")]
         public async Task<IActionResult> ViewApplication(Guid organisationId, Guid applicationId, Guid formVersionId)
         {
-            try
-            {
-                var formsResponse = await Send(new GetApplicationFormByIdQuery(formVersionId));
+            var formsResponse = await Send(new GetApplicationFormByIdQuery(formVersionId));
 
-                var statusResponse = await Send(new GetApplicationFormStatusByApplicationIdQuery(formVersionId, applicationId));
+            var statusResponse = await Send(new GetApplicationFormStatusByApplicationIdQuery(formVersionId, applicationId));
 
-                ApplicationFormViewModel model = ApplicationFormViewModel.Map(formsResponse, statusResponse, formVersionId, organisationId, applicationId);
+            ApplicationFormViewModel model = ApplicationFormViewModel.Map(formsResponse, statusResponse, formVersionId, organisationId, applicationId);
 
-                return View(model);
-            }
-            catch
-            {
-                return Redirect("/Home/Error");
-            }
+            return View(model);
         }
 
         [ValidateApplication]
@@ -216,20 +182,13 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         [Route("apply/organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/sections/{sectionId}")]
         public async Task<IActionResult> ViewApplicationSection(Guid organisationId, Guid applicationId, Guid sectionId, Guid formVersionId)
         {
-            try
-            {
-                var sectionResponse = await Send(new GetApplicationSectionByIdQuery(sectionId, formVersionId));
+            var sectionResponse = await Send(new GetApplicationSectionByIdQuery(sectionId, formVersionId));
 
-                var sectionStatus = await Send(new GetApplicationSectionStatusByApplicationIdQuery(sectionId, formVersionId, applicationId));
+            var sectionStatus = await Send(new GetApplicationSectionStatusByApplicationIdQuery(sectionId, formVersionId, applicationId));
 
-                ApplicationSectionViewModel model = ApplicationSectionViewModel.Map(sectionResponse, sectionStatus, organisationId, formVersionId, sectionId, applicationId);
+            ApplicationSectionViewModel model = ApplicationSectionViewModel.Map(sectionResponse, sectionStatus, organisationId, formVersionId, sectionId, applicationId);
 
-                return View(model);
-            }
-            catch
-            {
-                return Redirect("/Home/Error");
-            }
+            return View(model);
         }
 
         [ValidateApplication]
@@ -237,29 +196,22 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         [Route("apply/organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/sections/{sectionId}/pages/{pageOrder}")]
         public async Task<IActionResult> ApplicationPage(Guid organisationId, Guid applicationId, Guid sectionId, int pageOrder, Guid formVersionId)
         {
-            try
+            Func<string, List<UploadedBlob>> fetchBlobFunc = path => _fileService.ListBlobs(path);
+
+            var request = new GetApplicationPageByIdQuery()
             {
-                Func<string, List<UploadedBlob>> fetchBlobFunc = path => _fileService.ListBlobs(path);
+                FormVersionId = formVersionId,
+                PageOrder = pageOrder,
+                SectionId = sectionId,
+            };
 
-                var request = new GetApplicationPageByIdQuery()
-                {
-                    FormVersionId = formVersionId,
-                    PageOrder = pageOrder,
-                    SectionId = sectionId,
-                };
+            var cachedApplicationPage = await Send(request);
+            var answers = await Send(new GetApplicationPageAnswersByPageIdQuery(applicationId, cachedApplicationPage.Id, sectionId, formVersionId));
 
-                var response = await Send(request);
+            ApplicationPageViewModel viewModel = ApplicationPageViewModel.MapToViewModel(cachedApplicationPage, applicationId, formVersionId, sectionId, organisationId, answers, fetchBlobFunc);
+            viewModel.IsSubmitted = await IsApplicationSubmitted(applicationId);
 
-                var answers = await Send(new GetApplicationPageAnswersByPageIdQuery(applicationId, response.Id, sectionId, formVersionId));
-
-                ApplicationPageViewModel viewModel = ApplicationPageViewModel.MapToViewModel(response, applicationId, formVersionId, sectionId, organisationId, answers, fetchBlobFunc);
-
-                return View(viewModel);
-            }
-            catch
-            {
-                return Redirect("/Home/Error");
-            }
+            return View(viewModel);
         }
 
         [ValidateApplication]
@@ -267,6 +219,8 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         [Route("apply/organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/sections/{sectionId}/pages/{pageOrder}")]
         public async Task<IActionResult> ApplicationPageAsync([FromForm] ApplicationPageViewModel model)
         {
+            if (await IsApplicationSubmitted(model.ApplicationId)) return BadRequest();
+
             Func<string, List<UploadedBlob>> fetchBlobFunc = path => _fileService.ListBlobs(path);
 
             var request = new GetApplicationPageByIdQuery()
@@ -276,8 +230,7 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
                 SectionId = model.SectionId,
             };
 
-            var response = await Send(request);
-
+            var cachedApplicationPage = await Send(request);
             try
             {
                 if (!string.IsNullOrEmpty(model.RemoveFile))
@@ -287,24 +240,24 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
                         return BadRequest();
                     }
                     await _fileService.DeleteFileAsync(model.RemoveFile);
-                    model = ApplicationPageViewModel.RepopulatePageDataOnViewModel(response, model, fetchBlobFunc);
+                    model = ApplicationPageViewModel.RepopulatePageDataOnViewModel(cachedApplicationPage, model, fetchBlobFunc);
                     return View(model);
 
                 }
-                _validator.ValidateApplicationPageAnswers(ModelState, response, model);
+                _validator.ValidateApplicationPageAnswers(ModelState, cachedApplicationPage, model);
 
                 if (!ModelState.IsValid)
                 {
-                    model = ApplicationPageViewModel.RepopulatePageDataOnViewModel(response, model, fetchBlobFunc);
+                    model = ApplicationPageViewModel.RepopulatePageDataOnViewModel(cachedApplicationPage, model, fetchBlobFunc);
                     return View(model);
                 }
-                var command = ApplicationPageViewModel.MapToCommand(model, response);
+                var command = ApplicationPageViewModel.MapToCommand(model, cachedApplicationPage);
 
                 var commandResponse = await Send(command);
 
                 await HandleFileUploads(model);
 
-                bool endSection = command.Routing?.EndSection == true || response.TotalSectionPages == response.Order;
+                bool endSection = command.Routing?.EndSection == true || cachedApplicationPage.TotalSectionPages == cachedApplicationPage.Order;
                 if (endSection) return RedirectToAction(nameof(ViewApplicationSection), new { organisationId = model.OrganisationId, applicationId = model.ApplicationId, sectionId = model.SectionId, formVersionId = model.FormVersionId });
 
 
@@ -314,14 +267,15 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
                         organisationId = model.OrganisationId,
                         applicationId = model.ApplicationId,
                         sectionId = model.SectionId,
-                        pageOrder = command.Routing?.NextPageOrder ?? response.Order + 1,
+                        pageOrder = command.Routing?.NextPageOrder ?? cachedApplicationPage.Order + 1,
                         formVersionId = model.FormVersionId
                     });
             }
-            catch
+            catch (Exception ex)
             {
-                model = ApplicationPageViewModel.RepopulatePageDataOnViewModel(response, model, fetchBlobFunc);
+                LogException(ex);
 
+                model = ApplicationPageViewModel.RepopulatePageDataOnViewModel(cachedApplicationPage, model, fetchBlobFunc);
                 return View(model);
             }
         }
@@ -332,23 +286,16 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         [Route("apply/organisations/{organisationId}/applications/{applicationId}/delete")]
         public async Task<IActionResult> Delete(Guid applicationId)
         {
-            try
+            var query = new GetApplicationByIdQuery(applicationId);
+            var response = await Send(query);
+            return View(new DeleteApplicationViewModel()
             {
-                var query = new GetApplicationByIdQuery(applicationId);
-                var response = await Send(query);
-                return View(new DeleteApplicationViewModel()
-                {
-                    ApplicationId = applicationId,
-                    ApplicationReference = response.Reference,
-                    OrganisationId = response.OrganisationId,
-                    ApplicationName = response.Name,
-                    FormVersionId = response.FormVersionId
-                });
-            }
-            catch
-            {
-                return Redirect("/Home/Error");
-            }
+                ApplicationId = applicationId,
+                ApplicationReference = response.Reference,
+                OrganisationId = response.OrganisationId,
+                ApplicationName = response.Name,
+                FormVersionId = response.FormVersionId
+            });
         }
 
         [ValidateApplication]
@@ -366,8 +313,9 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
                 TempData[UpdateKeys.ApplicationDeletedKey.ToString()] = true;
                 return RedirectToAction(nameof(Index));
             }
-            catch
+            catch (Exception ex)
             {
+                LogException(ex);
                 return View(model);
             }
         }
@@ -380,23 +328,16 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         [Route("apply/organisations/{organisationId}/applications/{applicationId}/submit")]
         public async Task<IActionResult> Submit(Guid applicationId)
         {
-            try
+            var query = new GetApplicationByIdQuery(applicationId);
+            var response = await Send(query);
+            return View(new SubmitApplicationViewModel()
             {
-                var query = new GetApplicationByIdQuery(applicationId);
-                var response = await Send(query);
-                return View(new SubmitApplicationViewModel()
-                {
-                    ApplicationId = applicationId,
-                    ApplicationReference = response.Reference,
-                    OrganisationId = response.OrganisationId,
-                    FormVersionId = response.FormVersionId,
-                    ApplicationName = response.Name
-                });
-            }
-            catch
-            {
-                return Redirect("/Home/Error");
-            }
+                ApplicationId = applicationId,
+                ApplicationReference = response.Reference,
+                OrganisationId = response.OrganisationId,
+                FormVersionId = response.FormVersionId,
+                ApplicationName = response.Name
+            });
         }
 
         [ValidateApplication]
@@ -404,22 +345,15 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         [Route("apply/organisations/{organisationId}/applications/{applicationId}/submit")]
         public async Task<IActionResult> Submit(SubmitApplicationViewModel model)
         {
-            try
+            var command = new SubmitApplicationCommand()
             {
-                var command = new SubmitApplicationCommand()
-                {
-                    ApplicationId = model.ApplicationId,
-                    SubmittedBy = _userHelperService.GetUserDisplayName(),
-                    SubmittedByEmail = _userHelperService.GetUserEmail(),
-                };
-                await Send(command);
+                ApplicationId = model.ApplicationId,
+                SubmittedBy = _userHelperService.GetUserDisplayName(),
+                SubmittedByEmail = _userHelperService.GetUserEmail(),
+            };
+            await Send(command);
 
-                return RedirectToAction(nameof(SubmitConfirmation), new { organisationId = _userHelperService.GetUserOrganisationId(), applicationId = model.ApplicationId });
-            }
-            catch
-            {
-                return Redirect("/Home/Error");
-            }
+            return RedirectToAction(nameof(SubmitConfirmation), new { organisationId = _userHelperService.GetUserOrganisationId(), applicationId = model.ApplicationId });
         }
 
         [HttpGet]
@@ -427,23 +361,16 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         [Route("apply/organisations/{organisationId}/applications/{applicationId}/submit-confirmed")]
         public async Task<IActionResult> SubmitConfirmation(Guid applicationId)
         {
-            try
+            var query = new GetApplicationByIdQuery(applicationId);
+            var response = await Send(query);
+            return View(new SubmitApplicationViewModel()
             {
-                var query = new GetApplicationByIdQuery(applicationId);
-                var response = await Send(query);
-                return View(new SubmitApplicationViewModel()
-                {
-                    ApplicationId = applicationId,
-                    ApplicationReference = response.Reference,
-                    OrganisationId = response.OrganisationId,
-                    FormVersionId = response.FormVersionId,
-                    ApplicationName = response.Name
-                });
-            }
-            catch
-            {
-                return Redirect("/Home/Error");
-            }
+                ApplicationId = applicationId,
+                ApplicationReference = response.Reference,
+                OrganisationId = response.OrganisationId,
+                FormVersionId = response.FormVersionId,
+                ApplicationName = response.Name
+            });
         }
 
         #endregion
@@ -455,19 +382,12 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         [Route("apply/organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/preview")]
         public async Task<IActionResult> ApplicationFormPreview(Guid organisationId, Guid applicationId, Guid formVersionId)
         {
-            try
-            {
-                var query = new GetFormPreviewByIdQuery(applicationId);
-                var response = await Send(query);
+            var query = new GetFormPreviewByIdQuery(applicationId);
+            var response = await Send(query);
 
-                var viewModel = ApplicationFormPreviewViewModel.Map(response, formVersionId, organisationId, applicationId);
+            var viewModel = ApplicationFormPreviewViewModel.Map(response, formVersionId, organisationId, applicationId);
 
-                return View(viewModel);
-            }
-            catch
-            {
-                return Redirect("/Home/Error");
-            }
+            return View(viewModel);
         }
         #endregion
         private async Task HandleFileUploads(ApplicationPageViewModel viewModel)
@@ -489,6 +409,12 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
             {
                 await _fileService.DeleteFileAsync(file.FullPath);
             }
+        }
+
+        private async Task<bool> IsApplicationSubmitted(Guid applicationId)
+        {
+            var application = await Send(new GetApplicationByIdQuery(applicationId));
+            return application.Status != ApplicationStatus.Draft.ToString();
         }
     }
 }
