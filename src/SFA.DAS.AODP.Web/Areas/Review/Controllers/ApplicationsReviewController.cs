@@ -446,7 +446,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             });
         }
 
-        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
+        [Authorize(Policy = PolicyConstants.IsReviewUser)]
         [HttpGet]
         [Route("review/application-reviews/{applicationReviewId}/details")]
         public async Task<IActionResult> ViewApplicationReadOnlyDetails(Guid applicationReviewId)
@@ -462,7 +462,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             return View(vm);
         }
 
-        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
+        [Authorize(Policy = PolicyConstants.IsReviewUser)]
         [HttpPost]
         [Route("review/application-reviews/{applicationReviewId}/details")]
         public async Task<IActionResult> ApplicationFileDownload(ApplicationFileDownloadViewModel model)
