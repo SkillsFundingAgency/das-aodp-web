@@ -1,0 +1,60 @@
+﻿@model SFA.DAS.AODP.Web.Models.Qualifications.NewQualificationDetailsTimelineViewModel
+
+@{
+    ViewData["Title"] = "Qualification Details";
+}
+<a class="govuk-back-link"
+   asp-controller="New"
+   asp-action="Index">
+    Return to qualifications
+</a>
+<span class="govuk-caption-xl">
+   Qualification with changes
+</span>
+<h1 class="govuk-heading-xl">Qualification Details</h1>
+
+<div class="govuk-tabs" data-module="govuk-tabs">
+    <ul class="govuk-tabs__list">
+        <li class="govuk-tabs__list-item govuk-tabs__list-item">
+            <a class="govuk-link" href="/Review/New/QualificationDetails?qualificationReference=@Model.Qan">
+                Details
+            </a>
+        </li>
+        <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+            <a class="govuk-link" href="/Review/New/QualificationDetails/Timeline?qualificationReference=@Model.Qan">
+                History
+            </a>
+        </li>
+    </ul>
+    <div class="govuk-tabs__panel" id="history">
+        <div class="aodp-timeline">
+            <ol class="aodp-timeline__items">
+                @foreach(var item in Model.QualificationDiscussionHistories.OrderByDescending(v => v.Timestamp.GetValueOrDefault()))
+                {
+                    <li class="aodp-timeline__item">
+                        <b>@item.ActionType.Description</b>
+                        @if (!string.IsNullOrEmpty(item.UserDisplayName) && !string.IsNullOrEmpty(item.FormattedTimestamp))
+                        {
+                            <span class="govuk-caption-m">
+                                By @item.UserDisplayName, @item.FormattedTimestamp
+                            </span>
+                        }
+                        else if (!string.IsNullOrEmpty(item.UserDisplayName))
+                        {
+                            <span class="govuk-caption-m">
+                                By @item.UserDisplayName
+                            </span>
+                        }
+                        else if (!string.IsNullOrEmpty(item.FormattedTimestamp))
+                        {
+                            <span class="govuk-caption-m">
+                                @item.FormattedTimestamp
+                            </span>
+                        }
+                        <p>@item.Notes</p>
+                    </li>
+                }
+            </ol>
+        </div>
+    </div>
+</div>
