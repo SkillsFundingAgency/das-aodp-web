@@ -30,11 +30,6 @@ namespace SFA.DAS.AODP.Infrastructure.ApiClient
 
             var response = await _httpClient.SendAsync(requestMessage).ConfigureAwait(false);
 
-            if (response.StatusCode.Equals(HttpStatusCode.NotFound))
-            {
-                return default;
-            }
-
             if (response.IsSuccessStatusCode)
             {
                 var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -57,10 +52,6 @@ namespace SFA.DAS.AODP.Infrastructure.ApiClient
 
             var response = await _httpClient.SendAsync(requestMessage).ConfigureAwait(false);
 
-            if (response.StatusCode.Equals(HttpStatusCode.NotFound))
-            {
-                return default;
-            }
 
             if (response.IsSuccessStatusCode)
             {
