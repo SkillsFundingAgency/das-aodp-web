@@ -20,7 +20,7 @@
                 Id = "DateInput.LessThanOrEqualTo",
                 Name = "DateInput[LessThanOrEqualTo]",
                 Value = Model.LessThanOrEqualTo,
-                Title = "What is the maximum, inclusive, date allowed? (optional)",
+                Title = "What is the maximum, inclusive, date allowed? (optional)"
             };
     var lessThanOrEqualToError = ViewContext.ModelState.FirstOrDefault(k => k.Key == lessThanOrEqualTo.Id).Value?.Errors;
     if (lessThanOrEqualToError != null) lessThanOrEqualTo.ErrorMessage = lessThanOrEqualToError.FirstOrDefault()?.ErrorMessage;
