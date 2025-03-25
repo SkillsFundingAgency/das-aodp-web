@@ -11,10 +11,9 @@
 		<div class="govuk-grid-row">
 			<div class="govuk-grid-column-two-thirds">
                 <div class="govuk-grid-row">
-                    <govuk-breadcrumbs collapse-on-mobile="true">
-                        <govuk-breadcrumbs-item asp-controller="Home" asp-action="Index" asp-area="Review" >Home</govuk-breadcrumbs-item>
-                        <govuk-breadcrumbs-item asp-action="Index" asp-controller="Import" asp-area="Admin" link-target="_blank">Import qualification details</govuk-breadcrumbs-item>
-                    </govuk-breadcrumbs>
+                    <a class="govuk-back-link" asp-action="Index" asp-controller="Home" asp-area="Review">
+                        Back to qualifications
+                    </a>
                 </div>
 
                 <div class="govuk-grid-row">
