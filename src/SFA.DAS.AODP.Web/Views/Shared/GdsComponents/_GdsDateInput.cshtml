@@ -40,13 +40,15 @@
                            name="@day"
                            type="text"
                            value="@Model.Value?.Day"
-                           inputmode="numeric">
+                           inputmode="numeric"
+                           autocomplete="off">
+                           
                 </div>
             </div>
 
             <div class="govuk-date-input__item">
                 <div class="govuk-form-group">
-                    <label class="govuk-label govuk-date-input__label" for="@day">
+                    <label class="govuk-label govuk-date-input__label" for="@month">
                         Month
                     </label>
                     <input class="govuk-input govuk-date-input__input govuk-input--width-2"
@@ -54,13 +56,14 @@
                            name="@month"
                            type="text"
                            value="@Model.Value?.Month"
-                           inputmode="numeric">
+                           inputmode="numeric"
+                           autocomplete="off">
                 </div>
             </div>
 
             <div class="govuk-date-input__item">
                 <div class="govuk-form-group">
-                    <label class="govuk-label govuk-date-input__label" for="@day">
+                    <label class="govuk-label govuk-date-input__label" for="@year">
                         Year
                     </label>
                     <input class="govuk-input govuk-date-input__input govuk-input--width-4"
@@ -68,7 +71,8 @@
                            name="@year"
                            type="text"
                            value="@Model.Value?.Year"
-                           inputmode="numeric">
+                           inputmode="numeric"
+                           autocomplete="off">
                 </div>
             </div>
 
