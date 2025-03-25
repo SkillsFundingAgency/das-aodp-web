@@ -1,10 +1,11 @@
-﻿using AutoFixture;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Moq;
 using SFA.DAS.AODP.Models.Exceptions.FormValidation;
 using SFA.DAS.AODP.Models.Forms;
 using SFA.DAS.AODP.Web.Models.Application;
 using SFA.DAS.AODP.Web.Validators;
+
+namespace SFA.DAS.AODP.Web.Test.Validators;
 
 public class ApplicationAnswersValidatorTest
 {

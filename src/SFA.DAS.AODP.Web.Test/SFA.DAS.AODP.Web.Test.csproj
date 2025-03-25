@@ -37,9 +37,4 @@
 		<Using Include="Xunit" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="Areas\Admin\Controllers\FormBuilder\FormsController\" />
-	  <Folder Include="Areas\Admin\Controllers\FormBuilder\PagesController\" />
-	</ItemGroup>
-
 </Project>
