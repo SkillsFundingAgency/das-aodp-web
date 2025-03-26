@@ -179,12 +179,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         public async Task<IActionResult> QualificationDetails(NewQualificationDetailsViewModel model)
         {
             Guid? procStatus = model.AdditionalActions.ProcessStatusId;
-            if (string.IsNullOrEmpty(model.AdditionalActions.Note) && procStatus.HasValue)
-            {
-                model.ProcessStatuses = [.. await GetProcessStatuses()];
-                return View(model);
-            }
-            if (!procStatus.HasValue)
+            if (!procStatus.HasValue && !string.IsNullOrEmpty(model.AdditionalActions.Note))
             {
                 await Send(new AddQualificationDiscussionHistoryCommand
                 {
@@ -194,6 +189,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 });
                 return RedirectToAction(nameof(QualificationDetails), new { qualificationReference = model.Qual.Qan });
             }
+            else if (!procStatus.HasValue)
+                return RedirectToAction(nameof(QualificationDetails), new { qualificationReference = model.Qual.Qan });
 
             model.ProcessStatuses = [.. await GetProcessStatuses()];
             if (!CheckUserIsAbleToSetStatus(model, procStatus.Value))
