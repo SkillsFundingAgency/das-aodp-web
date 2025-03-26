@@ -18,7 +18,8 @@
 
 <form asp-controller="Changed" asp-action="QualificationDetails" method="post">
     @Html.HiddenFor(m => m.Id)
-    @Html.HiddenFor(m=>m.Priority)
+    @Html.HiddenFor(m => m.Priority)
+    @Html.HiddenFor(m=> m.ProcStatus.Name)
     @Html.HiddenFor(m => m.QualificationId)
     @Html.HiddenFor(m => m.VersionFieldChangesId)
     @Html.HiddenFor(m => m.ProcessStatusId)
@@ -116,21 +117,22 @@
             <govuk-summary-list>
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key>Status</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.Status</govuk-summary-list-row-value>
+                    <govuk-summary-list-row-value>@Model.ProcStatus.Name</govuk-summary-list-row-value>
                 </govuk-summary-list-row>
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key>Priority</govuk-summary-list-row-key>
                     <govuk-summary-list-row-value>@Model.Priority</govuk-summary-list-row-value>
                 </govuk-summary-list-row>
-                @if(Model.ChangedFieldNames.Any())
+                @if (@Model.ChangedFieldNames != "")
                 {
-                <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>Changes</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.ChangedFieldNames</govuk-summary-list-row-value>
-                </govuk-summary-list-row>
+                    <govuk-summary-list-row>
+                        <govuk-summary-list-row-key>Changes</govuk-summary-list-row-key>
+                        <govuk-summary-list-row-value>@Model.ChangedFieldNames</govuk-summary-list-row-value>
+                    </govuk-summary-list-row>
                 }
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key>QAN</govuk-summary-list-row-key>
+
                     <govuk-summary-list-row-value>@Model.Qual.Qan</govuk-summary-list-row-value>
                 </govuk-summary-list-row>
                 <govuk-summary-list-row>
@@ -140,6 +142,7 @@
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key>Qualification title</govuk-summary-list-row-key>
                     <govuk-summary-list-row-value>@Model.Qual.QualificationName</govuk-summary-list-row-value>
+
                 </govuk-summary-list-row>
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key>Qualification type</govuk-summary-list-row-key>

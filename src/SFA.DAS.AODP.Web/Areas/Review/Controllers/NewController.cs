@@ -203,6 +203,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             {
                 QualificationReference = model.Qual.Qan,
                 ProcessStatusId = procStatus.Value,
+                Version=model.Version,
                 Notes = model.AdditionalActions.Note,
                 UserDisplayName = HttpContext.User?.Identity?.Name
             });

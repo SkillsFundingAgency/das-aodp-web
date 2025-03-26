@@ -286,6 +286,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             {
                 QualificationReference = model.Qual.Qan,
                 ProcessStatusId = procStatus.Value,
+                Version=model.Version,
                 Notes = model.AdditionalActions.Note,
                 UserDisplayName = HttpContext.User?.Identity?.Name
             });
@@ -308,6 +309,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
             return procStatuses.ProcessStatuses;
         }
+        [Route("/Review/Changed/ExportData")]
         public async Task<IActionResult> ExportData()
         {
             try
@@ -325,7 +327,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
             catch (Exception ex)
             {
-                LogException(ex);
+                _logger.LogError(ex, "An error occurred while generating the CSV file.");
                 return Redirect("/Home/Error");
             }
         }

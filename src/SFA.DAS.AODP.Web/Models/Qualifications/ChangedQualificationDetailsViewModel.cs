@@ -71,6 +71,7 @@ public class ChangedQualificationDetailsViewModel
     public virtual ProcessStatus ProcStatus { get; set; } = null!;
     public AdditionalFormActions AdditionalActions { get; set; } = new AdditionalFormActions();
     public List<ProcessStatus> ProcessStatuses { get; set; } = new List<ProcessStatus>();
+
     public string Priority
     {
         get
@@ -127,6 +128,7 @@ public class ChangedQualificationDetailsViewModel
 
     public partial class AwardingOrganisation
     {
+
         public Guid Id { get; set; }
         public int? Ukprn { get; set; }
         public string? RecognitionNumber { get; set; }
@@ -184,7 +186,7 @@ public class ChangedQualificationDetailsViewModel
             ProcessStatusId = entity.ProcessStatusId,
             AdditionalKeyChangesReceivedFlag = entity.AdditionalKeyChangesReceivedFlag,
             LifecycleStageId = entity.LifecycleStageId,
-            ChangedFieldNames=entity.VersionFieldChanges,
+            ChangedFieldNames = entity.VersionFieldChanges,
             OutcomeJustificationNotes = entity.OutcomeJustificationNotes,
             AwardingOrganisationId = entity.AwardingOrganisationId,
             Status = entity.Status,
