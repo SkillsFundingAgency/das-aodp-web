@@ -41,8 +41,8 @@
                            type="text"
                            value="@Model.Value?.Day"
                            inputmode="numeric"
+                           @(Model.ReadOnly ? "disabled" : "")
                            autocomplete="off">
-                           
                 </div>
             </div>
 
@@ -57,6 +57,7 @@
                            type="text"
                            value="@Model.Value?.Month"
                            inputmode="numeric"
+                           @(Model.ReadOnly ? "disabled": "")
                            autocomplete="off">
                 </div>
             </div>
@@ -72,6 +73,7 @@
                            type="text"
                            value="@Model.Value?.Year"
                            inputmode="numeric"
+                           @(Model.ReadOnly ? "disabled" : "")
                            autocomplete="off">
                 </div>
             </div>
