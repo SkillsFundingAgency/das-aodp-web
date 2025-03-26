@@ -19,7 +19,7 @@
 <form asp-controller="Changed" asp-action="QualificationDetails" method="post">
     @Html.HiddenFor(m => m.Id)
     @Html.HiddenFor(m => m.Priority)
-    @Html.HiddenFor(m=> m.ProcStatus.Name)
+    @Html.HiddenFor(m => m.ProcStatus.Name)
     @Html.HiddenFor(m => m.QualificationId)
     @Html.HiddenFor(m => m.VersionFieldChangesId)
     @Html.HiddenFor(m => m.ProcessStatusId)
@@ -193,7 +193,6 @@
                         </govuk-summary-list-row-value>
                     </govuk-summary-list-row>
                 }
-
             </govuk-summary-list>
             <div class="govuk-form-group">
                 <govuk-textarea asp-for="@Model.AdditionalActions.Note">

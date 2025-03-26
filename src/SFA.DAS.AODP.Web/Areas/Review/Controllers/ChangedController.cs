@@ -1,5 +1,4 @@
-﻿using Azure;
-using CsvHelper.Configuration;
+﻿using CsvHelper.Configuration;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,8 +9,6 @@ using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 using System.Globalization;
-using System.Reflection;
-using static SFA.DAS.AODP.Application.Queries.Qualifications.GetQualificationDetailsQueryResponse;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
@@ -188,74 +185,77 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             {
                 var previousVersion = await Send(new GetQualificationVersionQuery() { QualificationReference = qualificationReference, Version = latestVersion.Version - 1 });
 
-                var keyFieldsChanges = latestVersion.ChangedFieldNames.Split(',', StringSplitOptions.RemoveEmptyEntries|StringSplitOptions.TrimEntries);
-                foreach (var item in keyFieldsChanges)
-                {
-                    switch (item)
-                    {
-                        case "organisationName":
-                            latestVersion.KeyFieldChanges.Add(new() { Name = "Organisation Name", Was = previousVersion.Organisation.NameLegal, Now = latestVersion.Organisation.NameLegal });
-                        break;
-                        case "Title":
-                            latestVersion.KeyFieldChanges.Add(new() { Name = "Title", Was = previousVersion.Qual.QualificationName, Now = latestVersion.Qual.QualificationName});
-                            break;
-                        case "Type":
-                            latestVersion.KeyFieldChanges.Add(new() { Name = "Type", Was = previousVersion.Type, Now = latestVersion.Type });
-                            break;
-                        case "TotalCredits":
-                            latestVersion.KeyFieldChanges.Add(new() { Name = "Total Credits", Was = previousVersion.TotalCredits.ToString(), Now = latestVersion.TotalCredits.ToString() });
-                            break;
-                        case "GradingType":
-                            latestVersion.KeyFieldChanges.Add(new() { Name = "Grading Type", Was = previousVersion.GradingType.ToString(), Now = latestVersion.GradingType.ToString() });
-                            break;
-                        case "OfferedInEngland":
-                            latestVersion.KeyFieldChanges.Add(new() { Name = "Offered In England", Was = previousVersion.OfferedInEngland.ToString(), Now = latestVersion.OfferedInEngland.ToString() });
-                            break;
-                        case "PreSixteen":
-                            latestVersion.KeyFieldChanges.Add(new() { Name = "Pre-Sixteen", Was = previousVersion.PreSixteen.ToString(), Now = latestVersion.PreSixteen.ToString() });
-                            break;
-                        case "SixteenToEighteen":
-                            latestVersion.KeyFieldChanges.Add(new() { Name = "Sixteen To Eighteen", Was = previousVersion.SixteenToEighteen.ToString(), Now = latestVersion.SixteenToEighteen.ToString() });
-                            break;
-                        case "EighteenPlus":
-                            latestVersion.KeyFieldChanges.Add(new() { Name = "Eighteen Plus", Was = previousVersion.EighteenPlus.ToString(), Now = latestVersion.EighteenPlus.ToString() });
-                            break;
-                        case "NineteenPlus":
-                            latestVersion.KeyFieldChanges.Add(new() { Name = "Nineteen Plus", Was = previousVersion.NineteenPlus.ToString(), Now = latestVersion.NineteenPlus.ToString() });
-                            break;
-                        case "MinimumGLH":
-                            latestVersion.KeyFieldChanges.Add(new() { Name = "Minimum GLH", Was = previousVersion.MinimumGlh.ToString(), Now = latestVersion.MinimumGlh.ToString() });
-                            break;
-                        case "TQT":
-                            latestVersion.KeyFieldChanges.Add(new() { Name = "TQT", Was = previousVersion.Tqt.ToString(), Now = latestVersion.Tqt.ToString() });
-                            break;
-                        case "OperationalEndDate":
-                            latestVersion.KeyFieldChanges.Add(new() { Name = "Operational End Date", Was = previousVersion.OperationalEndDate.ToString(), Now = latestVersion.OperationalEndDate.ToString() });
-                            break;
-                        case "LastUpdatedDate":
-                            latestVersion.KeyFieldChanges.Add(new() { Name = "Last updated date", Was = previousVersion.LastUpdatedDate.ToString(), Now = latestVersion.LastUpdatedDate.ToString() });
-
-                            break;
-                        case "Version":
-                            latestVersion.KeyFieldChanges.Add(new() { Name = "Version", Was = previousVersion.Version.ToString(), Now = latestVersion.Version.ToString() });
-
-                            break;
-                        case "OfferedInternationally":
-                            latestVersion.KeyFieldChanges.Add(new() { Name = "Offered Internationally", Was = previousVersion.OfferedInternationally.ToString(), Now = latestVersion.OfferedInternationally.ToString() });
-                            break;
-
-                        default:
-                            break;
-                    }
-
-                }
+                var keyFieldsChanges = latestVersion.ChangedFieldNames.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                GetKeyFieldChanges(latestVersion, previousVersion, keyFieldsChanges);
             }
 
 
             return View(latestVersion);
         }
 
+        private static void GetKeyFieldChanges(ChangedQualificationDetailsViewModel latestVersion, GetQualificationDetailsQueryResponse previousVersion, string[] keyFieldsChanges)
+        {
+            foreach (var item in keyFieldsChanges)
+            {
+                switch (item)
+                {
+                    case "OrganisationName":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Organisation Name", Was = previousVersion.Organisation.NameLegal, Now = latestVersion.Organisation.NameLegal });
+                        break;
+                    case "Title":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Title", Was = previousVersion.Qual.QualificationName, Now = latestVersion.Qual.QualificationName });
+                        break;
+                    case "Type":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Type", Was = previousVersion.Type, Now = latestVersion.Type });
+                        break;
+                    case "TotalCredits":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Total Credits", Was = previousVersion.TotalCredits.ToString(), Now = latestVersion.TotalCredits.ToString() });
+                        break;
+                    case "GradingType":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Grading Type", Was = previousVersion.GradingType.ToString(), Now = latestVersion.GradingType.ToString() });
+                        break;
+                    case "OfferedInEngland":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Offered In England", Was = previousVersion.OfferedInEngland.ToString(), Now = latestVersion.OfferedInEngland.ToString() });
+                        break;
+                    case "PreSixteen":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Pre-Sixteen", Was = previousVersion.PreSixteen.ToString(), Now = latestVersion.PreSixteen.ToString() });
+                        break;
+                    case "SixteenToEighteen":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Sixteen To Eighteen", Was = previousVersion.SixteenToEighteen.ToString(), Now = latestVersion.SixteenToEighteen.ToString() });
+                        break;
+                    case "EighteenPlus":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Eighteen Plus", Was = previousVersion.EighteenPlus.ToString(), Now = latestVersion.EighteenPlus.ToString() });
+                        break;
+                    case "NineteenPlus":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Nineteen Plus", Was = previousVersion.NineteenPlus.ToString(), Now = latestVersion.NineteenPlus.ToString() });
+                        break;
+                    case "MinimumGLH":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Minimum GLH", Was = previousVersion.MinimumGlh.ToString(), Now = latestVersion.MinimumGlh.ToString() });
+                        break;
+                    case "TQT":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "TQT", Was = previousVersion.Tqt.ToString(), Now = latestVersion.Tqt.ToString() });
+                        break;
+                    case "OperationalEndDate":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Operational End Date", Was = previousVersion.OperationalEndDate.ToString(), Now = latestVersion.OperationalEndDate.ToString() });
+                        break;
+                    case "LastUpdatedDate":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Last updated date", Was = previousVersion.LastUpdatedDate.ToString(), Now = latestVersion.LastUpdatedDate.ToString() });
 
+                        break;
+                    case "Version":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Version", Was = previousVersion.Version.ToString(), Now = latestVersion.Version.ToString() });
+
+                        break;
+                    case "OfferedInternationally":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Offered Internationally", Was = previousVersion.OfferedInternationally.ToString(), Now = latestVersion.OfferedInternationally.ToString() });
+                        break;
+
+                    default:
+                        break;
+                }
+
+            }
+        }
 
         [Route("/Review/Changed/QualificationDetails")]
         [HttpPost]
@@ -286,7 +286,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             {
                 QualificationReference = model.Qual.Qan,
                 ProcessStatusId = procStatus.Value,
-                Version=model.Version,
+                Version = model.Version,
                 Notes = model.AdditionalActions.Note,
                 UserDisplayName = HttpContext.User?.Identity?.Name
             });
@@ -349,34 +349,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 return writer.ToString();
             }
         }
-
-        private static ChangedQualificationDetailsViewModel MapToViewModel(GetQualificationDetailsQueryResponse response)
-        {
-            if (response == null)
-            {
-                return null;
-            }
-
-            return new ChangedQualificationDetailsViewModel
-            {
-                //Id = response.Id,
-                //Status = response.Status,
-                //Priority = response.Priority,
-                //Changes = response.Changes,
-                //QualificationReference = response.QualificationReference,
-                //AwardingOrganisation = response.AwardingOrganisation,
-                //Title = response.Title,
-                //QualificationType = response.QualificationType,
-                //Level = response.Level,
-                //ProposedChanges = response.ProposedChanges,
-                //AgeGroup = response.AgeGroup,
-                //Category = response.Category,
-                //Subject = response.Subject,
-                //SectorSubjectArea = response.SectorSubjectArea,
-                //Comments = response.Comments
-            };
-        }
-
         private class CsvExportResult
         {
             public bool Success { get; set; }
@@ -391,13 +363,10 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             public string? ProcessedStatus { get; set; }
         }
     }
-
     public class FieldMap
     {
         public string DBField { get; set; }
         public string FriendlyName { get; set; }
         public string ClassLocator { get; set; }
-        
-
     }
 }
