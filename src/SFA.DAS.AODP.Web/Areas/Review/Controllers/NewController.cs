@@ -168,55 +168,78 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             {               
                 return Redirect("/Home/Error");
             }
-
-            NewQualificationDetailsViewModel result = await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });
-            result.ProcessStatuses = [.. await GetProcessStatuses()];
-            return View(result);
+            try
+            {
+                NewQualificationDetailsViewModel result = await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });
+                result.ProcessStatuses = [.. await GetProcessStatuses()];
+                return View(result);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+                return Redirect("/Home/Error");
+            }
         }
 
         [Route("/Review/New/QualificationDetails")]
         [HttpPost]
         public async Task<IActionResult> QualificationDetails(NewQualificationDetailsViewModel model)
         {
-            Guid? procStatus = model.AdditionalActions.ProcessStatusId;
-            if (!procStatus.HasValue && !string.IsNullOrEmpty(model.AdditionalActions.Note))
+            try
             {
-                await Send(new AddQualificationDiscussionHistoryCommand
+                Guid? procStatus = model.AdditionalActions.ProcessStatusId;
+                if (!procStatus.HasValue && !string.IsNullOrEmpty(model.AdditionalActions.Note))
+                {
+                    await Send(new AddQualificationDiscussionHistoryCommand
+                    {
+                        QualificationReference = model.Qual.Qan,
+                        Notes = model.AdditionalActions.Note,
+                        UserDisplayName = HttpContext.User?.Identity?.Name
+                    });
+                    return RedirectToAction(nameof(QualificationDetails), new { qualificationReference = model.Qual.Qan });
+                }
+                else if (!procStatus.HasValue)
+                    return RedirectToAction(nameof(QualificationDetails), new { qualificationReference = model.Qual.Qan });
+
+                model.ProcessStatuses = [.. await GetProcessStatuses()];
+                if (!CheckUserIsAbleToSetStatus(model, procStatus.Value))
+                    return View(model);
+
+                await Send(new UpdateQualificationStatusCommand
                 {
                     QualificationReference = model.Qual.Qan,
+                    ProcessStatusId = procStatus.Value,
                     Notes = model.AdditionalActions.Note,
                     UserDisplayName = HttpContext.User?.Identity?.Name
                 });
                 return RedirectToAction(nameof(QualificationDetails), new { qualificationReference = model.Qual.Qan });
             }
-            else if (!procStatus.HasValue)
-                return RedirectToAction(nameof(QualificationDetails), new { qualificationReference = model.Qual.Qan });
-
-            model.ProcessStatuses = [.. await GetProcessStatuses()];
-            if (!CheckUserIsAbleToSetStatus(model, procStatus.Value))
-                return View(model);
-
-            await Send(new UpdateQualificationStatusCommand
+            catch (Exception ex)
             {
-                QualificationReference = model.Qual.Qan,
-                ProcessStatusId = procStatus.Value,
-                Notes = model.AdditionalActions.Note,
-                UserDisplayName = HttpContext.User?.Identity?.Name
-            });
-            return RedirectToAction(nameof(QualificationDetails), new { qualificationReference = model.Qual.Qan });
+                LogException(ex);
+                return View(model);
+            }
         }
 
         [Route("/Review/New/QualificationDetails/Timeline")]
         public async Task<IActionResult> QualificationDetailsTimeline([FromQuery] string qualificationReference)
         {
-            if (string.IsNullOrWhiteSpace(qualificationReference))
+            try
             {
-                return Redirect("/Home/Error");
-            }
+                if (string.IsNullOrWhiteSpace(qualificationReference))
+                {
+                    return Redirect("/Home/Error");
+                }
 
-            NewQualificationDetailsTimelineViewModel result = await Send(new GetDiscussionHistoriesForQualificationQuery { QualificationReference = qualificationReference });
-            result.Qan = qualificationReference;
-            return View(result);
+                NewQualificationDetailsTimelineViewModel result = await Send(new GetDiscussionHistoriesForQualificationQuery { QualificationReference = qualificationReference });
+                result.Qan = qualificationReference;
+                return View(result);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+                return RedirectToAction(nameof(QualificationDetails), new { qualificationReference = qualificationReference });
+            }
         }
 
         [Route("/Review/New/ExportData")]
