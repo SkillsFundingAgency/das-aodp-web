@@ -1,6 +1,9 @@
 ﻿@using GovUk.Frontend.AspNetCore
+@using System.Linq
 @{
     Layout = "_GovUkPageTemplate";
+    var userClaims = ViewContext.HttpContext.User.Claims.Where(c => c.Type == "rolecodes").ToList();
+    var canViewDashboard = userClaims.Any(x => x.Value == "qfau_user_approver" || x.Value == "qfau_user_reviewer" || x.Value == "qfau_admin_forms" || x.Value == "qfau_admin_data");
 }
 
 @section Header { 
@@ -47,9 +50,20 @@
                 @if (User.Identity.IsAuthenticated)
                 {
                     <ul class="dfe-header__navigation-list">
-                        <li class="dfe-header__navigation-item dfe-header__navigation-item--current">
-                            <a class="dfe-header__navigation-link" href="#">
-                                Dashboard
+                        @if (canViewDashboard)
+                        {
+                            <li class="dfe-header__navigation-item dfe-header__navigation-item--current">
+                                <a class="dfe-header__navigation-link" asp-area="Review" asp-action="Index" asp-controller="Home">
+                                    Dashboard
+                                    <svg class="dfe-icon dfe-icon__chevron-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" width="34" height="34">
+                                        <path d="M15.5 12a1 1 0 0 1-.29.71l-5 5a1 1 0 0 1-1.42-1.42l4.3-4.29-4.3-4.29a1 1 0 0 1 1.42-1.42l5 5a1 1 0 0 1 .29.71z"></path>
+                                    </svg>
+                                </a>
+                            </li>
+                        }
+                        <li class="dfe-header__navigation-item">
+                            <a class="dfe-header__navigation-link" asp-area="Admin" asp-action="Index" asp-controller="Import">
+                                Import data
                                 <svg class="dfe-icon dfe-icon__chevron-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" width="34" height="34">
                                     <path d="M15.5 12a1 1 0 0 1-.29.71l-5 5a1 1 0 0 1-1.42-1.42l4.3-4.29-4.3-4.29a1 1 0 0 1 1.42-1.42l5 5a1 1 0 0 1 .29.71z"></path>
                                 </svg>
@@ -57,7 +71,7 @@
                         </li>
                         <li class="dfe-header__navigation-item">
                             <a class="dfe-header__navigation-link" asp-area="Admin" asp-action="Index" asp-controller="Forms">
-                                Form Management
+                                Create a form
                                 <svg class="dfe-icon dfe-icon__chevron-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" width="34" height="34">
                                     <path d="M15.5 12a1 1 0 0 1-.29.71l-5 5a1 1 0 0 1-1.42-1.42l4.3-4.29-4.3-4.29a1 1 0 0 1 1.42-1.42l5 5a1 1 0 0 1 .29.71z"></path>
                                 </svg>
@@ -73,7 +87,15 @@
                         </li>
                         <li class="dfe-header__navigation-item">
                             <a class="dfe-header__navigation-link" asp-area="Review" asp-action="Index" asp-controller="ApplicationsReview">
-                                Applications Review
+                                Review funding requests
+                                <svg class="dfe-icon dfe-icon__chevron-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" width="34" height="34">
+                                    <path d="M15.5 12a1 1 0 0 1-.29.71l-5 5a1 1 0 0 1-1.42-1.42l4.3-4.29-4.3-4.29a1 1 0 0 1 1.42-1.42l5 5a1 1 0 0 1 .29.71z"></path>
+                                </svg>
+                            </a>
+                        </li>
+                        <li class="dfe-header__navigation-item">
+                            <a class="dfe-header__navigation-link" asp-area="Admin" asp-action="Index" asp-controller="OutputFile">
+                                Create an output file
                                 <svg class="dfe-icon dfe-icon__chevron-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" width="34" height="34">
                                     <path d="M15.5 12a1 1 0 0 1-.29.71l-5 5a1 1 0 0 1-1.42-1.42l4.3-4.29-4.3-4.29a1 1 0 0 1 1.42-1.42l5 5a1 1 0 0 1 .29.71z"></path>
                                 </svg>
