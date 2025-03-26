@@ -1,137 +1,134 @@
-﻿////using Microsoft.AspNetCore.Mvc.ModelBinding;
-////using SFA.DAS.AODP.Models.Exceptions.FormValidation;
-////using SFA.DAS.AODP.Web.Models.Application;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Moq;
+using SFA.DAS.AODP.Models.Exceptions.FormValidation;
+using SFA.DAS.AODP.Models.Forms;
+using SFA.DAS.AODP.Web.Models.Application;
+using SFA.DAS.AODP.Web.Validators;
 
-////namespace SFA.DAS.AODP.Web.Validators
-////{
-////    public class ApplicationAnswersValidatorTests : IApplicationAnswersValidator
-////    {
-////        private readonly IEnumerable<IAnswerValidator> _validators;
+namespace SFA.DAS.AODP.Web.Test.Validators;
 
-////        public ApplicationAnswersValidatorTests(IEnumerable<IAnswerValidator> validators)
-////        {
-////            _validators = validators;
-////        }
+public class ApplicationAnswersValidatorTest
+{
+    private readonly ApplicationAnswersValidator _sut;
+    private readonly List<IAnswerValidator> _validators = new List<IAnswerValidator>();
 
-////        public void ValidateApplicationPageAnswers(ModelStateDictionary modelState, GetApplicationPageByIdQueryResponse page, ApplicationPageViewModel viewModel)
-////        {
-////            foreach (var question in page.Questions)
-////            {
-////                var questionAnswer = viewModel.Questions.First(q => q.Id == question.Id);
-////                try
-////                {
-////                    if (questionAnswer.Type.ToString() != question.Type.ToString())
-////                        throw new InvalidOperationException("Stored question type does not match the received question type");
+    public ApplicationAnswersValidatorTest() => _sut = new(_validators);
 
-////                    var validator = _validators.FirstOrDefault(v => v.QuestionTypes.Any(c => c.ToString() == question.Type))
-////                        ?? throw new NotImplementedException($"Unable to validate the answer for question type {question.Type}");
+    [Fact]
+    public void ValidateApplicationPageAnswers_InvalidQuestionType_ExceptionRecorded()
+    {
+        // Arrange
+        var questionId = Guid.NewGuid();
+        ModelStateDictionary dictionary = new();
+        GetApplicationPageByIdQueryResponse page = new()
+        {
+            Questions = new()
+            {
+                new()
+                {
+                    Id = questionId,
+                    Type = "Test"
+                }
+            }
+        };
 
-////                    validator.Validate(question, questionAnswer.Answer, viewModel);
-////                }
-////                catch (QuestionValidationFailedException ex)
-////                {
-////                    modelState.AddModelError(question.Id.ToString(), ex.Message);
-////                }
+        ApplicationPageViewModel model = new()
+        {
+            Questions = new()
+            {
+                new()
+                {
+                    Id = questionId,
+                    Type = SFA.DAS.AODP.Models.Forms.QuestionType.Date,
+                }
+            }
+        };
 
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => _sut.ValidateApplicationPageAnswers(dictionary, page, model));
+    }
 
-////            }
-////        }
-////    }
-////}
+    [Fact]
+    public void ValidateApplicationPageAnswers_NoValidatorFound_ExceptionRecorded()
+    {
+        // Arrange
+        var questionId = Guid.NewGuid();
+        ModelStateDictionary dictionary = new();
+        GetApplicationPageByIdQueryResponse page = new()
+        {
+            Questions = new()
+            {
+                new()
+                {
+                    Id = questionId,
+                    Type = "Date"
+                }
+            }
+        };
 
-//using AutoFixture;
-//using MediatR;
-//using Microsoft.AspNetCore.Mvc;
-//using Microsoft.Extensions.Logging;
-//using Moq;
-//using SFA.DAS.AODP.Application;
-//using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
-//using Microsoft.AspNetCore.Mvc.ModelBinding;
-//using SFA.DAS.AODP.Web.Models.Application;
-//using SFA.DAS.AODP.Models.Exceptions.FormValidation;
-//using SFA.DAS.AODP.Application.Queries.FormBuilder.Pages;
-//using SFA.DAS.AODP.Web.Validators;
+        ApplicationPageViewModel model = new()
+        {
+            Questions = new()
+            {
+                new()
+                {
+                    Id = questionId,
+                    Type = SFA.DAS.AODP.Models.Forms.QuestionType.Date,
+                }
+            }
+        };
 
+        // Act & Assert
+        Assert.Throws<NotImplementedException>(() => _sut.ValidateApplicationPageAnswers(dictionary, page, model));
+    }
 
-//namespace SFA.DAS.AODP.Web.Test.Validators
-//{
-//    public class ApplicationAnswersValidatorTests
-//    {
-//        //private Mock<IMediator> _mediatorMock = new();
-//        private IEnumerable<IAnswerValidator> _validators;
-//        private readonly Fixture _fixture = new();
-//        //private readonly Mock<ILogger<IEnumerable<Web.Validators.IAnswerValidator>>> _loggerMock = new();
-//        //private ModelStateDictionary _modelState;
-//        //private ApplicationPageViewModel _viewModel;
+    [Fact]
+    public void ValidateApplicationPageAnswers_ValidatorFound_ErrorRecorded()
+    {
+        // Arrange
+        Mock<IAnswerValidator> validator = new();
+        var questionId = Guid.NewGuid();
+        ModelStateDictionary dictionary = new();
 
+        GetApplicationPageByIdQueryResponse page = new()
+        {
+            Questions = new()
+            {
+                new()
+                {
+                    Id = questionId,
+                    Type = "Date"
+                }
+            }
+        };
 
-//        //public ApplicationAnswersValidatorTests()
-//        //{
-//        //    //_validator = new();
-//        //}
-//        public ApplicationAnswersValidatorTests(IEnumerable<IAnswerValidator> validators)
-//        {
-//            _validators = validators;
-//        }
+        ApplicationPageViewModel model = new()
+        {
+            Questions = new()
+            {
+                new()
+                {
+                    Id = questionId,
+                    Type = SFA.DAS.AODP.Models.Forms.QuestionType.Date,
+                    Answer = new()
+                    {
+                        DateValue = DateOnly.MinValue
+                    }
+                }
+            }
+        };
 
-//        [Fact]
-//        public async Task Index_Get_ValidRequest_ReturnsOk()
-//        {
-//            // Arrange
-//            var page = _fixture.Create<GetApplicationPageByIdQueryResponse>();
-//            var viewModel = _fixture.Create<ApplicationPageViewModel>();
-//            var question = page.Questions.First();
-//            var questionAnswer = viewModel.Questions.First(q => q.Id == question.Id);
-//            var validator = _validators.FirstOrDefault(v => v.QuestionTypes.Any(c => c.ToString() == question.Type));
+        validator.SetupGet(v => v.QuestionTypes).Returns([QuestionType.Date]);
+        validator.Setup(v => v.Validate(page.Questions.First(), model.Questions.First().Answer, model)).Throws(new QuestionValidationFailedException(questionId, "something", "something"));
+        _validators.Add(validator.Object);
+        // Act
+        _sut.ValidateApplicationPageAnswers(dictionary, page, model);
 
-//            // Act
-//            validator.Validate(question, questionAnswer.Answer, viewModel);
+        // Assert
+        Assert.False(dictionary.IsValid);
+        Assert.Equal(1, dictionary.ErrorCount);
+        Assert.True(dictionary.ContainsKey(questionId.ToString()));
+        Assert.Equal("something", dictionary[questionId.ToString()].Errors.First().ErrorMessage);
+    }
 
-
-//            // Assert
-
-
-//            //foreach (var question in page.Questions)
-//            //{
-//            //    var questionAnswer = viewModel.Questions.First(q => q.Id == question.Id);
-//            //    try
-//            //    {
-//            //        if (questionAnswer.Type.ToString() != question.Type.ToString())
-//            //            throw new InvalidOperationException("Stored question type does not match the received question type");
-
-//            //        var validator = _validators.FirstOrDefault(v => v.QuestionTypes.Any(c => c.ToString() == question.Type))
-//            //            ?? throw new NotImplementedException($"Unable to validate the answer for question type {question.Type}");
-
-//            //        validator.Validate(question, questionAnswer.Answer, viewModel);
-//            //    }
-//            //var query = new GetApplicationPageByIdQueryResponse();
-//            //var request = new GetAllFormVersionsQuery();
-//            //var expectedResponse = _fixture
-//            //    .Build<BaseMediatrResponse<GetAllFormVersionsQueryResponse>>()
-//            //    .With(w => w.Success, true)
-//            //    .Create();
-
-//                //_mediatorMock.Setup(x => x.Send(It.IsAny<GetAllFormVersionsQuery>(), It.IsAny<CancellationToken>())).ReturnsAsync(expectedResponse);
-
-//                ////Act
-//                //var result = await _controller.Index();
-
-//                ////Assert
-//                //Assert.IsType<ViewResult>(result);
-//                //var okResult = (ViewResult)result;
-
-//                //var returnedData = okResult.Model as FormVersionListViewModel;
-
-//                //Assert.NotNull(returnedData);
-//                //Assert.Equal(returnedData.FormVersions.Count, expectedResponse.Value.Data.Count);
-//        }
-//        public async Task Index_Get_InvalidRequest_Returns_InvalidOperationException()
-//        {
-
-//        }
-//        public async Task Index_Get_InvalidRequest_Returns_NotImplementedException()
-//        {
-
-//        }
-//    }
-//}
+}

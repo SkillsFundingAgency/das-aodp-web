@@ -1,0 +1,52 @@
+﻿@using SFA.DAS.AODP.Web.Models.Import
+@model ConfirmImportRequestViewModel
+
+@using System.Security.Claims
+@{
+	ViewData["Title"] = "Confirm Import Selection";
+}
+
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
+<div class="govuk-width-container">
+	<main class="govuk-main-wrapper">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+
+                <a class="govuk-back-link" asp-action="Index" asp-controller="Import" asp-area="Admin">
+                    Back to import selection
+                </a>
+
+				<h1 class="govuk-heading-1">Check and confirm import</h1>
+
+                <form asp-controller="Import" asp-action="ConfirmImportSelection" asp-area="Admin" method="post">
+
+                     @Html.AntiForgeryToken()
+                     @Html.HiddenFor(m => m.ImportType)                    
+
+                    <div class="govuk-form-group">
+                        <govuk-summary-list>
+                            <govuk-summary-list-row>
+                                <govuk-summary-list-row-key>
+                                    Import
+                                </govuk-summary-list-row-key>
+                                <govuk-summary-list-row-value>
+                                    <p class="govuk-body">@Model.ImportType</p>
+                                </govuk-summary-list-row-value>
+                                <govuk-summary-list-row-actions>
+                                    <govuk-summary-list-row-action asp-action="Index" asp-controller="Import" asp-area="Admin" visually-hidden-text="import qualifcations">Change</govuk-summary-list-row-action>
+                                </govuk-summary-list-row-actions>
+                            </govuk-summary-list-row>
+                        </govuk-summary-list>
+
+                        <p class="govuk-body">You will not be able to undo this import.</p>
+                    </div>
+
+                    <govuk-button type="submit">Confirm import</govuk-button>
+
+                </form>
+
+			</div>
+		</div>
+	</main>
+</div>

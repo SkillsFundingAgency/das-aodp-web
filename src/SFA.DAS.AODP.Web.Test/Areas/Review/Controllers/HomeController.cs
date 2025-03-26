@@ -2,9 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using SFA.DAS.AODP.Models.Users;
-using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Areas.Review.Models.Home;
-using SFA.DAS.AODP.Web.Controllers;
 using SFA.DAS.AODP.Web.Helpers.User;
 
 namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
