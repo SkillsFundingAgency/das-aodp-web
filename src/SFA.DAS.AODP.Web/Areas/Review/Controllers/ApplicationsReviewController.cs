@@ -9,6 +9,9 @@ using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.User;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
+using SFA.DAS.AODP.Infrastructure.File;
+using SFA.DAS.AODP.Application.Queries.Application.Form;
+using SFA.DAS.AODP.Application.Queries.Review;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 {
@@ -21,10 +24,13 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             SharingStatusUpdated, QanUpdated, OwnerUpdated
         }
         private readonly IUserHelperService _userHelperService;
-
-        public ApplicationsReviewController(ILogger<ApplicationsReviewController> logger, IMediator mediator, IUserHelperService userHelperService) : base(mediator, logger)
+        private readonly UserType UserType;
+        private readonly IFileService _fileService;
+        public ApplicationsReviewController(ILogger<ApplicationsReviewController> logger, IMediator mediator, IUserHelperService userHelperService, IFileService fileService) : base(mediator, logger)
         {
             _userHelperService = userHelperService;
+            UserType = userHelperService.GetUserType();
+            _fileService = fileService;
         }
 
         [Route("review/application-reviews")]
@@ -440,5 +446,48 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             });
         }
 
+        [Authorize(Policy = PolicyConstants.IsReviewUser)]
+        [HttpGet]
+        [Route("review/application-reviews/{applicationReviewId}/details")]
+        public async Task<IActionResult> ViewApplicationReadOnlyDetails(Guid applicationReviewId)
+        {
+            var applicationId = await GetApplicationIdWithAccessValidation(applicationReviewId);
+            var form = await Send(new GetFormPreviewByIdQuery(applicationId));
+            var applicationDetails = await Send(new GetApplicationFormByReviewIdQuery(applicationReviewId));
+            var files = _fileService.ListBlobs(applicationId.ToString());
+
+            var vm = ApplicationReadOnlyDetailsViewModel.Map(form, applicationDetails, files);
+            vm.ApplicationReviewId = applicationReviewId;
+
+            return View(vm);
+        }
+
+        [Authorize(Policy = PolicyConstants.IsReviewUser)]
+        [HttpPost]
+        [Route("review/application-reviews/{applicationReviewId}/details")]
+        public async Task<IActionResult> ApplicationFileDownload(ApplicationFileDownloadViewModel model)
+        {
+            var applicationId = await GetApplicationIdWithAccessValidation(model.ApplicationReviewId);
+            if (!model.FilePath.StartsWith(applicationId.ToString()))
+            {
+                return BadRequest();
+            }
+
+            var file = await _fileService.GetBlobDetails(model.FilePath.ToString());
+            var fileStream = await _fileService.OpenReadStreamAsync(model.FilePath);
+            return File(fileStream, "application/octet-stream", file.FileNameWithPrefix);
+        }
+
+        private async Task<Guid> GetApplicationIdWithAccessValidation(Guid applicationReviewId)
+        {
+            var shared = await Send(new GetApplicationReviewSharingStatusByIdQuery(applicationReviewId));
+
+            if (UserType == UserType.Ofqual || UserType == UserType.SkillsEngland)
+            {
+                if (UserType == UserType.Ofqual && !shared.SharedWithOfqual) throw new Exception("Application not shared with Ofqual.");
+                if (UserType == UserType.SkillsEngland && !shared.SharedWithSkillsEngland) throw new Exception("Application not shared with Skills England.");
+            }
+            return shared.ApplicationId;
+        }
     }
 }
