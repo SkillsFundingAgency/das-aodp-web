@@ -29,6 +29,7 @@ namespace SFA.DAS.AODP.Web.Models.Application
                     FormVersionId = application.FormVersionId,
                     UpdatedDate = application.UpdatedDate,
                     Status = application.Status,
+                    NewMessage = application.NewMessage,
                 });
             }
 
@@ -47,6 +48,7 @@ namespace SFA.DAS.AODP.Web.Models.Application
             public Guid FormVersionId { get; set; }
             public DateTime? UpdatedDate { get; set; }
             public ApplicationStatus Status { get; set; }
+            public bool NewMessage { get; set; }
 
         }
     }

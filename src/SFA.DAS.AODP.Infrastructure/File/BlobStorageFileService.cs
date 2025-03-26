@@ -9,6 +9,7 @@ namespace SFA.DAS.AODP.Infrastructure.File
     {
         private const string FileNameMetadataKey = "FileName";
         private const string FileExtensionsMetadataKey = "Extension";
+        private const string FilePrefixMetadataKey = "FileNamePrefix";
         private readonly BlobStorageSettings _blobStorageSettings;
         private readonly BlobServiceClient _blobServiceClient;
         private BlobContainerClient? _blobContainerClient;
@@ -19,14 +20,19 @@ namespace SFA.DAS.AODP.Infrastructure.File
             _blobStorageSettings = settings.Value ?? throw new ArgumentNullException(nameof(settings));
         }
 
-        public async Task UploadFileAsync(string folderName, string fileName, Stream stream, string? contentType)
+        public async Task UploadFileAsync(string folderName, string fileName, Stream stream, string? contentType, string fileNamePrefix)
         {
             string filePath = $"{folderName}/{Guid.NewGuid()}";
 
             var blobClient = GetBlobClient(filePath);
 
             await blobClient.UploadAsync(stream,
-                metadata: new Dictionary<string, string>() { { FileNameMetadataKey, fileName }, { FileExtensionsMetadataKey, Path.GetExtension(fileName) } },
+                metadata: new Dictionary<string, string>()
+                {
+                    { FileNameMetadataKey, fileName },
+                    { FileExtensionsMetadataKey, Path.GetExtension(fileName) },
+                    { FilePrefixMetadataKey, fileNamePrefix }
+                },
                 httpHeaders: !string.IsNullOrEmpty(contentType) ? new BlobHttpHeaders { ContentType = contentType } : null);
         }
 
@@ -45,13 +51,29 @@ namespace SFA.DAS.AODP.Infrastructure.File
                 {
                     FileName = properties.Value.Metadata[FileNameMetadataKey],
                     FullPath = item.Name,
-                    Extension = properties.Value.Metadata[FileExtensionsMetadataKey]
+                    Extension = properties.Value.Metadata[FileExtensionsMetadataKey],
+                    FileNamePrefix = properties.Value.Metadata[FilePrefixMetadataKey],
                 });
             }
 
             return result;
         }
 
+
+        public async Task<UploadedBlob> GetBlobDetails(string fileName)
+        {
+            EnsureBlobContainerClient();
+
+            var properties = await _blobContainerClient.GetBlobClient(fileName).GetPropertiesAsync();
+
+            return new()
+            {
+                FileName = properties.Value.Metadata[FileNameMetadataKey],
+                FullPath = fileName,
+                Extension = properties.Value.Metadata[FileExtensionsMetadataKey],
+                FileNamePrefix = properties.Value.Metadata[FilePrefixMetadataKey],
+            };
+        }
 
         public async Task<Stream> OpenReadStreamAsync(string filePath)
         {
@@ -88,5 +110,7 @@ namespace SFA.DAS.AODP.Infrastructure.File
         public string FullPath { get; set; }
         public string FileName { get; set; }
         public string Extension { get; set; }
+        public string FileNamePrefix { get; set; }
+        public string FileNameWithPrefix => $"{FileNamePrefix} {FileName}";
     }
 }

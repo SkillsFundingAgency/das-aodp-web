@@ -1,6 +1,10 @@
 ﻿@using SFA.DAS.AODP.Models.Forms
 @model CreateQuestionViewModel
 
+@{
+    ViewData["Title"] = "Create Question";
+}
+
 <a class="govuk-back-link" asp-action="Edit" asp-controller="Pages" asp-route-formVersionId="@Model.FormVersionId" asp-route-sectionId="@Model.SectionId" asp-route-pageId="@Model.PageId">
     Back to Page
 </a>
@@ -14,7 +18,7 @@
     @Html.AntiForgeryToken()
 
     <div class="govuk-form-group">
-        <govuk-input asp-for="Title" input-class="govuk-input--width-50" inputmode="text">
+        <govuk-input asp-for="Title" input-class="govuk-input--width-50" inputmode="text" autocomplete="off">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Title</govuk-input-label>
             @Html.RenderPartialAsync("Validation/_TextInputValidationPartial", nameof(Model.Title))
         </govuk-input>

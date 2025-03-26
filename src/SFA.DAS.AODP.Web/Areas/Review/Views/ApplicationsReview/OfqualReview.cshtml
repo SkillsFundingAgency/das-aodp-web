@@ -1,0 +1,89 @@
+﻿@using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
+@using SFA.DAS.AODP.Web.Models.Application;
+@model OfqualReviewViewModel
+
+@{
+    ViewData["Title"] = "Ofqual review";
+}
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+
+        <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
+        @if (Model.AdditionalActions.Preview)
+        {
+            <div class="govuk-notification-banner" role="banner" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+                <div class="govuk-notification-banner__header">
+                    <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+                        Important
+                    </h2>
+                </div>
+                <div class="govuk-notification-banner__content">
+                    <p class="govuk-notification-banner__heading">
+                        This feedback will be shared with DfE.
+                    </p>
+                </div>
+            </div>
+        }
+
+        <h1 class="govuk-heading-xl">
+            Ofqual comments
+            <span class="govuk-caption-l">Request for funding</span>
+        </h1>
+
+        @if (!Model.AdditionalActions.Preview)
+        {
+            <form asp-controller="ApplicationsReview" asp-action="OfqualReview" method="post" enctype="multipart/form-data">
+                @Html.HiddenFor(m => m.ApplicationReviewId)
+
+                <div class="govuk-form-group">
+                    <govuk-textarea asp-for="@Model.Comments">
+                        <govuk-textarea-label is-page-heading="false" class="govuk-heading-s">Comments</govuk-textarea-label>
+                        <govuk-textarea-hint>
+                            Leave comments and recommendations regarding the application. Give as much detail as you can.
+                        </govuk-textarea-hint>
+                    </govuk-textarea>
+                </div>
+
+                <button type="submit" name="AdditionalActions.Preview" value="true" class="govuk-button">Preview</button>
+
+            </form>
+        }
+        else
+        {
+            <form asp-controller="ApplicationsReview" asp-action="OfqualReview" method="post" enctype="multipart/form-data">
+                @Html.HiddenFor(m => m.ApplicationReviewId)
+                @Html.HiddenFor(m => m.Comments)
+                <div class="govuk-grid-row">
+                    <govuk-summary-list>
+                        <govuk-summary-list-row>
+                            <govuk-summary-list-row-key>
+                                Comments
+                            </govuk-summary-list-row-key>
+                            <govuk-summary-list-row-value>
+                                <p style="white-space: pre-line">@Model.Comments</p>
+                            </govuk-summary-list-row-value>
+                        </govuk-summary-list-row>
+                    </govuk-summary-list>
+
+                    <div class="govuk-grid-row">
+                        <div class="govuk-grid-column-three-quarters">
+                            <button type="submit" name="AdditionalActions.Send" value="true" class="govuk-button">Submit</button>
+                            <button type="submit" name="AdditionalActions.Edit" value="true" class="govuk-button govuk-button--secondary">
+                                Edit
+                            </button>
+                        </div>
+                        <div class="govuk-grid-column-one-quarter govuk-!-text-align-right">
+                            <a class="govuk-button govuk-button--secondary"
+                               asp-action="ViewApplication"
+                               asp-controller="ApplicationsReview"
+                               asp-route-applicationReviewId="@Model.ApplicationReviewId">
+                                Cancel
+                            </a>
+                        </div>
+                    </div>
+
+            </form>
+        }
+    </div>

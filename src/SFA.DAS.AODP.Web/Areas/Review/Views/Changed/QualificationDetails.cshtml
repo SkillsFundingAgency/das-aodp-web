@@ -1,0 +1,74 @@
+﻿@model SFA.DAS.AODP.Web.Models.Qualifications.QualificationDetailsViewModel
+
+@{
+    ViewData["Title"] = "Qualification Details";
+}
+
+<h1 class="govuk-heading-xl">Qualification Details</h1>
+
+<govuk-summary-list>
+    <govuk-summary-list-row>
+        <govuk-summary-list-row-key>Status</govuk-summary-list-row-key>
+        <govuk-summary-list-row-value>@Model.Status</govuk-summary-list-row-value>
+    </govuk-summary-list-row>
+    <govuk-summary-list-row>
+        <govuk-summary-list-row-key>Priority</govuk-summary-list-row-key>
+        <govuk-summary-list-row-value>@Model.Priority</govuk-summary-list-row-value>
+    </govuk-summary-list-row>
+    <govuk-summary-list-row>
+        <govuk-summary-list-row-key>Changes</govuk-summary-list-row-key>
+        <govuk-summary-list-row-value>@Model.Changes</govuk-summary-list-row-value>
+    </govuk-summary-list-row>
+    <govuk-summary-list-row>
+        <govuk-summary-list-row-key>Qualification Reference</govuk-summary-list-row-key>
+        <govuk-summary-list-row-value>@Model.QualificationReference</govuk-summary-list-row-value>
+    </govuk-summary-list-row>
+    <govuk-summary-list-row>
+        <govuk-summary-list-row-key>Awarding Organisation</govuk-summary-list-row-key>
+        <govuk-summary-list-row-value>@Model.AwardingOrganisation</govuk-summary-list-row-value>
+    </govuk-summary-list-row>
+    <govuk-summary-list-row>
+        <govuk-summary-list-row-key>Title</govuk-summary-list-row-key>
+        <govuk-summary-list-row-value>@Model.Title</govuk-summary-list-row-value>
+    </govuk-summary-list-row>
+    <govuk-summary-list-row>
+        <govuk-summary-list-row-key>Qualification Type</govuk-summary-list-row-key>
+        <govuk-summary-list-row-value>@Model.QualificationType</govuk-summary-list-row-value>
+    </govuk-summary-list-row>
+    <govuk-summary-list-row>
+        <govuk-summary-list-row-key>Level</govuk-summary-list-row-key>
+        <govuk-summary-list-row-value>@Model.Level</govuk-summary-list-row-value>
+    </govuk-summary-list-row>
+    <govuk-summary-list-row>
+        <govuk-summary-list-row-key>Proposed Changes</govuk-summary-list-row-key>
+        <govuk-summary-list-row-value>@Model.ProposedChanges</govuk-summary-list-row-value>
+    </govuk-summary-list-row>
+    <govuk-summary-list-row>
+        <govuk-summary-list-row-key>Age Group</govuk-summary-list-row-key>
+        <govuk-summary-list-row-value>@Model.AgeGroup</govuk-summary-list-row-value>
+    </govuk-summary-list-row>
+    <govuk-summary-list-row>
+        <govuk-summary-list-row-key>Category</govuk-summary-list-row-key>
+        <govuk-summary-list-row-value>@Model.Category</govuk-summary-list-row-value>
+    </govuk-summary-list-row>
+    <govuk-summary-list-row>
+        <govuk-summary-list-row-key>Subject</govuk-summary-list-row-key>
+        <govuk-summary-list-row-value>@Model.Subject</govuk-summary-list-row-value>
+    </govuk-summary-list-row>
+    <govuk-summary-list-row>
+        <govuk-summary-list-row-key>Sector Subject Area</govuk-summary-list-row-key>
+        <govuk-summary-list-row-value>@Model.SectorSubjectArea</govuk-summary-list-row-value>
+    </govuk-summary-list-row>
+    <govuk-summary-list-row>
+        <govuk-summary-list-row-key>Comments</govuk-summary-list-row-key>
+        <govuk-summary-list-row-value>
+            <govuk-textarea name="Comments">
+                <govuk-textarea-label class="govuk-label--l" is-page-heading="true">
+                </govuk-textarea-label>
+                <govuk-textarea-value>
+                    @Model.Comments
+                </govuk-textarea-value>
+            </govuk-textarea>
+        </govuk-summary-list-row-value>
+    </govuk-summary-list-row>
+</govuk-summary-list>

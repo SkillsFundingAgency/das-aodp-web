@@ -10,6 +10,15 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Areas\Admin\Controllers\FormBuilder\FormsController\**" />
+	  <Compile Remove="Areas\Admin\Controllers\FormBuilder\PagesController\**" />
+	  <EmbeddedResource Remove="Areas\Admin\Controllers\FormBuilder\FormsController\**" />
+	  <EmbeddedResource Remove="Areas\Admin\Controllers\FormBuilder\PagesController\**" />
+	  <None Remove="Areas\Admin\Controllers\FormBuilder\FormsController\**" />
+	  <None Remove="Areas\Admin\Controllers\FormBuilder\PagesController\**" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="AutoFixture.AutoMoq" Version="4.18.1" />
 		<PackageReference Include="coverlet.collector" Version="6.0.0" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
@@ -26,11 +35,6 @@
 
 	<ItemGroup>
 		<Using Include="Xunit" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Areas\Admin\Controllers\FormBuilder\FormsController\" />
-	  <Folder Include="Areas\Admin\Controllers\FormBuilder\PagesController\" />
 	</ItemGroup>
 
 </Project>

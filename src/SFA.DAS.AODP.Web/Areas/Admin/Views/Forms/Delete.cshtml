@@ -9,10 +9,18 @@
 <h1 class="govuk-heading-l">Delete Form?</h1>
 
 <form asp-action="Delete" method="post">
-    @Html.HiddenFor(m => m.FormVersionId);
+    @Html.HiddenFor(m => m.FormId)
+    @Html.HiddenFor(m => m.FormVersionId)
     <govuk-warning-text icon-fallback-text="Warning">
-        Are you sure you want to delete the form "@Model.Title"?
+        Are you sure you want to delete the form?
+        <br/>
+        The AOs will not be able to start a new application with this form. However, any existing applications will not be affected.
     </govuk-warning-text>
+
+
+    <p class="govuk-body">
+        Title: @Model.Title
+    </p>
 
     <div class="govuk-button-group">
         <button class="govuk-button govuk-button--warning" type="submit">Delete</button>

@@ -8,5 +8,6 @@
         public string Id { get; set; }
         public string? ErrorMessage { get; set; }
         public DateOnly? Value { get; set; }
+        public bool ReadOnly { get; set; }
     }
 }

@@ -3,6 +3,10 @@
 @using static SFA.DAS.AODP.Web.Areas.Admin.Controllers.FormBuilder.FormsController
 @model FormVersionListViewModel
 
+@{
+    ViewData["Title"] = "View Forms";
+}
+
 <h1 class="govuk-heading-l">View Forms</h1>
 
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
@@ -14,9 +18,9 @@
     <table class="govuk-table">
         <thead class="govuk-table__head">
             <tr class="govuk-table__row">
-                <th scope="col" class="govuk-table__header">Name</th>
-                <th scope="col" class="govuk-table__header">Status</th>
-                <th scope="col" class="govuk-table__header">Options</th>
+                <th scope="col" class="govuk-table__header govuk-!-width-one-half">Name</th>
+                <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Status</th>
+                <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Options</th>
             </tr>
         </thead>
         <tbody class="govuk-table__body">
@@ -56,6 +60,8 @@
                                 Move Down
                             </button>
                         }
+                        <a class="govuk-button govuk-button--warning" asp-action="Delete" asp-controller="Forms" asp-route-formVersionId="@(item.DraftVersionId ?? item.PublishedVersionId)">Delete form</a>
+
                     </td>
                 </tr>
             }

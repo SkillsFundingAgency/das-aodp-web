@@ -9,10 +9,16 @@
 	<ItemGroup>
 	  <Compile Remove="Areas\Funding\Data\**" />
 	  <Compile Remove="Areas\Funding\Models\**" />
+	  <Compile Remove="Areas\Review\Views\Review\**" />
+	  <Compile Remove="Areas\Review\Views\Shared\**" />
 	  <Content Remove="Areas\Funding\Data\**" />
 	  <Content Remove="Areas\Funding\Models\**" />
+	  <Content Remove="Areas\Review\Views\Review\**" />
+	  <Content Remove="Areas\Review\Views\Shared\**" />
 	  <EmbeddedResource Remove="Areas\Funding\Data\**" />
 	  <EmbeddedResource Remove="Areas\Funding\Models\**" />
+	  <EmbeddedResource Remove="Areas\Review\Views\Review\**" />
+	  <EmbeddedResource Remove="Areas\Review\Views\Shared\**" />
 	  <None Remove="Areas\Funding\Data\**" />
 	  <None Remove="Areas\Funding\Models\**" />
 	</ItemGroup>
@@ -27,6 +33,8 @@
 	  <EmbeddedResource Remove="Models\Helpers\**" />
 	  <EmbeddedResource Remove="Models\Pages\**" />
 	  <EmbeddedResource Remove="Models\Sections\**" />
+	  <None Remove="Areas\Review\Views\Review\**" />
+	  <None Remove="Areas\Review\Views\Shared\**" />
 	  <None Remove="Models\Helpers\**" />
 	  <None Remove="Models\Pages\**" />
 	  <None Remove="Models\Sections\**" />
@@ -59,6 +67,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Content Update="Areas\Admin\Views\Routes\Delete.cshtml">
+	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+	  </Content>
 	  <Content Update="Areas\Apply\Views\Applications\SubmitConfirmation.cshtml">
 	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
@@ -104,11 +116,6 @@
 	  <Content Update="wwwroot\js\site.min.js">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Areas\Review\Views\Review\" />
-	  <Folder Include="Areas\Review\Views\Shared\" />
 	</ItemGroup>
 
 	<PropertyGroup>

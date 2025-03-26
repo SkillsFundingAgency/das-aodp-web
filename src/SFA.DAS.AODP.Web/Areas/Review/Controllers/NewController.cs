@@ -12,13 +12,13 @@ using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 {
     [Area("Review")]
+    [Route("{controller}/{action}")]
     [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
     public class NewController : ControllerBase
     {
         private readonly ILogger<NewController> _logger;
         private readonly IMediator _mediator;
         public enum NewQualDataKeys { InvalidPageParams, }
-
         public NewController(ILogger<NewController> logger, IMediator mediator) : base(mediator, logger)
         {
             _logger = logger;
@@ -65,8 +65,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 
                 return View(viewModel);
             }
-            catch
+            catch (Exception ex)
             {
+                LogException(ex);
                 return Redirect("/Home/Error");
             }
         }
@@ -86,8 +87,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                         qan = viewModel.Filter.QAN
                     });               
             }
-            catch
+            catch(Exception ex)
             {
+                LogException(ex);
                 return View("Index", viewModel);
             }
         }
@@ -111,8 +113,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     return View("Index");
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                LogException(ex);
                 return View("Index");
             }
         }
@@ -139,8 +142,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     return View("Index");
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                LogException(ex);
                 return View("Index");
             }
         }
@@ -182,7 +186,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
         }
 
-        private FileContentResult WriteCsvToResponse(List<QualificationExport> qualifications)
+        private FileContentResult WriteCsvToResponse(IEnumerable<QualificationExport> qualifications)
         {            
             var csvData = GenerateCsv(qualifications);
             var bytes = System.Text.Encoding.UTF8.GetBytes(csvData);
@@ -190,7 +194,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             return File(bytes, "text/csv", fileName);            
         }
 
-        private static string GenerateCsv(List<QualificationExport> qualifications)
+        private static string GenerateCsv(IEnumerable<QualificationExport> qualifications)
         {
             using (var writer = new StringWriter())
             using (var csv = new CsvHelper.CsvWriter(writer, new CsvConfiguration(CultureInfo.InvariantCulture)))

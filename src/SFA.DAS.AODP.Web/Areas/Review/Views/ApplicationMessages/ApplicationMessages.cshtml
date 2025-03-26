@@ -69,7 +69,6 @@
         {
             <form asp-controller="ApplicationMessages" asp-action="ApplicationMessages" method="post" enctype="multipart/form-data">
                 @Html.HiddenFor(m => m.ApplicationReviewId)
-                @Html.HiddenFor(m => m.ApplicationId)
 
                 <h1 class="govuk-label-wrapper">
                     <label class="govuk-label govuk-label--m" for="messageText">Message</label>
@@ -116,7 +115,6 @@
         {
             <form asp-controller="ApplicationMessages" asp-action="ApplicationMessages" method="post" enctype="multipart/form-data">
                 @Html.HiddenFor(m => m.ApplicationReviewId)
-                @Html.HiddenFor(m => m.ApplicationId)
                 @Html.HiddenFor(m => m.MessageText)
                 @Html.HiddenFor(m => m.SelectedMessageType)
                 @Html.HiddenFor(m => m.MessageTypeSelectOptions)
@@ -129,7 +127,7 @@
                     <tbody class="govuk-table__body">
                         <tr class="govuk-table__row">
                             <th scope="row" class="govuk-table__header">Message</th>
-                            <td class="govuk-table__cell">@Model.MessageText</td>
+                            <td class="govuk-table__cell"><p style="white-space: pre-line">@Model.MessageText</p></td>
                         </tr>
                         <tr class="govuk-table__row">
                             <th scope="row" class="govuk-table__header">Message type</th>
@@ -149,8 +147,7 @@
                         <a class="govuk-button govuk-button--secondary"
                            asp-action="ApplicationMessages"
                            asp-controller="ApplicationMessages"
-                           asp-route-applicationReviewId="@Model.ApplicationReviewId"
-                           asp-route-applicationId="@Model.ApplicationId">
+                           asp-route-applicationReviewId="@Model.ApplicationReviewId">
                             Cancel
                         </a>
                     </div>
@@ -159,11 +156,17 @@
             </form>
         }
 
+        <form asp-route-applicationReviewId="@Model.ApplicationReviewId"
+              asp-action="ReadApplicationMessages" asp-Controller="ApplicationMessages" method="post" enctype="multipart/form-data">
+            @Html.HiddenFor(m => m.ApplicationReviewId)
+            <govuk-button class="govuk-button--secondary govuk-!-margin-top-2" type="submit">Mark all messages as read</govuk-button>
+        </form>
+
         <!-- Application Event Timeline  -->
         @{
             var timelineModel = new TimelineViewModel
             {
-                Items = Model.TimelineMessages.Where(message => message.VisibleToUser)
+                Items = Model.TimelineMessages
             };
 
             <div>

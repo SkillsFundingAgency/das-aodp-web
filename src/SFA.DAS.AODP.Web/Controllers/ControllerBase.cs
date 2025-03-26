@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application;
+using SFA.DAS.AODP.Common.Exceptions;
 using SFA.DAS.AODP.Web.Enums;
 
 namespace SFA.DAS.AODP.Web.Controllers;
@@ -18,7 +19,7 @@ public class ControllerBase(IMediator mediator, ILogger logger) : Controller
             ViewBag.NotificationType = ViewNotificationMessageType.Error;
             _logger.LogError(response.ErrorMessage);
 
-            throw new Exception(response.ErrorMessage);
+            throw new MediatorRequestHandlingException(response.ErrorMessage);
         }
         return response.Value;
     }
@@ -30,5 +31,11 @@ public class ControllerBase(IMediator mediator, ILogger logger) : Controller
             ViewBag.NotificationType = type;
             ViewBag.NotificationMessage = message;
         }
+    }
+
+    protected void LogException(Exception ex)
+    {
+        // prevent duplicate error logging
+        if (ex is not MediatorRequestHandlingException) _logger.LogError(ex.Message, ex);
     }
 }
