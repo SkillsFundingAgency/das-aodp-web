@@ -124,6 +124,9 @@
                     "appInsightsName": {
                         "value": "[variables('appServiceName')]"
                     },
+                    "sharedEnvResourceGroup": {
+                        "value": "[parameters('sharedEnvResourceGroup')]"
+                    },
                     "privateLinkScopeName": {
                         "value": "[variables('privateLinkScopeName')]"
                     },
