@@ -23,13 +23,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SFA.DAS.AODP.Domain", "SFA.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SFA.DAS.AODP.Authentication", "SFA.DAS.AODP.Authentication\SFA.DAS.AODP.Authentication.csproj", "{9D0D3D5C-73C6-4988-A92F-952048CABBB1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SFA.DAS.AODP.Authentication.Tests", "SFA.DAS.AODP.Authentication.Tests\SFA.DAS.AODP.Authentication.Tests.csproj", "{11F656D7-7898-429D-9570-1ABEE464A516}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SFA.DAS.AODP.Authentication.UnitTests", "SFA.DAS.AODP.Authentication.Tests\SFA.DAS.AODP.Authentication.UnitTests.csproj", "{11F656D7-7898-429D-9570-1ABEE464A516}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SFA.DAS.AODP.Application.Tests", "SFA.DAS.AODP.Application.Tests\SFA.DAS.AODP.Application.Tests.csproj", "{309839DB-8912-442B-B11C-66427AC8E565}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SFA.DAS.AODP.Application.UnitTests", "SFA.DAS.AODP.Application.Tests\SFA.DAS.AODP.Application.UnitTests.csproj", "{309839DB-8912-442B-B11C-66427AC8E565}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SFA.DAS.AODP.Infrastructure.Tests", "SFA.DAS.AODP.Infrastructure.Tests\SFA.DAS.AODP.Infrastructure.Tests.csproj", "{B61120BF-895B-4BF4-A434-8843DCDAE387}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SFA.DAS.AODP.Infrastructure.UnitTests", "SFA.DAS.AODP.Infrastructure.Tests\SFA.DAS.AODP.Infrastructure.UnitTests.csproj", "{B61120BF-895B-4BF4-A434-8843DCDAE387}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SFA.DAS.AODP.Web.Test", "SFA.DAS.AODP.Web.Test\SFA.DAS.AODP.Web.Test.csproj", "{AEFB0897-37B5-42BD-816E-C22B264FD659}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SFA.DAS.AODP.Web.UnitTests", "SFA.DAS.AODP.Web.Test\SFA.DAS.AODP.Web.UnitTests.csproj", "{AEFB0897-37B5-42BD-816E-C22B264FD659}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
