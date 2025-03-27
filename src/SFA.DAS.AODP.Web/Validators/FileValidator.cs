@@ -36,7 +36,7 @@ namespace SFA.DAS.AODP.Web.Validators
                 throw new QuestionValidationFailedException(question.Id, question.Title, $"You can only upload up to {maxNumberOfFiles} file{(maxNumberOfFiles == 1 ? "" : "s")}.");
             }
 
-            var maxSize = Math.Min(_formBuilderSettings.MaxUploadFileSize, question.FileUpload.MaxSize ?? _formBuilderSettings.MaxUploadFileSize);
+            var maxSize = _formBuilderSettings.MaxUploadFileSize;
             long maxSizeBytes = maxSize * 1024 * 1024;
             foreach (var file in answer.FormFiles)
             {

@@ -58,8 +58,8 @@ internal class Program
 
         builder.Services.Configure<FormOptions>(options =>
         {
-            // Set the limit to 256 MB
-            options.MultipartBodyLengthLimit = 268435456;
+            // Set the limit to 100 MB
+            options.MultipartBodyLengthLimit = 104857600;
         });
 
         var app = builder.Build();
