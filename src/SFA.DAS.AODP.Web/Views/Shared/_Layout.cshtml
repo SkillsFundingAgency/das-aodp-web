@@ -1,14 +1,15 @@
 ﻿@using GovUk.Frontend.AspNetCore
 @using System.Linq
+@using SFA.DAS.AODP.Web.Authentication
 @{
     Layout = "_GovUkPageTemplate";
     var userClaims = ViewContext.HttpContext.User.Claims.Where(c => c.Type == "rolecode").ToList();
-    var canViewDashboard = userClaims.Any(x => x.Value == "qfau_user_approver" || x.Value == "qfau_user_reviewer" || x.Value == "qfau_admin_forms" || x.Value == "qfau_admin_data");
-    var canImportData = userClaims.Any(x => x.Value == "qfau_admin_data");
-    var canCreateForm = userClaims.Any(x => x.Value == "qfau_admin_forms" || x.Value == "ifate_admin_forms");
-    var canReviewFundingRequests = userClaims.Any(x => x.Value == "ifate_user_reviewer" || x.Value == "ofqual_user_reviewer");
-    var canCreateOutputFile = userClaims.Any(x => x.Value == "qfau_admin_data");
-    var isAODashboard = userClaims.Any(x => x.Value == "ao_user");
+    var canViewDashboard = userClaims.Any(x => x.Value == RoleConstants.QFAUApprover || x.Value == RoleConstants.QFAUReviewer || x.Value == RoleConstants.QFAUFormBuilder || x.Value == RoleConstants.QFAUImport);
+    var canImportData = userClaims.Any(x => x.Value == RoleConstants.QFAUImport);
+    var canCreateForm = userClaims.Any(x => x.Value == RoleConstants.QFAUFormBuilder || x.Value == RoleConstants.IFATEFormBuilder);
+    var canReviewFundingRequests = userClaims.Any(x => x.Value == RoleConstants.IFATEReviewer || x.Value == RoleConstants.OFQUALReviewer);
+    var canCreateOutputFile = userClaims.Any(x => x.Value == RoleConstants.QFAUImport);
+    var isAODashboard = userClaims.Any(x => x.Value == RoleConstants.AOApply);
 }
 
 @section Header { 
