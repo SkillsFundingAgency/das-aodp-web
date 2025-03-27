@@ -1,4 +1,5 @@
-﻿using SFA.DAS.AODP.Models.Exceptions.FormValidation;
+﻿using Humanizer;
+using SFA.DAS.AODP.Models.Exceptions.FormValidation;
 using SFA.DAS.AODP.Models.Forms;
 using SFA.DAS.AODP.Web.Models.Application;
 
@@ -17,7 +18,7 @@ namespace SFA.DAS.AODP.Web.Validators
 
             if (required && (answer == null || answer.MultipleChoiceValues == null))
             {
-                if (min == 0) min = 1;
+                if (min == 0 || min == null) min = 1;
                 throw new QuestionValidationFailedException(question.Id, question.Title, $"Please select at least {min} option{(min == 1 ? "" : "s")}.");
             }
 

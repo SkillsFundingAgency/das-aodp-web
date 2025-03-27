@@ -18,8 +18,6 @@ namespace SFA.DAS.AODP.Infrastructure.ApiClient
             _httpClient = httpClient;
             _config = config.Value;
             _httpClient.BaseAddress = new Uri(config.Value.BaseUrl);
-
-            _httpClient.Timeout = new TimeSpan(0, 0, seconds: 700);
         }
 
         public async Task<TResponse> Get<TResponse>(IGetApiRequest request)
@@ -29,11 +27,6 @@ namespace SFA.DAS.AODP.Infrastructure.ApiClient
             AddAuthenticationHeader(requestMessage);
 
             var response = await _httpClient.SendAsync(requestMessage).ConfigureAwait(false);
-
-            if (response.StatusCode.Equals(HttpStatusCode.NotFound))
-            {
-                return default;
-            }
 
             if (response.IsSuccessStatusCode)
             {
@@ -57,10 +50,6 @@ namespace SFA.DAS.AODP.Infrastructure.ApiClient
 
             var response = await _httpClient.SendAsync(requestMessage).ConfigureAwait(false);
 
-            if (response.StatusCode.Equals(HttpStatusCode.NotFound))
-            {
-                return default;
-            }
 
             if (response.IsSuccessStatusCode)
             {

@@ -2,6 +2,10 @@
 @using SFA.DAS.AODP.Web.Helpers.Markdown
 @model EditQuestionViewModel
 
+@{
+    ViewData["Title"] = "Edit Question";
+}
+
 <a class="govuk-back-link" asp-action="Edit" asp-controller="Pages" asp-route-formVersionId="@Model.FormVersionId" asp-route-sectionId="@Model.SectionId" asp-route-pageId="@Model.PageId">
     Back to Page
 </a>
@@ -22,14 +26,13 @@
     @Html.HiddenFor(m => m.PageId)
     @Html.HiddenFor(m => m.SectionId)
     @Html.HiddenFor(m => m.FormVersionId)
-    @Html.HiddenFor(m => m.Id)
     @Html.HiddenFor(m => m.Type)
     @Html.HiddenFor(m => m.Editable)
 
     @Html.AntiForgeryToken()
 
     <div class="govuk-form-group">
-        <govuk-input disabled="@(!Model.Editable)" asp-for="@Model.Title" input-class="govuk-input--width-50" inputmode="text" value="@Model.Title">
+        <govuk-input disabled="@(!Model.Editable)" asp-for="@Model.Title" input-class="govuk-input--width-50" inputmode="text" value="@Model.Title" autocomplete="off">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Title</govuk-input-label>
             @{
                 await Html.RenderPartialAsync("Validation/_TextInputValidationPartial", nameof(Model.Title));
@@ -38,8 +41,8 @@
     </div>
 
     <div class="govuk-form-group">
-        <govuk-input asp-for="@Model.Type" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" disabled=true spellcheck="false">
-            <govuk-input-label is-page-heading="false" class="govuk-label--s">Question type</govuk-input-label>
+        <govuk-input asp-for="@Model.Type" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" disabled=true spellcheck="false" autocomplete="off" id="questiontype">
+          <govuk-input-label is-page-heading="false" class="govuk-label--s">Question type</govuk-input-label>
         </govuk-input>
     </div>
 
@@ -70,7 +73,7 @@
 
 
     <div class="govuk-form-group">
-        <govuk-input disabled="@(!Model.Editable)" asp-for="@Model.Hint" input-class="govuk-input--width-50" inputmode="text">
+        <govuk-input disabled="@(!Model.Editable)" asp-for="@Model.Hint" input-class="govuk-input--width-50" inputmode="text" autocomplete="off">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Hint (optional)</govuk-input-label>
 
             <govuk-input-hint>
@@ -80,7 +83,7 @@
         </govuk-input>
     </div>
     <div class="govuk-form-group">
-        <govuk-textarea disabled="@(!Model.Editable)" asp-for="@Model.Helper">
+        <govuk-textarea disabled="@(!Model.Editable)" asp-for="@Model.Helper" autocomplete="off">
             <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Additional guidance (optional)</govuk-textarea-label>
             <govuk-textarea-hint>
                 Provide optional guidance to completing the question. Markdown should be used to format the guidance.

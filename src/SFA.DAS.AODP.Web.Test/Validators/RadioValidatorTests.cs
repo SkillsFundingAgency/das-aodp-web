@@ -1,21 +1,35 @@
-﻿//using SFA.DAS.AODP.Models.Exceptions.FormValidation;
-//using SFA.DAS.AODP.Models.Forms;
-//using SFA.DAS.AODP.Web.Models.Application;
+﻿using SFA.DAS.AODP.Models.Exceptions.FormValidation;
+using SFA.DAS.AODP.Web.Models.Application;
+using SFA.DAS.AODP.Web.Validators;
 
-//namespace SFA.DAS.AODP.Web.Validators
-//{
-//    public class RadioValidatorTests : IAnswerValidator
-//    {
+namespace SFA.DAS.AODP.Web.Test.Validators;
+public class RadioValidatorTests
+{
+    private readonly RadioValidator _sut = new();
 
+    [Fact]
+    public void Validate_Required_NoAnswerProvided_ExceptionThrown()
+    {
+        // Arrange
+        var questionId = Guid.NewGuid();
 
-//        public List<QuestionType> QuestionTypes => [QuestionType.Radio];
+        GetApplicationPageByIdQueryResponse.Question question = new()
+        {
+            Id = questionId,
+            Title = "something",
+            Required = true,
+        };
 
-//        public void Validate(GetApplicationPageByIdQueryResponse.Question question, ApplicationPageViewModel.Answer? answer, ApplicationPageViewModel model)
-//        {
-//            var required = question.Required;
+        ApplicationPageViewModel.Answer answer =
+        new()
+        {
+            RadioChoiceValue = null
+        };
 
-//            if (required && (answer == null || String.IsNullOrEmpty(answer.RadioChoiceValue)))
-//                throw new QuestionValidationFailedException(question.Id, question.Title, $"Please select a option.");
-//        }
-//    }
-//}
+        // Act
+        var ex = Assert.Throws<QuestionValidationFailedException>(() => _sut.Validate(question, answer, new()));
+
+        // Assert
+        Assert.Equal($"Please select a option.", ex.Message);
+    }
+}

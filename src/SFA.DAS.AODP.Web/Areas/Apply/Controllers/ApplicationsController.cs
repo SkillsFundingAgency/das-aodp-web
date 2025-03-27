@@ -4,14 +4,13 @@ using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Queries.Application.Form;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Infrastructure.File;
-using SFA.DAS.AODP.Web.Areas.Admin.Controllers.FormBuilder;
+using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Filters;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Application;
 using SFA.DAS.AODP.Web.Validators;
-using System.Reflection;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
@@ -206,11 +205,11 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
                 SectionId = sectionId,
             };
 
-            var response = await Send(request);
+            var cachedApplicationPage = await Send(request);
+            var answers = await Send(new GetApplicationPageAnswersByPageIdQuery(applicationId, cachedApplicationPage.Id, sectionId, formVersionId));
 
-            var answers = await Send(new GetApplicationPageAnswersByPageIdQuery(applicationId, response.Id, sectionId, formVersionId));
-
-            ApplicationPageViewModel viewModel = ApplicationPageViewModel.MapToViewModel(response, applicationId, formVersionId, sectionId, organisationId, answers, fetchBlobFunc);
+            ApplicationPageViewModel viewModel = ApplicationPageViewModel.MapToViewModel(cachedApplicationPage, applicationId, formVersionId, sectionId, organisationId, answers, fetchBlobFunc);
+            viewModel.IsSubmitted = await IsApplicationSubmitted(applicationId);
 
             return View(viewModel);
         }
@@ -220,6 +219,8 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         [Route("apply/organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/sections/{sectionId}/pages/{pageOrder}")]
         public async Task<IActionResult> ApplicationPageAsync([FromForm] ApplicationPageViewModel model)
         {
+            if (await IsApplicationSubmitted(model.ApplicationId)) return BadRequest();
+
             Func<string, List<UploadedBlob>> fetchBlobFunc = path => _fileService.ListBlobs(path);
 
             var request = new GetApplicationPageByIdQuery()
@@ -229,8 +230,7 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
                 SectionId = model.SectionId,
             };
 
-            var response = await Send(request);
-
+            var cachedApplicationPage = await Send(request);
             try
             {
                 if (!string.IsNullOrEmpty(model.RemoveFile))
@@ -240,24 +240,24 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
                         return BadRequest();
                     }
                     await _fileService.DeleteFileAsync(model.RemoveFile);
-                    model = ApplicationPageViewModel.RepopulatePageDataOnViewModel(response, model, fetchBlobFunc);
+                    model = ApplicationPageViewModel.RepopulatePageDataOnViewModel(cachedApplicationPage, model, fetchBlobFunc);
                     return View(model);
 
                 }
-                _validator.ValidateApplicationPageAnswers(ModelState, response, model);
+                _validator.ValidateApplicationPageAnswers(ModelState, cachedApplicationPage, model);
 
                 if (!ModelState.IsValid)
                 {
-                    model = ApplicationPageViewModel.RepopulatePageDataOnViewModel(response, model, fetchBlobFunc);
+                    model = ApplicationPageViewModel.RepopulatePageDataOnViewModel(cachedApplicationPage, model, fetchBlobFunc);
                     return View(model);
                 }
-                var command = ApplicationPageViewModel.MapToCommand(model, response);
+                var command = ApplicationPageViewModel.MapToCommand(model, cachedApplicationPage);
 
                 var commandResponse = await Send(command);
 
-                await HandleFileUploads(model);
+                await HandleFileUploads(model, cachedApplicationPage);
 
-                bool endSection = command.Routing?.EndSection == true || response.TotalSectionPages == response.Order;
+                bool endSection = command.Routing?.EndSection == true || cachedApplicationPage.TotalSectionPages == cachedApplicationPage.Order;
                 if (endSection) return RedirectToAction(nameof(ViewApplicationSection), new { organisationId = model.OrganisationId, applicationId = model.ApplicationId, sectionId = model.SectionId, formVersionId = model.FormVersionId });
 
 
@@ -267,7 +267,7 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
                         organisationId = model.OrganisationId,
                         applicationId = model.ApplicationId,
                         sectionId = model.SectionId,
-                        pageOrder = command.Routing?.NextPageOrder ?? response.Order + 1,
+                        pageOrder = command.Routing?.NextPageOrder ?? cachedApplicationPage.Order + 1,
                         formVersionId = model.FormVersionId
                     });
             }
@@ -275,7 +275,7 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
             {
                 LogException(ex);
 
-                model = ApplicationPageViewModel.RepopulatePageDataOnViewModel(response, model, fetchBlobFunc);
+                model = ApplicationPageViewModel.RepopulatePageDataOnViewModel(cachedApplicationPage, model, fetchBlobFunc);
                 return View(model);
             }
         }
@@ -390,14 +390,16 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
             return View(viewModel);
         }
         #endregion
-        private async Task HandleFileUploads(ApplicationPageViewModel viewModel)
+
+        private async Task HandleFileUploads(ApplicationPageViewModel viewModel, GetApplicationPageByIdQueryResponse response)
         {
             foreach (var question in viewModel.Questions?.Where(q => q.Type == AODP.Models.Forms.QuestionType.File) ?? [])
             {
+                var prefix = response.Questions.First(r => r.Id == question.Id).FileUpload?.FileNamePrefix ?? string.Empty;
                 foreach (var file in question.Answer?.FormFiles ?? [])
                 {
                     using var stream = file.OpenReadStream();
-                    await _fileService.UploadFileAsync($"{viewModel.ApplicationId}/{question.Id}", file.FileName, stream, file.ContentType);
+                    await _fileService.UploadFileAsync($"{viewModel.ApplicationId}/{question.Id}", file.FileName, stream, file.ContentType, prefix);
                 }
             }
         }
@@ -409,6 +411,12 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
             {
                 await _fileService.DeleteFileAsync(file.FullPath);
             }
+        }
+
+        private async Task<bool> IsApplicationSubmitted(Guid applicationId)
+        {
+            var application = await Send(new GetApplicationByIdQuery(applicationId));
+            return application.Status != ApplicationStatus.Draft.ToString();
         }
     }
 }
