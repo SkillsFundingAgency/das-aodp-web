@@ -8,6 +8,7 @@
     var canCreateForm = userClaims.Any(x => x.Value == "qfau_admin_forms" || x.Value == "ifate_admin_forms");
     var canReviewFundingRequests = userClaims.Any(x => x.Value == "ifate_user_reviewer" || x.Value == "ofqual_user_reviewer");
     var canCreateOutputFile = userClaims.Any(x => x.Value == "qfau_admin_data");
+    var isAODashboard = userClaims.Any(x => x.Value == "ao_user");
 }
 
 @section Header { 
@@ -54,6 +55,19 @@
                 @if (User.Identity.IsAuthenticated)
                 {
                     <ul class="dfe-header__navigation-list">
+                        <!-- AO Dashboard -->
+                        @if (isAODashboard)
+                        {
+                            <li class="dfe-header__navigation-item">
+                                <a class="dfe-header__navigation-link" asp-area="Apply" asp-action="Index" asp-controller="Applications">
+                                    Dashboard
+                                    <svg class="dfe-icon dfe-icon__chevron-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" width="34" height="34">
+                                        <path d="M15.5 12a1 1 0 0 1-.29.71l-5 5a1 1 0 0 1-1.42-1.42l4.3-4.29-4.3-4.29a1 1 0 0 1 1.42-1.42l5 5a1 1 0 0 1 .29.71z"></path>
+                                    </svg>
+                                </a>
+                            </li>
+                        }
+                        <!-- Ofau, Ofqua, IFate Dashboard -->
                         @if (canViewDashboard)
                         {
                             <li class="dfe-header__navigation-item dfe-header__navigation-item--current">
@@ -87,14 +101,6 @@
                                 </a>
                             </li>
                         }
-                        <li class="dfe-header__navigation-item">
-                            <a class="dfe-header__navigation-link" asp-area="Apply" asp-action="Index" asp-controller="Applications">
-                                Applications
-                                <svg class="dfe-icon dfe-icon__chevron-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" width="34" height="34">
-                                    <path d="M15.5 12a1 1 0 0 1-.29.71l-5 5a1 1 0 0 1-1.42-1.42l4.3-4.29-4.3-4.29a1 1 0 0 1 1.42-1.42l5 5a1 1 0 0 1 .29.71z"></path>
-                                </svg>
-                            </a>
-                        </li>
                         @if (canReviewFundingRequests)
                         {
                             <li class="dfe-header__navigation-item">
