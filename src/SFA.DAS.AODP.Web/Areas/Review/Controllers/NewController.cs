@@ -165,7 +165,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         public async Task<IActionResult> QualificationDetails([FromQuery] string qualificationReference)
         {            
             if (string.IsNullOrWhiteSpace(qualificationReference))
-            {               
+            {
                 return Redirect("/Home/Error");
             }
             try
@@ -203,7 +203,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
                 model.ProcessStatuses = [.. await GetProcessStatuses()];
                 if (!CheckUserIsAbleToSetStatus(model, procStatus.Value))
-                    return View(model);
+                    return RedirectToAction(nameof(QualificationDetails), new { qualificationReference = model.Qual.Qan });
 
                 await Send(new UpdateQualificationStatusCommand
                 {
@@ -217,7 +217,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             catch (Exception ex)
             {
                 LogException(ex);
-                return View(model);
+                return RedirectToAction(nameof(QualificationDetails), new { qualificationReference = model.Qual.Qan });
             }
         }
 

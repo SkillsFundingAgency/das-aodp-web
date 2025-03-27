@@ -37,38 +37,29 @@
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key>Status</govuk-summary-list-row-key>
                     <govuk-summary-list-row-value>@Model.ProcStatus.Name</govuk-summary-list-row-value>
-                    @Html.HiddenFor(m => m.ProcStatus.Name)
                 </govuk-summary-list-row>
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key>QAN</govuk-summary-list-row-key>
                     <govuk-summary-list-row-value>@Model.Qual.Qan</govuk-summary-list-row-value>
-                    @Html.HiddenFor(m => m.Qual.Qan)
                 </govuk-summary-list-row>
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key>Awarding organisation</govuk-summary-list-row-key>
                     <govuk-summary-list-row-value>@Model.Organisation.NameLegal</govuk-summary-list-row-value>
-                    @Html.HiddenFor(m => m.Organisation.NameLegal)
                 </govuk-summary-list-row>
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key>Qualification title</govuk-summary-list-row-key>
                     <govuk-summary-list-row-value>@Model.Qual.QualificationName</govuk-summary-list-row-value>
-                    @Html.HiddenFor(m => m.Qual.QualificationName)
                 </govuk-summary-list-row>
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key>Qualification type</govuk-summary-list-row-key>
                     <govuk-summary-list-row-value>@Model.Type</govuk-summary-list-row-value>
-                    @Html.HiddenFor(m => m.Type)
                 </govuk-summary-list-row>
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key>Level</govuk-summary-list-row-key>
                     <govuk-summary-list-row-value>@Model.Level</govuk-summary-list-row-value>
-                    @Html.HiddenFor(m => m.Level)
                 </govuk-summary-list-row>
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key>Age Group</govuk-summary-list-row-key>
-                    @Html.HiddenFor(m => m.NineteenPlus)
-                    @Html.HiddenFor(m => m.SixteenToEighteen)
-                    @Html.HiddenFor(m => m.PreSixteen)
                     @if (Model.NineteenPlus ?? false)
                     {
                         <govuk-summary-list-row-value>19+</govuk-summary-list-row-value>
@@ -93,12 +84,10 @@
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key>Subject</govuk-summary-list-row-key>
                     <govuk-summary-list-row-value>@Model.Specialism</govuk-summary-list-row-value>
-                    @Html.HiddenFor(m => m.Specialism)
                 </govuk-summary-list-row>
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key>Sector subject area</govuk-summary-list-row-key>
                     <govuk-summary-list-row-value>@Model.Ssa</govuk-summary-list-row-value>
-                    @Html.HiddenFor(m => m.Ssa)
                 </govuk-summary-list-row>
             </govuk-summary-list>
             <div class="govuk-form-group">
