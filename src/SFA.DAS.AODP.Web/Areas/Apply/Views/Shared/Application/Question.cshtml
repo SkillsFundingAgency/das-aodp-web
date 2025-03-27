@@ -23,7 +23,7 @@
 
     <h1 class="govuk-label-wrapper">
         <label class="govuk-label govuk-label--m" for="question-@Model.Id">
-            @Model.Title @(Model.Required ? "" : "(optional)")
+            @(Model.Order). @Model.Title @(Model.Required ? "" : "(optional)")
         </label>
     </h1>
 
@@ -128,7 +128,7 @@
     {
         @if (!ViewBag.IsSubmitted)
         {
-            <input class="govuk-file-upload"
+            <input class="govuk-file-upload govuk-body govuk-!-static-padding-2"
                    name="Questions[@(Model.Order - 1)].Answer.FormFiles"
                    id="@questionHtmlId"
                    type="file"
@@ -139,7 +139,7 @@
         {
             @if (!ViewBag.IsSubmitted)
             {
-                <p class="govuk-body govuk-!-static-margin-top-1"><strong>Note that clicking 'Remove file' will immediately remove the file from the system.</strong></p>
+                <p class="govuk-body govuk-!-static-padding-2"><strong>Note that clicking 'Remove file' will immediately remove the file from the system.</strong></p>
             }
             <ul class="govuk-list govuk-list--bullet">
                 @foreach (var file in Model.UploadedFiles)
