@@ -124,9 +124,6 @@
                     "appInsightsName": {
                         "value": "[variables('appServiceName')]"
                     },
-                    "sharedEnvResourceGroup": {
-                        "value": "[parameters('sharedEnvResourceGroup')]"
-                    },
                     "privateLinkScopeName": {
                         "value": "[variables('privateLinkScopeName')]"
                     },
@@ -135,6 +132,9 @@
                     },
                     "logAnalyticsWorkspaceId": {
                         "value": "[resourceId(parameters('logAnalyticsSubscriptionId'),parameters('sharedManagementResourceGroup'),'Microsoft.OperationalInsights/workspaces',parameters('logAnalyticsWorkspaceName'))]"
+                    },
+                    "appInsightsResourceId": {
+                        "value": "[resourceId(parameters('logAnalyticsSubscriptionId'),parameters('sharedEnvResourceGroup'),'Microsoft.Insights/components',variables('appServiceName'))]"
                     }
                 }
             },
