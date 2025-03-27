@@ -71,10 +71,9 @@
     "variables": {
         "deploymentUrlBase": "https://raw.githubusercontent.com/SkillsFundingAgency/das-platform-building-blocks/Added_app_insights_property/templates/",
         "resourceNamePrefix": "[toLower(concat('das-', parameters('resourceEnvironmentName'),'-', parameters('serviceName')))]",
-        "privateLinkScopeNameNamePrefix": "[toLower(concat('das-', parameters('resourceEnvironmentName'),'-shared'))]",
+        "privateLinkScopeName": "[toLower(concat('das-', parameters('resourceEnvironmentName'),'-shared-ampls'))]",
         "resourceGroupName": "[concat(variables('resourceNamePrefix'), '-rg')]",
         "appServiceName": "[concat(variables('resourceNamePrefix'), '-as')]",
-        "privateLinkScopeName": "[concat(variables('privateLinkScopeNameNamePrefix'), '-ampls')]",
         "configNames": "SFA.DAS.AODP.Web"
     },
     "resources": [
