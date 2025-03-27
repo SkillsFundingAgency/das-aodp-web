@@ -2,7 +2,7 @@
 @using System.Linq
 @{
     Layout = "_GovUkPageTemplate";
-    var userClaims = ViewContext.HttpContext.User.Claims.Where(c => c.Type == "rolecodes").ToList();
+    var userClaims = ViewContext.HttpContext.User.Claims.Where(c => c.Type == "rolecode").ToList();
     var canViewDashboard = userClaims.Any(x => x.Value == "qfau_user_approver" || x.Value == "qfau_user_reviewer" || x.Value == "qfau_admin_forms" || x.Value == "qfau_admin_data");
     var canImportData = userClaims.Any(x => x.Value == "qfau_admin_data");
     var canCreateForm = userClaims.Any(x => x.Value == "qfau_admin_forms" || x.Value == "ifate_admin_forms");
