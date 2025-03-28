@@ -134,7 +134,7 @@
                         "value": "[resourceId(parameters('logAnalyticsSubscriptionId'),parameters('sharedManagementResourceGroup'),'Microsoft.OperationalInsights/workspaces',parameters('logAnalyticsWorkspaceName'))]"
                     },
                     "appInsightsResourceId": {
-                        "value": "[resourceId(parameters('logAnalyticsSubscriptionId'),parameters('sharedEnvResourceGroup'),'Microsoft.Insights/components',variables('appServiceName'))]"
+                        "value": "[reference(concat(variables('appServiceName'), '-application-insights-', parameters('utcValue'))).outputs.AppInsightsResourceId.value]"
                     }
                 }
             },
