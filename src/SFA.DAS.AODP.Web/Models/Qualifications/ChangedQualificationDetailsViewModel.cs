@@ -1,4 +1,7 @@
-﻿using SFA.DAS.AODP.Application.Queries.Qualifications;
+﻿using Microsoft.AspNetCore.Razor.TagHelpers;
+using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Web.Enums;
+using System.ComponentModel.DataAnnotations;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SFA.DAS.AODP.Web.Models.Qualifications;
@@ -11,6 +14,7 @@ public class ChangedQualificationDetailsViewModel
     public Guid ProcessStatusId { get; set; }
     public int AdditionalKeyChangesReceivedFlag { get; set; }
     public Guid LifecycleStageId { get; set; }
+    public string? ChangedFieldNames { get; set; }
     public string? OutcomeJustificationNotes { get; set; }
     public Guid AwardingOrganisationId { get; set; }
     public string Status { get; set; } = null!;
@@ -27,7 +31,14 @@ public class ChangedQualificationDetailsViewModel
     public int? MinimumGlh { get; set; }
     public int? MaximumGlh { get; set; }
     public DateTime RegulationStartDate { get; set; }
+    [DataType(DataType.DateTime)]
+    [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy HH:mm}")]
+    
     public DateTime OperationalStartDate { get; set; }
+
+    [DataType(DataType.DateTime)]
+    [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy HH:mm}")]
+
     public DateTime? OperationalEndDate { get; set; }
     public DateTime? CertificationEndDate { get; set; }
     public DateTime? ReviewDate { get; set; }
@@ -66,6 +77,57 @@ public class ChangedQualificationDetailsViewModel
     public virtual AwardingOrganisation Organisation { get; set; } = null!;
     public virtual Qualification Qual { get; set; } = null!;
     public virtual ProcessStatus ProcStatus { get; set; } = null!;
+    public AdditionalFormActions AdditionalActions { get; set; } = new AdditionalFormActions();
+    public List<ProcessStatus> ProcessStatuses { get; set; } = new List<ProcessStatus>();
+
+    public string Priority
+    {
+        get
+        {
+            return MapChangedFieldsToPriority();
+        }
+    }
+
+    private string MapChangedFieldsToPriority()
+    {
+        var priority = "Green";
+        if (!string.IsNullOrWhiteSpace(priority) && Status != ActionTypeEnum.NoActionRequired)
+        {
+            var changedFields = ChangedFieldNames.Split(',').Select(s => s.Trim()).ToList();
+            var redChanges = new List<string>() { "Level", "SSA", "GLH" };
+            var yellowChanges = new List<string>()
+                {
+                    "OrganisationName",
+                    "Title",
+                    "Type",
+                    "TotalCredits",
+                    "GradingType",
+                    "OfferedInEngland",
+                    "PreSixteen",
+                    "SixteenToEighteen",
+                    "EighteenPlus",
+                    "NineteenPlus",
+                    "MinimumGLH",
+                    "TQT",
+                    "OperationalEndDate",
+                    "LastUpdatedDate",
+                    "Version",
+                    "OfferedInternationally"
+                };
+            if (changedFields.Intersect(redChanges).Any())
+            {
+                priority = "Red";
+            }
+            else if (changedFields.Intersect(yellowChanges).Any())
+            {
+                priority = "Yellow";
+            }
+
+        }
+        return priority;
+    }
+
+    public List<KeyFieldChanges> KeyFieldChanges { get; set; } = new();
     public partial class LifecycleStage
     {
         public Guid Id { get; set; }
@@ -74,6 +136,7 @@ public class ChangedQualificationDetailsViewModel
 
     public partial class AwardingOrganisation
     {
+
         public Guid Id { get; set; }
         public int? Ukprn { get; set; }
         public string? RecognitionNumber { get; set; }
@@ -89,18 +152,6 @@ public class ChangedQualificationDetailsViewModel
         public Guid Id { get; set; }
         public string Qan { get; set; } = null!;
         public string? QualificationName { get; set; }
-        public List<QualificationDiscussionHistory> QualificationDiscussionHistories { get; set; } = new List<QualificationDiscussionHistory>();
-    }
-
-    public partial class QualificationDiscussionHistory
-    {
-        public Guid Id { get; set; }
-        public Guid QualificationId { get; set; }
-        public Guid ActionTypeId { get; set; }
-        public string? UserDisplayName { get; set; }
-        public string? Notes { get; set; }
-        public DateTime? Timestamp { get; set; }
-        public virtual ActionType ActionType { get; set; } = null!;
     }
 
     public class ActionType
@@ -114,11 +165,28 @@ public class ChangedQualificationDetailsViewModel
         public Guid Id { get; set; }
         public string? Name { get; set; }
         public int? IsOutcomeDecision { get; set; }
+
+        public static implicit operator ProcessStatus(GetProcessStatusesQueryResponse.ProcessStatus model)
+        {
+            return new ProcessStatus
+            {
+                Id = model.Id,
+                Name = model.Name,
+                IsOutcomeDecision = model.IsOutcomeDecision,
+            };
+        }
+    }
+
+    public class AdditionalFormActions
+    {
+        [HtmlAttributeName("comment")]
+        public string Note { get; set; } = string.Empty;
+        public Guid? ProcessStatusId { get; set; }
     }
 
     public static implicit operator ChangedQualificationDetailsViewModel(GetQualificationDetailsQueryResponse entity)
     {
-        return new ChangedQualificationDetailsViewModel
+        return new ChangedQualificationDetailsViewModel()
         {
             Id = entity.Id,
             QualificationId = entity.QualificationId,
@@ -126,6 +194,7 @@ public class ChangedQualificationDetailsViewModel
             ProcessStatusId = entity.ProcessStatusId,
             AdditionalKeyChangesReceivedFlag = entity.AdditionalKeyChangesReceivedFlag,
             LifecycleStageId = entity.LifecycleStageId,
+            ChangedFieldNames = entity.VersionFieldChanges,
             OutcomeJustificationNotes = entity.OutcomeJustificationNotes,
             AwardingOrganisationId = entity.AwardingOrganisationId,
             Status = entity.Status,
@@ -197,22 +266,7 @@ public class ChangedQualificationDetailsViewModel
             {
                 Id = entity.Qual.Id,
                 Qan = entity.Qual.Qan,
-                QualificationName = entity.Qual.QualificationName,
-                QualificationDiscussionHistories = entity.Qual.QualificationDiscussionHistories
-                    .Select(v => new QualificationDiscussionHistory
-                    {
-                        Id = v.Id,
-                        QualificationId = v.QualificationId,
-                        ActionTypeId = v.ActionTypeId,
-                        UserDisplayName = v.UserDisplayName,
-                        Notes = v.Notes,
-                        Timestamp = v.Timestamp,
-                        ActionType = new ActionType
-                        {
-                            Id = v.ActionType.Id,
-                            Description = v.ActionType.Description,
-                        }
-                    }).ToList()
+                QualificationName = entity.Qual.QualificationName
             },
             ProcStatus = new ProcessStatus()
             {
@@ -224,3 +278,9 @@ public class ChangedQualificationDetailsViewModel
     }
 }
 
+public class KeyFieldChanges
+{
+    public string Was { get; set; }
+    public string Now { get; set; }
+    public string Name { get; set; }
+}

@@ -8,6 +8,7 @@ public class GetQualificationDetailsQueryResponse
     public Guid ProcessStatusId { get; set; }
     public int AdditionalKeyChangesReceivedFlag { get; set; }
     public Guid LifecycleStageId { get; set; }
+    public string? VersionFieldChanges { get; set; }
     public string? OutcomeJustificationNotes { get; set; }
     public Guid AwardingOrganisationId { get; set; }
     public string Status { get; set; } = null!;
