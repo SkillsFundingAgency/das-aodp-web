@@ -172,6 +172,11 @@ asp-action="Index">
                     data-prevent-double-click="true">
                 Save
             </button>
+            <div class="govuk-form-group">
+                <a class="govuk-button" asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersOutcome" asp-route-qualificationReference="@Model.Qual.Qan">
+                    DfE funding review
+                </a>
+            </div>
         </div>
     </div>
 </form>
