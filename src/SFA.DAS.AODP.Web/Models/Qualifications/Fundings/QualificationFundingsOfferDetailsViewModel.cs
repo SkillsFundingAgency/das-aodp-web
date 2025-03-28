@@ -7,6 +7,8 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications.Fundings
         public Guid QualificationVersionId { get; set; }
         public List<OfferFundingDetails> Details { get; set; } = new();
         public List<FundingOffer> FundingOffers { get; set; } = new();
+        public Guid QualificationId { get; set; }
+        public string? QualificationReference { get; set; }
 
         public class OfferFundingDetails
         {
@@ -44,12 +46,15 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications.Fundings
             return model;
         }
 
-        public static SaveQualificationsFundingOffersDetailsCommand Map(QualificationFundingsOfferDetailsViewModel model)
+        public static SaveQualificationsFundingOffersDetailsCommand Map(QualificationFundingsOfferDetailsViewModel model, string userDisplayName, Guid actiontypeId)
         {
             SaveQualificationsFundingOffersDetailsCommand command = new()
             {
                 QualificationVersionId = model.QualificationVersionId,
-
+                QualificationReference = model.QualificationReference,
+                QualificationId = model.QualificationId,
+                UserDisplayName = userDisplayName,
+                ActionTypeId = actiontypeId,
             };
 
             foreach (var funding in model.Details ?? [])
