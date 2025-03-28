@@ -14,7 +14,7 @@ using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers.FormBuilder;
 
-//[Authorize(Policy = PolicyConstants.IsAdminFormsUser)]
+[Authorize(Policy = PolicyConstants.IsAdminFormsUser)]
 [Area("Admin")]
 public class FormsController : ControllerBase
 {

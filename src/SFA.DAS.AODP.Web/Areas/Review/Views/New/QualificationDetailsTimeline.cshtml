@@ -4,8 +4,8 @@
     ViewData["Title"] = "Qualification Details";
 }
 <a class="govuk-back-link"
-   asp-controller="New"
-   asp-action="Index">
+asp-controller="New"
+asp-action="Index">
     Return to qualifications
 </a>
 <span class="govuk-caption-xl">
@@ -32,7 +32,14 @@
                 @foreach(var item in Model.QualificationDiscussionHistories.OrderByDescending(v => v.Timestamp.GetValueOrDefault()))
                 {
                     <li class="aodp-timeline__item">
-                        <b>@item.ActionType.Description</b>
+                        @if (string.IsNullOrEmpty(item.Title))
+                        {
+                            <b>@item.ActionType.Description</b>
+                        }
+                        else
+                        {
+                            <b>@item.Title</b>
+                        }
                         @if (!string.IsNullOrEmpty(item.UserDisplayName) && !string.IsNullOrEmpty(item.FormattedTimestamp))
                         {
                             <span class="govuk-caption-m">

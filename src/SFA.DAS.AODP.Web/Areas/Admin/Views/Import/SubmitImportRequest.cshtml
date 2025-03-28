@@ -1,0 +1,38 @@
+﻿@using SFA.DAS.AODP.Web.Models.Import
+@model SubmitImportRequestViewModel
+
+@using System.Security.Claims
+@{
+	ViewData["Title"] = "Import Data";
+}
+
+<div class="govuk-width-container">
+	<main class="govuk-main-wrapper">
+		<div class="govuk-grid-row">
+			<div class="govuk-grid-column-two-thirds">
+
+				<form asp-controller="Import" asp-action="CheckProgress" method="post">						
+                    @Html.AntiForgeryToken()
+					@Html.HiddenFor(m => m.ImportType)					
+					@Html.HiddenFor(m => m.JobName)					
+					@Html.HiddenFor(m => m.JobRunId)
+
+                    <div class="govuk-form-group">
+						<div class="govuk-grid-row">
+							<div class="govuk-grid-column-full">
+								<p><strong>Importing @Model.ImportType</strong></p>
+								<p>@Model.StatusMessage</p>
+							</div>
+						</div>
+					</div>
+
+                    <govuk-button type="submit">Check progress of import</govuk-button>
+
+                </form>
+
+			</div>
+        </div>
+	</main>
+</div>
+
+

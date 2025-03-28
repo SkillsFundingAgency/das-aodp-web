@@ -1,34 +1,65 @@
-﻿@using System.Security.Claims
+﻿@using SFA.DAS.AODP.Web.Models.Import
+@model ImportRequestViewModel
+
+@using System.Security.Claims
 @{
-	ViewData["Title"] = "Import Dashboard";
+	ViewData["Title"] = "Import Data";
 }
+
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
 <div class="govuk-width-container">
 	<main class="govuk-main-wrapper">
 		<div class="govuk-grid-row">
 			<div class="govuk-grid-column-two-thirds">
-				<div class="govuk-grid-row">
-					<h1 class="govuk-heading-1">Dashboard</h1>
-				</div>
-				<div class="govuk-grid-row">
-					<h2 class="govuk-heading-2">You are a Import user (DFE or IFATE)</h2>
-				</div>
-				<div class="govuk-grid-row">
-					<label class="govuk-label govuk-label--s">Claims</label>
-				</div>
-				<table class="govuk-table">
-					<tr class="govuk-table__header">
-						<th>Type</th>
-						<th>Value</th>
-					</tr>
-					@foreach (var item in ((ClaimsIdentity)User.Identity).Claims)
-					{
-						<tr>
-							<td class="govuk-table__cell">@item.Type</td>
-							<td class="govuk-table__cell">@item.Value</td>
-						</tr>
-					}
-				</table>
+
+                <a class="govuk-back-link" asp-action="Index" asp-controller="Home" asp-area="Review">
+                    Back to qualifications
+                </a>
+
+                <h1 class="govuk-heading-1">Qualifications you need to import</h1>
+
+                <form asp-controller="Import" asp-action="SelectImport" asp-area="Admin" method="post">
+
+                     @Html.AntiForgeryToken()
+
+                    <div class="govuk-form-group">
+                        <govuk-radios asp-for="ImportType">
+                            <govuk-radios-fieldset>
+                                <govuk-radios-fieldset-legend is-page-heading="false" class="govuk-fieldset__legend--s"></govuk-radios-fieldset-legend>
+                                <govuk-radios-hint>
+                                    Select one option
+                                </govuk-radios-hint>
+
+                                @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.ImportType))
+
+                                <govuk-radios-item value="Regulated Qualifications">
+                                    Regulated Qualifications
+                                    <govuk-radios-hint class="govuk-hint govuk-radios__hint govuk-!-static-padding-0">
+                                        This includes qualifications with changes from Ofqual
+                                    </govuk-radios-hint>
+                                </govuk-radios-item>
+                                <govuk-radios-item value="Funded Qualifications">
+                                    Funded Qualifications
+                                    <govuk-radios-hint class="govuk-hint govuk-radios__hint govuk-!-static-padding-0">
+                                        This includes both currently approved and archived qualifications
+                                    </govuk-radios-hint>
+                                </govuk-radios-item>
+
+                            </govuk-radios-fieldset>
+                        </govuk-radios>
+                    </div>
+
+                    <div class="govuk-grid-row">
+                        <div class="govuk-form-group">
+                            <govuk-button type="submit">Continue</govuk-button>
+                            <a class="govuk-button govuk-button--secondary" asp-action="Index" asp-controller="Home" asp-area="Review">
+                                Back to qualifications
+                            </a>
+                        </div>
+                    </div>
+                </form>
+
 			</div>
 		</div>
 	</main>

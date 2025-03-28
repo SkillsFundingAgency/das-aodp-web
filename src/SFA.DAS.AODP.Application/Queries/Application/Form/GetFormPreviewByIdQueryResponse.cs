@@ -31,11 +31,15 @@ public class GetFormPreviewByIdQueryResponse
         public string Title { get; set; } = string.Empty;
         public string Type { get; set; }
         public bool Required { get; set; }
+        public int Order { get; set; }
         public List<QuestionOption> QuestionOptions { get; set; } = new List<QuestionOption>();
     }
 
     public class QuestionOption
     {
+        public Guid Id { get; set; }
         public string Value { get; set; }
+        public int Order { get; set; }
+
     }
 }
