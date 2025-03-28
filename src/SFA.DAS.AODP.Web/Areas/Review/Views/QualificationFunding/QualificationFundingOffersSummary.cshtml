@@ -70,12 +70,11 @@
                     </govuk-summary-list-row-value>
 
                     <govuk-summary-list-row-actions>
-                            <govuk-summary-list-row-action asp-route-area="Review" asp-controller="QualificationFunding" 
-                            asp-route-qualificationReference="@Model.QualificationReference" 
-                            asp-route-qualificationVersionId="@Model.QualificationVersionId"
-                            asp-route-qualificationId="@Model.QualificationId"
-                            visually-hidden-text="name">Change</govuk-summary-list-row-action>
-                    </govuk-summary-list-row-actions>
+                            <govuk-summary-list-row-action asp-route-area="Review" asp-controller="QualificationFunding"
+                                                           asp-action="QualificationFundingOffersOutcome"
+                                                           asp-route-qualificationReference="@Model.QualificationReference"
+                                                           visually-hidden-text="name">Change</govuk-summary-list-row-action>
+                        </govuk-summary-list-row-actions>
                 </govuk-summary-list-row>
 
 
