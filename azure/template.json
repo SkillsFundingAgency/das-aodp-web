@@ -125,7 +125,7 @@
                         "value": "[variables('appServiceName')]"
                     },
                     "privateLinkScopeName": {
-                        "value": "[variables('privateLinkScopeName')]"
+                        "value": "value": [resourceId(parameters('logAnalyticsSubscriptionId'),parameters('sharedEnvResourceGroup'),'Microsoft.Insights/privateLinkScopes', variables('privateLinkScopeName'))]"
                     },
                     "attachedService": {
                         "value": "[variables('appServiceName')]"
