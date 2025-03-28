@@ -3,7 +3,10 @@
     Layout = "_GovUkPageTemplate";
 }
 
-@section Header { 
+@section Header {
+
+    @await Html.PartialAsync("_CookieConsentPartial")
+
     <header class="dfe-header" role="banner">
         <div class="govuk-width-container dfe-header__container">
             <div class="dfe-header__logo">
@@ -124,7 +127,7 @@
             height="0" width="0" style="display:none;visibility:hidden"></iframe>
 </noscript>
 <!-- End Google Tag Manager (noscript) -->
-@await Html.PartialAsync("_CookieConsentPartial")
+
 @RenderBody()
 
 @section Footer {
@@ -135,7 +138,8 @@
                     <h2 class="govuk-visually-hidden">Cookies</h2>
                     <ul class="govuk-footer__inline-list">
                         <li class="govuk-footer__inline-list-item">
-                            <a class="govuk-footer__link" href="https://www.skillsforcareers.education.gov.uk/pages/help/cookie-settings/" target="_blank">Cookies</a>
+                            <a class="govuk-footer__link" asp-action=""  target="_blank">Cookies</a>
+                            @* <a class="govuk-footer__link" href="https://www.skillsforcareers.education.gov.uk/pages/help/cookie-settings/" target="_blank">Cookies</a> *@
                         </li>
 
                     </ul>
