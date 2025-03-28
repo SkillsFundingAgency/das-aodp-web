@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Razor.TagHelpers;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Web.Enums;
+using System.ComponentModel.DataAnnotations;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SFA.DAS.AODP.Web.Models.Qualifications;
@@ -30,7 +31,14 @@ public class ChangedQualificationDetailsViewModel
     public int? MinimumGlh { get; set; }
     public int? MaximumGlh { get; set; }
     public DateTime RegulationStartDate { get; set; }
+    [DataType(DataType.DateTime)]
+    [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy HH:mm}")]
+    
     public DateTime OperationalStartDate { get; set; }
+
+    [DataType(DataType.DateTime)]
+    [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy HH:mm}")]
+
     public DateTime? OperationalEndDate { get; set; }
     public DateTime? CertificationEndDate { get; set; }
     public DateTime? ReviewDate { get; set; }

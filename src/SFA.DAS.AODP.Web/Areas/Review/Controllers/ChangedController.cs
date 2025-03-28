@@ -205,11 +205,17 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     case "Title":
                         latestVersion.KeyFieldChanges.Add(new() { Name = "Title", Was = previousVersion.Qual.QualificationName, Now = latestVersion.Qual.QualificationName });
                         break;
+                    case "Level":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Level", Was = previousVersion.Level.ToString(), Now = latestVersion.Level.ToString() });
+                        break;
                     case "Type":
                         latestVersion.KeyFieldChanges.Add(new() { Name = "Type", Was = previousVersion.Type, Now = latestVersion.Type });
                         break;
                     case "TotalCredits":
                         latestVersion.KeyFieldChanges.Add(new() { Name = "Total Credits", Was = previousVersion.TotalCredits.ToString(), Now = latestVersion.TotalCredits.ToString() });
+                        break;
+                    case "Ssa":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "SSA", Was = previousVersion.Ssa.ToString(), Now = latestVersion.Ssa.ToString() });
                         break;
                     case "GradingType":
                         latestVersion.KeyFieldChanges.Add(new() { Name = "Grading Type", Was = previousVersion.GradingType.ToString(), Now = latestVersion.GradingType.ToString() });
@@ -229,15 +235,22 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     case "NineteenPlus":
                         latestVersion.KeyFieldChanges.Add(new() { Name = "Nineteen Plus", Was = previousVersion.NineteenPlus.ToString(), Now = latestVersion.NineteenPlus.ToString() });
                         break;
-                    case "MinimumGLH":
+                    //case "FundingInEngland":
+                    //    latestVersion.KeyFieldChanges.Add(new() { Name = "Nineteen Plus", Was = previousVersion.eng.ToString(), Now = latestVersion.NineteenPlus.ToString() });
+                    //    break;
+                    case "Glh":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "GLH", Was = previousVersion.Glh.ToString(), Now = latestVersion.Glh.ToString() });
+                        break;
+                    case "MinimumGlh":
                         latestVersion.KeyFieldChanges.Add(new() { Name = "Minimum GLH", Was = previousVersion.MinimumGlh.ToString(), Now = latestVersion.MinimumGlh.ToString() });
                         break;
-                    case "TQT":
+                    case "Tqt":
                         latestVersion.KeyFieldChanges.Add(new() { Name = "TQT", Was = previousVersion.Tqt.ToString(), Now = latestVersion.Tqt.ToString() });
                         break;
                     case "OperationalEndDate":
                         latestVersion.KeyFieldChanges.Add(new() { Name = "Operational End Date", Was = previousVersion.OperationalEndDate.ToString(), Now = latestVersion.OperationalEndDate.ToString() });
                         break;
+
                     case "LastUpdatedDate":
                         latestVersion.KeyFieldChanges.Add(new() { Name = "Last updated date", Was = previousVersion.LastUpdatedDate.ToString(), Now = latestVersion.LastUpdatedDate.ToString() });
 
@@ -249,11 +262,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     case "OfferedInternationally":
                         latestVersion.KeyFieldChanges.Add(new() { Name = "Offered Internationally", Was = previousVersion.OfferedInternationally.ToString(), Now = latestVersion.OfferedInternationally.ToString() });
                         break;
-
                     default:
                         break;
                 }
-
             }
         }
 
