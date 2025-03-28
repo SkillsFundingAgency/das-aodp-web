@@ -9,5 +9,5 @@ public class GetQualificationDetailsApiRequest : IGetApiRequest
         _qualificationReference = qualificationReference;
     }
 
-    public string GetUrl => $"api/qualifications/{_qualificationReference}";
+    public string GetUrl => $"api/qualifications/{_qualificationReference}/detail";
 }

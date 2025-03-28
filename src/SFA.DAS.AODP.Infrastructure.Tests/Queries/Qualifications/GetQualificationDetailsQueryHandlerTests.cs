@@ -27,19 +27,18 @@ public class GetQualificationDetailsQueryHandlerTests
     {
         // Arrange
         var query = _fixture.Create<GetQualificationDetailsQuery>();
-        var response = _fixture.Create<BaseMediatrResponse<GetQualificationDetailsQueryResponse>>();
-        response.Success = true;
+        var response = _fixture.Create<GetQualificationDetailsQueryResponse>();
 
-        _apiClientMock.Setup(x => x.Get<BaseMediatrResponse<GetQualificationDetailsQueryResponse>>(It.IsAny<GetQualificationDetailsApiRequest>()))
+        _apiClientMock.Setup(x => x.Get<GetQualificationDetailsQueryResponse>(It.IsAny<GetQualificationDetailsApiRequest>()))
                       .ReturnsAsync(response);
 
         // Act
         var result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        _apiClientMock.Verify(x => x.Get<BaseMediatrResponse<GetQualificationDetailsQueryResponse>>(It.IsAny<GetQualificationDetailsApiRequest>()), Times.Once);
+        _apiClientMock.Verify(x => x.Get<GetQualificationDetailsQueryResponse>(It.IsAny<GetQualificationDetailsApiRequest>()), Times.Once);
         Assert.True(result.Success);
-        Assert.Equal(response.Value.Id, result.Value.Id);
+        Assert.Equal(response.Id, result.Value.Id);
     }
 
     [Fact]
@@ -47,21 +46,15 @@ public class GetQualificationDetailsQueryHandlerTests
     {
         // Arrange
         var query = _fixture.Create<GetQualificationDetailsQuery>();
-        var baseResponse = new BaseMediatrResponse<GetQualificationDetailsQueryResponse>
-        {
-            Success = false,
-            Value = null,
-            ErrorMessage = $"No details found for qualification reference: {query.QualificationReference}"
-        };
 
-        _apiClientMock.Setup(x => x.Get<BaseMediatrResponse<GetQualificationDetailsQueryResponse>>(It.IsAny<GetQualificationDetailsApiRequest>()))
-                      .ReturnsAsync(baseResponse);
+        _apiClientMock.Setup(x => x.Get<GetQualificationDetailsQueryResponse>(It.IsAny<GetQualificationDetailsApiRequest>()))
+                      .Returns(Task.FromResult<GetQualificationDetailsQueryResponse>(null));
 
         // Act
         var result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        _apiClientMock.Verify(x => x.Get<BaseMediatrResponse<GetQualificationDetailsQueryResponse>>(It.IsAny<GetQualificationDetailsApiRequest>()), Times.Once);
+        _apiClientMock.Verify(x => x.Get<GetQualificationDetailsQueryResponse>(It.IsAny<GetQualificationDetailsApiRequest>()), Times.Once);
         Assert.False(result.Success);
         Assert.Equal($"No details found for qualification reference: {query.QualificationReference}", result.ErrorMessage);
     }
@@ -72,14 +65,14 @@ public class GetQualificationDetailsQueryHandlerTests
         // Arrange
         var query = _fixture.Create<GetQualificationDetailsQuery>();
         var exceptionMessage = "An error occurred";
-        _apiClientMock.Setup(x => x.Get<BaseMediatrResponse<GetQualificationDetailsQueryResponse>>(It.IsAny<GetQualificationDetailsApiRequest>()))
+        _apiClientMock.Setup(x => x.Get<GetQualificationDetailsQueryResponse>(It.IsAny<GetQualificationDetailsApiRequest>()))
                       .ThrowsAsync(new Exception(exceptionMessage));
 
         // Act
         var result = await _handler.Handle(query, CancellationToken.None);
 
         // Assert
-        _apiClientMock.Verify(x => x.Get<BaseMediatrResponse<GetQualificationDetailsQueryResponse>>(It.IsAny<GetQualificationDetailsApiRequest>()), Times.Once);
+        _apiClientMock.Verify(x => x.Get<GetQualificationDetailsQueryResponse>(It.IsAny<GetQualificationDetailsApiRequest>()), Times.Once);
         Assert.False(result.Success);
         Assert.Equal(exceptionMessage, result.ErrorMessage);
     }
