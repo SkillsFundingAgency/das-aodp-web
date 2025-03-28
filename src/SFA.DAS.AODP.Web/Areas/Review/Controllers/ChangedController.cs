@@ -168,8 +168,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             result.Qan = qualificationReference;
             return View(result);
         }
-
-
         [Route("/Review/Changed/QualificationDetails")]
         public async Task<IActionResult> QualificationDetails([FromQuery] string qualificationReference)
         {
@@ -177,20 +175,27 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             {
                 return Redirect("/Home/Error");
             }
-
-            ChangedQualificationDetailsViewModel latestVersion = await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });
-            latestVersion.ProcessStatuses = [.. await GetProcessStatuses()];
-
-            if (latestVersion.Version > 1)
+            try
             {
-                var previousVersion = await Send(new GetQualificationVersionQuery() { QualificationReference = qualificationReference, Version = latestVersion.Version - 1 });
 
-                var keyFieldsChanges = latestVersion.ChangedFieldNames.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                GetKeyFieldChanges(latestVersion, previousVersion, keyFieldsChanges);
+                ChangedQualificationDetailsViewModel latestVersion = await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });
+                latestVersion.ProcessStatuses = [.. await GetProcessStatuses()];
+
+                if (latestVersion.Version > 1)
+                {
+                    var previousVersion = await Send(new GetQualificationVersionQuery() { QualificationReference = qualificationReference, Version = latestVersion.Version - 1 });
+
+                    var keyFieldsChanges = latestVersion.ChangedFieldNames.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                    GetKeyFieldChanges(latestVersion, previousVersion, keyFieldsChanges);
+                }
+                return View(latestVersion);
             }
-
-
-            return View(latestVersion);
+            catch (Exception ex)
+            {
+                LogException(ex);
+                return Redirect("/Home/Error");
+                ;
+            }
         }
 
         private static void GetKeyFieldChanges(ChangedQualificationDetailsViewModel latestVersion, GetQualificationDetailsQueryResponse previousVersion, string[] keyFieldsChanges)
