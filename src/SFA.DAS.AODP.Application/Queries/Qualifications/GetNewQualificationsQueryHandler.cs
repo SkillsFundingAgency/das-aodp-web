@@ -27,7 +27,7 @@ namespace SFA.DAS.AODP.Application.Queries.Test
                      Name = request.Name,
                      Organisation = request.Organisation,
                      QAN = request.QAN,
-                     ProcessStatusId = request.ProcessStatusId,
+                     ProcessStatusIds = request.ProcessStatusIds,
                 });
 
                 if (result != null)

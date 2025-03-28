@@ -39,7 +39,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         }
 
         [Route("/Review/New/Index")]
-        public async Task<IActionResult> Index(Guid? processStatusId, int pageNumber = 0, int recordsPerPage = 10, string name = "", string organisation = "", string qan = "")
+        public async Task<IActionResult> Index(List<Guid>? processStatusIds, int pageNumber = 0, int recordsPerPage = 10, string name = "", string organisation = "", string qan = "")
         {
             var viewModel = new NewQualificationsViewModel();
             try
@@ -69,10 +69,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     {
                         query.QAN = qan;
                     }
-
-                    if (processStatusId.HasValue)
+                    if (processStatusIds?.Any() ?? false)
                     {
-                        query.ProcessStatusId = processStatusId.Value;
+                        query.ProcessStatusIds = processStatusIds;
                     }
 
                     query.Take = recordsPerPage;
@@ -86,7 +85,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     Organisation = organisation,
                     QualificationName = name,
                     QAN = qan,
-                    ProcessStatusId = processStatusId
+                    ProcessStatusIds = processStatusIds
                 };
                 viewModel.ProcessStatuses = [.. procStatuses.ProcessStatuses];
                 return View(viewModel);
@@ -111,7 +110,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     name = viewModel.Filter.QualificationName,
                     organisation = viewModel.Filter.Organisation,
                     qan = viewModel.Filter.QAN,
-                    processStatusId = viewModel.Filter.ProcessStatusId,
+                    processStatusIds = viewModel.Filter.ProcessStatusIds,
                 });               
             }
             catch(Exception ex)
