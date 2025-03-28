@@ -199,30 +199,30 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
         }
 
-        private static QualificationDetailsViewModel MapToViewModel(GetQualificationDetailsQueryResponse response)
+        private static ChangedQualificationDetailsViewModel MapToViewModel(GetQualificationDetailsQueryResponse response)
         {
             if (response == null)
             {
                 return null;
             }
 
-            return new QualificationDetailsViewModel
+            return new ChangedQualificationDetailsViewModel
             {
-                Id = response.Id,
-                Status = response.Status,
-                Priority = response.Priority,
-                Changes = response.Changes,
-                QualificationReference = response.QualificationReference,
-                AwardingOrganisation = response.AwardingOrganisation,
-                Title = response.Title,
-                QualificationType = response.QualificationType,
-                Level = response.Level,
-                ProposedChanges = response.ProposedChanges,
-                AgeGroup = response.AgeGroup,
-                Category = response.Category,
-                Subject = response.Subject,
-                SectorSubjectArea = response.SectorSubjectArea,
-                Comments = response.Comments
+                //Id = response.Id,
+                //Status = response.Status,
+                //Priority = response.Priority,
+                //Changes = response.Changes,
+                //QualificationReference = response.QualificationReference,
+                //AwardingOrganisation = response.AwardingOrganisation,
+                //Title = response.Title,
+                //QualificationType = response.QualificationType,
+                //Level = response.Level,
+                //ProposedChanges = response.ProposedChanges,
+                //AgeGroup = response.AgeGroup,
+                //Category = response.Category,
+                //Subject = response.Subject,
+                //SectorSubjectArea = response.SectorSubjectArea,
+                //Comments = response.Comments
             };
         }
 

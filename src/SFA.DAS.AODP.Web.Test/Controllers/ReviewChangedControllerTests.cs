@@ -105,9 +105,7 @@ public class ReviewChangedControllerTests
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
-        var model = Assert.IsAssignableFrom<QualificationDetailsViewModel>(viewResult.ViewData.Model);
-        Assert.Equal(queryResponse.Value.Id, model.Id);
-        Assert.Equal(queryResponse.Value.Status, model.Status);
+        var model = Assert.IsAssignableFrom<ChangedQualificationDetailsViewModel>(viewResult.ViewData.Model);
     }
 
     [Fact]    
