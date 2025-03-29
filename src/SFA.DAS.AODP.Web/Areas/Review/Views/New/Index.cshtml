@@ -46,10 +46,12 @@
                                     </div>
 
                                     <div class="govuk-form-group">
-                                        <govuk-checkboxes name="Filter[ProcessStatusIds]" asp-for="@Model.Filter.ProcessStatusIds">
+                                        <govuk-checkboxes name="Filter[ProcessStatusIds]" class="govuk-input--width-50" asp-for="@Model.Filter.ProcessStatusIds">
+                                            
                                             <govuk-checkboxes-fieldset>
-                                                <govuk-checkboxes-fieldset-legend is-page-heading="true" class="govuk-fieldset__legend--l">
-                                                    Status
+                                                
+                                                <govuk-checkboxes-fieldset-legend is-page-heading="false" class="govuk-label--s">
+                                                    <div class="govuk-label govuk-label--s">Status</div>
                                                 </govuk-checkboxes-fieldset-legend>
                                                 @Html.RenderPartialAsync("Validation/_CheckboxValidationPartial", nameof(Model.Filter.ProcessStatusIds))
 
