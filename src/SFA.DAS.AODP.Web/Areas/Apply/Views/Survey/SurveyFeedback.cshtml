@@ -1,5 +1,5 @@
-﻿@using SFA.DAS.AODP.Web.Models.ExitSurvey
-@model ExitSurveyFeedbackViewModel
+﻿@using SFA.DAS.AODP.Web.Models.Survey
+@model SurveyViewModel
 @{
     ViewData["Title"] = "Give feedback on this service";
 }
@@ -9,7 +9,7 @@
 <h2 class="govuk-heading-m">Satisfaction survey</h2>
 <partial name="_ValidationSummaryPartial" />
 
-<form asp-action="ExitSurveyFeedback" asp-controller="ExitSurvey" method="post" gfa-prepend-error-summary="false">
+<form asp-action="SurveyFeedback" asp-controller="Survey" method="post" gfa-prepend-error-summary="false">
     @Html.AntiForgeryToken()
     <div class="govuk-form-group @(ViewData.ModelState["SatisfactionScore"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
         <govuk-radios asp-for="SatisfactionScore">

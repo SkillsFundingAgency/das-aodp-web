@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace SFA.DAS.AODP.Web.Models.ExitSurvey
+namespace SFA.DAS.AODP.Web.Models.Survey
 {
     public enum SatisfactionScoreIndex
     {
@@ -12,7 +12,7 @@ namespace SFA.DAS.AODP.Web.Models.ExitSurvey
         VerySatisfied = 5
     }
 
-    public class ExitSurveyFeedbackViewModel
+    public class SurveyViewModel
     {
         public string Page { get; set; }
 
