@@ -168,6 +168,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             result.Qan = qualificationReference;
             return View(result);
         }
+
         [Route("/Review/Changed/QualificationDetails")]
         public async Task<IActionResult> QualificationDetails([FromQuery] string qualificationReference)
         {
@@ -313,6 +314,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 return RedirectToAction(nameof(QualificationDetails), new { qualificationReference = model.Qual.Qan });
             }
         }
+
         private bool CheckUserIsAbleToSetStatus(ChangedQualificationDetailsViewModel model, Guid procStatusId)
         {
             if (_userHelperService.GetUserRoles().Contains(RoleConstants.QFAUApprover))
@@ -320,6 +322,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             string processStatName = model.ProcessStatuses.FirstOrDefault(v => v.Id == procStatusId)?.Name ?? "";
             return ReviewerAllowedStatuses.Contains(processStatName);
         }
+
         public async Task<List<GetProcessStatusesQueryResponse.ProcessStatus>> GetProcessStatuses()
         {
             var procStatuses = await Send(new GetProcessStatusesQuery());
@@ -330,6 +333,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
             return procStatuses.ProcessStatuses;
         }
+
         [Route("/Review/Changed/ExportData")]
         public async Task<IActionResult> ExportData()
         {
@@ -370,6 +374,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 return writer.ToString();
             }
         }
+
         private class CsvExportResult
         {
             public bool Success { get; set; }
@@ -384,6 +389,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             public string? ProcessedStatus { get; set; }
         }
     }
+
     public class FieldMap
     {
         public string DBField { get; set; }
