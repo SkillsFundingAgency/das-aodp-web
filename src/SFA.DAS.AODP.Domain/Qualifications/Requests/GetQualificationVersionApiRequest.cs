@@ -11,5 +11,5 @@ public class GetQualificationVersionApiRequest : IGetApiRequest
         _version = version;
     }
 
-    public string GetUrl => $"api/qualifications/{_qualificationReference}/{_version}";
+    public string GetUrl => $"api/qualifications/{_qualificationReference}/qualificationversions/{_version}";
 }
