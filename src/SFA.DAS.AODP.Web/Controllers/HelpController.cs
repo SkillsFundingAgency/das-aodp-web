@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Web.Authentication;
+using SFA.DAS.AODP.Web.Models.Help;
 
 namespace SFA.DAS.AODP.Web.Controllers
 {
@@ -11,11 +13,25 @@ namespace SFA.DAS.AODP.Web.Controllers
             return View();
         }
 
-        [HttpGet]
-        //[Route("cookies", Name = RouteConstants.Cookies)]
+        [AllowAnonymous]
         public IActionResult CookiesPolicy()
         {
-            return View();
+            var analyticsCookieValue = Request.Cookies[CookieKeys.AnalyticsConsent];
+            var functionalCookieValue = Request.Cookies[CookieKeys.FunctionalConsent];
+
+            _ = bool.TryParse(analyticsCookieValue, out var isAnalyticsCookieConsentGiven);
+            _ = bool.TryParse(functionalCookieValue, out var isFunctionalCookieConsentGiven);
+
+            var referer = Request.Headers.Referer.FirstOrDefault();
+
+            var cookieViewModel = new CookiesViewModel
+            {
+                PreviousPageUrl = referer ?? Url.RouteUrl("default") ?? "/",
+                ShowBannerMessage = false,
+                ConsentAnalyticsCookie = isAnalyticsCookieConsentGiven,
+                ConsentFunctionalCookie = isFunctionalCookieConsentGiven
+            };
+            return View(cookieViewModel);
         }
     }
 }

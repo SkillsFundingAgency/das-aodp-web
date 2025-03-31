@@ -3,6 +3,7 @@
   "name": "asp.net",
   "private": true,
   "devDependencies": {
+    "eslint": "^9.23.0",
     "gulp": "^5.0.0"
   },
   "scripts": {
