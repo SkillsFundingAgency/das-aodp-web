@@ -1,0 +1,73 @@
+﻿@using SFA.DAS.AODP.Web.Models.ExitSurvey
+@model ExitSurveyFeedbackViewModel
+@{
+    ViewData["Title"] = "Give feedback on this service";
+}
+
+<h1 class="govuk-heading-l">Give feedback on this service</h1>
+
+<h2 class="govuk-heading-m">Satisfaction survey</h2>
+
+<form asp-action="ExitSurveyFeedback" asp-controller="ExitSurvey" method="post">
+    <div class="govuk-form-group">
+        <fieldset class="govuk-fieldset" aria-describedby="survey-hint">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                <h3 class="govuk-heading-s">
+                    Overall, how did you feel about the service you received today?
+                </h3>
+            </legend>
+            <div id="survey-hint" class="govuk-hint">
+                Select one option.
+            </div>
+            <div class="govuk-radios govuk-radios--inline">
+                <div class="govuk-radios__item">
+                    <input class="govuk-radios__input" id="very-satisfied" name="Satisfaction" type="radio" value="Very satisfied">
+                    <label class="govuk-label govuk-radios__label" for="very-satisfied">
+                        Very satisfied
+                    </label>
+                </div>
+                <div class="govuk-radios__item">
+                    <input class="govuk-radios__input" id="satisfied" name="Satisfaction" type="radio" value="Satisfied">
+                    <label class="govuk-label govuk-radios__label" for="satisfied">
+                        Satisfied
+                    </label>
+                </div>
+                <div class="govuk-radios__item">
+                    <input class="govuk-radios__input" id="neither" name="Satisfaction" type="radio" value="Neither satisfied or dissatisfied">
+                    <label class="govuk-label govuk-radios__label" for="neither">
+                        Neither satisfied or dissatisfied
+                    </label>
+                </div>
+                <div class="govuk-radios__item">
+                    <input class="govuk-radios__input" id="dissatisfied" name="Satisfaction" type="radio" value="Dissatisfied">
+                    <label class="govuk-label govuk-radios__label" for="dissatisfied">
+                        Dissatisfied
+                    </label>
+                </div>
+                <div class="govuk-radios__item">
+                    <input class="govuk-radios__input" id="very-dissatisfied" name="Satisfaction" type="radio" value="Very dissatisfied">
+                    <label class="govuk-label govuk-radios__label" for="very-dissatisfied">
+                        Very dissatisfied
+                    </label>
+                </div>
+            </div>
+        </fieldset>
+    </div>
+
+    <div class="govuk-form-group">
+        <label class="govuk-label" for="improvement">
+            <h3 class="govuk-heading-s">
+                How could we improve this service?
+            </h3>
+        </label>
+        <span id="improvement-hint" class="govuk-hint">
+            Do not include any personal or financial information, for example your National Insurance or credit card numbers.
+        </span>
+        <textarea class="govuk-textarea" id="improvement" name="Improvement" rows="5" aria-describedby="improvement-hint"></textarea>
+        <span class="govuk-hint">You have 1200 characters remaining</span>
+    </div>
+
+    <button class="govuk-button" data-module="govuk-button">
+        Send feedback
+    </button>
+</form>
