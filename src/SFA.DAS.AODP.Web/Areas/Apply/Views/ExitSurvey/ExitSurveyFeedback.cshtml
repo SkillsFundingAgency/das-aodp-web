@@ -9,64 +9,47 @@
 <h2 class="govuk-heading-m">Satisfaction survey</h2>
 
 <form asp-action="ExitSurveyFeedback" asp-controller="ExitSurvey" method="post">
+    @Html.AntiForgeryToken()
     <div class="govuk-form-group">
-        <fieldset class="govuk-fieldset" aria-describedby="survey-hint">
-            <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
-                <h3 class="govuk-heading-s">
+        <govuk-radios asp-for="SatisfactionScore">
+            <govuk-radios-fieldset>
+                <govuk-radios-fieldset-legend is-page-heading="false" class="govuk-fieldset__legend--s">
                     Overall, how did you feel about the service you received today?
-                </h3>
-            </legend>
-            <div id="survey-hint" class="govuk-hint">
-                Select one option.
-            </div>
-            <div class="govuk-radios govuk-radios--inline">
-                <div class="govuk-radios__item">
-                    <input class="govuk-radios__input" id="very-satisfied" name="Satisfaction" type="radio" value="Very satisfied">
-                    <label class="govuk-label govuk-radios__label" for="very-satisfied">
-                        Very satisfied
-                    </label>
-                </div>
-                <div class="govuk-radios__item">
-                    <input class="govuk-radios__input" id="satisfied" name="Satisfaction" type="radio" value="Satisfied">
-                    <label class="govuk-label govuk-radios__label" for="satisfied">
-                        Satisfied
-                    </label>
-                </div>
-                <div class="govuk-radios__item">
-                    <input class="govuk-radios__input" id="neither" name="Satisfaction" type="radio" value="Neither satisfied or dissatisfied">
-                    <label class="govuk-label govuk-radios__label" for="neither">
-                        Neither satisfied or dissatisfied
-                    </label>
-                </div>
-                <div class="govuk-radios__item">
-                    <input class="govuk-radios__input" id="dissatisfied" name="Satisfaction" type="radio" value="Dissatisfied">
-                    <label class="govuk-label govuk-radios__label" for="dissatisfied">
-                        Dissatisfied
-                    </label>
-                </div>
-                <div class="govuk-radios__item">
-                    <input class="govuk-radios__input" id="very-dissatisfied" name="Satisfaction" type="radio" value="Very dissatisfied">
-                    <label class="govuk-label govuk-radios__label" for="very-dissatisfied">
-                        Very dissatisfied
-                    </label>
-                </div>
-            </div>
-        </fieldset>
-    </div>
+                </govuk-radios-fieldset-legend>
+                @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.SatisfactionScore))
 
-    <div class="govuk-form-group">
-        <label class="govuk-label" for="improvement">
-            <h3 class="govuk-heading-s">
+                <govuk-radios-item value="@(SatisfactionScoreIndex.VerySatisfied)">
+                    Very satisfied
+                </govuk-radios-item>
+                <govuk-radios-item value="@(SatisfactionScoreIndex.Satisfied)">
+                    Satisfied
+                </govuk-radios-item>
+                <govuk-radios-item value="@(SatisfactionScoreIndex.NeitherSatisfiedOrDissatisfied)">
+                    Neither satisfied or dissatisfied
+                </govuk-radios-item>
+                <govuk-radios-item value="@(SatisfactionScoreIndex.Dissatisfied)">
+                    Dissatisfied
+                </govuk-radios-item>
+                <govuk-radios-item value="@(SatisfactionScoreIndex.VeryDissatisfied)">
+                    Very dissatisfied
+                </govuk-radios-item>
+            </govuk-radios-fieldset>
+        </govuk-radios>
+    </div>
+      <div class="govuk-form-group govuk-character-count" data-module="govuk-character-count" data-maxlength="1200">
+        <h1 class="govuk-label-wrapper">
+            <label class="govuk-label govuk-label--m" for="with-hint">
                 How could we improve this service?
-            </h3>
-        </label>
-        <span id="improvement-hint" class="govuk-hint">
+            </label>
+        </h1>
+        <div id="with-hint-hint" class="govuk-hint">
             Do not include any personal or financial information, for example your National Insurance or credit card numbers.
-        </span>
-        <textarea class="govuk-textarea" id="improvement" name="Improvement" rows="5" aria-describedby="improvement-hint"></textarea>
-        <span class="govuk-hint">You have 1200 characters remaining</span>
+        </div>
+        <textarea asp-for="@Model.Comments" class="govuk-textarea govuk-js-character-count" id="with-hint" name="withHint" rows="5" aria-describedby="with-hint-info with-hint-hint"></textarea>
+        <div id="with-hint-info" class="govuk-hint govuk-character-count__message">
+            You can enter up to 1200 characters
+        </div>
     </div>
-
     <button class="govuk-button" data-module="govuk-button">
         Send feedback
     </button>
