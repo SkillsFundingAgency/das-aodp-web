@@ -17,7 +17,6 @@
                     Overall, how did you feel about the service you received today?
                 </govuk-radios-fieldset-legend>
                 @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.SatisfactionScore))
-
                 <govuk-radios-item value="@(SatisfactionScoreIndex.VerySatisfied)">
                     Very satisfied
                 </govuk-radios-item>
@@ -36,17 +35,18 @@
             </govuk-radios-fieldset>
         </govuk-radios>
     </div>
-      <div class="govuk-form-group govuk-character-count" data-module="govuk-character-count" data-maxlength="1200">
+    <div class="govuk-form-group govuk-character-count" data-module="govuk-character-count" data-maxlength="1200">
         <h1 class="govuk-label-wrapper">
-            <label class="govuk-label govuk-label--m" for="with-hint">
+            <label class="govuk-label govuk-label--m" for="Comments">
                 How could we improve this service?
             </label>
         </h1>
-        <div id="with-hint-hint" class="govuk-hint">
+        <div id="Comments-hint" class="govuk-hint">
             Do not include any personal or financial information, for example your National Insurance or credit card numbers.
         </div>
-        <textarea asp-for="@Model.Comments" class="govuk-textarea govuk-js-character-count" id="with-hint" name="withHint" rows="5" aria-describedby="with-hint-info with-hint-hint"></textarea>
-        <div id="with-hint-info" class="govuk-hint govuk-character-count__message">
+        @Html.RenderPartialAsync("Validation/_TextAreaValidationPartial", nameof(Model.Comments))
+        <textarea asp-for="Comments" class="govuk-textarea govuk-js-character-count" id="Comments" rows="5" aria-describedby="Comments-info Comments-hint"></textarea>
+        <div id="Comments-info" class="govuk-hint govuk-character-count__message">
             You can enter up to 1200 characters
         </div>
     </div>

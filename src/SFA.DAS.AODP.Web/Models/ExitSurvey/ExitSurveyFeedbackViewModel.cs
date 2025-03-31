@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace SFA.DAS.AODP.Web.Models.ExitSurvey
 {
@@ -14,8 +15,11 @@ namespace SFA.DAS.AODP.Web.Models.ExitSurvey
     public class ExitSurveyFeedbackViewModel
     {
         public string Page { get; set; }
+
+        [DisplayName("Satisfaction score")]
         [Required]
-        public SatisfactionScoreIndex SatisfactionScore { get; set; }
+        public SatisfactionScoreIndex? SatisfactionScore { get; set; }
+
         [Required]
         public string Comments { get; set; }
     }
