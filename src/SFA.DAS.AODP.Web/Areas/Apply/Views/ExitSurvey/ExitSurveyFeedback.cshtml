@@ -11,7 +11,7 @@
 
 <form asp-action="ExitSurveyFeedback" asp-controller="ExitSurvey" method="post" gfa-prepend-error-summary="false">
     @Html.AntiForgeryToken()
-    <div class="govuk-form-group">
+    <div class="govuk-form-group @(ViewData.ModelState["SatisfactionScore"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
         <govuk-radios asp-for="SatisfactionScore">
             <govuk-radios-fieldset>
                 <govuk-radios-fieldset-legend is-page-heading="false" class="govuk-fieldset__legend--s">
@@ -36,7 +36,7 @@
             </govuk-radios-fieldset>
         </govuk-radios>
     </div>
-    <div class="govuk-form-group govuk-character-count" data-module="govuk-character-count" data-maxlength="1200">
+    <div class="govuk-form-group @(ViewData.ModelState["Comments"]?.Errors.Count > 0 ? "govuk-form-group--error" : "") govuk-character-count" data-module="govuk-character-count" data-maxlength="1200">
         <h1 class="govuk-label-wrapper">
             <label class="govuk-label govuk-label--m" for="Comments">
                 How could we improve this service?
@@ -45,7 +45,8 @@
         <div id="Comments-hint" class="govuk-hint">
             Do not include any personal or financial information, for example your National Insurance or credit card numbers.
         </div>
-        <textarea asp-for="Comments" class="govuk-textarea govuk-js-character-count" id="Comments" rows="5" aria-describedby="Comments-info Comments-hint"></textarea>
+        @Html.ValidationMessageFor(m => m.Comments, "", new { @class = "govuk-error-message" })
+        <textarea asp-for="Comments" class="govuk-textarea govuk-js-character-count @(ViewData.ModelState["Comments"]?.Errors.Count > 0 ? "govuk-textarea--error" : "")" id="Comments" rows="5" aria-describedby="Comments-info Comments-hint"></textarea>
         <div id="Comments-info" class="govuk-hint govuk-character-count__message">
             You can enter up to 1200 characters
         </div>
