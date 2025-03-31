@@ -374,7 +374,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 return writer.ToString();
             }
         }
-
         private class CsvExportResult
         {
             public bool Success { get; set; }
