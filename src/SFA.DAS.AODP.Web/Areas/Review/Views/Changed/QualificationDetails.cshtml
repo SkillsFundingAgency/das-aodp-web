@@ -6,7 +6,7 @@
 <a class="govuk-back-link"
 asp-controller="changed"
 asp-action="Index">
-    Return to qualifications
+    Back
 </a>
 
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
@@ -172,11 +172,6 @@ asp-action="Index">
                     data-prevent-double-click="true">
                 Save
             </button>
-            <div class="govuk-form-group">
-                <a class="govuk-button" asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersOutcome" asp-route-qualificationReference="@Model.Qual.Qan">
-                    DfE funding review
-                </a>
-            </div>
         </div>
     </div>
 </form>
