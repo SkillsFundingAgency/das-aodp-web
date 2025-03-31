@@ -7,8 +7,9 @@
 <h1 class="govuk-heading-l">Give feedback on this service</h1>
 
 <h2 class="govuk-heading-m">Satisfaction survey</h2>
+<partial name="_ValidationSummaryPartial" />
 
-<form asp-action="ExitSurveyFeedback" asp-controller="ExitSurvey" method="post">
+<form asp-action="ExitSurveyFeedback" asp-controller="ExitSurvey" method="post" gfa-prepend-error-summary="false">
     @Html.AntiForgeryToken()
     <div class="govuk-form-group">
         <govuk-radios asp-for="SatisfactionScore">
@@ -44,7 +45,6 @@
         <div id="Comments-hint" class="govuk-hint">
             Do not include any personal or financial information, for example your National Insurance or credit card numbers.
         </div>
-        @Html.RenderPartialAsync("Validation/_TextAreaValidationPartial", nameof(Model.Comments))
         <textarea asp-for="Comments" class="govuk-textarea govuk-js-character-count" id="Comments" rows="5" aria-describedby="Comments-info Comments-hint"></textarea>
         <div id="Comments-info" class="govuk-hint govuk-character-count__message">
             You can enter up to 1200 characters
