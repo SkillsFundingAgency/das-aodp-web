@@ -107,9 +107,6 @@ public class FileValidatorTests
             Title = "something",
             Required = true,
             FileUpload = new()
-            {
-                MaxSize = _formBuilderSettings.MaxUploadFileSize
-            }
         };
 
         Mock<IFormFile> _formFile = new()

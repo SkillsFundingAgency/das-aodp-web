@@ -248,10 +248,6 @@ public class QuestionsController : ControllerBase
     {
         if (editQuestionViewModel.Type == AODP.Models.Forms.QuestionType.File)
         {
-            if (editQuestionViewModel.FileUpload.MaxSize > _formBuilderSettings.MaxUploadFileSize)
-            {
-                ModelState.AddModelError("FileUpload.MaxSize", $"The file upload size cannot be greater than {_formBuilderSettings.MaxUploadFileSize}");
-            }
             if (editQuestionViewModel.FileUpload.NumberOfFiles > _formBuilderSettings.MaxUploadNumberOfFiles)
             {
                 ModelState.AddModelError("FileUpload.NumberOfFiles", $"The number of files cannot be greater than {_formBuilderSettings.MaxUploadNumberOfFiles}");

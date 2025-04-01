@@ -2,9 +2,11 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SFA.DAS.AODP.Application.Commands.Qualification;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
+using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 using System.Globalization;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
@@ -18,12 +20,20 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
     {
         private readonly ILogger<ChangedController> _logger;
         private readonly IMediator _mediator;
+        private readonly IUserHelperService _userHelperService;
+        private List<string> ReviewerAllowedStatuses { get; set; } = new List<string>()
+        {
+            "Decision Required",
+            "No Action Required",
+        };
+
         public enum NewQualDataKeys { InvalidPageParams, }
 
-        public ChangedController(ILogger<ChangedController> logger, IMediator mediator) : base(mediator, logger)
+        public ChangedController(ILogger<ChangedController> logger, IMediator mediator, IUserHelperService userHelperService) : base(mediator, logger)
         {
             _logger = logger;
             _mediator = mediator;
+            this._userHelperService = userHelperService;
         }
 
         public async Task<IActionResult> Index(int pageNumber = 0, int recordsPerPage = 10, string name = "", string organisation = "", string qan = "")
@@ -65,7 +75,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
                 return View(viewModel);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 LogException(ex);
                 return Redirect("/Home/Error");
@@ -146,19 +156,185 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
         }
 
-        public async Task<IActionResult> QualificationDetails([FromQuery] string qualificationReference)
+        [Route("/Review/Changed/QualificationDetails/Timeline")]
+        public async Task<IActionResult> QualificationDetailsTimeline([FromQuery] string qualificationReference)
         {
             if (string.IsNullOrWhiteSpace(qualificationReference))
             {
                 return Redirect("/Home/Error");
             }
 
-            var result = await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });
-
-            var viewModel = MapToViewModel(result);
-            return View(viewModel);
+            NewQualificationDetailsTimelineViewModel result = await Send(new GetDiscussionHistoriesForQualificationQuery { QualificationReference = qualificationReference });
+            result.Qan = qualificationReference;
+            return View(result);
         }
 
+        [Route("/Review/Changed/QualificationDetails")]
+        public async Task<IActionResult> QualificationDetails([FromQuery] string qualificationReference)
+        {
+            if (string.IsNullOrWhiteSpace(qualificationReference))
+            {
+                return Redirect("/Home/Error");
+            }
+            try
+            {
+
+                ChangedQualificationDetailsViewModel latestVersion = await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });
+                latestVersion.ProcessStatuses = [.. await GetProcessStatuses()];
+
+                if (latestVersion.Version > 1)
+                {
+                    var previousVersion = await Send(new GetQualificationVersionQuery() { QualificationReference = qualificationReference, Version = latestVersion.Version - 1 });
+
+                    var keyFieldsChanges = latestVersion.ChangedFieldNames.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                    GetKeyFieldChanges(latestVersion, previousVersion, keyFieldsChanges);
+                }
+                return View(latestVersion);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+                return Redirect("/Home/Error");
+                ;
+            }
+        }
+
+        private static void GetKeyFieldChanges(ChangedQualificationDetailsViewModel latestVersion, GetQualificationDetailsQueryResponse previousVersion, string[] keyFieldsChanges)
+        {
+            foreach (var item in keyFieldsChanges)
+            {
+                switch (item)
+                {
+                    case "OrganisationName":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Organisation Name", Was = previousVersion.Organisation.NameLegal, Now = latestVersion.Organisation.NameLegal });
+                        break;
+                    case "Title":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Title", Was = previousVersion.Qual.QualificationName, Now = latestVersion.Qual.QualificationName });
+                        break;
+                    case "Level":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Level", Was = previousVersion.Level.ToString(), Now = latestVersion.Level.ToString() });
+                        break;
+                    case "Type":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Type", Was = previousVersion.Type, Now = latestVersion.Type });
+                        break;
+                    case "TotalCredits":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Total Credits", Was = previousVersion.TotalCredits.ToString(), Now = latestVersion.TotalCredits.ToString() });
+                        break;
+                    case "Ssa":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "SSA", Was = previousVersion.Ssa.ToString(), Now = latestVersion.Ssa.ToString() });
+                        break;
+                    case "GradingType":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Grading Type", Was = previousVersion.GradingType.ToString(), Now = latestVersion.GradingType.ToString() });
+                        break;
+                    case "OfferedInEngland":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Offered In England", Was = previousVersion.OfferedInEngland.ToString(), Now = latestVersion.OfferedInEngland.ToString() });
+                        break;
+                    case "PreSixteen":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Pre-Sixteen", Was = previousVersion.PreSixteen.ToString(), Now = latestVersion.PreSixteen.ToString() });
+                        break;
+                    case "SixteenToEighteen":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Sixteen To Eighteen", Was = previousVersion.SixteenToEighteen.ToString(), Now = latestVersion.SixteenToEighteen.ToString() });
+                        break;
+                    case "EighteenPlus":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Eighteen Plus", Was = previousVersion.EighteenPlus.ToString(), Now = latestVersion.EighteenPlus.ToString() });
+                        break;
+                    case "NineteenPlus":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Nineteen Plus", Was = previousVersion.NineteenPlus.ToString(), Now = latestVersion.NineteenPlus.ToString() });
+                        break;
+                    //case "FundingInEngland":
+                    //    latestVersion.KeyFieldChanges.Add(new() { Name = "Nineteen Plus", Was = previousVersion.eng.ToString(), Now = latestVersion.NineteenPlus.ToString() });
+                    //    break;
+                    case "Glh":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "GLH", Was = previousVersion.Glh.ToString(), Now = latestVersion.Glh.ToString() });
+                        break;
+                    case "MinimumGlh":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Minimum GLH", Was = previousVersion.MinimumGlh.ToString(), Now = latestVersion.MinimumGlh.ToString() });
+                        break;
+                    case "Tqt":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "TQT", Was = previousVersion.Tqt.ToString(), Now = latestVersion.Tqt.ToString() });
+                        break;
+                    case "OperationalEndDate":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Operational End Date", Was = previousVersion.OperationalEndDate.ToString(), Now = latestVersion.OperationalEndDate.ToString() });
+                        break;
+
+                    case "LastUpdatedDate":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Last updated date", Was = previousVersion.LastUpdatedDate.ToString(), Now = latestVersion.LastUpdatedDate.ToString() });
+
+                        break;
+                    case "Version":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Version", Was = previousVersion.Version.ToString(), Now = latestVersion.Version.ToString() });
+
+                        break;
+                    case "OfferedInternationally":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Offered Internationally", Was = previousVersion.OfferedInternationally.ToString(), Now = latestVersion.OfferedInternationally.ToString() });
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        [Route("/Review/Changed/QualificationDetails")]
+        [HttpPost]
+        public async Task<IActionResult> QualificationDetails(ChangedQualificationDetailsViewModel model)
+        {
+            try
+            {
+                Guid? procStatus = model.AdditionalActions.ProcessStatusId;
+                if (!procStatus.HasValue && !string.IsNullOrEmpty(model.AdditionalActions.Note))
+                {
+                    await Send(new AddQualificationDiscussionHistoryCommand
+                    {
+                        QualificationReference = model.Qual.Qan,
+                        Notes = model.AdditionalActions.Note,
+                        UserDisplayName = HttpContext.User?.Identity?.Name
+                    });
+                    return RedirectToAction(nameof(QualificationDetails), new { qualificationReference = model.Qual.Qan });
+                }
+                else if (!procStatus.HasValue)
+                    return RedirectToAction(nameof(QualificationDetails), new { qualificationReference = model.Qual.Qan });
+
+                model.ProcessStatuses = [.. await GetProcessStatuses()];
+                if (!CheckUserIsAbleToSetStatus(model, procStatus.Value))
+                    return RedirectToAction(nameof(QualificationDetails), new { qualificationReference = model.Qual.Qan });
+
+                await Send(new UpdateQualificationStatusCommand
+                {
+                    QualificationReference = model.Qual.Qan,
+                    ProcessStatusId = procStatus.Value,
+                    Notes = model.AdditionalActions.Note,
+                    Version = model.Version,
+                    UserDisplayName = HttpContext.User?.Identity?.Name
+                });
+                return RedirectToAction(nameof(QualificationDetails), new { qualificationReference = model.Qual.Qan });
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+                return RedirectToAction(nameof(QualificationDetails), new { qualificationReference = model.Qual.Qan });
+            }
+        }
+
+        private bool CheckUserIsAbleToSetStatus(ChangedQualificationDetailsViewModel model, Guid procStatusId)
+        {
+            if (_userHelperService.GetUserRoles().Contains(RoleConstants.QFAUApprover))
+                return true;
+            string processStatName = model.ProcessStatuses.FirstOrDefault(v => v.Id == procStatusId)?.Name ?? "";
+            return ReviewerAllowedStatuses.Contains(processStatName);
+        }
+
+        public async Task<List<GetProcessStatusesQueryResponse.ProcessStatus>> GetProcessStatuses()
+        {
+            var procStatuses = await Send(new GetProcessStatusesQuery());
+            if (!_userHelperService.GetUserRoles().Contains(RoleConstants.QFAUApprover))
+            {
+                return procStatuses.ProcessStatuses
+                    .Where(p => ReviewerAllowedStatuses.Contains(p.Name ?? "")).ToList();
+            }
+            return procStatuses.ProcessStatuses;
+        }
+
+        [Route("/Review/Changed/ExportData")]
         public async Task<IActionResult> ExportData()
         {
             try
@@ -176,7 +352,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
             catch (Exception ex)
             {
-                LogException(ex);
+                _logger.LogError(ex, "An error occurred while generating the CSV file.");
                 return Redirect("/Home/Error");
             }
         }
@@ -198,34 +374,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 return writer.ToString();
             }
         }
-
-        private static QualificationDetailsViewModel MapToViewModel(GetQualificationDetailsQueryResponse response)
-        {
-            if (response == null)
-            {
-                return null;
-            }
-
-            return new QualificationDetailsViewModel
-            {
-                Id = response.Id,
-                Status = response.Status,
-                Priority = response.Priority,
-                Changes = response.Changes,
-                QualificationReference = response.QualificationReference,
-                AwardingOrganisation = response.AwardingOrganisation,
-                Title = response.Title,
-                QualificationType = response.QualificationType,
-                Level = response.Level,
-                ProposedChanges = response.ProposedChanges,
-                AgeGroup = response.AgeGroup,
-                Category = response.Category,
-                Subject = response.Subject,
-                SectorSubjectArea = response.SectorSubjectArea,
-                Comments = response.Comments
-            };
-        }
-
         private class CsvExportResult
         {
             public bool Success { get; set; }
@@ -239,5 +387,12 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             public string? ErrorMessage { get; set; }
             public string? ProcessedStatus { get; set; }
         }
+    }
+
+    public class FieldMap
+    {
+        public string DBField { get; set; }
+        public string FriendlyName { get; set; }
+        public string ClassLocator { get; set; }
     }
 }

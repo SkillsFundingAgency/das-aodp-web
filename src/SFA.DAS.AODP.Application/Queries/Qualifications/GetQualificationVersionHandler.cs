@@ -1,24 +1,23 @@
 ﻿using MediatR;
 using SFA.DAS.AODP.Domain.Interfaces;
-using SFA.DAS.AODP.Domain.Qualifications.Requests;
 
 namespace SFA.DAS.AODP.Application.Queries.Qualifications
 {
-    public class GetQualificationDetailsQueryHandler : IRequestHandler<GetQualificationDetailsQuery, BaseMediatrResponse<GetQualificationDetailsQueryResponse>>
+    public class GetQualificationVersionHandler : IRequestHandler<GetQualificationVersionQuery, BaseMediatrResponse<GetQualificationDetailsQueryResponse>>
     {
         private readonly IApiClient _apiClient;
 
-        public GetQualificationDetailsQueryHandler(IApiClient apiClient)
+        public GetQualificationVersionHandler(IApiClient repository)
         {
-            _apiClient = apiClient;
+            _apiClient = repository;
         }
 
-        public async Task<BaseMediatrResponse<GetQualificationDetailsQueryResponse>> Handle(GetQualificationDetailsQuery request, CancellationToken cancellationToken)
+        public async Task<BaseMediatrResponse<GetQualificationDetailsQueryResponse>> Handle(GetQualificationVersionQuery request, CancellationToken cancellationToken)
         {
             var response = new BaseMediatrResponse<GetQualificationDetailsQueryResponse>();
             try
             {
-                var result = await _apiClient.Get<GetQualificationDetailsQueryResponse>(new GetQualificationDetailsApiRequest(request.QualificationReference));
+                var result = await _apiClient.Get<GetQualificationDetailsQueryResponse>(new GetQualificationVersionApiRequest(request.QualificationReference,request.Version));
                 if (result != null)
                 {
                     response.Value = result;
@@ -39,5 +38,6 @@ namespace SFA.DAS.AODP.Application.Queries.Qualifications
             return response;
         }
     }
-}
+    }
+
 
