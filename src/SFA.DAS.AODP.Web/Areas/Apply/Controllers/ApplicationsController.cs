@@ -307,9 +307,8 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
             {
                 var command = new DeleteApplicationCommand(model.ApplicationId);
 
-                await DeleteApplicationFiles(model.ApplicationId);
                 await Send(command);
-
+                await DeleteApplicationFiles(model.ApplicationId);
                 TempData[UpdateKeys.ApplicationDeletedKey.ToString()] = true;
                 return RedirectToAction(nameof(Index));
             }
