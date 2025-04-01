@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Filters;
+using SFA.DAS.AODP.Web.Models.Application;
 using SFA.DAS.AODP.Web.Models.Survey;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
@@ -38,10 +39,20 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
                 return View(viewModel);
             }
 
-            //Save feedback
+            if (viewModel.SatisfactionScore == null)
+            {
+                ModelState.AddModelError(nameof(viewModel.SatisfactionScore), "Satisfaction score is required.");
+                return View(viewModel);
+            }
 
             try
             {
+                await Send(new SaveSurveyCommand()
+                {
+                    Page = viewModel.Page,
+                    SatisfactionScore = (int)viewModel.SatisfactionScore,
+                    Comments = viewModel.Comments
+                });
                 return RedirectToAction(nameof(SurveyFeedbackConfirmation));
             }
             catch (Exception ex)
