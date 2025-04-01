@@ -5,6 +5,7 @@ using SFA.DAS.AODP.Web.Models.Help;
 
 namespace SFA.DAS.AODP.Web.Controllers
 {
+    [Authorize]
     public class HelpController : Controller
     {
 
@@ -13,7 +14,6 @@ namespace SFA.DAS.AODP.Web.Controllers
             return View();
         }
 
-        [AllowAnonymous]
         public IActionResult CookiesPolicy()
         {
             var analyticsCookieValue = Request.Cookies[CookieKeys.AnalyticsConsent];
@@ -27,7 +27,6 @@ namespace SFA.DAS.AODP.Web.Controllers
             var cookieViewModel = new CookiesViewModel
             {
                 PreviousPageUrl = referer ?? Url.RouteUrl("default") ?? "/",
-                ShowBannerMessage = false,
                 ConsentAnalyticsCookie = isAnalyticsCookieConsentGiven,
                 ConsentFunctionalCookie = isFunctionalCookieConsentGiven
             };
