@@ -3,7 +3,7 @@
 @using SFA.DAS.AODP.Web.Authentication
 @{
     Layout = "_GovUkPageTemplate";
-    var userClaims = ViewContext.HttpContext.User.Claims.Where(c => c.Type == "rolecode").ToList();
+    var userClaims = UserClaimsHelper.GetUserClaims(ViewContext.HttpContext);
     var canViewDashboard = userClaims.Any(x => x.Value == RoleConstants.QFAUApprover || x.Value == RoleConstants.QFAUReviewer || x.Value == RoleConstants.QFAUFormBuilder || x.Value == RoleConstants.QFAUImport);
     var canImportData = userClaims.Any(x => x.Value == RoleConstants.QFAUImport);
     var canCreateForm = userClaims.Any(x => x.Value == RoleConstants.QFAUFormBuilder || x.Value == RoleConstants.IFATEFormBuilder);
