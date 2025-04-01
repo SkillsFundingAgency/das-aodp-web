@@ -49,8 +49,10 @@
             </tr>
         </thead>
         <tbody class="govuk-table__body">
-            @foreach (var (item, i) in Model.Pages.OrderBy(o => o.Order).Select((v, i) => (v, i)))
+            @if(Model.Pages.Count() >= 1)
             {
+                @foreach (var (item, i) in Model.Pages.OrderBy(o => o.Order).Select((v, i) => (v, i)))
+                {
                 <tr class="govuk-table__row">
                     <th scope="row">@item.Order</th>
                     <td>@item.Title</td>
@@ -90,6 +92,13 @@
                         }
 
                     </td>
+                </tr>
+                }
+            }
+            else
+            {
+                <tr class="govuk-table__row">
+                    <td colspan="3">No pages have been created for this section</td>
                 </tr>
             }
         </tbody>
