@@ -1,11 +1,11 @@
-﻿@model SFA.DAS.AODP.Web.Models.Qualifications.NewQualificationDetailsTimelineViewModel
+﻿@model SFA.DAS.AODP.Web.Models.Qualifications.QualificationDetailsTimelineViewModel
 
 @{
     ViewData["Title"] = "Qualification Details";
 }
 <a class="govuk-back-link"
-asp-controller="New"
-asp-action="Index">
+   asp-controller="New"
+   asp-action="Index">
     Return to qualifications
 </a>
 <span class="govuk-caption-xl">
@@ -29,7 +29,7 @@ asp-action="Index">
     <div class="govuk-tabs__panel" id="history">
         <div class="aodp-timeline">
             <ol class="aodp-timeline__items">
-                @foreach(var item in Model.QualificationDiscussionHistories.OrderByDescending(v => v.Timestamp.GetValueOrDefault()))
+                @foreach (var item in Model.QualificationDiscussionHistories.OrderByDescending(v => v.Timestamp.GetValueOrDefault()))
                 {
                     <li class="aodp-timeline__item">
                         @if (string.IsNullOrEmpty(item.Title))
