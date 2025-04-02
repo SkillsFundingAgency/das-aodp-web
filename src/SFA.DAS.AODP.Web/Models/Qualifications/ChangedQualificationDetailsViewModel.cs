@@ -187,13 +187,6 @@ public class ChangedQualificationDetailsViewModel
         public Guid? ProcessStatusId { get; set; }
     }
 
-    public class AdditionalFormActions
-    {
-        [HtmlAttributeName("comment")]
-        public string Note { get; set; } = string.Empty;
-        public Guid? ProcessStatusId { get; set; }
-    }
-
     public static implicit operator ChangedQualificationDetailsViewModel(GetQualificationDetailsQueryResponse entity)
     {
         return new ChangedQualificationDetailsViewModel()
