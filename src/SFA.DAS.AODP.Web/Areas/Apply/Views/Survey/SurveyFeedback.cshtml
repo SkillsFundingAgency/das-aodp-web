@@ -10,6 +10,7 @@
 <partial name="_ValidationSummaryPartial" />
 
 <form asp-action="SurveyFeedback" asp-controller="Survey" method="post" gfa-prepend-error-summary="false">
+    @Html.HiddenFor(m => m.Page)
     @Html.AntiForgeryToken()
     <div class="govuk-form-group @(ViewData.ModelState["SatisfactionScore"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
         <govuk-radios asp-for="SatisfactionScore">

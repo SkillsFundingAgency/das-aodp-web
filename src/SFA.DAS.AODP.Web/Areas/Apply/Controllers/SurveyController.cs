@@ -1,17 +1,11 @@
 ﻿using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SFA.DAS.AODP.Web.Authentication;
-using SFA.DAS.AODP.Web.Filters;
-using SFA.DAS.AODP.Web.Models.Application;
 using SFA.DAS.AODP.Web.Models.Survey;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
 {
     [Area("Apply")]
-    [Authorize(Policy = PolicyConstants.IsApplyUser)]
-    [ValidateOrganisation]
     public class SurveyController : ControllerBase
     {
         public SurveyController(IMediator mediator, ILogger<SurveyController> logger) : base(mediator, logger)
@@ -19,19 +13,19 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         }
 
         [HttpGet]
-        [Route("/survey/{page}")]
-        public async Task<IActionResult> SurveyFeedback(string page)
+        [Route("/Survey/{page}")]
+        public async Task<IActionResult> SurveyFeedback()
         {
             var model = new SurveyViewModel
             {
-                Page = page
+                Page = Request.Headers["Referer"].ToString()
             };
 
             return View(model);
         }
 
         [HttpPost]
-        [Route("/survey/{page}")]
+        [Route("/Survey/{page}")]
         public async Task<IActionResult> SurveyFeedback(SurveyViewModel viewModel)
         {
             if (!ModelState.IsValid)
@@ -63,7 +57,7 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         }
 
         [HttpGet]
-        [Route("/survey/feedbackConfirmation")]
+        [Route("/Survey/FeedbackConfirmation")]
         public async Task<IActionResult> SurveyFeedbackConfirmation()
         {
             return View();

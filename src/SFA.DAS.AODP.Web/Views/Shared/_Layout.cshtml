@@ -155,8 +155,14 @@
     <div class="govuk-width-container">
         <div class="govuk-phase-banner">
             <p class="govuk-phase-banner__content">
-                <strong class="govuk-tag govuk-phase-banner__content__tag">Development</strong>
-                <span class="govuk-phase-banner__text">This site is currently in active development.</span>
+                @if (!(Context?.Request?.Path.Value?.Contains("/submit-confirmed") == true || Context?.Request?.Path.Value?.Contains("/Survey") == true))
+                {
+                    <strong class="govuk-tag govuk-phase-banner__content__tag">Private Beta</strong>
+                    <span class="govuk-phase-banner__text">
+                        This is a new service. Help us improve it and
+                        <a target="_blank" class="govuk-link" asp-action="SurveyFeedback" asp-controller="Survey">give your feedback (opens in new tab)</a>.
+                    </span>
+                }
             </p>
         </div>
 
