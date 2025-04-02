@@ -47,12 +47,16 @@ namespace SFA.DAS.AODP.Infrastructure.File
                 var blob = GetBlobClient(item.Name);
                 var properties = blob.GetProperties();
 
+                properties.Value.Metadata.TryGetValue(FileNameMetadataKey, out var fileName);
+                properties.Value.Metadata.TryGetValue(FileExtensionsMetadataKey, out var fileExtension);
+                properties.Value.Metadata.TryGetValue(FilePrefixMetadataKey, out var filePrefix);
+
                 result.Add(new()
                 {
-                    FileName = properties.Value.Metadata[FileNameMetadataKey],
+                    FileName = fileName,
                     FullPath = item.Name,
-                    Extension = properties.Value.Metadata[FileExtensionsMetadataKey],
-                    FileNamePrefix = properties.Value.Metadata[FilePrefixMetadataKey],
+                    Extension = fileExtension,
+                    FileNamePrefix = filePrefix,
                 });
             }
 
@@ -111,6 +115,6 @@ namespace SFA.DAS.AODP.Infrastructure.File
         public string FileName { get; set; }
         public string Extension { get; set; }
         public string FileNamePrefix { get; set; }
-        public string FileNameWithPrefix => $"{FileNamePrefix} {FileName}";
+        public string FileNameWithPrefix => string.IsNullOrWhiteSpace(FileNamePrefix) ? FileName : $"{FileNamePrefix} {FileName}";
     }
 }
