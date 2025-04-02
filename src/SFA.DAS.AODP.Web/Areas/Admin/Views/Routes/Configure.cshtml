@@ -1,6 +1,10 @@
 ﻿@using SFA.DAS.AODP.Web.Models.FormBuilder.Routing
 @model CreateRouteViewModel
 
+@{
+    ViewData["Title"] = "Configure route";
+}
+
 <a class="govuk-back-link" asp-action="List" asp-controller="Routes" asp-route-formVersionId="@Model.FormVersionId">
     Back to view routes
 </a>
