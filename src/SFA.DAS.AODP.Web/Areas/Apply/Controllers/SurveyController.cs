@@ -14,11 +14,11 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
 
         [HttpGet]
         [Route("/Survey/{page}")]
-        public async Task<IActionResult> SurveyFeedback([FromQuery] string page)
+        public async Task<IActionResult> SurveyFeedback()
         {
             var model = new SurveyViewModel
             {
-                Page = page
+                Page = Request.Headers["Referer"].ToString()
             };
 
             return View(model);
