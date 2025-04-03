@@ -116,6 +116,11 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 ActionTypeId = new Guid(ActionTypeDisplay.Dictionary[ActionType.ActionRequired])
             });
 
+            if (model.SelectedOfferIds.Count == 0)
+            {
+                return RedirectToAction(nameof(QualificationFundingOffersSummary), new { qualificationVersionId = model.QualificationVersionId, qualificationReference = model.QualificationReference, qualificationId = model.QualificationId });
+            }
+
             return RedirectToAction(nameof(QualificationFundingOffersDetails), new { qualificationVersionId = model.QualificationVersionId, qualificationReference = model.QualificationReference, qualificationId = model.QualificationId });
         }
 
