@@ -2,6 +2,10 @@
 
 @model ListRoutesViewModel
 
+@{
+    ViewData["Title"] = "Routes";
+}
+
 <a class="govuk-back-link" asp-action="Edit" asp-controller="Forms" asp-route-formVersionId="@Model.FormVersionId">
     Back to Form
 </a>
