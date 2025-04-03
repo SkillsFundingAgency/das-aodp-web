@@ -62,7 +62,7 @@ public class ApplicationMessagesController : ControllerBase
                 {
                     FileDisplayName = a.FileName,
                     FullPath = a.FullPath,
-                    FormUrl = Url.Action(nameof(ApplicationMessageFileDownload), "ApplicationMessages", new { organisationId , applicationId, formVersionId })
+                    FormUrl = Url.Action(nameof(ApplicationMessageFileDownload), "ApplicationMessages", new { organisationId, applicationId, formVersionId })
                 }).ToList()
             });
         }
@@ -100,8 +100,12 @@ public class ApplicationMessagesController : ControllerBase
 
     [HttpPost]
     [Route("apply/organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/messages")]
-    public async Task<IActionResult> ApplicationMessages([FromForm] ApplicationMessagesViewModel model)
+    public async Task<IActionResult> ApplicationMessages([FromForm] ApplicationMessagesViewModel model, [FromRoute] Guid applicationId, [FromRoute] Guid organisationId, [FromRoute] Guid formVersionId)
     {
+        model.ApplicationId = applicationId;
+        model.OrganisationId = organisationId;
+        model.FormVersionId = formVersionId;
+
         model.FileSettings = _formBuilderSettings;
         if (!ModelState.IsValid)
         {
@@ -161,8 +165,12 @@ public class ApplicationMessagesController : ControllerBase
 
     [HttpPost]
     [Route("apply/organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/messages/read")]
-    public async Task<IActionResult> ReadApplicationMessages([FromForm] MarkApplicationMessagesAsReadViewModel model)
+    public async Task<IActionResult> ReadApplicationMessages(MarkApplicationMessagesAsReadViewModel model, [FromRoute] Guid applicationId, [FromRoute] Guid organisationId, [FromRoute] Guid formVersionId)
     {
+        model.ApplicationId = applicationId;
+        model.OrganisationId = organisationId;
+        model.FormVersionId = formVersionId;
+
         await Send(new MarkAllMessagesAsReadCommand()
         {
             ApplicationId = model.ApplicationId,
