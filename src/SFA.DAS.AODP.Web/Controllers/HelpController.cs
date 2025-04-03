@@ -8,12 +8,11 @@ namespace SFA.DAS.AODP.Web.Controllers
     [Authorize]
     public class HelpController : Controller
     {
-
         public IActionResult Index()
         {
             return View();
         }
-
+        
         public IActionResult CookiesPolicy()
         {
             var analyticsCookieValue = Request.Cookies[CookieKeys.AnalyticsConsent];
@@ -31,6 +30,10 @@ namespace SFA.DAS.AODP.Web.Controllers
                 ConsentFunctionalCookie = isFunctionalCookieConsentGiven
             };
             return View(cookieViewModel);
+        }
+        public IActionResult AccessibilityStatement()
+        {
+            return View();
         }
     }
 }
