@@ -12,6 +12,7 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
         public string AgeGroup { get; set; } = string.Empty;
         public string Subject { get; set; } = string.Empty;
         public string SectorSubjectArea { get; set; } = string.Empty;
+        public string? VersionFieldChanges { get; set; }
         public string ChangedFieldNames { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
         public string Priority

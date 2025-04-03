@@ -1,9 +1,40 @@
 ﻿@using GovUk.Frontend.AspNetCore
+@using System.Linq
+@using SFA.DAS.AODP.Web.Authentication
 @{
     Layout = "_GovUkPageTemplate";
+    var userClaims = UserClaimsHelper.GetUserClaims(ViewContext.HttpContext);
+    var canViewDashboard = userClaims.Any(x => x.Value == RoleConstants.QFAUApprover || x.Value == RoleConstants.QFAUReviewer || x.Value == RoleConstants.QFAUFormBuilder || x.Value == RoleConstants.QFAUImport);
+    var canImportData = userClaims.Any(x => x.Value == RoleConstants.QFAUImport);
+    var canCreateForm = userClaims.Any(x => x.Value == RoleConstants.QFAUFormBuilder || x.Value == RoleConstants.IFATEFormBuilder);
+    var canReviewFundingRequests = userClaims.Any(x => x.Value == RoleConstants.IFATEReviewer || x.Value == RoleConstants.OFQUALReviewer);
+    var canCreateOutputFile = userClaims.Any(x => x.Value == RoleConstants.QFAUImport);
+    var isAODashboard = userClaims.Any(x => x.Value == RoleConstants.AOApply);
 }
 
-@section Header { 
+@functions {
+    string IsNavItemActive(string area, string controller, string action = null)
+    {
+        var routeData = ViewContext.RouteData.Values;
+        var currentArea = routeData["area"]?.ToString();
+        var currentController = routeData["controller"]?.ToString();
+        var currentAction = routeData["action"]?.ToString();
+
+        if (string.Equals(currentArea, area, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase)
+            && (action == null || string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase)))
+        {
+            return "dfe-header__navigation-item--current";
+        }
+
+        return "";
+    }
+}
+
+@section Header {
+
+    @await Html.PartialAsync("_CookieConsentPartial")
+
     <header class="dfe-header" role="banner">
         <div class="govuk-width-container dfe-header__container">
             <div class="dfe-header__logo">
@@ -47,40 +78,79 @@
                 @if (User.Identity.IsAuthenticated)
                 {
                     <ul class="dfe-header__navigation-list">
-                        <li class="dfe-header__navigation-item dfe-header__navigation-item--current">
-                            <a class="dfe-header__navigation-link" href="#">
-                                Dashboard
-                                <svg class="dfe-icon dfe-icon__chevron-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" width="34" height="34">
-                                    <path d="M15.5 12a1 1 0 0 1-.29.71l-5 5a1 1 0 0 1-1.42-1.42l4.3-4.29-4.3-4.29a1 1 0 0 1 1.42-1.42l5 5a1 1 0 0 1 .29.71z"></path>
-                                </svg>
-                            </a>
-                        </li>
-                        <li class="dfe-header__navigation-item">
-                            <a class="dfe-header__navigation-link" asp-area="Admin" asp-action="Index" asp-controller="Forms">
-                                Form Management
-                                <svg class="dfe-icon dfe-icon__chevron-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" width="34" height="34">
-                                    <path d="M15.5 12a1 1 0 0 1-.29.71l-5 5a1 1 0 0 1-1.42-1.42l4.3-4.29-4.3-4.29a1 1 0 0 1 1.42-1.42l5 5a1 1 0 0 1 .29.71z"></path>
-                                </svg>
-                            </a>
-                        </li>
-                        <li class="dfe-header__navigation-item">
-                            <a class="dfe-header__navigation-link" asp-area="Apply" asp-action="Index" asp-controller="Applications">
-                                Applications
-                                <svg class="dfe-icon dfe-icon__chevron-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" width="34" height="34">
-                                    <path d="M15.5 12a1 1 0 0 1-.29.71l-5 5a1 1 0 0 1-1.42-1.42l4.3-4.29-4.3-4.29a1 1 0 0 1 1.42-1.42l5 5a1 1 0 0 1 .29.71z"></path>
-                                </svg>
-                            </a>
-                        </li>
-                        <li class="dfe-header__navigation-item">
-                            <a class="dfe-header__navigation-link" asp-area="Review" asp-action="Index" asp-controller="ApplicationsReview">
-                                Applications Review
-                                <svg class="dfe-icon dfe-icon__chevron-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" width="34" height="34">
-                                    <path d="M15.5 12a1 1 0 0 1-.29.71l-5 5a1 1 0 0 1-1.42-1.42l4.3-4.29-4.3-4.29a1 1 0 0 1 1.42-1.42l5 5a1 1 0 0 1 .29.71z"></path>
-                                </svg>
-                            </a>
-                        </li>
+                        <!-- AO Dashboard -->
+                        @if (isAODashboard)
+                        {
+                            <li class="dfe-header__navigation-item @IsNavItemActive("Apply", "Applications", "Index")">
+                                <a class="dfe-header__navigation-link" asp-area="Apply" asp-controller="Applications" asp-action="Index">
+                                    Dashboard
+                                    <svg class="dfe-icon dfe-icon__chevron-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" width="34" height="34">
+                                        <path d="M15.5 12a1 1 0 0 1-.29.71l-5 5a1 1 0 0 1-1.42-1.42l4.3-4.29-4.3-4.29a1 1 0 0 1 1.42-1.42l5 5a1 1 0 0 1 .29.71z"></path>
+                                    </svg>
+                                </a>
+                            </li>
+                        }
+                        <!-- Ofau, Ofqua, IFate Dashboard -->
+                        @if (canViewDashboard)
+                        {
+                            <li class="dfe-header__navigation-item @IsNavItemActive("Review", "Home", "Index")">
+                                <a class="dfe-header__navigation-link" asp-area="Review" asp-controller="Home" asp-action="Index">
+                                    Dashboard
+                                    <svg class="dfe-icon dfe-icon__chevron-right" ...>...</svg>
+                                </a>
+                            </li>
+                        }
+
+                        @if (canImportData)
+                        {
+                            <li class="dfe-header__navigation-item @IsNavItemActive("Admin", "Import", "Index")">
+                                <a class="dfe-header__navigation-link" asp-area="Admin" asp-controller="Import" asp-action="Index">
+                                    Import data
+                                    <svg class="dfe-icon dfe-icon__chevron-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" width="34" height="34">
+                                        <path d="M15.5 12a1 1 0 0 1-.29.71l-5 5a1 1 0 0 1-1.42-1.42l4.3-4.29-4.3-4.29a1 1 0 0 1 1.42-1.42l5 5a1 1 0 0 1 .29.71z"></path>
+                                    </svg>
+                                </a>
+                            </li>
+                        }
+
+                        @if (canCreateForm)
+                        {
+                            <li class="dfe-header__navigation-item @IsNavItemActive("Admin", "Forms", "Index")">
+                                <a class="dfe-header__navigation-link" asp-area="Admin" asp-controller="Forms" asp-action="Index">
+                                    Create a form
+                                    <svg class="dfe-icon dfe-icon__chevron-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" width="34" height="34">
+                                        <path d="M15.5 12a1 1 0 0 1-.29.71l-5 5a1 1 0 0 1-1.42-1.42l4.3-4.29-4.3-4.29a1 1 0 0 1 1.42-1.42l5 5a1 1 0 0 1 .29.71z"></path>
+                                    </svg>
+                                </a>
+                            </li>
+                        }
+
+                        @if (canReviewFundingRequests)
+                        {
+                            <li class="dfe-header__navigation-item @IsNavItemActive("Review", "ApplicationsReview", "Index")">
+                                <a class="dfe-header__navigation-link" asp-area="Review" asp-controller="ApplicationsReview" asp-action="Index">
+                                    Review funding requests
+                                    <svg class="dfe-icon dfe-icon__chevron-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" width="34" height="34">
+                                        <path d="M15.5 12a1 1 0 0 1-.29.71l-5 5a1 1 0 0 1-1.42-1.42l4.3-4.29-4.3-4.29a1 1 0 0 1 1.42-1.42l5 5a1 1 0 0 1 .29.71z"></path>
+                                    </svg>
+                                </a>
+                            </li>
+                        }
+
+                        @if (canCreateOutputFile)
+                        {
+                            <li class="dfe-header__navigation-item @IsNavItemActive("Admin", "OutputFile", "Index")">
+                                <a class="dfe-header__navigation-link" asp-area="Admin" asp-controller="OutputFile" asp-action="Index">
+                                    Create an output file
+                                    <svg class="dfe-icon dfe-icon__chevron-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" width="34" height="34">
+                                        <path d="M15.5 12a1 1 0 0 1-.29.71l-5 5a1 1 0 0 1-1.42-1.42l4.3-4.29-4.3-4.29a1 1 0 0 1 1.42-1.42l5 5a1 1 0 0 1 .29.71z"></path>
+                                    </svg>
+                                </a>
+                            </li>
+                        }
                     </ul>
                 }
+
 
             </div>
         </nav>
@@ -124,6 +194,7 @@
             height="0" width="0" style="display:none;visibility:hidden"></iframe>
 </noscript>
 <!-- End Google Tag Manager (noscript) -->
+
 @RenderBody()
 
 @section Footer {
@@ -134,9 +205,14 @@
                     <h2 class="govuk-visually-hidden">Support Links</h2>
                     <ul class="govuk-footer__inline-list">
                         <li class="govuk-footer__inline-list-item">
-                            <a class="govuk-footer__link" href="https://www.gov.uk/government/publications/privacy-information-members-of-the-public/privacy-information-members-of-the-public/" target="_blank">Privacy Policy</a>
+                            <a class="govuk-footer__link" asp-area="Help" asp-action="AccessibilityStatement" asp-controller="Help">Accessibility statement</a>
                         </li>
-
+                        <li class="govuk-footer__inline-list-item">
+                            <a class="govuk-footer__link" asp-area="Help" asp-action="CookiesPolicy" asp-controller="Help">Cookies</a>
+                        </li>
+                        <li class="govuk-footer__inline-list-item">
+                            <a class="govuk-footer__link" href="https://www.gov.uk/government/publications/privacy-information-members-of-the-public/privacy-information-members-of-the-public/" target="_blank">Privacy Policy</a>
+                        </li>                  
                     </ul>
                     <svg aria-hidden="true"
                          focusable="false"
