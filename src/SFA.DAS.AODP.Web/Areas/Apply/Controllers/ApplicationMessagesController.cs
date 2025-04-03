@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 using SFA.DAS.AODP.Application.Commands.Application.Application;
@@ -7,6 +8,7 @@ using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Areas.Apply.Models;
+using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Filters;
 using SFA.DAS.AODP.Web.Helpers.File;
@@ -16,6 +18,7 @@ using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers;
 
 [Area("Apply")]
+[Authorize(Policy = PolicyConstants.IsApplyUser)]
 [ValidateOrganisation]
 [ValidateApplication]
 public class ApplicationMessagesController : ControllerBase
@@ -140,8 +143,8 @@ public class ApplicationMessagesController : ControllerBase
                     }
                 }
 
-                string userEmail = _userHelperService.GetUserEmail().ToString();
-                string userName = _userHelperService.GetUserDisplayName().ToString();
+                string userEmail = _userHelperService.GetUserEmail();
+                string userName = _userHelperService.GetUserDisplayName();
                 var response = await Send(new CreateApplicationMessageCommand(model.ApplicationId, model.MessageText, model.SelectedMessageType, UserType.ToString(), userEmail, userName));
 
                 if (model.Files != null && model.Files.Count != 0)
@@ -198,10 +201,12 @@ public class ApplicationMessagesController : ControllerBase
 
     private async Task HandleFileUploadsAsync(Guid applicationId, Guid messageId, List<IFormFile> files)
     {
+        var metadata = await Send(new GetApplicationMetadataByIdQuery(applicationId));
+
         foreach (var file in files ?? [])
         {
             using var stream = file.OpenReadStream();
-            await _fileService.UploadFileAsync($"messages/{applicationId}/{messageId}", file.FileName, stream, file.ContentType, string.Empty);
+            await _fileService.UploadFileAsync($"messages/{applicationId}/{messageId}", file.FileName, stream, file.ContentType, metadata.Reference.ToString().PadLeft(6, '0'));
         }
     }
 

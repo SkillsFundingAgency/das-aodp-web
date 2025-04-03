@@ -62,7 +62,7 @@ public class ApplicationMessagesController : ControllerBase
                 MessageType = message.MessageType,
                 Files = timelineFiles.Where(t => t.FullPath.StartsWith($"messages/{applicationId}/{message.MessageId}")).Select(a => new ApplicationMessageViewModel.File()
                 {
-                    FileDisplayName = a.FileName,
+                    FileDisplayName = a.FileNameWithPrefix,
                     FullPath = a.FullPath,
                     FormUrl = Url.Action(nameof(ApplicationReviewMessageFileDownload), "ApplicationMessages", new { applicationReviewId })
                 }).ToList()
@@ -221,10 +221,12 @@ public class ApplicationMessagesController : ControllerBase
 
     private async Task HandleFileUploadsAsync(Guid applicationId, Guid messageId, List<IFormFile> files)
     {
+        var metadata = await Send(new GetApplicationMetadataByIdQuery(applicationId));
+
         foreach (var file in files ?? [])
         {
             using var stream = file.OpenReadStream();
-            await _fileService.UploadFileAsync($"messages/{applicationId}/{messageId}", file.FileName, stream, file.ContentType, string.Empty);
+            await _fileService.UploadFileAsync($"messages/{applicationId}/{messageId}", file.FileName, stream, file.ContentType, metadata.Reference.ToString().PadLeft(6, '0'));
         }
     }
 

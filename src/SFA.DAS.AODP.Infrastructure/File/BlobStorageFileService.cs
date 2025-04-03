@@ -7,9 +7,9 @@ namespace SFA.DAS.AODP.Infrastructure.File
 {
     public class BlobStorageFileService : IFileService
     {
-        private const string FileNameMetadataKey = "FileName";
-        private const string FileExtensionsMetadataKey = "Extension";
-        private const string FilePrefixMetadataKey = "FileNamePrefix";
+        public const string FileNameMetadataKey = "FileName";
+        public const string FileExtensionsMetadataKey = "Extension";
+        public const string FilePrefixMetadataKey = "FileNamePrefix";
         private readonly BlobStorageSettings _blobStorageSettings;
         private readonly BlobServiceClient _blobServiceClient;
         private BlobContainerClient? _blobContainerClient;
