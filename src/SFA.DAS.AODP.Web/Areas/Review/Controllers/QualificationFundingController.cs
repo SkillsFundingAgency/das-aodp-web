@@ -80,7 +80,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
         [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
         [HttpGet]
-        [Route("review/qualifications/{qualificationReference}/qualification/{qualificationVersionId}/funding-offers/{qualificationId}")]
+        [Route("review/qualifications/{qualificationId}/qualificationVersion/{qualificationVersionId}/funding-offers/{qualificationReference}")]
         public async Task<IActionResult> QualificationFundingOffers(string qualificationReference, Guid qualificationVersionId, Guid qualificationId)
         {
             var offers = await Send(new GetFundingOffersQuery());
@@ -101,7 +101,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
         [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
         [HttpPost]
-        [Route("review/qualifications/{qualificationReference}/qualification/{qualificationVersionId}/funding-offers/{qualificationId}")]
+        [Route("review/qualifications/{qualificationId}/qualificationVersion/{qualificationVersionId}/funding-offers/{qualificationReference}")]
         public async Task<IActionResult> QualificationFundingOffers(QualificationFundingsOffersSelectViewModel model, string qualificationReference)
         {
             if (!ModelState.IsValid) return View(model);
@@ -126,7 +126,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
         [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
         [HttpGet]
-        [Route("review/qualifications/{qualificationReference}/qualification/{qualificationVersionId}/funding-offers-details/{qualificationId}")]
+        [Route("review/qualifications/{qualificationId}/qualificationVersion/{qualificationVersionId}/funding-offers-details/{qualificationReference}")]
         public async Task<IActionResult> QualificationFundingOffersDetails(string qualificationReference, Guid qualificationVersionId, Guid qualificationId)
         {
             var offers = await Send(new GetFundingOffersQuery());
@@ -140,7 +140,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
         [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
         [HttpPost]
-        [Route("review/qualifications/{qualificationReference}/qualification/{qualificationVersionId}/funding-offers-details/{qualificationId}")]
+        [Route("review/qualifications/{qualificationId}/qualificationVersion/{qualificationVersionId}/funding-offers-details/{qualificationReference}")]
         public async Task<IActionResult> QualificationFundingOffersDetails(QualificationFundingsOfferDetailsViewModel model, Guid qualificationId)
         {
             if (!ModelState.IsValid)
@@ -158,7 +158,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
         [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
         [HttpGet]
-        [Route("review/qualifications/{qualificationReference}/qualification/{qualificationVersionId}/funding-offers-summary/{qualificationId}")]
+        [Route("review/qualifications/{qualificationId}/qualificationVersion/{qualificationVersionId}/funding-offers-summary/{qualificationReference}")]
         public async Task<IActionResult> QualificationFundingOffersSummary(string qualificationReference, Guid qualificationVersionId, Guid qualificationId)
         {
             try
@@ -181,7 +181,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         
         [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
         [HttpPost]
-        [Route("review/qualifications/{qualificationReference}/qualification/{qualificationVersionId}/funding-offers-summary/{qualificationId}")]
+        [Route("review/qualifications/{qualificationId}/qualificationVersion/{qualificationVersionId}/funding-offers-summary/{qualificationReference}")]
         public async Task<IActionResult> QualificationFundingOffersSummary(QualificationFundingsOffersSummaryViewModel model, string qualificationReference)
         {
             await Send(new CreateQualificationDiscussionHistoryCommand()
