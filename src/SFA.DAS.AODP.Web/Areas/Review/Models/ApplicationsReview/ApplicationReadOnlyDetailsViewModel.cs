@@ -127,4 +127,14 @@ public class ApplicationReadOnlyDetailsViewModel
             RadioChoiceValue = answer.RadioChoiceValue
         };
     }
+
+    public bool HasAnyFiles()
+    {
+        if (Sections == null) return false;
+
+        return Sections
+            .SelectMany(s => s.Pages ?? Enumerable.Empty<Page>()) 
+            .SelectMany(p => p.Questions ?? Enumerable.Empty<Question>()) 
+            .Any(q => q.Answer?.Files != null && q.Answer.Files.Any()); 
+    }
 }

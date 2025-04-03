@@ -74,6 +74,17 @@
            asp-action="ViewApplication"
            asp-controller="ApplicationsReview"
            asp-route-applicationReviewId="@Model.ApplicationReviewId">Back to application details</a>
+
+        
+        @if(Model.HasAnyFiles())
+        {
+            <form method="post" asp-route-applicationReviewId="@Model.ApplicationReviewId" asp-area="Review" asp-controller="ApplicationsReview" asp-action="DownloadAllApplicationFiles">
+                @Html.HiddenFor(m => m.ApplicationReviewId)
+                <button type="submit" class="govuk-button govuk-button--secondary">
+                    Download all files
+                </button>
+            </form>
+        }
     </div>
 </div>
 
