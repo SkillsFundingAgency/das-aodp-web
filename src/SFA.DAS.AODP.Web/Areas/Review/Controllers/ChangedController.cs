@@ -36,7 +36,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             this._userHelperService = userHelperService;
         }
 
-        public async Task<IActionResult> Index(int pageNumber = 0, int recordsPerPage = 10, string name = "", string organisation = "", string qan = "")
+        public async Task<IActionResult> Index(List<Guid>? processStatusIds, int pageNumber = 0, int recordsPerPage = 10, string name = "", string organisation = "", string qan = "")
         {
             var viewModel = new ChangedQualificationsViewModel();
             try
@@ -46,6 +46,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 {
                     ShowNotificationIfKeyExists(NewQualDataKeys.InvalidPageParams.ToString(), ViewNotificationMessageType.Error, "Invalid parameters.");
                 }
+
+                var procStatuses = await Send(new GetProcessStatusesQuery());
 
                 // Initial page load will not load records and have a page number of 0
                 if (pageNumber > 0)
@@ -66,13 +68,25 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                         query.QAN = qan;
                     }
 
-                    query.Take = recordsPerPage;
+                
+                if (processStatusIds?.Any() ?? false)
+                {
+                    query.ProcessStatusIds = processStatusIds;
+                }
+                query.Take = recordsPerPage;
                     query.Skip = recordsPerPage * (pageNumber - 1);
 
                     var response = await Send(query);
-                    viewModel = ChangedQualificationsViewModel.Map(response, organisation, qan, name);
+                    viewModel = ChangedQualificationsViewModel.Map(response, procStatuses.ProcessStatuses, organisation, qan, name);
                 }
-
+                viewModel.Filter = new NewQualificationFilterViewModel()
+                {
+                    Organisation = organisation,
+                    QualificationName = name,
+                    QAN = qan,
+                    ProcessStatusIds = processStatusIds
+                };
+                viewModel.ProcessStatuses = [.. procStatuses.ProcessStatuses];
                 return View(viewModel);
             }
             catch (Exception ex)
@@ -93,7 +107,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     recordsPerPage = viewModel.PaginationViewModel.RecordsPerPage,
                     name = viewModel.Filter.QualificationName,
                     organisation = viewModel.Filter.Organisation,
-                    qan = viewModel.Filter.QAN
+                    qan = viewModel.Filter.QAN,
+                    processStatusIds = viewModel.Filter.ProcessStatusIds,
                 });
             }
             catch (Exception ex)

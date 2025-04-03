@@ -9,5 +9,7 @@ namespace SFA.DAS.AODP.Application.Queries.Qualifications
         public string? QAN { get; set; }
         public int Skip { get; set; }
         public int Take { get; set; }
+        public List<Guid>? ProcessStatusIds { get; set; }
     }
 }
+
