@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using System;
 using SFA.DAS.AODP.Application.Commands.Feedback;
 
-namespace SFA.DAS.AODP.Application.Tests.Commands.Application
+namespace SFA.DAS.AODP.Application.UnitTests.Commands.Feedback
 {
     public class SaveSurveyCommandHandlerTests
     {
