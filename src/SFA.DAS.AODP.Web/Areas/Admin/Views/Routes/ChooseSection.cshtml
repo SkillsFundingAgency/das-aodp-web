@@ -39,44 +39,40 @@
                     </govuk-radios-fieldset-legend>
 
                     <govuk-radios-hint>
-                        Select one option. Only sections and pages with questions requiring user to select a option are shown.
+                        Select one option. Only sections and pages with questions requiring user to select an option are shown.
                     </govuk-radios-hint>
 
                     @if (!Model.AreSectionsEmpty)
                     {
-                        @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.ChosenSectionId))
-                        @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.ChosenPageId))
+                        @await Html.PartialAsync("Validation/_RadioValidationPartial", nameof(Model.ChosenSectionId))
+                        @await Html.PartialAsync("Validation/_RadioValidationPartial", nameof(Model.ChosenPageId))
 
                         @foreach (var sectionInformation in Model.Sections.OrderBy(o => o.Order))
                         {
                             <govuk-radios-item value="@sectionInformation.Id">
-
                                 Section @(sectionInformation.Order). @sectionInformation.Title
 
-                                <govuk-radios-item-conditional>
-                                    <govuk-radios asp-for="@Model.ChosenPageId">
-                                        <govuk-radios-fieldset>
-                                            <govuk-radios-fieldset-legend is-page-heading="true">
-                                                <h2 class="govuk-heading-s">Choose page</h2>
-                                            </govuk-radios-fieldset-legend>
+                                <!-- Always show nested page radios, not conditionally -->
+                                <govuk-radios asp-for="@Model.ChosenPageId">
+                                    <govuk-radios-fieldset>
+                                        <govuk-radios-fieldset-legend>
+                                            <h2 class="govuk-heading-s">Choose page</h2>
+                                        </govuk-radios-fieldset-legend>
 
-                                            @foreach (var pageInformation in sectionInformation.Pages.OrderBy(o => o.Order))
-                                            {
-                                                <govuk-radios-item value="@pageInformation.Id">
-                                                    Page @(pageInformation.Order). @pageInformation.Title
-                                                </govuk-radios-item>
-                                            }
-
-                                        </govuk-radios-fieldset>
-                                    </govuk-radios>
-                                </govuk-radios-item-conditional>
-
+                                        @foreach (var pageInformation in sectionInformation.Pages.OrderBy(o => o.Order))
+                                        {
+                                            <govuk-radios-item value="@pageInformation.Id">
+                                                Page @(pageInformation.Order). @pageInformation.Title
+                                            </govuk-radios-item>
+                                        }
+                                    </govuk-radios-fieldset>
+                                </govuk-radios>
                             </govuk-radios-item>
                         }
                     }
-
                 </govuk-radios-fieldset>
             </govuk-radios>
+
         }
     </div>
 
