@@ -68,12 +68,12 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                         query.QAN = qan;
                     }
 
-                
-                if (processStatusIds?.Any() ?? false)
-                {
-                    query.ProcessStatusIds = processStatusIds;
-                }
-                query.Take = recordsPerPage;
+
+                    if (processStatusIds?.Any() ?? false)
+                    {
+                        query.ProcessStatusIds = processStatusIds;
+                    }
+                    query.Take = recordsPerPage;
                     query.Skip = recordsPerPage * (pageNumber - 1);
 
                     var response = await Send(query);
