@@ -3,7 +3,32 @@
     Layout = "_GovUkPageTemplate";
 }
 
-@section Header { 
+@section Header {
+    <!-- Cookie Banner -->
+    <div id="cookie-banner" class="govuk-width-container cookie-main-banner-div">
+        <h2 class="govuk-heading-m cookie-min-header">Cookies on Our Website</h2>
+        <p class="govuk-body">
+            We use some essential cookies to make Skills for Careers website work.<br /><br />
+            We’d also like to use analytics and marketing cookies so we can understand how you use the service and make improvements.
+        </p>
+        <button type="button" class="govuk-button cookie-div-button" id="accept-all">
+            Accept all cookies
+        </button>
+        <button type="button" class="govuk-button govuk-button--secondary cookie-div-button set-cookie-preferences">
+            Set cookie preferences
+        </button>
+    </div>
+
+    <div id="cookie-banner-acception" class="govuk-width-container cookie-main-banner-div" style="display:none;">
+        <h2 class="govuk-heading-m cookie-min-header">Cookies on Our Website</h2>
+        <p class="govuk-body">
+            You’ve accepted all cookies. You can change your <a href="javascript:void(0);" class="govuk-link set-cookie-preferences" id="set-cookie-preferences">cookie settings</a> at any time.
+        </p>
+        <button type="button" class="govuk-button cookie-div-button" id="hide-cookie-message">
+            Hide Cookie message
+        </button>
+    </div>
+
     <header class="dfe-header" role="banner">
         <div class="govuk-width-container dfe-header__container">
             <div class="dfe-header__logo">
@@ -105,12 +130,11 @@
         'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
         })(window,document,'script','dataLayer','GTM-MHLR3QZ9');</script>
     <!-- End Google Tag Manager -->
-
     @Html.GovUkFrontendStyleImports()
 
     <environment include="Development">
         <link rel="stylesheet" href="~/lib/dfe-frontend/dist/dfefrontend.css?v=2025-02-27">
-        <link rel="stylesheet" href="/stylesheets/application.css?v=2025-02-27" >
+        <link rel="stylesheet" href="/stylesheets/application.css?v=2025-02-27">
     </environment>
     <environment exclude="Development">
         <link rel="stylesheet" href="~/lib/dfe-frontend/dist/dfefrontend-2.0.0.min.css?v=2025-02-27">
@@ -129,6 +153,18 @@
 @section Footer {
     <footer class="govuk-footer">
         <div class="govuk-width-container">
+            <div class="govuk-panel govuk-panel--info info-container">
+                <h2 class="govuk-heading-m">Website Information</h2>
+                <table class="govuk-table info-table">
+                    <tr>
+                        <td class="cookie-option">
+                            <button type="button" class="govuk-button govuk-button--secondary cookie-div-button set-cookie-preferences">
+                                Cookies
+                            </button>
+                        </td>
+                    </tr>
+                </table>
+            </div>
             <div class="govuk-footer__meta">
                 <div class="govuk-footer__meta-item govuk-footer__meta-item--grow">
                     <svg aria-hidden="true"
@@ -165,9 +201,11 @@
     <environment include="Development">
         <script src="~/lib/jquery/dist/jquery.min.js?v=2025-02-27"></script>
         <script src="~/js/site.js?v=2025-02-27"></script>
+        <script src="~/js/cookie-config.js"></script>
     </environment>
     <environment exclude="Development">
         <script src="~/js/site.min.js?v=2025-02-27"></script>
+        <script src="~/js/cookie-config.js"></script>
     </environment>
 
 }
