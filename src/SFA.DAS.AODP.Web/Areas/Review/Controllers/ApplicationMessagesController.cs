@@ -144,8 +144,8 @@ public class ApplicationMessagesController : ControllerBase
                             return View(model);
                         }
                     }
-                    string userEmail = _userHelperService.GetUserEmail().ToString();
-                    string userName = _userHelperService.GetUserDisplayName().ToString();
+                    string userEmail = _userHelperService.GetUserEmail();
+                    string userName = _userHelperService.GetUserDisplayName();
                     var response = await Send(new CreateApplicationMessageCommand(applicationId, model.MessageText, model.SelectedMessageType, UserType.ToString(), userEmail, userName));
 
                     if (model.Files != null && model.Files.Count != 0)
