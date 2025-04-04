@@ -7,6 +7,7 @@
         public string? QualificationReference { get; set; }
         public string? Comments { get; set; }
         public bool? Approved { get; set; }
+        public string Mode { get; set; }
 
         public List<OfferFunding> OfferFundingDetails { get; set; } = new();
         public List<FundingOffer> FundingOffers { get; set; } = new();
