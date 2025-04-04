@@ -18,6 +18,7 @@
                          asp-route-formVersionId="@Model.FormVersionId">Back</govuk-back-link>
 
         <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+        <partial name="~/Views/Shared/_ValidationSummaryPartial.cshtml" />
 
         <h1 class="govuk-heading-l govuk-!-margin-bottom-2">Application messages</h1>
 
@@ -25,24 +26,6 @@
             Request for funding
         </div>
 
-        @if (!ViewData.ModelState.IsValid)
-        {
-            <div class="govuk-error-summary" data-module="govuk-error-summary">
-                <div role="alert">
-                    <h2 class="govuk-error-summary__title">There is a problem</h2>
-                    <div class="govuk-error-summary__body">
-                        <ul class="govuk-list govuk-error-summary__list">
-                            @if (ViewData.ModelState["MessageText"]?.Errors.Count > 0)
-                            {
-                                <li>
-                                    <a>Your message cannot be empty</a>
-                                </li>
-                            }
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        }
 
         <!-- Message Box and Message Send  -->
         @if (!Model.AdditionalActions.Preview)
@@ -57,8 +40,8 @@
                 <h1 class="govuk-label-wrapper">
                     <label class="govuk-label govuk-label--m" for="messageText">Message</label>
                 </h1>
-                <div id="more-detail-hint" class="govuk-hint">
-                    Reply to information requests.
+                <div id="" class="govuk-hint">
+                    Reply to information requests. You will be able to upload files when you are previewing the message.
                 </div>
 
                 <div class="govuk-form-group @(ViewData.ModelState["MessageText"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
@@ -66,7 +49,7 @@
                               id="messageText"
                               name="MessageText"
                               rows="5"
-                              aria-describedby="@(ViewData.ModelState["MessageText"]?.Errors.Count > 0 ? "messageText-error" : "more-detail-hint")">@Model.MessageText</textarea>
+                              aria-describedby="more-detail-hint @(ViewData.ModelState["MessageText"]?.Errors.Count > 0 ? "messageText-error" : "")">@Model.MessageText</textarea>
                     @if (ViewData.ModelState["MessageText"]?.Errors.Count > 0)
                     {
                         <p id="messageText-error" class="govuk-error-message">
@@ -87,22 +70,40 @@
                 @Html.HiddenFor(m => m.MessageText)
                 @Html.HiddenFor(m => m.SelectedMessageType)
 
-                <table class="govuk-table" style="width:100%;">
-                    <colgroup>
-                        <col style="width:33.33%;">
-                        <col style="width:66.67%;">
-                    </colgroup>
-                    <tbody class="govuk-table__body">
-                        <tr class="govuk-table__row">
-                            <th scope="row" class="govuk-table__header">Message</th>
-                            <td class="govuk-table__cell"><p style="white-space: pre-line">@Model.MessageText</p></td>
-                        </tr>
-                        <tr class="govuk-table__row">
-                            <th scope="row" class="govuk-table__header">Message type</th>
-                            <td class="govuk-table__cell">@Model.SelectedMessageTypeDisplay</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <govuk-summary-list>
+                    <govuk-summary-list-row>
+                        <govuk-summary-list-row-key>
+                            Message
+                        </govuk-summary-list-row-key>
+                        <govuk-summary-list-row-value style="white-space: pre-line">@Model.MessageText</govuk-summary-list-row-value>
+                    </govuk-summary-list-row>
+                </govuk-summary-list>
+
+                <div class="govuk-form-group @(ViewData.ModelState["Files"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+                    <label class="govuk-label govuk-label--s" for="file-upload">
+                        Upload files (optional)
+                    </label>
+                    <div id="files-hint" class="govuk-hint">
+                        Please note the system does not currently allow for the users to remove uploaded files.
+                    </div>
+                    <input class="govuk-file-upload" id="Files" name="Files" type="file" multiple
+                           aria-describedby="files-hint @(ViewData.ModelState["Files"]?.Errors.Count > 0 ? "files-error" : "")">
+                    @if (ViewData.ModelState["Files"]?.Errors.Count > 0)
+                    {
+                        <p id="files-error" class="govuk-error-message">
+                            <span class="govuk-visually-hidden">Error:</span> There was an error uploading files.
+                        </p>
+                    }
+                </div>
+
+                <govuk-details>
+                    <govuk-details-summary>
+                        File restrictions
+                    </govuk-details-summary>
+                    <govuk-details-text>
+                        You can upload a maximum of @Model.FileSettings.MaxUploadNumberOfFiles files. Each file must not be more than @Model.FileSettings.MaxUploadFileSize mb and must be one of the following types: @string.Join(", ", Model.FileSettings.UploadFileTypesAllowed).
+                    </govuk-details-text>
+                </govuk-details>
 
                 <div class="govuk-grid-row">
                     <div class="govuk-grid-column-three-quarters">
@@ -137,6 +138,7 @@
 
         <!-- Application Event Timeline  -->
         @{
+            
             var timelineModel = new TimelineViewModel
             {
                 Items = Model.TimelineMessages
