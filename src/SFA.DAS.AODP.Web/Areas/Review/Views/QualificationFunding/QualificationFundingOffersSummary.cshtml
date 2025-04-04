@@ -54,13 +54,14 @@
                         }
                     </govuk-summary-list-row-value>
 
-                    <govuk-summary-list-row-actions>
-                            <govuk-summary-list-row-action asp-route-area="Review" asp-controller="QualificationFunding" 
-                            asp-action="QualificationFundingOffersOutcome" 
-                            asp-route-qualificationReference="@Model.QualificationReference" 
-                            visually-hidden-text="name">Change</govuk-summary-list-row-action>
-                    </govuk-summary-list-row-actions>
-                </govuk-summary-list-row>
+                        <govuk-summary-list-row-actions>
+                            <govuk-summary-list-row-action asp-route-area="Review" asp-controller="QualificationFunding"
+                                                           asp-action="QualificationFundingOffersOutcome"
+                                                           asp-route-qualificationReference="@Model.QualificationReference"
+                                                           asp-route-mode="@Model.Mode"
+                                                           visually-hidden-text="name">Change</govuk-summary-list-row-action>
+                        </govuk-summary-list-row-actions>
+                    </govuk-summary-list-row>
 
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key>
@@ -74,6 +75,7 @@
                             <govuk-summary-list-row-action asp-route-area="Review" asp-controller="QualificationFunding"
                                                            asp-action="QualificationFundingOffersOutcome"
                                                            asp-route-qualificationReference="@Model.QualificationReference"
+                                                           asp-route-mode="@Model.Mode"
                                                            visually-hidden-text="name">Change</govuk-summary-list-row-action>
                         </govuk-summary-list-row-actions>
                 </govuk-summary-list-row>
@@ -110,6 +112,7 @@
                                                                asp-route-qualificationReference="@Model.QualificationReference"
                                                                asp-route-qualificationVersionId="@Model.QualificationVersionId"
                                                                asp-route-qualificationId="@Model.QualificationId"
+                                                               asp-route-mode="@Model.Mode"
                                                                visually-hidden-text="name">Change</govuk-summary-list-row-action>
                             </govuk-summary-list-row-actions>
                     </govuk-summary-list-row>
@@ -135,6 +138,7 @@
                                                                asp-route-qualificationReference="@Model.QualificationReference"
                                                                asp-route-qualificationVersionId="@Model.QualificationVersionId"
                                                                asp-route-qualificationId="@Model.QualificationId"
+                                                               asp-route-mode="@Model.Mode"
                                                                visually-hidden-text="name">Change</govuk-summary-list-row-action>
                             </govuk-summary-list-row-actions>
                     </govuk-summary-list-row>
@@ -152,6 +156,7 @@
                                                                asp-route-qualificationReference="@Model.QualificationReference"
                                                                asp-route-qualificationVersionId="@Model.QualificationVersionId"
                                                                asp-route-qualificationId="@Model.QualificationId"
+                                                               asp-route-mode="@Model.Mode"
                                                                visually-hidden-text="name">Change</govuk-summary-list-row-action>
                             </govuk-summary-list-row-actions>
                     </govuk-summary-list-row>
@@ -169,6 +174,7 @@
                                                                asp-route-qualificationReference="@Model.QualificationReference"
                                                                asp-route-qualificationVersionId="@Model.QualificationVersionId"
                                                                asp-route-qualificationId="@Model.QualificationId"
+                                                               asp-route-mode="@Model.Mode"
                                                                visually-hidden-text="name">Change</govuk-summary-list-row-action>
                             </govuk-summary-list-row-actions>
                     </govuk-summary-list-row>
