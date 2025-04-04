@@ -1,18 +1,17 @@
 ﻿using SFA.DAS.AODP.Application.Queries.Qualifications;
 using System.Globalization;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SFA.DAS.AODP.Web.Models.Qualifications;
 
-public class NewQualificationDetailsTimelineViewModel
+public class QualificationDetailsTimelineViewModel
 {
     public List<QualificationDiscussionHistory> QualificationDiscussionHistories { get; set; } = new List<QualificationDiscussionHistory>();
     public string Qan { get; set; } = string.Empty;
-    public static implicit operator NewQualificationDetailsTimelineViewModel(GetDiscussionHistoriesForQualificationQueryResponse model)
+    public static implicit operator QualificationDetailsTimelineViewModel(GetDiscussionHistoriesForQualificationQueryResponse model)
     {
-        return new NewQualificationDetailsTimelineViewModel()
+        return new QualificationDetailsTimelineViewModel()
         {
-            QualificationDiscussionHistories = [..model.QualificationDiscussionHistories]
+            QualificationDiscussionHistories = [.. model.QualificationDiscussionHistories]
         };
     }
     public partial class QualificationDiscussionHistory
@@ -28,8 +27,8 @@ public class NewQualificationDetailsTimelineViewModel
         public string FormattedTimestamp
         {
             get => Timestamp is null ? "" :
-                Timestamp.Value.ToString("dd MMM yyyy", CultureInfo.InvariantCulture) 
-                    + " at " 
+                Timestamp.Value.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)
+                    + " at "
                     + Timestamp.Value.ToString("HH:mm", CultureInfo.InvariantCulture);
         }
 
