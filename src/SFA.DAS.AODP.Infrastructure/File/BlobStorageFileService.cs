@@ -111,6 +111,6 @@ namespace SFA.DAS.AODP.Infrastructure.File
         public string FileName { get; set; }
         public string Extension { get; set; }
         public string FileNamePrefix { get; set; }
-        public string FileNameWithPrefix => $"{FileNamePrefix} {FileName}";
+        public string FileNameWithPrefix => string.IsNullOrEmpty(FileNamePrefix) ? FileName : $"{FileNamePrefix} {FileName}";
     }
 }
