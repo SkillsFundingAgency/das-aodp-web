@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using SFA.DAS.AODP.Domain.Interfaces;
 
-namespace SFA.DAS.AODP.Application.Commands.Application.Application;
+namespace SFA.DAS.AODP.Application.Commands.Feedback;
 
 public class SaveSurveyCommandHandler : IRequestHandler<SaveSurveyCommand, BaseMediatrResponse<EmptyResponse>>
 {
