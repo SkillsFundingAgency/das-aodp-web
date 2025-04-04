@@ -30,6 +30,12 @@ namespace SFA.DAS.AODP.Web.Controllers
             return Redirect("/review");
         }
 
+        [AllowAnonymous]
+        [HttpGet("/cookie-settings")]
+        public IActionResult CookieSettings()
+        {
+            return View("cookie-settings");
+        }
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
