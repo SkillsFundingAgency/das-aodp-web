@@ -13,8 +13,6 @@ using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Application.Queries.Application.Form;
 using SFA.DAS.AODP.Application.Queries.Review;
 using System.IO.Compression;
-using SFA.DAS.AODP.Domain.Interfaces;
-using SFA.DAS.AODP.Infrastructure.Cache;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 {
@@ -29,16 +27,11 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         private readonly IUserHelperService _userHelperService;
         private readonly UserType UserType;
         private readonly IFileService _fileService;
-        private readonly IApiClient _apiClient;
-        private readonly ICacheService _cacheService;
-        public ApplicationsReviewController(ILogger<ApplicationsReviewController> logger, IMediator mediator, IUserHelperService userHelperService, IFileService fileService,
-            IApiClient apiClient, ICacheService cacheService) : base(mediator, logger)
+        public ApplicationsReviewController(ILogger<ApplicationsReviewController> logger, IMediator mediator, IUserHelperService userHelperService, IFileService fileService) : base(mediator, logger)
         {
             _userHelperService = userHelperService;
             UserType = userHelperService.GetUserType();
             _fileService = fileService;
-            _apiClient = apiClient;
-            _cacheService = cacheService;
         }
 
         [Route("review/application-reviews")]
@@ -496,7 +489,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
             if (files == null || !files.Any())
             {
-                return BadRequest();
+                throw new InvalidOperationException($"No files found for applicationId {applicationId}");
             }
 
             using (var memoryStream = new MemoryStream())
@@ -505,37 +498,30 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 {
                     foreach (var file in files)
                     {
-                        try
+                        var fileStream = await _fileService.OpenReadStreamAsync(file.FullPath); 
+
+                        if (fileStream != null)
                         {
-                            var fileStream = await _fileService.OpenReadStreamAsync(file.FullPath); 
+                            var entry = archive.CreateEntry(file.FileNameWithPrefix);
 
-                            if (fileStream != null)
+                            using (var entryStream = entry.Open())
                             {
-                                var entry = archive.CreateEntry(file.FileNameWithPrefix);
-
-                                using (var entryStream = entry.Open())
-                                {
-                                    await fileStream.CopyToAsync(entryStream);
-                                }
-                            }
-                            else
-                            {
-                                return BadRequest();
+                                await fileStream.CopyToAsync(entryStream);
                             }
                         }
-                        catch (Exception ex)
+                        else
                         {
-                            return BadRequest();
-                        }
+                            throw new IOException($"Could not open stream for {file.FullPath}");
+                        } 
                     }
                 }
 
                 memoryStream.Seek(0, SeekOrigin.Begin);
 
-                var applicationReference = await GetApplicationReference(applicationId);
+                var applicationMetadata = await Send(new GetApplicationMetadataByIdQuery(applicationId));
 
                 string formattedDateTime = DateTime.Now.ToString("ddMMyyyy-HHmmss");
-                string zipFileName = $"{applicationReference}-{formattedDateTime}-allfiles.zip";
+                string zipFileName = $"{applicationMetadata.Reference}-{formattedDateTime}-allfiles.zip";
 
                 return File(memoryStream.ToArray(), "application/zip", zipFileName);
             }
@@ -551,19 +537,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 if (UserType == UserType.SkillsEngland && !shared.SharedWithSkillsEngland) throw new Exception("Application not shared with Skills England.");
             }
             return shared.ApplicationId;
-        }
-
-        private async Task<int> GetApplicationReference(Guid applicationId)
-        {
-            var cacheKey = $"{nameof(GetApplicationMetadataByIdQueryResponse)}_{applicationId}";
-
-            var fetchFunc = async () => await _apiClient.Get<GetApplicationMetadataByIdQueryResponse>(new GetApplicationMetadataByIdRequest()
-            {
-                ApplicationId = applicationId,
-            });
-
-            var result = await _cacheService.GetAsync(cacheKey, fetchFunc);
-            return result.Reference;
         }
     }
 }

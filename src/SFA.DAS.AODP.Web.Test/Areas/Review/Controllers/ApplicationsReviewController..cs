@@ -23,11 +23,9 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
         private readonly Mock<IMediator> _mediatorMock = new();
         private readonly Mock<IUserHelperService> _userHelperServiceMock = new();
         private readonly Mock<IFileService> _fileServiceMock = new();
-        private readonly Mock<IApiClient> _apiClientMock = new();
-        private readonly Mock<ICacheService> _cacheServiceMock = new();
         private readonly Web.Areas.Review.Controllers.ApplicationsReviewController _controller;
 
-        public ApplicationsReviewControllerTests() => _controller = new(_loggerMock.Object, _mediatorMock.Object, _userHelperServiceMock.Object, _fileServiceMock.Object, _apiClientMock.Object, _cacheServiceMock.Object);
+        public ApplicationsReviewControllerTests() => _controller = new(_loggerMock.Object, _mediatorMock.Object, _userHelperServiceMock.Object, _fileServiceMock.Object);
 
         [Fact]
         public async Task DownloadAllApplicationFiles_Success_ReturnsZipFile()
@@ -50,7 +48,11 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
                     SharedWithSkillsEngland = true
                 }
             };
-            var applicationMetadata = new GetApplicationMetadataByIdQueryResponse { Reference = 12345 };
+            var applicationMetadata = new BaseMediatrResponse<GetApplicationMetadataByIdQueryResponse>
+            {
+                Success = true,
+                Value = new GetApplicationMetadataByIdQueryResponse { Reference = 12345 }
+            };
 
             _fileServiceMock.Setup(fs => fs.ListBlobs(applicationId.ToString())).Returns(files);
             _fileServiceMock.Setup(fs => fs.OpenReadStreamAsync(It.IsAny<string>()))
@@ -58,8 +60,7 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
 
             _mediatorMock.Setup(m => m.Send(It.Is<GetApplicationReviewSharingStatusByIdQuery>(query => query.ApplicationReviewId == applicationReviewId), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(sharingResponse);
-
-            _cacheServiceMock.Setup(x => x.GetAsync(It.IsAny<string>(), It.IsAny<Func<Task<GetApplicationMetadataByIdQueryResponse>>>()))
+             _mediatorMock.Setup(m => m.Send(It.Is<GetApplicationMetadataByIdQuery>(query => query.ApplicationId == applicationId), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(applicationMetadata);
 
             // Act
@@ -68,7 +69,7 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
             // Assert
             var fileResult = Assert.IsType<FileContentResult>(result);
             Assert.Equal("application/zip", fileResult.ContentType);
-            Assert.StartsWith(applicationMetadata.Reference.ToString(), fileResult.FileDownloadName);
+            Assert.StartsWith(applicationMetadata.Value.Reference.ToString(), fileResult.FileDownloadName);
             Assert.EndsWith("-allfiles.zip", fileResult.FileDownloadName);
 
             // Verify ZIP content (optional)
@@ -82,7 +83,7 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
         }
 
         [Fact]
-        public async Task DownloadAllApplicationFiles_NoFiles_ReturnsBadRequest()
+        public async Task DownloadAllApplicationFiles_NoFiles_ThrowsInvalidOperationException()
         {
             // Arrange
             var applicationReviewId = Guid.NewGuid();
@@ -102,15 +103,13 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
                 .ReturnsAsync(sharingResponse);
             _fileServiceMock.Setup(fs => fs.ListBlobs(applicationId.ToString())).Returns(new List<UploadedBlob>());
 
-            // Act
-            var result = await _controller.DownloadAllApplicationFiles(applicationReviewId);
+            // Act & Assert
+            await Assert.ThrowsAsync<InvalidOperationException>(() => _controller.DownloadAllApplicationFiles(applicationReviewId));
 
-            // Assert
-            Assert.IsType<BadRequestResult>(result);
         }
 
         [Fact]
-        public async Task DownloadAllApplicationFiles_FileServiceError_ReturnsBadRequest()
+        public async Task DownloadAllApplicationFiles_FileServiceError_ThrowsException()
         {
             // Arrange
             var applicationReviewId = Guid.NewGuid();
@@ -135,11 +134,38 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
             _mediatorMock.Setup(m => m.Send(It.Is<GetApplicationReviewSharingStatusByIdQuery>(query => query.ApplicationReviewId == applicationReviewId), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(sharingResponse);
             
-            // Act
-            var result = await _controller.DownloadAllApplicationFiles(applicationReviewId);
+            // Act & Assert
+            await Assert.ThrowsAsync<Exception>(() => _controller.DownloadAllApplicationFiles(applicationReviewId));
+        }
 
-            // Assert
-            Assert.IsType<BadRequestResult>(result);
+        [Fact]
+        public async Task DownloadAllApplicationFiles_FileStreamIsNull_ThrowsIOException()
+        {
+            // Arrange
+            var applicationReviewId = Guid.NewGuid();
+            var applicationId = Guid.NewGuid();
+            var files = new List<UploadedBlob> { new UploadedBlob { FullPath = "file1.txt", FileName= "file1.txt", FileNamePrefix = "Q1" } };
+            var sharingResponse = new BaseMediatrResponse<GetApplicationReviewSharingStatusByIdQueryResponse>
+            {
+                Success = true,
+                Value = new GetApplicationReviewSharingStatusByIdQueryResponse 
+                {
+                    ApplicationId = applicationId,
+                    SharedWithOfqual = true,
+                    SharedWithSkillsEngland = true
+                }
+            };
+
+
+            _fileServiceMock.Setup(fs => fs.ListBlobs(applicationId.ToString())).Returns(files);
+            _fileServiceMock.Setup(fs => fs.OpenReadStreamAsync(It.IsAny<string>()))
+                .ReturnsAsync((Stream)null);
+
+            _mediatorMock.Setup(m => m.Send(It.Is<GetApplicationReviewSharingStatusByIdQuery>(query => query.ApplicationReviewId == applicationReviewId), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(sharingResponse);
+            
+            // Act & Assert
+            await Assert.ThrowsAsync<IOException>(() => _controller.DownloadAllApplicationFiles(applicationReviewId));
         }
     }
 }

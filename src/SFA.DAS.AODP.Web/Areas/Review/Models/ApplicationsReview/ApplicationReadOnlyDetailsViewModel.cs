@@ -96,7 +96,8 @@ public class ApplicationReadOnlyDetailsViewModel
                             Answer = GetAnswer(question, answers, files)
                         }).ToList()
                     }).ToList()
-                }).ToList()
+                }).ToList(),
+            HasFiles = files.Any()
         };
 
         return model;
@@ -128,13 +129,5 @@ public class ApplicationReadOnlyDetailsViewModel
         };
     }
 
-    public bool HasAnyFiles()
-    {
-        if (Sections == null) return false;
-
-        return Sections
-            .SelectMany(s => s.Pages ?? Enumerable.Empty<Page>()) 
-            .SelectMany(p => p.Questions ?? Enumerable.Empty<Question>()) 
-            .Any(q => q.Answer?.Files != null && q.Answer.Files.Any()); 
-    }
+    public bool HasFiles { get; set; }
 }
