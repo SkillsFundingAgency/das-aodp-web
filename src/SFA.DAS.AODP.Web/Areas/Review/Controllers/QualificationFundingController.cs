@@ -188,7 +188,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         [Route("review/qualifications/{qualificationId}/qualificationVersion/{qualificationVersionId}/funding-offers-summary/{qualificationReference}")]
         public async Task<IActionResult> QualificationFundingOffersSummary(QualificationFundingsOffersSummaryViewModel model, string qualificationReference)
         {
-            await Send(new CreateQualificationDiscussionHistoryCommand()
+            await Send(new CreateQualificationDiscussionHistoryNoteForFundingOffersCommand()
             {
                 QualificationVersionId = model.QualificationVersionId,
                 QualificationId = model.QualificationId,

@@ -3,17 +3,17 @@ using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Domain.Interfaces;
 
 
-public class CreateQualificationDiscussionHistoryCommandHandler : IRequestHandler<CreateQualificationDiscussionHistoryCommand, BaseMediatrResponse<EmptyResponse>>
+public class CreateQualificationDiscussionHistoryNoteForFundingOffersCommandHandler : IRequestHandler<CreateQualificationDiscussionHistoryNoteForFundingOffersCommand, BaseMediatrResponse<EmptyResponse>>
 {
     private readonly IApiClient _apiClient;
 
 
-    public CreateQualificationDiscussionHistoryCommandHandler(IApiClient apiClient)
+    public CreateQualificationDiscussionHistoryNoteForFundingOffersCommandHandler(IApiClient apiClient)
     {
         _apiClient = apiClient;
     }
 
-    public async Task<BaseMediatrResponse<EmptyResponse>> Handle(CreateQualificationDiscussionHistoryCommand request, CancellationToken cancellationToken)
+    public async Task<BaseMediatrResponse<EmptyResponse>> Handle(CreateQualificationDiscussionHistoryNoteForFundingOffersCommand request, CancellationToken cancellationToken)
     {
         var response = new BaseMediatrResponse<EmptyResponse>()
         {
