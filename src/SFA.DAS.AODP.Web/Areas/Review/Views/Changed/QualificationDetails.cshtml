@@ -78,7 +78,7 @@ asp-action="Index">
                     <govuk-summary-list-row-value>@Model.Specialism</govuk-summary-list-row-value>
                 </govuk-summary-list-row>
                 <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>Age Group</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-key>Age Group(s)</govuk-summary-list-row-key>
                     @if (Model.NineteenPlus ?? false)
                     {
                         <govuk-summary-list-row-value>19+</govuk-summary-list-row-value>
@@ -105,11 +105,19 @@ asp-action="Index">
                     <govuk-summary-list-row-value>@Model.OfferedInEngland</govuk-summary-list-row-value>
                 </govuk-summary-list-row>
                 <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>GLH</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-key>Ofqual Funding in England</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>@Model.FundedInEngland</govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>DfE offers funded</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>@Model.ApprovedForDelFundedProgramme</govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>Guided learning hours (GLH)</govuk-summary-list-row-key>
                     <govuk-summary-list-row-value>@Model.Glh</govuk-summary-list-row-value>
                 </govuk-summary-list-row>
                 <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>TQT</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-key>Total qualification time (TQT)</govuk-summary-list-row-key>
                     <govuk-summary-list-row-value>@Model.Tqt</govuk-summary-list-row-value>
                 </govuk-summary-list-row>
                 <govuk-summary-list-row>
@@ -121,15 +129,9 @@ asp-action="Index">
                     <govuk-summary-list-row-value>@Model.OperationalStartDate</govuk-summary-list-row-value>
                 </govuk-summary-list-row>
                 <govuk-summary-list-row>
-                    <govuk-summary-list-row-key> Operational Start Date</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-key> Operational End Date</govuk-summary-list-row-key>
                     <govuk-summary-list-row-value>@Model.OperationalEndDate</govuk-summary-list-row-value>
                 </govuk-summary-list-row>
-
-                <govuk-summary-list-row>
-                    <govuk-summary-list-row-key> Operational Start Date</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.OperationalEndDate</govuk-summary-list-row-value>
-                </govuk-summary-list-row>
-
             </govuk-summary-list>
 
             <h3 class="govuk-!-margin-top-8">Changes</h3>

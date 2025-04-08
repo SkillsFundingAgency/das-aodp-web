@@ -2,7 +2,6 @@
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Web.Enums;
 using System.ComponentModel.DataAnnotations;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SFA.DAS.AODP.Web.Models.Qualifications;
 
@@ -43,6 +42,7 @@ public class ChangedQualificationDetailsViewModel
     public DateTime? CertificationEndDate { get; set; }
     public DateTime? ReviewDate { get; set; }
     public bool OfferedInEngland { get; set; }
+    public bool? FundedInEngland { get; set; }
     public bool OfferedInNi { get; set; }
     public bool? OfferedInternationally { get; set; }
     public string? Specialism { get; set; }
@@ -216,6 +216,7 @@ public class ChangedQualificationDetailsViewModel
             CertificationEndDate = entity.CertificationEndDate,
             ReviewDate = entity.ReviewDate,
             OfferedInEngland = entity.OfferedInEngland,
+            FundedInEngland = entity.FundedInEngland,
             OfferedInNi = entity.OfferedInNi,
             OfferedInternationally = entity.OfferedInternationally,
             Specialism = entity.Specialism,
