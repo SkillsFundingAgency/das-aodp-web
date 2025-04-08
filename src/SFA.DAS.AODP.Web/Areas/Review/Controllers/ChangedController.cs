@@ -186,7 +186,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 {
                     var previousVersion = await Send(new GetQualificationVersionQuery() { QualificationReference = qualificationReference, Version = latestVersion.Version - 1 });
 
-                    var keyFieldsChanges = latestVersion.ChangedFieldNames.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                    var keyFieldsChanges = latestVersion?.ChangedFieldNames?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                     GetKeyFieldChanges(latestVersion, previousVersion, keyFieldsChanges);
                 }
                 return View(latestVersion);
@@ -241,9 +241,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     case "NineteenPlus":
                         latestVersion.KeyFieldChanges.Add(new() { Name = "Nineteen Plus", Was = previousVersion.NineteenPlus.ToString(), Now = latestVersion.NineteenPlus.ToString() });
                         break;
-                    //case "FundingInEngland":
-                    //    latestVersion.KeyFieldChanges.Add(new() { Name = "Nineteen Plus", Was = previousVersion.eng.ToString(), Now = latestVersion.NineteenPlus.ToString() });
-                    //    break;
+                    case "FundingInEngland":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Nineteen Plus", Was = previousVersion.FundedInEngland.ToString(), Now = latestVersion.FundedInEngland.ToString() });
+                        break;
                     case "Glh":
                         latestVersion.KeyFieldChanges.Add(new() { Name = "GLH", Was = previousVersion.Glh.ToString(), Now = latestVersion.Glh.ToString() });
                         break;
