@@ -12,6 +12,7 @@ using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Application.Queries.Application.Form;
 using SFA.DAS.AODP.Application.Queries.Review;
+using System.IO.Compression;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 {
@@ -476,6 +477,54 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             var file = await _fileService.GetBlobDetails(model.FilePath.ToString());
             var fileStream = await _fileService.OpenReadStreamAsync(model.FilePath);
             return File(fileStream, "application/octet-stream", file.FileNameWithPrefix);
+        }
+
+        [Authorize(Policy = PolicyConstants.IsReviewUser)]
+        [HttpPost]
+        [Route("review/application-reviews/{applicationReviewId}/files")]
+        public async Task<IActionResult> DownloadAllApplicationFiles(Guid applicationReviewId)
+        {
+            var applicationId = await GetApplicationIdWithAccessValidation(applicationReviewId);
+            var files = _fileService.ListBlobs(applicationId.ToString());
+
+            if (files == null || !files.Any())
+            {
+                throw new InvalidOperationException($"No files found for applicationId {applicationId}");
+            }
+
+            using (var memoryStream = new MemoryStream())
+            {
+                using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
+                {
+                    foreach (var file in files)
+                    {
+                        var fileStream = await _fileService.OpenReadStreamAsync(file.FullPath); 
+
+                        if (fileStream != null)
+                        {
+                            var entry = archive.CreateEntry(file.FileNameWithPrefix);
+
+                            using (var entryStream = entry.Open())
+                            {
+                                await fileStream.CopyToAsync(entryStream);
+                            }
+                        }
+                        else
+                        {
+                            throw new IOException($"Could not open stream for {file.FullPath}");
+                        } 
+                    }
+                }
+
+                memoryStream.Seek(0, SeekOrigin.Begin);
+
+                var applicationMetadata = await Send(new GetApplicationMetadataByIdQuery(applicationId));
+
+                string formattedDateTime = DateTime.Now.ToString("ddMMyyyy-HHmmss");
+                string zipFileName = $"{applicationMetadata.Reference}-{formattedDateTime}-allfiles.zip";
+
+                return File(memoryStream.ToArray(), "application/zip", zipFileName);
+            }
         }
 
         private async Task<Guid> GetApplicationIdWithAccessValidation(Guid applicationReviewId)

@@ -43,7 +43,6 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
             viewModel.PaginationViewModel = new PaginationViewModel(response.TotalRecords, response.Skip, response.Take);
             viewModel.NewQualifications = response.Data.Select(s => new NewQualificationViewModel()
             {
-                Id = s.Id,
                 AwardingOrganisation = s.AwardingOrganisation,
                 Reference = s.Reference,
                 Status = s.Status,

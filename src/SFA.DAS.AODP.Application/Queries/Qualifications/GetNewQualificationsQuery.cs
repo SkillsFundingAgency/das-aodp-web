@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using SFA.DAS.AODP.Domain.Models;
 namespace SFA.DAS.AODP.Application.Queries.Qualifications
 {
     public class GetNewQualificationsQuery : IRequest<BaseMediatrResponse<GetNewQualificationsQueryResponse>>
@@ -8,6 +9,6 @@ namespace SFA.DAS.AODP.Application.Queries.Qualifications
         public string? QAN { get; set; }
         public int Skip { get; set; }
         public int Take { get; set; }
-        public List<Guid>? ProcessStatusIds { get; set; }
+        public ProcessStatusFilter ProcessStatusFilter { get; set; } = new();
     }
 }
