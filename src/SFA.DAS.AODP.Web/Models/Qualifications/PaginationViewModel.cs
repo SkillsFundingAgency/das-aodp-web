@@ -59,7 +59,7 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
         {
             get
             {
-                return CurrentPage * RecordsPerPage;
+                return Math.Min(CurrentPage * RecordsPerPage, TotalRecords);
             }
         }
 
