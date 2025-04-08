@@ -1,5 +1,6 @@
 ﻿using SFA.DAS.AODP.Common.Extensions;
 using SFA.DAS.AODP.Domain.Interfaces;
+using SFA.DAS.AODP.Domain.Models;
 using System.Collections.Specialized;
 
 namespace SFA.DAS.AODP.Domain.Qualifications.Requests
@@ -11,7 +12,7 @@ namespace SFA.DAS.AODP.Domain.Qualifications.Requests
         public string? Name { get; set; }
         public string? Organisation { get; set; }
         public string? QAN { get; set; }
-        public List<Guid>? ProcessStatusIds { get; set; }
+        public ProcessStatusFilter? ProcessStatusFilter { get; set; }
 
         public string BaseUrl = "api/qualifications";        
 
@@ -49,11 +50,15 @@ namespace SFA.DAS.AODP.Domain.Qualifications.Requests
                     queryParams.Add("QAN", QAN);
                 }
 
-                var uri = BaseUrl.AttachParameters(queryParams);
-                if (ProcessStatusIds?.Any() ?? false)
+                if (ProcessStatusFilter != null && ProcessStatusFilter.ProcessStatusIds.Any())
                 {
-                    uri += "&" + string.Join("&", ProcessStatusIds.Select(v => "processStatusIds=" + v.ToString()));
+                    var ids = string.Join(",", ProcessStatusFilter.ProcessStatusIds);
+                    ids = Uri.EscapeDataString(ids);
+                    queryParams.Add("ProcessStatusFilter", ids);
                 }
+
+                var uri = BaseUrl.AttachParameters(queryParams);
+                
                 return uri.ToString();
             }
         }
