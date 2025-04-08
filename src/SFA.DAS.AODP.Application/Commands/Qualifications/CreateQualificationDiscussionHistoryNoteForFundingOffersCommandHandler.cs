@@ -22,7 +22,7 @@ public class CreateQualificationDiscussionHistoryNoteForFundingOffersCommandHand
 
         try
         {
-            var apiRequest = new CreateQualificationDiscussionHistoryApiRequest()
+            var apiRequest = new CreateQualificationDiscussionHistoryNoteForFundingApiRequest()
             {
                 QualificationVersionId = request.QualificationVersionId,
                 Data = request
