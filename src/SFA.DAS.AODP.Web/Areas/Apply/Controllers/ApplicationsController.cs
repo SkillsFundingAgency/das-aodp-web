@@ -128,8 +128,11 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         [ValidateApplication]
         [HttpPost]
         [Route("apply/organisations/{organisationId}/applications/{applicationId}/Edit")]
-        public async Task<IActionResult> Edit(EditApplicationViewModel editApplicationViewModel)
+        public async Task<IActionResult> Edit(EditApplicationViewModel editApplicationViewModel, [FromRoute] Guid applicationId, [FromRoute] Guid organisationId)
         {
+            editApplicationViewModel.OrganisationId = organisationId;
+            editApplicationViewModel.ApplicationId = applicationId;
+
             if (!ModelState.IsValid)
             {
                 return View(editApplicationViewModel);
@@ -217,8 +220,12 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         [ValidateApplication]
         [HttpPost]
         [Route("apply/organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/sections/{sectionId}/pages/{pageOrder}")]
-        public async Task<IActionResult> ApplicationPageAsync([FromForm] ApplicationPageViewModel model)
+        public async Task<IActionResult> ApplicationPageAsync([FromForm] ApplicationPageViewModel model, [FromRoute] Guid applicationId, [FromRoute] Guid organisationId, [FromRoute] Guid formVersionId)
         {
+            model.OrganisationId = organisationId;
+            model.ApplicationId = applicationId;
+            model.FormVersionId = formVersionId;
+
             if (await IsApplicationSubmitted(model.ApplicationId)) return BadRequest();
 
             Func<string, List<UploadedBlob>> fetchBlobFunc = path => _fileService.ListBlobs(path);
@@ -301,8 +308,9 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         [ValidateApplication]
         [HttpPost]
         [Route("apply/organisations/{organisationId}/applications/{applicationId}/delete")]
-        public async Task<IActionResult> Delete(DeleteApplicationViewModel model)
+        public async Task<IActionResult> Delete(DeleteApplicationViewModel model, [FromRoute] Guid applicationId)
         {
+            model.ApplicationId = applicationId;
             try
             {
                 var command = new DeleteApplicationCommand(model.ApplicationId);
@@ -342,17 +350,17 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         [ValidateApplication]
         [HttpPost]
         [Route("apply/organisations/{organisationId}/applications/{applicationId}/submit")]
-        public async Task<IActionResult> Submit(SubmitApplicationViewModel model)
+        public async Task<IActionResult> Submit([FromRoute] Guid applicationId, [FromRoute] Guid organisationId)
         {
             var command = new SubmitApplicationCommand()
             {
-                ApplicationId = model.ApplicationId,
+                ApplicationId = applicationId,
                 SubmittedBy = _userHelperService.GetUserDisplayName(),
                 SubmittedByEmail = _userHelperService.GetUserEmail(),
             };
             await Send(command);
 
-            return RedirectToAction(nameof(SubmitConfirmation), new { organisationId = _userHelperService.GetUserOrganisationId(), applicationId = model.ApplicationId });
+            return RedirectToAction(nameof(SubmitConfirmation), new { organisationId, applicationId });
         }
 
         [HttpGet]

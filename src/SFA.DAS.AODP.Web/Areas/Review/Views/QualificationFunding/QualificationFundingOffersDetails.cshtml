@@ -11,6 +11,9 @@
 
 <form asp-controller="QualificationFunding" asp-action="QualificationFundingOffersDetails" asp-area="Review" method="post">
     @Html.HiddenFor(h => h.QualificationVersionId)
+    @Html.HiddenFor(h => h.QualificationReference)
+    @Html.HiddenFor(h => h.QualificationId)
+    @Html.HiddenFor(m => m.Mode)
     <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
             <div class="govuk-grid-row">
