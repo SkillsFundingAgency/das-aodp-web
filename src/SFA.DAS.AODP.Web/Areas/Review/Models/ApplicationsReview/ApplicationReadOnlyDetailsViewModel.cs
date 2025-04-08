@@ -96,7 +96,8 @@ public class ApplicationReadOnlyDetailsViewModel
                             Answer = GetAnswer(question, answers, files)
                         }).ToList()
                     }).ToList()
-                }).ToList()
+                }).ToList(),
+            HasFiles = files.Any()
         };
 
         return model;
@@ -127,4 +128,6 @@ public class ApplicationReadOnlyDetailsViewModel
             RadioChoiceValue = answer.RadioChoiceValue
         };
     }
+
+    public bool HasFiles { get; set; }
 }

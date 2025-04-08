@@ -4,7 +4,8 @@
     {
         public Guid QualificationVersionId { get; set; }
         public List<Guid> SelectedOfferIds { get; set; } = new();
-
+        public Guid QualificationId { get; set; }
+        public string? QualificationReference { get; set; }
         public List<FundingOffer> FundingOffers { get; set; } = new();
         public class FundingOffer
         {

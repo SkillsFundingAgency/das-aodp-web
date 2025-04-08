@@ -1,11 +1,12 @@
-﻿@model SFA.DAS.AODP.Web.Models.Qualifications.NewQualificationDetailsViewModel
+﻿@using System.Globalization
+@model SFA.DAS.AODP.Web.Models.Qualifications.NewQualificationDetailsViewModel
 
 @{
     ViewData["Title"] = "Qualification Details";
 }
 <a class="govuk-back-link"
-    asp-controller="New"
-    asp-action="Index">
+asp-controller="New"
+asp-action="Index">
     Return to qualifications
 </a>
 
@@ -43,12 +44,12 @@
                     <govuk-summary-list-row-value>@Model.Qual.Qan</govuk-summary-list-row-value>
                 </govuk-summary-list-row>
                 <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>Awarding organisation</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.Organisation.NameOfqual</govuk-summary-list-row-value>
-                </govuk-summary-list-row>
-                <govuk-summary-list-row>
                     <govuk-summary-list-row-key>Qualification title</govuk-summary-list-row-key>
                     <govuk-summary-list-row-value>@Model.Qual.QualificationName</govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>Awarding organisation</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>@Model.Organisation.NameOfqual</govuk-summary-list-row-value>
                 </govuk-summary-list-row>
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key>Qualification type</govuk-summary-list-row-key>
@@ -57,6 +58,10 @@
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key>Level</govuk-summary-list-row-key>
                     <govuk-summary-list-row-value>@Model.Level</govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>Sector subject area</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>@Model.Ssa</govuk-summary-list-row-value>
                 </govuk-summary-list-row>
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key>Age Group</govuk-summary-list-row-key>
@@ -82,12 +87,31 @@
                     }
                 </govuk-summary-list-row>
                 <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>Subject</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.Specialism</govuk-summary-list-row-value>
+                    <govuk-summary-list-row-key>Guided learning hours (GLH)</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>@Model.Glh</govuk-summary-list-row-value>
                 </govuk-summary-list-row>
                 <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>Sector subject area</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.Ssa</govuk-summary-list-row-value>
+                    <govuk-summary-list-row-key>Total qualification time (TQT)</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>@Model.Tqt</govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>Regulation start date</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>@Model.RegulationStartDate.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)</govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>Operational start date</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>@Model.OperationalStartDate.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)</govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>Operational end date</govuk-summary-list-row-key>
+                    @if (Model.OperationalEndDate.HasValue)
+                    {
+                        <govuk-summary-list-row-value>@Model.OperationalEndDate.Value.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)</govuk-summary-list-row-value>
+                    }
+                    else
+                    {
+                        <govuk-summary-list-row-value></govuk-summary-list-row-value>
+                    }
                 </govuk-summary-list-row>
             </govuk-summary-list>
             <div class="govuk-form-group">
