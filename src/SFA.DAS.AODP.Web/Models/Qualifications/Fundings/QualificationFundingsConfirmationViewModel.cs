@@ -4,5 +4,6 @@
     {
         public Guid QualificationVersionId { get; set; }
         public string? QualificationReference { get; set; }
+        public string Mode { get; set; }
     }
 }

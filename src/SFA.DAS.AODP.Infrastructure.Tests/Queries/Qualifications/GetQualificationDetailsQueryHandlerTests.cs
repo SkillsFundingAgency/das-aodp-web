@@ -18,6 +18,9 @@ public class GetQualificationDetailsQueryHandlerTests
     public GetQualificationDetailsQueryHandlerTests()
     {
         _fixture = new Fixture().Customize(new AutoMoqCustomization());
+        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+         .ForEach(b => _fixture.Behaviors.Remove(b));
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
         _apiClientMock = _fixture.Freeze<Mock<IApiClient>>();
         _handler = _fixture.Create<GetQualificationDetailsQueryHandler>();
     }
