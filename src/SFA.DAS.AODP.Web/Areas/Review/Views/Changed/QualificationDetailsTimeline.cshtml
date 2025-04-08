@@ -1,12 +1,12 @@
-﻿@model SFA.DAS.AODP.Web.Models.Qualifications.NewQualificationDetailsTimelineViewModel
+﻿@model SFA.DAS.AODP.Web.Models.Qualifications.QualificationDetailsTimelineViewModel
 
 @{
     ViewData["Title"] = "Qualification Details";
 }
 <a class="govuk-back-link"
-   asp-controller="New"
+   asp-controller="Changed"
    asp-action="Index">
-    Return to qualifications
+    Back
 </a>
 <span class="govuk-caption-xl">
    Qualification with changes
@@ -29,10 +29,17 @@
     <div class="govuk-tabs__panel" id="history">
         <div class="aodp-timeline">
             <ol class="aodp-timeline__items">
-                @foreach(var item in Model.QualificationDiscussionHistories.OrderByDescending(v => v.Timestamp.GetValueOrDefault()))
+                @foreach (var item in Model.QualificationDiscussionHistories.OrderByDescending(v => v.Timestamp.GetValueOrDefault()))
                 {
                     <li class="aodp-timeline__item">
+                        @if (string.IsNullOrEmpty(item.Title))
+                        {
                         <b>@item.ActionType.Description</b>
+                        }
+                        else
+                        {
+                            <b>@item.Title:</b>
+                        }
                         @if (!string.IsNullOrEmpty(item.UserDisplayName) && !string.IsNullOrEmpty(item.FormattedTimestamp))
                         {
                             <span class="govuk-caption-m">
@@ -51,7 +58,7 @@
                                 @item.FormattedTimestamp
                             </span>
                         }
-                        <p>@item.Notes</p>
+                        <p class="govuk-!-margin-top-5">@Html.Raw(@item.Notes)</p>
                     </li>
                 }
             </ol>
