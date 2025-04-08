@@ -87,7 +87,6 @@ public class GetQualificationDetailsQueryResponse
         public Guid Id { get; set; }
         public string Qan { get; set; } = null!;
         public string? QualificationName { get; set; }
-        public List<QualificationDiscussionHistory> QualificationDiscussionHistories { get; set; } = new List<QualificationDiscussionHistory>();
     }
 
     public partial class QualificationDiscussionHistory
