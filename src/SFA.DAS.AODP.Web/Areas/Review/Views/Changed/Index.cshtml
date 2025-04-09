@@ -31,36 +31,60 @@
                                         <div class="govuk-grid-column-full">
                                             <h3 class="govuk-heading-m">Filters</h3>
                                         </div>
-                                        <div class="govuk-form-group">
-                                            <govuk-input asp-for="@Model.Filter.QualificationName" input-class="govuk-input--width-50" inputmode="text" spellcheck="false">
-                                                <govuk-input-label is-page-heading="false" class="govuk-label--s">Qualification Name</govuk-input-label>
-                                            </govuk-input>
-                                        </div>
-                                        <div class="govuk-form-group">
-                                            <govuk-input asp-for="@Model.Filter.QAN" input-class="govuk-input--width-50" inputmode="text" spellcheck="false">
-                                                <govuk-input-label is-page-heading="false" class="govuk-label--s">QAN</govuk-input-label>
-                                            </govuk-input>
-                                        </div>
-                                        <div class="govuk-form-group">
-                                            <govuk-input asp-for="@Model.Filter.Organisation" input-class="govuk-input--width-50" inputmode="text" spellcheck="false">
-                                                <govuk-input-label is-page-heading="false" class="govuk-label--s">Awarding Organisation</govuk-input-label>
-                                            </govuk-input>
-                                        </div>                                        
                                     </div>
-                                    <div class="govuk-grid-column-three-quarters">
-                                        <div class="govuk-tabs" data-module="govuk-tabs">
-                                            <h5 class="govuk-tabs__title">
-                                                Filter Options
-                                            </h5>
-                                            <ul class="govuk-tabs__list">
-                                                <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
-                                                    <a class="govuk-tabs__tab" href="#filter-tabs-type">
-                                                        Type
-                                                    </a>
-                                                </li>
-
-                                            </ul>
-                                            <div class="govuk-tabs__panel" id="filter-tabs-type">                                                
+                                    <div class="govuk-grid-row">
+                                        <div class="govuk-grid-column-one-quarter">
+                                            <div class="govuk-form-group">
+                                                <govuk-input asp-for="@Model.Filter.QualificationName" value="@Html.Encode(Model.Filter.QualificationName)" inputmode="text" spellcheck="false">
+                                                    <govuk-input-label is-page-heading="false" class="govuk-label--s">Qualification Name</govuk-input-label>
+                                                </govuk-input>
+                                            </div>
+                                            <div class="govuk-form-group">
+                                            <govuk-input asp-for="@Model.Filter.QAN" value="@Html.Encode(Model.Filter.QAN)" inputmode="text" spellcheck="false">
+                                                    <govuk-input-label is-page-heading="false" class="govuk-label--s">QAN</govuk-input-label>
+                                                </govuk-input>
+                                            </div>
+                                            <div class="govuk-form-group">
+                                            <govuk-input asp-for="@Model.Filter.Organisation" value="@Html.Encode(Model.Filter.Organisation)" inputmode="text" spellcheck="false">
+                                                    <govuk-input-label is-page-heading="false" class="govuk-label--s">Awarding Organisation</govuk-input-label>
+                                                </govuk-input>
+                                            </div>
+                                        </div>
+                                        <div class="govuk-grid-column-three-quarters">
+                                            @* <div class="govuk-tabs" data-module="govuk-tabs">
+                                    <h5 class="govuk-tabs__title">
+                                        Filter Options
+                                    </h5>
+                                    <ul class="govuk-tabs__list">
+                                        <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+                                            <a class="govuk-tabs__tab" href="#filter-tabs-type">
+                                                Type
+                                            </a>
+                                        </li>
+                                        <li class="govuk-tabs__list-item">
+                                            <a class="govuk-tabs__tab" href="#filter-tabs-subject-area">
+                                                Sector Subject Area
+                                            </a>
+                                        </li>
+                                        <li class="govuk-tabs__list-item">
+                                            <a class="govuk-tabs__tab" href="#filter-tabs-age">
+                                                Age Group
+                                            </a>
+                                        </li>
+                                        <li class="govuk-tabs__list-item">
+                                            <a class="govuk-tabs__tab" href="#filter-tabs-level">
+                                                Level
+                                            </a>
+                                        </li>
+                                        <li class="govuk-tabs__list-item">
+                                            <a class="govuk-tabs__tab" href="#filter-tabs-status">
+                                                Status
+                                            </a>
+                                        </li>
+                                    </ul>
+                                    <div class="govuk-tabs__panel" id="filter-tabs-type">                                        
+                                        <div class="govuk-grid-row">
+                                            <div class="govuk-grid-column-one-third">
                                                 <div class="govuk-form-group">
                                                     <fieldset class="govuk-fieldset">
                                                         <govuk-checkboxes name="Filter[ProcessStatusIds]" class="govuk-checkboxes--small" asp-for="@Model.Filter.ProcessStatusIds">
