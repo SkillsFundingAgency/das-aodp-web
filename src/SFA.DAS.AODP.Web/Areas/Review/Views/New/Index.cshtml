@@ -20,231 +20,104 @@
                     <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
                 }                
                 <form asp-controller="New" asp-action="Search" asp-area="Review" method="post">
-                <div class="govuk-grid-row" id="New_Qual_FilterSection">
-                    <div class="govuk-grid-column-full">
-                        <div class="govuk-grid-row">
-                            <div class="govuk-grid-column-full">
-                                <h3 class="govuk-heading-m">Filters</h3>
-                            </div>
-                        </div>
-                        <div class="govuk-grid-row">
-                            <div class="govuk-grid-column-one-quarter">                                
-                                <div class="govuk-form-group">                                    
-                                    <govuk-input asp-for="@Model.Filter.QualificationName" input-class="govuk-input--width-50" inputmode="text" spellcheck="false">
-                                        <govuk-input-label is-page-heading="false" class="govuk-label--s">Qualification Name</govuk-input-label>                                        
-                                    </govuk-input>
-                                </div>                                
-                                <div class="govuk-form-group">
-                                    <govuk-input asp-for="@Model.Filter.QAN" input-class="govuk-input--width-50" inputmode="text" spellcheck="false">
-                                        <govuk-input-label is-page-heading="false" class="govuk-label--s">QAN</govuk-input-label>                                       
-                                    </govuk-input>
-                                </div>                                
-                                <div class="govuk-form-group">
-                                    <govuk-input asp-for="@Model.Filter.Organisation" input-class="govuk-input--width-50" inputmode="text" spellcheck="false">
-                                        <govuk-input-label is-page-heading="false" class="govuk-label--s">Awarding Organisation</govuk-input-label>                                       
-                                    </govuk-input>
+                    <div class="govuk-grid-row" id="New_Qual_FilterSection">
+                        <div class="govuk-grid-column-full">
+                            <div class="govuk-grid-row">
+                                <div class="govuk-grid-column-full">
+                                    <h3 class="govuk-heading-m">Filters</h3>
                                 </div>
                             </div>
-                            <div class="govuk-grid-column-three-quarters">
-                                @* <div class="govuk-tabs" data-module="govuk-tabs">
-                                    <h5 class="govuk-tabs__title">
-                                        Filter Options
-                                    </h5>
-                                    <ul class="govuk-tabs__list">
-                                        <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
-                                            <a class="govuk-tabs__tab" href="#filter-tabs-type">
-                                                Type
-                                            </a>
-                                        </li>
-                                        <li class="govuk-tabs__list-item">
-                                            <a class="govuk-tabs__tab" href="#filter-tabs-subject-area">
-                                                Sector Subject Area
-                                            </a>
-                                        </li>
-                                        <li class="govuk-tabs__list-item">
-                                            <a class="govuk-tabs__tab" href="#filter-tabs-age">
-                                                Age Group
-                                            </a>
-                                        </li>
-                                        <li class="govuk-tabs__list-item">
-                                            <a class="govuk-tabs__tab" href="#filter-tabs-level">
-                                                Level
-                                            </a>
-                                        </li>
-                                        <li class="govuk-tabs__list-item">
-                                            <a class="govuk-tabs__tab" href="#filter-tabs-status">
-                                                Status
-                                            </a>
-                                        </li>
-                                    </ul>
-                                    <div class="govuk-tabs__panel" id="filter-tabs-type">                                        
-                                        <div class="govuk-grid-row">
-                                            <div class="govuk-grid-column-one-third">
-                                                <div class="govuk-form-group">
-                                                    <fieldset class="govuk-fieldset">
-                                                        <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-1" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-1">
-                                                                    Advanced Extension Award
-                                                                </label>
-                                                            </div>
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-2" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-2">
-                                                                    Alternative Academic Qualification
-                                                                </label>
-                                                            </div>
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-3" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-3">
-                                                                    Digital Functional Skills Qualification
-                                                                </label>
-                                                            </div>
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-4" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-4">
-                                                                    English For Speakers of Other Languages
-                                                                </label>
-                                                            </div>
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-5" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-5">
-                                                                    Essential Digital Skills
-                                                                </label>
-                                                            </div>
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-6" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-6">
-                                                                    Functional Skills
-                                                                </label>
-                                                            </div>
-                                                        </div>
-                                                    </fieldset>
+                            <div class="govuk-grid-row">
+                                <div class="govuk-grid-column-one-quarter">                                
+                                    <div class="govuk-form-group">                                    
+                                        <govuk-input asp-for="@Model.Filter.QualificationName" input-class="govuk-input--width-50" inputmode="text" spellcheck="false">
+                                            <govuk-input-label is-page-heading="false" class="govuk-label--s">Qualification Name</govuk-input-label>                                        
+                                        </govuk-input>
+                                    </div>                                
+                                    <div class="govuk-form-group">
+                                        <govuk-input asp-for="@Model.Filter.QAN" input-class="govuk-input--width-50" inputmode="text" spellcheck="false">
+                                            <govuk-input-label is-page-heading="false" class="govuk-label--s">QAN</govuk-input-label>                                       
+                                        </govuk-input>
+                                    </div>                                
+                                    <div class="govuk-form-group">
+                                        <govuk-input asp-for="@Model.Filter.Organisation" input-class="govuk-input--width-50" inputmode="text" spellcheck="false">
+                                            <govuk-input-label is-page-heading="false" class="govuk-label--s">Awarding Organisation</govuk-input-label>                                       
+                                        </govuk-input>
+                                    </div>                                   
+                                </div>
+                                <div class="govuk-grid-column-three-quarters">
+                                    <div class="govuk-tabs" data-module="govuk-tabs">
+                                        <h5 class="govuk-tabs__title">
+                                            Filter Options
+                                        </h5>
+                                        <ul class="govuk-tabs__list">
+                                            <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+                                                <a class="govuk-tabs__tab" href="#filter-tabs-type">
+                                                    Type
+                                                </a>
+                                            </li>
+                                        </ul>
+                                        <div class="govuk-tabs__panel" id="filter-tabs-type">
+                                            <div class="govuk-grid-row">
+                                                <div class="govuk-grid-column-full">
+                                                    <div class="govuk-form-group">
+                                                        <fieldset class="govuk-fieldset">
+                                                            <govuk-checkboxes name="Filter[ProcessStatusIds]" class="govuk-checkboxes--small" asp-for="@Model.Filter.ProcessStatusIds">
+
+                                                                <govuk-checkboxes-fieldset>
+
+                                                                    <govuk-checkboxes-fieldset-legend is-page-heading="false" class="govuk-label--s">
+                                                                        <div class="govuk-label govuk-label--s">Status</div>
+                                                                    </govuk-checkboxes-fieldset-legend>
+                                                                    @Html.RenderPartialAsync("Validation/_CheckboxValidationPartial", nameof(Model.Filter.ProcessStatusIds))
+                                                                    
+                                                                    @foreach (var status in Model.ProcessStatuses)
+                                                                    {
+                                                                        <govuk-checkboxes-item checked="@Model.Filter.ProcessStatusIds?.Contains(status.Id)" value="@status.Id">@status.Name</govuk-checkboxes-item>
+                                                                    }
+                                                                    
+                                                                </govuk-checkboxes-fieldset>
+
+                                                            </govuk-checkboxes>
+                                                        </fieldset>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div class="govuk-grid-column-one-third">
-                                                <div class="govuk-form-group">
-                                                    <fieldset class="govuk-fieldset">
-                                                        <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-1" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-1">
-                                                                    Advanced Extension Award
-                                                                </label>
-                                                            </div>
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-2" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-2">
-                                                                    Alternative Academic Qualification
-                                                                </label>
-                                                            </div>
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-3" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-3">
-                                                                    Digital Functional Skills Qualification
-                                                                </label>
-                                                            </div>
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-4" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-4">
-                                                                    English For Speakers of Other Languages
-                                                                </label>
-                                                            </div>
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-5" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-5">
-                                                                    Essential Digital Skills
-                                                                </label>
-                                                            </div>
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-6" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-6">
-                                                                    Functional Skills
-                                                                </label>
-                                                            </div>
-                                                        </div>
-                                                    </fieldset>
-                                                </div>
-                                            </div>
-                                            <div class="govuk-grid-column-one-third">
-                                                <div class="govuk-form-group">
-                                                    <fieldset class="govuk-fieldset">
-                                                        <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-1" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-1">
-                                                                    Advanced Extension Award
-                                                                </label>
-                                                            </div>
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-2" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-2">
-                                                                    Alternative Academic Qualification
-                                                                </label>
-                                                            </div>
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-3" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-3">
-                                                                    Digital Functional Skills Qualification
-                                                                </label>
-                                                            </div>
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-4" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-4">
-                                                                    English For Speakers of Other Languages
-                                                                </label>
-                                                            </div>
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-5" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-5">
-                                                                    Essential Digital Skills
-                                                                </label>
-                                                            </div>
-                                                            <div class="govuk-checkboxes__item">
-                                                                <input class="govuk-checkboxes__input" id="type-6" type="checkbox">
-                                                                <label class="govuk-label govuk-checkboxes__label" for="type-6">
-                                                                    Functional Skills
-                                                                </label>
-                                                            </div>
-                                                        </div>
-                                                    </fieldset>
-                                                </div>
+
                                             </div>
                                         </div>
-                                    </div>                                   
-                                </div> *@
-                            </div>
-                        </div>
-                        <div class="govuk-grid-row">
-                            <div class="govuk-grid-column-full">
-                                <govuk-select asp-for="@Model.PaginationViewModel.RecordsPerPage">
-                                    <govuk-select-label>Qualifications Per Page</govuk-select-label>
-                                    <govuk-select-item value="10" selected="true">10</govuk-select-item>
-                                    <govuk-select-item value="20">20</govuk-select-item>
-                                    <govuk-select-item value="50">50</govuk-select-item>
-                                </govuk-select>
-                            </div>
-                        </div>
-                        <div class="govuk-grid-row">
-                            <div class="govuk-grid-column-full">
-                                <div class="govuk-button-group">
-                                    <button type="submit"
-                                            class="govuk-button"
-                                            data-module="govuk-button"
-                                            data-prevent-double-click="true"
-                                            value="true"
-                                            name="Search">
-                                        Search
-                                    </button>
-                                        <a class="govuk-button govuk-button--secondary" asp-action="Clear" asp-controller="New" asp-area="Review" asp-route-recordsPerPAge="@Model.PaginationViewModel.RecordsPerPage">
-                                        Clear
-                                    </a>
+                                    </div>
                                 </div>
-                            </div>                            
+                            </div>
+                            <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+                            <div class="govuk-grid-row">
+                                <div class="govuk-grid-column-full">
+                                    <govuk-select asp-for="@Model.PaginationViewModel.RecordsPerPage">
+                                        <govuk-select-label>Qualifications Per Page</govuk-select-label>
+                                        <govuk-select-item value="10" selected="true">10</govuk-select-item>
+                                        <govuk-select-item value="20">20</govuk-select-item>
+                                        <govuk-select-item value="50">50</govuk-select-item>
+                                    </govuk-select>
+                                </div>
+                            </div>
+                            <div class="govuk-grid-row">
+                                <div class="govuk-grid-column-full">
+                                    <div class="govuk-button-group">
+                                        <button type="submit"
+                                                class="govuk-button"
+                                                data-module="govuk-button"
+                                                data-prevent-double-click="true"
+                                                value="true"
+                                                name="Search">
+                                            Search
+                                        </button>
+                                            <a class="govuk-button govuk-button--secondary" asp-action="Clear" asp-controller="New" asp-area="Review" asp-route-recordsPerPAge="@Model.PaginationViewModel.RecordsPerPage">
+                                            Clear
+                                        </a>
+                                    </div>
+                                </div>                            
+                            </div>
                         </div>
                     </div>
-                </div>         
                 </form>
                 @if (Model.PaginationViewModel.CurrentPage > 0)
                 {
@@ -282,7 +155,7 @@
                                 </tbody>
                             </table>
                         </div>
-                        @if (Model.PaginationViewModel.TotalPages > 1)
+                        @if (Model.PaginationViewModel.TotalPages > 0)
                         {
                             <div class="govuk-grid-row" id="New_Qual_Pagination_Footer_Section">
                                 <div class="govuk-grid-column-three-quarters">

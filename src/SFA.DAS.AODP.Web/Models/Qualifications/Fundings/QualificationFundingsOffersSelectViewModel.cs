@@ -7,6 +7,7 @@
         public Guid QualificationId { get; set; }
         public string? QualificationReference { get; set; }
         public List<FundingOffer> FundingOffers { get; set; } = new();
+        public string Mode { get; set; }
         public class FundingOffer
         {
             public Guid Id { get; set; }

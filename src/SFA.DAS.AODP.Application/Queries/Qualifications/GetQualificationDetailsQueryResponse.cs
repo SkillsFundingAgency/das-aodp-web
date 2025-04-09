@@ -1,14 +1,16 @@
-﻿    namespace SFA.DAS.AODP.Application.Queries.Qualifications;
+﻿namespace SFA.DAS.AODP.Application.Queries.Qualifications;
 
 public class GetQualificationDetailsQueryResponse
 {
     public Guid Id { get; set; }
     public Guid QualificationId { get; set; }
     public Guid VersionFieldChangesId { get; set; }
+    public string AgeGroup { get; set; }
+    public string? VersionFieldChanges { get; set; }
+    public string? VersionType { get; set; }
     public Guid ProcessStatusId { get; set; }
     public int AdditionalKeyChangesReceivedFlag { get; set; }
     public Guid LifecycleStageId { get; set; }
-    public string? VersionFieldChanges { get; set; }
     public string? OutcomeJustificationNotes { get; set; }
     public Guid AwardingOrganisationId { get; set; }
     public string Status { get; set; } = null!;
@@ -88,6 +90,7 @@ public class GetQualificationDetailsQueryResponse
         public string Qan { get; set; } = null!;
         public string? QualificationName { get; set; }
         public List<QualificationDiscussionHistory> QualificationDiscussionHistories { get; set; } = new List<QualificationDiscussionHistory>();
+        public List<GetQualificationDetailsQueryResponse> Versions { get; set; } = new List<GetQualificationDetailsQueryResponse>();
     }
 
     public partial class QualificationDiscussionHistory
