@@ -27,7 +27,10 @@ namespace SFA.DAS.AODP.Application.Queries.Test
                      Name = request.Name,
                      Organisation = request.Organisation,
                      QAN = request.QAN,
-                     ProcessStatusIds = request.ProcessStatusIds,
+                     ProcessStatusFilter = new Domain.Models.ProcessStatusFilter()
+                     {
+                         ProcessStatusIds = request.ProcessStatusIds
+                     }
                 });
 
                 if (result != null)
