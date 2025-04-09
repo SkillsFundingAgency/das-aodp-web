@@ -110,7 +110,14 @@
                 </govuk-summary-list-row>
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key>DfE offers funded</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.ApprovedForDelFundedProgramme</govuk-summary-list-row-value>
+                    <govuk-summary-list-row-value>
+                        @foreach (var offerfunded in Model.FundingDetails)
+                        {
+                            <p>
+                                @($"Offer: {offerfunded.FundingOfferName ?? ""} ({offerfunded.StartDate?.ToString("MM/dd/yyyy") ?? ""} - {offerfunded.EndDate?.ToString("MM/dd/yyyy") ?? ""})")
+                            </p>
+                        }
+                    </govuk-summary-list-row-value>
                 </govuk-summary-list-row>
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key>Guided learning hours (GLH)</govuk-summary-list-row-key>

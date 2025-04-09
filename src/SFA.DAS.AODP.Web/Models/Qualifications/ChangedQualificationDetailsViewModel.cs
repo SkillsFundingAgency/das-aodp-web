@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Razor.TagHelpers;
+﻿using Azure;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Web.Enums;
 using System.ComponentModel;
@@ -81,23 +82,17 @@ public class ChangedQualificationDetailsViewModel
     public virtual ProcessStatus ProcStatus { get; set; } = null!;
     public AdditionalFormActions AdditionalActions { get; set; } = new AdditionalFormActions();
     public List<ProcessStatus> ProcessStatuses { get; set; } = new List<ProcessStatus>();
-    public List<OfferFundingDetails> Details { get; set; } = new();
-    public List<FundingOffer> FundingOffers { get; set; } = new();
+    public List<OfferFundingDetails> FundingDetails { get; set; } = new();
+
     public class OfferFundingDetails
     {
-        public Guid FundingOfferId { get; set; }
+        public string FundingOfferName { get; set; }
         [DisplayName("Start date")]
         public DateOnly? StartDate { get; set; }
         [DisplayName("End date")]
         public DateOnly? EndDate { get; set; }
-        public string? Comments { get; set; }
     }
 
-    public class FundingOffer
-    {
-        public Guid Id { get; set; }
-        public string Name { get; set; }
-    }
     public string Priority
     {
         get
@@ -112,7 +107,7 @@ public class ChangedQualificationDetailsViewModel
         if (!string.IsNullOrWhiteSpace(priority) && Status != ActionTypeEnum.NoActionRequired)
         {
             var changedFields = ChangedFieldNames.Split(',').Select(s => s.Trim()).ToList();
-            var redChanges = new List<string>() { "Level", "SSA", "GLH" };
+            var redChanges = new List<string>() { "Level", "SSA", "Glh" };
             var yellowChanges = new List<string>()
                 {
                     "OrganisationName",
@@ -126,7 +121,7 @@ public class ChangedQualificationDetailsViewModel
                     "EighteenPlus",
                     "NineteenPlus",
                     "MinimumGLH",
-                    "TQT",
+                    "Tqt",
                     "OperationalEndDate",
                     "LastUpdatedDate",
                     "Version",
@@ -143,6 +138,19 @@ public class ChangedQualificationDetailsViewModel
 
         }
         return priority;
+    }
+
+    internal void MapFundedOffers(GetFeedbackForQualificationFundingByIdQueryResponse feedbackForQualificationFunding)
+    {
+        foreach (var offer in feedbackForQualificationFunding.QualificationFundedOffers)
+        {
+            FundingDetails.Add(new()
+            {
+                FundingOfferName = offer.FundedOfferName,
+                StartDate = offer.StartDate,
+                EndDate = offer.EndDate
+            });
+        }
     }
 
     public List<KeyFieldChanges> KeyFieldChanges { get; set; } = new();
