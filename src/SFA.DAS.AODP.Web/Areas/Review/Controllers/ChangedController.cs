@@ -294,13 +294,13 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     case "FundingInEngland":
                         latestVersion.KeyFieldChanges.Add(new() { Name = "Nineteen Plus", Was = previousVersion.FundedInEngland.ToString(), Now = latestVersion.FundedInEngland.ToString() });
                         break;
-                    case "Glh":
+                    case "GLH":
                         latestVersion.KeyFieldChanges.Add(new() { Name = "Guided learning hours (GLH)", Was = previousVersion.Glh.ToString(), Now = latestVersion.Glh.ToString() });
                         break;
                     case "MinimumGlh":
                         latestVersion.KeyFieldChanges.Add(new() { Name = "Minimum GLH", Was = previousVersion.MinimumGlh.ToString(), Now = latestVersion.MinimumGlh.ToString() });
                         break;
-                    case "Tqt":
+                    case "TQT":
                         latestVersion.KeyFieldChanges.Add(new() { Name = "Total qualification time (TQT)", Was = previousVersion.Tqt.ToString(), Now = latestVersion.Tqt.ToString() });
                         break;
                     case "OperationalEndDate":

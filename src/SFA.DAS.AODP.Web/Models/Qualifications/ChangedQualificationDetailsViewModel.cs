@@ -107,7 +107,7 @@ public class ChangedQualificationDetailsViewModel
         if (!string.IsNullOrWhiteSpace(priority) && Status != ActionTypeEnum.NoActionRequired)
         {
             var changedFields = ChangedFieldNames.Split(',').Select(s => s.Trim()).ToList();
-            var redChanges = new List<string>() { "Level", "SSA", "Glh" };
+            var redChanges = new List<string>() { "Level", "SSA", "GLH" };
             var yellowChanges = new List<string>()
                 {
                     "OrganisationName",
@@ -121,7 +121,7 @@ public class ChangedQualificationDetailsViewModel
                     "EighteenPlus",
                     "NineteenPlus",
                     "MinimumGLH",
-                    "Tqt",
+                    "TQT",
                     "OperationalEndDate",
                     "LastUpdatedDate",
                     "Version",
