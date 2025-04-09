@@ -71,7 +71,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     }
                     if (processStatusIds?.Any() ?? false)
                     {
-                        query.ProcessStatusIds = processStatusIds;
+                        query.ProcessStatusFilter = new Domain.Models.ProcessStatusFilter() { ProcessStatusIds = processStatusIds };
                     }
 
                     query.Take = recordsPerPage;
