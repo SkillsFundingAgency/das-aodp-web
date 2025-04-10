@@ -184,9 +184,16 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
             try
             {
-                NewQualificationDetailsViewModel result = await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });
-                result.ProcessStatuses = [.. await GetProcessStatuses()];
-                return View(result);
+                NewQualificationDetailsViewModel model = await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });
+                model.ProcessStatuses = [.. await GetProcessStatuses()];
+                
+                var feedbackForQualificationFunding = await Send(new GetFeedbackForQualificationFundingByIdQuery(model.Id));
+                if (feedbackForQualificationFunding != null)
+                {
+                    model.MapFundedOffers(feedbackForQualificationFunding);
+                    model.FundingsOffersOutcomeStatus = feedbackForQualificationFunding.Approved;
+                }
+                return View(model);
             }
             catch (Exception ex)
             {

@@ -83,6 +83,7 @@ public class ChangedQualificationDetailsViewModel
     public AdditionalFormActions AdditionalActions { get; set; } = new AdditionalFormActions();
     public List<ProcessStatus> ProcessStatuses { get; set; } = new List<ProcessStatus>();
     public List<OfferFundingDetails> FundingDetails { get; set; } = new();
+    public bool? FundingsOffersOutcomeStatus { get; set; }
 
     public class OfferFundingDetails
     {
@@ -106,7 +107,7 @@ public class ChangedQualificationDetailsViewModel
         var priority = "Green";
         if (!string.IsNullOrWhiteSpace(priority) && Status != ActionTypeEnum.NoActionRequired)
         {
-            var changedFields = ChangedFieldNames.Split(',').Select(s => s.Trim()).ToList();
+            var changedFields = ChangedFieldNames?.Split(',').Select(s => s.Trim()).ToList();
             var redChanges = new List<string>() { "Level", "SSA", "GLH" };
             var yellowChanges = new List<string>()
                 {

@@ -245,8 +245,14 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             {
                 ChangedQualificationDetailsViewModel latestVersion = await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });
                 latestVersion.ProcessStatuses = [.. await GetProcessStatuses()];
+                
                 var feedbackForQualificationFunding = await Send(new GetFeedbackForQualificationFundingByIdQuery(latestVersion.Id));
-                latestVersion.MapFundedOffers(feedbackForQualificationFunding);
+                if (feedbackForQualificationFunding != null)
+                {
+                    latestVersion.MapFundedOffers(feedbackForQualificationFunding);
+                    latestVersion.FundingsOffersOutcomeStatus = feedbackForQualificationFunding.Approved;
+                }
+
                 if (latestVersion.Version > 1)
                 {
                     var previousVersion = await Send(new GetQualificationVersionQuery() { QualificationReference = qualificationReference, Version = latestVersion.Version - 1 });

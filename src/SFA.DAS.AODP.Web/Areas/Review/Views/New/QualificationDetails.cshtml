@@ -138,9 +138,25 @@ asp-action="Index">
                 Save
             </button>
             <div class="govuk-form-group">
-                <a class="govuk-button" asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersOutcome" asp-route-qualificationReference="@Model.Qual.Qan" asp-route-mode="New">
-                    DfE funding review
-                </a>
+                @if (Model.FundingsOffersOutcomeStatus.HasValue)
+                {
+                    <a class="govuk-button" asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersSummary"
+                       asp-route-qualificationReference="@Model.Qual.Qan"
+                       asp-route-qualificationVersionId="@Model.Id"
+                       asp-route-qualificationId="@Model.QualificationId"
+                       asp-route-mode="New">
+                        DfE funding review
+                    </a>
+                    
+                }
+                else
+                {
+                    <a class="govuk-button" asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersOutcome"
+                       asp-route-qualificationReference="@Model.Qual.Qan"
+                       asp-route-mode="New">
+                        DfE funding review
+                    </a>
+                }
             </div>
         </div>
     </div>
