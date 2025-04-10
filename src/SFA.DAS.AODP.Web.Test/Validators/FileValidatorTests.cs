@@ -26,6 +26,9 @@ public class FileValidatorTests
         // Arrange
         var questionId = Guid.NewGuid();
 
+        _fileService.Setup(s => s.ListBlobs(It.IsAny<string>()))
+            .Returns([]);
+
         GetApplicationPageByIdQueryResponse.Question question = new()
         {
             Id = questionId,
@@ -44,6 +47,32 @@ public class FileValidatorTests
 
         // Assert
         Assert.Equal($"Please provide the requested files.", ex.Message);
+    }
+
+    [Fact]
+    public void Validate_Required_ExisitingFiles_NoAnswerProvided_NoExceptionThrown()
+    {
+        // Arrange
+        var questionId = Guid.NewGuid();
+
+        _fileService.Setup(s => s.ListBlobs(It.IsAny<string>()))
+            .Returns([new()]);
+
+        GetApplicationPageByIdQueryResponse.Question question = new()
+        {
+            Id = questionId,
+            Title = "something",
+            Required = true,
+        };
+
+        ApplicationPageViewModel.Answer answer =
+        new()
+        {
+            FormFiles = null
+        };
+
+        // Act
+        _sut.Validate(question, answer, new());
     }
 
     [Fact]
