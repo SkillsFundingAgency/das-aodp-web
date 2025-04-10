@@ -7,8 +7,10 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.Application.Application;
+using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Settings;
+using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationMessage;
 using SFA.DAS.AODP.Web.Helpers.File;
@@ -156,12 +158,16 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
         }
 
 
-        [Fact]
-        public async Task ApplicationMessageFileDownload_Success_ReturnsFile()
+        [Theory]
+        [InlineData(UserType.Qfau)]
+        [InlineData(UserType.SkillsEngland)]
+        [InlineData(UserType.Ofqual)]
+        public async Task ApplicationMessageFileDownload_Success_ReturnsFile(UserType userType)
         {
             // Arrange
+            var messageId = _fixture.Create<Guid>();
             var applicationId = _fixture.Create<Guid>();
-            var file = $"messages/{applicationId}/";
+            var file = $"messages/{applicationId}/{messageId}/";
 
             var blob = _fixture.Create<UploadedBlob>();
             string content = "Test file content";
@@ -169,6 +175,18 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
             _fileService.Setup(f => f.GetBlobDetails(file)).ReturnsAsync(blob);
             _fileService.Setup(fs => fs.OpenReadStreamAsync(It.IsAny<string>()))
               .ReturnsAsync(new MemoryStream(Encoding.UTF8.GetBytes(content)));
+
+            BaseMediatrResponse<GetApplicationMessageByIdQueryResponse> messageByIdResponse = new()
+            {
+                Value = new()
+                {
+                    SharedWithDfe = userType == UserType.Qfau,
+                    SharedWithOfqual = userType == UserType.Ofqual,
+                    SharedWithSkillsEngland = userType == UserType.SkillsEngland,
+                },
+                Success = true,
+            };
+            _mediatorMock.Setup(m => m.Send(It.IsAny<GetApplicationMessageByIdQuery>(), default)).ReturnsAsync(messageByIdResponse);
 
 
             var applicationSharingResponse = new BaseMediatrResponse<GetApplicationReviewSharingStatusByIdQueryResponse>()
@@ -181,9 +199,11 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
             };
             _mediatorMock.Setup(m => m.Send(It.IsAny<GetApplicationReviewSharingStatusByIdQuery>(), default)).ReturnsAsync(applicationSharingResponse);
 
+            _userHelperServiceMock.Setup(u => u.GetUserType()).Returns(userType);
+
 
             // Act
-            var result = await _controller.ApplicationReviewMessageFileDownload(file, applicationId);
+            var result = await _controller.ApplicationReviewMessageFileDownload(file, applicationId, messageId);
 
             // Assert
             var fileResult = Assert.IsType<FileStreamResult>(result);
@@ -194,10 +214,56 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
             Assert.Equal(content, reader.ReadToEnd());
         }
 
-        [Fact]
+        [Theory]
+        [InlineData(UserType.Qfau)]
+        [InlineData(UserType.SkillsEngland)]
+        [InlineData(UserType.Ofqual)]
+        public async Task ApplicationMessageFileDownload_NotShared_ReturnsBadRequest(UserType userType)
+        {
+            // Arrange
+            var messageId = _fixture.Create<Guid>();
+            var applicationId = _fixture.Create<Guid>();
+            var file = $"messages/{applicationId}/{messageId}/";
+
+            BaseMediatrResponse<GetApplicationMessageByIdQueryResponse> messageByIdResponse = new()
+            {
+                Value = new()
+                {
+                    SharedWithDfe = userType != UserType.Qfau,
+                    SharedWithOfqual = userType != UserType.Ofqual,
+                    SharedWithSkillsEngland = userType != UserType.SkillsEngland,
+                },
+                Success = true,
+            };
+            _mediatorMock.Setup(m => m.Send(It.IsAny<GetApplicationMessageByIdQuery>(), default)).ReturnsAsync(messageByIdResponse);
+
+
+            var applicationSharingResponse = new BaseMediatrResponse<GetApplicationReviewSharingStatusByIdQueryResponse>()
+            {
+                Success = true,
+                Value = new()
+                {
+                    ApplicationId = applicationId,
+                }
+            };
+            _mediatorMock.Setup(m => m.Send(It.IsAny<GetApplicationReviewSharingStatusByIdQuery>(), default)).ReturnsAsync(applicationSharingResponse);
+
+            _userHelperServiceMock.Setup(u => u.GetUserType()).Returns(userType);
+
+
+            // Act
+            var result = await _controller.ApplicationReviewMessageFileDownload(file, applicationId, messageId);
+
+            // Assert
+            Assert.IsType<BadRequestResult>(result);
+        }
+
+
+            [Fact]
         public async Task ApplicationMessageFileDownload_InvalidFilePath_ReturnsBadRequest()
         {
             // Arrange
+            var messageId = _fixture.Create<Guid>();
             var applicationId = _fixture.Create<Guid>();
             var file = $"messages/{Guid.NewGuid()}/";
 
@@ -213,7 +279,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
 
 
             // Act
-            var result = await _controller.ApplicationReviewMessageFileDownload(file, applicationId);
+            var result = await _controller.ApplicationReviewMessageFileDownload(file, applicationId, messageId);
 
             // Assert
             Assert.IsType<BadRequestResult>(result);
