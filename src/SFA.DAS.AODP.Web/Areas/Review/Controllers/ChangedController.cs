@@ -245,12 +245,13 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             {
                 ChangedQualificationDetailsViewModel latestVersion = await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });
                 latestVersion.ProcessStatuses = [.. await GetProcessStatuses()];
-
+                var feedbackForQualificationFunding = await Send(new GetFeedbackForQualificationFundingByIdQuery(latestVersion.Id));
+                latestVersion.MapFundedOffers(feedbackForQualificationFunding);
                 if (latestVersion.Version > 1)
                 {
                     var previousVersion = await Send(new GetQualificationVersionQuery() { QualificationReference = qualificationReference, Version = latestVersion.Version - 1 });
 
-                    var keyFieldsChanges = latestVersion.ChangedFieldNames.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                    var keyFieldsChanges = latestVersion?.ChangedFieldNames?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                     GetKeyFieldChanges(latestVersion, previousVersion, keyFieldsChanges);
                 }
                 return View(latestVersion);
@@ -305,17 +306,17 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     case "NineteenPlus":
                         latestVersion.KeyFieldChanges.Add(new() { Name = "Nineteen Plus", Was = previousVersion.NineteenPlus.ToString(), Now = latestVersion.NineteenPlus.ToString() });
                         break;
-                    //case "FundingInEngland":
-                    //    latestVersion.KeyFieldChanges.Add(new() { Name = "Nineteen Plus", Was = previousVersion.eng.ToString(), Now = latestVersion.NineteenPlus.ToString() });
-                    //    break;
-                    case "Glh":
-                        latestVersion.KeyFieldChanges.Add(new() { Name = "GLH", Was = previousVersion.Glh.ToString(), Now = latestVersion.Glh.ToString() });
+                    case "FundingInEngland":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Nineteen Plus", Was = previousVersion.FundedInEngland.ToString(), Now = latestVersion.FundedInEngland.ToString() });
+                        break;
+                    case "GLH":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Guided learning hours (GLH)", Was = previousVersion.Glh.ToString(), Now = latestVersion.Glh.ToString() });
                         break;
                     case "MinimumGlh":
                         latestVersion.KeyFieldChanges.Add(new() { Name = "Minimum GLH", Was = previousVersion.MinimumGlh.ToString(), Now = latestVersion.MinimumGlh.ToString() });
                         break;
-                    case "Tqt":
-                        latestVersion.KeyFieldChanges.Add(new() { Name = "TQT", Was = previousVersion.Tqt.ToString(), Now = latestVersion.Tqt.ToString() });
+                    case "TQT":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Total qualification time (TQT)", Was = previousVersion.Tqt.ToString(), Now = latestVersion.Tqt.ToString() });
                         break;
                     case "OperationalEndDate":
                         latestVersion.KeyFieldChanges.Add(new() { Name = "Operational End Date", Was = String.Format("{0:MM/dd/yy hh:mm}", previousVersion.OperationalEndDate.ToString()), Now = String.Format("{0:MM/dd/yy HH:mm}", latestVersion.OperationalEndDate.ToString()) });
