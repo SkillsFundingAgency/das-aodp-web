@@ -209,9 +209,10 @@ public class ApplicationMessagesController : ControllerBase
         if (message == null) return BadRequest();
 
         var availableToUserType = false;
-        if ((UserType == UserType.Qfau && message.SharedWithDfe) ||
-              (UserType == UserType.SkillsEngland && message.SharedWithSkillsEngland) ||
-              (UserType == UserType.Ofqual && message.SharedWithOfqual))
+        var userType = _userHelperService.GetUserType();
+        if ((userType == UserType.Qfau && message.SharedWithDfe) ||
+              (userType == UserType.SkillsEngland && message.SharedWithSkillsEngland) ||
+              (userType == UserType.Ofqual && message.SharedWithOfqual))
         {
             availableToUserType = true;
         }
