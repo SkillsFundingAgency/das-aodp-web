@@ -1,6 +1,8 @@
 ﻿@using SFA.DAS.AODP.Models.Application
+@using SFA.DAS.AODP.Models.Qualifications
+@using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
 @using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApproval
-@model QfauFundingReviewOutcomeSummaryViewModel;
+@model QfauFundingDecisionViewModel;
 
 @{
     ViewData["Title"] = "Funding review decision";
@@ -45,6 +47,45 @@ else if (Model.Status != ApplicationStatus.NotApproved && Model.Status != Applic
         </div>
     </div>
 }
+else if (Model.RelatedQualification == null && Model.Approved)
+{
+    validForSubmit = false;
+
+    <div class="govuk-notification-banner" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+        <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+                Important
+            </h2>
+        </div>
+        <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">
+                <span>
+                    The application's QAN does not match any regulated qualification.
+                </span>
+            </p>
+        </div>
+    </div>
+}
+else if (Model.RelatedQualification != null && Model.RelatedQualification.Status != ProcessStatus.DecisionRequired)
+{
+    validForSubmit = false;
+
+    <div class="govuk-notification-banner" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+        <div class="govuk-notification-banner__header">
+            <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+                Important
+            </h2>
+        </div>
+        <div class="govuk-notification-banner__content">
+            <p class="govuk-notification-banner__heading">
+                <span>
+                    The Ofqual qualification status is not valid to confirm the decision. The current qualification status is: @Model.RelatedQualification.Status.
+                </span>
+            </p>
+        </div>
+    </div>
+}
+
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
@@ -145,9 +186,36 @@ else if (Model.Status != ApplicationStatus.NotApproved && Model.Status != Applic
                         <govuk-summary-list-row-value style="white-space: pre-line">@detail.Comments</govuk-summary-list-row-value>
                     </govuk-summary-list-row>
                 }
+
+                @if (Model.RelatedQualification != null)
+                {
+                    <govuk-summary-list-row>
+                        <govuk-summary-list-row-key>
+                            Ofqual qualification name
+                        </govuk-summary-list-row-key>
+                        <govuk-summary-list-row-value>
+                            @Model.RelatedQualification.Name
+                        </govuk-summary-list-row-value>
+                    </govuk-summary-list-row>
+                    <govuk-summary-list-row>
+                        <govuk-summary-list-row-key>
+                            Ofqual qualification QAN
+                        </govuk-summary-list-row-key>
+                        <govuk-summary-list-row-value>
+                            @Model.RelatedQualification.Qan
+                        </govuk-summary-list-row-value>
+                    </govuk-summary-list-row>
+                    <govuk-summary-list-row>
+                        <govuk-summary-list-row-key>
+                            Ofqual qualification Status
+                        </govuk-summary-list-row-key>
+                        <govuk-summary-list-row-value>
+                            @Model.RelatedQualification.Status
+                        </govuk-summary-list-row-value>
+                    </govuk-summary-list-row>
+                }
             </govuk-summary-list>
             </<div>
-
                 <div class="govuk-grid-row">
                     <form asp-route-applicationReviewId="@Model.ApplicationReviewId"
                           asp-action="QfauFundingReviewDecisionConfirmed"
