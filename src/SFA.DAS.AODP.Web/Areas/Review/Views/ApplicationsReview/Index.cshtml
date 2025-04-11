@@ -17,10 +17,10 @@
         <form asp-controller="ApplicationsReview" asp-action="Search" method="post">
             <div class="govuk-grid-row">
                 <div class="govuk-form-group govuk-grid-column-one-half">
-                    <govuk-input asp-for="@Model.ApplicationSearch" input-class="govuk-input--width-30" inputmode="text" spellcheck="false">
+                    <govuk-input asp-for="@Model.ApplicationSearch" value="@Html.Encode(Model.ApplicationSearch)" input-class="govuk-input--width-30" inputmode="text" spellcheck="false">
                         <govuk-input-label is-page-heading="false" class="govuk-label--s">You can search by submission ID, qualification title or QAN</govuk-input-label>
                     </govuk-input>
-                    <govuk-input asp-for="@Model.AwardingOrganisationSearch" input-class="govuk-input--width-30" inputmode="text" spellcheck="false">
+                    <govuk-input asp-for="@Model.AwardingOrganisationSearch" value="@Html.Encode(Model.AwardingOrganisationSearch)" input-class="govuk-input--width-30" inputmode="text" spellcheck="false">
                         <govuk-input-label is-page-heading="false" class="govuk-label--s">Search by Awarding Organisation</govuk-input-label>
                     </govuk-input>
                 </div>

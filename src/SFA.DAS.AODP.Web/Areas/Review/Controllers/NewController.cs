@@ -29,7 +29,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             "Decision Required",
             "No Action Required",
         };
-        public enum NewQualDataKeys { InvalidPageParams, }
+        public enum NewQualDataKeys { InvalidPageParams, CommentSaved}
 
         public NewController(ILogger<NewController> logger, IMediator mediator, IUserHelperService userHelperService) : base(mediator, logger)
         {
@@ -184,6 +184,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
             try
             {
+                ShowNotificationIfKeyExists(NewQualDataKeys.CommentSaved.ToString(), ViewNotificationMessageType.Success, "The comment has been saved.");
+
                 NewQualificationDetailsViewModel result = await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });
                 result.ProcessStatuses = [.. await GetProcessStatuses()];
                 return View(result);
@@ -210,6 +212,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                         Notes = model.AdditionalActions.Note,
                         UserDisplayName = HttpContext.User?.Identity?.Name
                     });
+
+                    TempData[NewQualDataKeys.CommentSaved.ToString()] = true;
                     return RedirectToAction(nameof(QualificationDetails), new { qualificationReference = model.Qual.Qan });
                 }
                 else if (!procStatus.HasValue)
