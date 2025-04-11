@@ -24,7 +24,7 @@ asp-action="Index">
         <ul class="govuk-tabs__list">
             <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
                 <a class="govuk-link" href="/Review/New/QualificationDetails?qualificationReference=@Model.Qual.Qan">
-                    Details
+                    Overview
                 </a>
             </li>
             <li class="govuk-tabs__list-item govuk-tabs__list-item">
@@ -115,7 +115,7 @@ asp-action="Index">
                 </govuk-summary-list-row>
             </govuk-summary-list>
             <div class="govuk-form-group">
-                <govuk-textarea asp-for="@Model.AdditionalActions.Note">
+                <govuk-textarea asp-for="@Model.AdditionalActions.Note" autocomplete="false">
                     <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Comments</govuk-textarea-label>
                     <govuk-textarea-hint>Leave comments and recommendations. Give as much detail as you can. </govuk-textarea-hint>
                 </govuk-textarea>

@@ -30,17 +30,17 @@
                             <div class="govuk-grid-row">
                                 <div class="govuk-grid-column-one-quarter">                                
                                     <div class="govuk-form-group">                                    
-                                        <govuk-input asp-for="@Model.Filter.QualificationName" input-class="govuk-input--width-50" inputmode="text" spellcheck="false">
+                                        <govuk-input asp-for="@Model.Filter.QualificationName" input-class="govuk-input--width-50" inputmode="text" spellcheck="false" autocomplete="off">
                                             <govuk-input-label is-page-heading="false" class="govuk-label--s">Qualification Name</govuk-input-label>                                        
                                         </govuk-input>
                                     </div>                                
                                     <div class="govuk-form-group">
-                                        <govuk-input asp-for="@Model.Filter.QAN" input-class="govuk-input--width-50" inputmode="text" spellcheck="false">
+                                        <govuk-input asp-for="@Model.Filter.QAN" input-class="govuk-input--width-50" inputmode="text" spellcheck="false" autocomplete="off">
                                             <govuk-input-label is-page-heading="false" class="govuk-label--s">QAN</govuk-input-label>                                       
                                         </govuk-input>
                                     </div>                                
                                     <div class="govuk-form-group">
-                                        <govuk-input asp-for="@Model.Filter.Organisation" input-class="govuk-input--width-50" inputmode="text" spellcheck="false">
+                                        <govuk-input asp-for="@Model.Filter.Organisation" input-class="govuk-input--width-50" inputmode="text" spellcheck="false" autocomplete="off">
                                             <govuk-input-label is-page-heading="false" class="govuk-label--s">Awarding Organisation</govuk-input-label>                                       
                                         </govuk-input>
                                     </div>                                   
@@ -218,7 +218,7 @@
                                                 </li>
                                             }
                                             <li class="govuk-pagination__item govuk-pagination__item--current">
-                                                    <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page @Model.PaginationViewModel.CurrentPage" aria-current="Page @Model.PaginationViewModel.CurrentPage">
+                                                    <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page @Model.PaginationViewModel.CurrentPage" aria-current="true">
                                                     @Model.PaginationViewModel.CurrentPage
                                                 </a>
                                             </li>
@@ -271,7 +271,7 @@
                                                        asp-route-organisation="@Model.Filter.Organisation"
                                                        asp-route-qan="@Model.Filter.QAN">
                                                     <span class="govuk-pagination__link-title">
-                                                        Next<span class="govuk-visually-hidden"> page</span>
+                                                            Next<span class="govuk-visually-hidden"> page</span>
                                                     </span>
                                                     <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
                                                         <path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path>
