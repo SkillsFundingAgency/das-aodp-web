@@ -79,26 +79,32 @@
                 </govuk-summary-list-row>
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key>Age group(s)</govuk-summary-list-row-key>
-                    @if (Model.NineteenPlus ?? false)
-                    {
-                        <govuk-summary-list-row-value>19+</govuk-summary-list-row-value>
-                    }
-                    else if (Model.EighteenPlus ?? false)
-                    {
-                        <govuk-summary-list-row-value>18+</govuk-summary-list-row-value>
-                    }
-                    else if (Model.SixteenToEighteen ?? false)
-                    {
-                        <govuk-summary-list-row-value>16-18</govuk-summary-list-row-value>
-                    }
-                    else if (Model.PreSixteen ?? false)
-                    {
-                        <govuk-summary-list-row-value>Pre 16</govuk-summary-list-row-value>
-                    }
-                    else
-                    {
-                        <govuk-summary-list-row-value></govuk-summary-list-row-value>
-                    }
+                    <govuk-summary-list-row-value>
+                        @{
+                            var ageGroups = new List<string>();
+
+                            if (Model.PreSixteen ?? false)
+                            {
+                                ageGroups.Add("Pre 16");
+                            }
+                            if (Model.SixteenToEighteen ?? false)
+                            {
+                                ageGroups.Add("16-18");
+                            }
+                            if (Model.EighteenPlus ?? false)
+                            {
+                                ageGroups.Add("18+");
+                            }
+                            if (Model.NineteenPlus ?? false)
+                            {
+                                ageGroups.Add("19+");
+                            }
+                        }
+                        @foreach (var ageGroup in ageGroups)
+                        {
+                            <p>@ageGroup</p>
+                        }
+                    </govuk-summary-list-row-value>
                 </govuk-summary-list-row>
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key>Ofqual offered in England</govuk-summary-list-row-key>
