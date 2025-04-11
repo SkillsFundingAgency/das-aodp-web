@@ -11,7 +11,7 @@
 
     @Html.AntiForgeryToken()
     @Html.HiddenFor(v => v.FormVersionId)
-
+    @Html.HiddenFor(m => m.ChosenSectionId)
     <div class="govuk-form-group">
 
         @if (Model.AreSectionsEmpty)
@@ -32,49 +32,43 @@
         }
         else
         {
-            <govuk-radios asp-for="@Model.ChosenSectionId">
-                <govuk-radios-fieldset>
-                    <govuk-radios-fieldset-legend is-page-heading="true">
-                        <h1 class="govuk-heading-l govuk-!-margin-top-5">Choose section and page</h1>
-                    </govuk-radios-fieldset-legend>
 
-                    <govuk-radios-hint>
-                        Select one option. Only sections and pages with questions requiring user to select an option are shown.
-                    </govuk-radios-hint>
+            <h1 class="govuk-heading-l govuk-!-margin-top-5">Choose section and page</h1>
 
-                    @if (!Model.AreSectionsEmpty)
-                    {
-                        @await Html.PartialAsync("Validation/_RadioValidationPartial", nameof(Model.ChosenSectionId))
-                        @await Html.PartialAsync("Validation/_RadioValidationPartial", nameof(Model.ChosenPageId))
+            <div class="govuk-hint">
+                Select one option. Only sections and pages with questions requiring user to select an option are shown.
+            </div>
 
-                        @foreach (var sectionInformation in Model.Sections.OrderBy(o => o.Order))
-                        {
-                            <govuk-radios-item value="@sectionInformation.Id">
-                                Section @(sectionInformation.Order). @sectionInformation.Title
+            @await Html.PartialAsync("Validation/_RadioValidationPartial", nameof(Model.ChosenPageId))
 
-                                <!-- Always show nested page radios, not conditionally -->
-                                <govuk-radios asp-for="@Model.ChosenPageId">
-                                    <govuk-radios-fieldset>
-                                        <govuk-radios-fieldset-legend>
-                                            <h2 class="govuk-heading-s">Choose page</h2>
-                                        </govuk-radios-fieldset-legend>
+            @foreach (var sectionInformation in Model.Sections.OrderBy(o => o.Order))
+            {
+                <div class="govuk-form-group">
+                    <h2 class="govuk-heading-m">
+                        Section @(sectionInformation.Order). @sectionInformation.Title
+                    </h2>
 
-                                        @foreach (var pageInformation in sectionInformation.Pages.OrderBy(o => o.Order))
-                                        {
-                                            <govuk-radios-item value="@pageInformation.Id">
-                                                Page @(pageInformation.Order). @pageInformation.Title
-                                            </govuk-radios-item>
-                                        }
-                                    </govuk-radios-fieldset>
-                                </govuk-radios>
-                            </govuk-radios-item>
-                        }
-                    }
-                </govuk-radios-fieldset>
-            </govuk-radios>
+                    <govuk-radios asp-for="@Model.ChosenPageId">
+                        <govuk-radios-fieldset>
+                            <govuk-radios-fieldset-legend>
+                                <h3 class="govuk-heading-s">Choose page</h3>
+                            </govuk-radios-fieldset-legend>
 
+                            @foreach (var pageInformation in sectionInformation.Pages.OrderBy(o => o.Order))
+                            {
+                                <govuk-radios-item data-section-id="@sectionInformation.Id"
+                                onchange="setChosenSection(this)" value="@pageInformation.Id">
+                                    Page @(pageInformation.Order). @pageInformation.Title
+                                </govuk-radios-item>
+                            }
+                        </govuk-radios-fieldset>
+                    </govuk-radios>
+                </div>
+            }
         }
+
     </div>
+
 
     @if (Model.AreSectionsEmpty)
     {
@@ -91,3 +85,4 @@
     }
 
 </form>
+
