@@ -249,7 +249,11 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 ShowNotificationIfKeyExists(NewQualDataKeys.CommentSaved.ToString(), ViewNotificationMessageType.Success, "The comment has been saved.");
                 
                 var feedbackForQualificationFunding = await Send(new GetFeedbackForQualificationFundingByIdQuery(latestVersion.Id));
-                latestVersion.MapFundedOffers(feedbackForQualificationFunding);
+                if (feedbackForQualificationFunding != null)
+                {
+                    latestVersion.MapFundedOffers(feedbackForQualificationFunding);
+                    latestVersion.FundingsOffersOutcomeStatus = feedbackForQualificationFunding.Approved;
+                }
 
                 if (latestVersion.Version > 1)
                 {
