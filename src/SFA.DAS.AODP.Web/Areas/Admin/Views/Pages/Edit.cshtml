@@ -16,7 +16,7 @@
 <form asp-action="Edit" method="post">
 
     <div class="govuk-form-group">
-        <govuk-input disabled="@(!Model.Editable)" asp-for="@Model.Title" value="@Html.Encode(Model.Title)" inputmode="text" pattern="[0-9]*" spellcheck="false" autocomplete="off">
+        <govuk-input disabled="@(!Model.Editable)" asp-for="@Model.Title" inputmode="text" pattern="[0-9]*" spellcheck="false" autocomplete="off">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Name</govuk-input-label>
         </govuk-input>
     </div>

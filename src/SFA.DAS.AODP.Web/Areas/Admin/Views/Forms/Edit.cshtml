@@ -21,7 +21,7 @@
     @Html.HiddenFor(m => m.Id)
 
     <div class="govuk-form-group">
-        <govuk-input disabled="@disableEditing" asp-for="@Model.Title" value="@Html.Encode(Model.Title)" inputmode="text" pattern="[0-9]*" spellcheck="false" autocomplete="off">
+        <govuk-input disabled="@disableEditing" asp-for="@Model.Title" inputmode="text" pattern="[0-9]*" spellcheck="false" autocomplete="off">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Name</govuk-input-label>
         </govuk-input>
     </div>
@@ -53,7 +53,7 @@
     </div>
 
     <div class="govuk-form-group">
-        <govuk-input asp-for="@Model.Version" value="@Html.Encode(Model.Version)" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" disabled=true spellcheck="false">
+        <govuk-input asp-for="@Model.Version" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" disabled=true spellcheck="false">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Version</govuk-input-label>
         </govuk-input>
     </div>

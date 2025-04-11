@@ -23,7 +23,7 @@
     @Html.HiddenFor(f => f.OrganisationId)
 
     <div class="govuk-form-group">
-        <govuk-input asp-for="@Model.Name" value="@Html.Encode(Model.Name)" inputmode="text" spellcheck="false" autocomplete="off">
+        <govuk-input asp-for="@Model.Name" inputmode="text" spellcheck="false" autocomplete="off">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Qualification title</govuk-input-label>
             <govuk-input-hint>Please provide the qualification title you are applying for.</govuk-input-hint>
             @Html.RenderPartialAsync("Validation/_TextInputValidationPartial", nameof(Model.Name))
@@ -31,7 +31,7 @@
     </div>
 
     <div class="govuk-form-group">
-        <govuk-input asp-for="@Model.Owner" value="@Html.Encode(Model.Owner)" spellcheck="false" autocomplete="off">
+        <govuk-input asp-for="@Model.Owner" spellcheck="false" autocomplete="off">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Application owner</govuk-input-label>
             <govuk-input-hint>Please provide the name of person mainly responsible for this application.</govuk-input-hint>
             @Html.RenderPartialAsync("Validation/_TextInputValidationPartial", nameof(Model.Owner))
@@ -39,7 +39,7 @@
     </div>
 
     <div class="govuk-form-group">
-        <govuk-input asp-for="@Model.QualificationNumber" value="@Html.Encode(Model.QualificationNumber)" spellcheck="false" autocomplete="off">
+        <govuk-input asp-for="@Model.QualificationNumber" spellcheck="false" autocomplete="off">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Qualification number (optional)</govuk-input-label>
             <govuk-input-hint>Please provide the qualification number,if you have it.</govuk-input-hint>
             @Html.RenderPartialAsync("Validation/_TextInputValidationPartial", nameof(Model.QualificationNumber))

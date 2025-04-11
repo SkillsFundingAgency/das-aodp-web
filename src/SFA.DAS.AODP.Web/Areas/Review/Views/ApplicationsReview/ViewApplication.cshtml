@@ -108,7 +108,7 @@
                                   asp-Controller="ApplicationsReview" method="post">
 
                                 <div class="govuk-form-group govuk-!-margin-bottom-0">
-                                    <govuk-input asp-for="Qan" value="@Html.Encode(Model.Qan)">
+                                    <govuk-input asp-for="Qan">
                                         <govuk-input-label class="govuk-visually-hidden">Update QAN</govuk-input-label>
                                     </govuk-input>
                                     <govuk-button class="govuk-button govuk-!-margin-top-1" type="submit">Update</govuk-button>
@@ -135,7 +135,7 @@
                               asp-Controller="ApplicationsReview" method="post">
 
                             <div class="govuk-form-group govuk-!-margin-bottom-0">
-                                <govuk-input asp-for="@currentUserReview.Owner" value="@Html.Encode(currentUserReview.Owner)" name="Owner">
+                                <govuk-input asp-for="@currentUserReview.Owner" name="Owner">
                                     <govuk-input-label class="govuk-visually-hidden">Update owner</govuk-input-label>
                                 </govuk-input>
                                 <govuk-button class="govuk-button govuk-!-margin-top-1" type="submit">Update</govuk-button>
