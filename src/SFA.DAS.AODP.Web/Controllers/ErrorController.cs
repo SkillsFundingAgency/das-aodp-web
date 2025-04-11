@@ -15,5 +15,11 @@ namespace SFA.DAS.AODP.Web.Controllers
         {
             return View();
         }
+
+        [Route("error/400")] 
+        public IActionResult BadRequest()
+        { 
+            return View(); 
+        }
     }
 }
