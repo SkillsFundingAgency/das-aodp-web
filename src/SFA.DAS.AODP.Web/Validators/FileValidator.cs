@@ -22,14 +22,13 @@ namespace SFA.DAS.AODP.Web.Validators
         public void Validate(GetApplicationPageByIdQueryResponse.Question question, ApplicationPageViewModel.Answer answer, ApplicationPageViewModel model)
         {
             var required = question.Required;
+            var existingFilesCount = _fileService.ListBlobs($"{model.ApplicationId}/{question.Id}").Count;
 
-            if (required && (answer == null || answer.FormFiles == null || answer.FormFiles.Count == 0))
+            if (required && existingFilesCount == 0 && (answer == null || answer.FormFiles == null || answer.FormFiles.Count == 0))
                 throw new QuestionValidationFailedException(question.Id, question.Title, $"Please provide the requested files.");
-            if (answer?.FormFiles == null) return;
+            if (answer?.FormFiles == null || answer.FormFiles.Count == 0) return;
 
             var maxNumberOfFiles = Math.Min(_formBuilderSettings.MaxUploadNumberOfFiles, question.FileUpload.NumberOfFiles ?? _formBuilderSettings.MaxUploadNumberOfFiles);
-
-            var existingFilesCount = _fileService.ListBlobs($"{model.ApplicationId}/{question.Id}").Count;
 
             if (answer.FormFiles.Count + existingFilesCount > maxNumberOfFiles)
             {

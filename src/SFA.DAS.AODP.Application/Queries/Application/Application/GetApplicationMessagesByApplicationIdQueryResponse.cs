@@ -1,5 +1,5 @@
 ﻿namespace SFA.DAS.AODP.Application.Queries.Application.Application;
-public class GetApplicationMessagesByIdQueryResponse
+public class GetApplicationMessagesByApplicationIdQueryResponse
 {
     public List<ApplicationMessage> Messages { get; set; } = new();
     public class ApplicationMessage

@@ -27,7 +27,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             "No Action Required",
         };
 
-        public enum NewQualDataKeys { InvalidPageParams, }
+        public enum NewQualDataKeys { InvalidPageParams, CommentSaved}
 
         public ChangedController(ILogger<ChangedController> logger, IMediator mediator, IUserHelperService userHelperService) : base(mediator, logger)
         {
@@ -246,6 +246,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 ChangedQualificationDetailsViewModel latestVersion = await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });
                 latestVersion.ProcessStatuses = [.. await GetProcessStatuses()];
                 
+                ShowNotificationIfKeyExists(NewQualDataKeys.CommentSaved.ToString(), ViewNotificationMessageType.Success, "The comment has been saved.");
+                
                 var feedbackForQualificationFunding = await Send(new GetFeedbackForQualificationFundingByIdQuery(latestVersion.Id));
                 if (feedbackForQualificationFunding != null)
                 {
@@ -359,7 +361,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                         Notes = model.AdditionalActions.Note,
                         UserDisplayName = HttpContext.User?.Identity?.Name
                     });
-                    return RedirectToAction(nameof(QualificationDetails), new { qualificationReference = model.Qual.Qan });
+
+                    TempData[NewQualDataKeys.CommentSaved.ToString()] = true;
+                    return RedirectToAction(nameof(QualificationDetails), new { qualificationReference = model.Qual.Qan});
                 }
                 else if (!procStatus.HasValue)
                     return RedirectToAction(nameof(QualificationDetails), new { qualificationReference = model.Qual.Qan });
