@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Razor.TagHelpers;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.ComponentModel;
 
 namespace SFA.DAS.AODP.Web.Models.Qualifications;
 
@@ -69,6 +69,29 @@ public class NewQualificationDetailsViewModel
     public virtual ProcessStatus ProcStatus { get; set; } = null!;
     public AdditionalFormActions AdditionalActions { get; set; } = new AdditionalFormActions();
     public List<ProcessStatus> ProcessStatuses { get; set; } = new List<ProcessStatus>();
+    public List<OfferFundingDetails> FundingDetails { get; set; } = new();
+    public bool? FundingsOffersOutcomeStatus { get; set; }
+
+    public class OfferFundingDetails
+    {
+        public string FundingOfferName { get; set; }
+        [DisplayName("Start date")]
+        public DateOnly? StartDate { get; set; }
+        [DisplayName("End date")]
+        public DateOnly? EndDate { get; set; }
+    }
+    internal void MapFundedOffers(GetFeedbackForQualificationFundingByIdQueryResponse feedbackForQualificationFunding)
+    {
+        foreach (var offer in feedbackForQualificationFunding.QualificationFundedOffers)
+        {
+            FundingDetails.Add(new()
+            {
+                FundingOfferName = offer.FundedOfferName,
+                StartDate = offer.StartDate,
+                EndDate = offer.EndDate
+            });
+        }
+    }
     public partial class LifecycleStage
     {
         public Guid Id { get; set; }

@@ -65,26 +65,32 @@ asp-action="Index">
                 </govuk-summary-list-row>
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key>Age group(s)</govuk-summary-list-row-key>
-                    @if (Model.NineteenPlus ?? false)
-                    {
-                        <govuk-summary-list-row-value>19+</govuk-summary-list-row-value>
-                    }
-                    else if (Model.EighteenPlus ?? false)
-                    {
-                        <govuk-summary-list-row-value>18+</govuk-summary-list-row-value>
-                    }
-                    else if (Model.SixteenToEighteen ?? false)
-                    {
-                        <govuk-summary-list-row-value>16-18</govuk-summary-list-row-value>
-                    }
-                    else if (Model.PreSixteen ?? false)
-                    {
-                        <govuk-summary-list-row-value>Pre 16</govuk-summary-list-row-value>
-                    }
-                    else
-                    {
-                        <govuk-summary-list-row-value></govuk-summary-list-row-value>
-                    }
+                    <govuk-summary-list-row-value>
+                        @{
+                            var ageGroups = new List<string>();
+
+                            if (Model.PreSixteen ?? false)
+                            {
+                                ageGroups.Add("Pre 16");
+                            }
+                            if (Model.SixteenToEighteen ?? false)
+                            {
+                                ageGroups.Add("16-18");
+                            }
+                            if (Model.EighteenPlus ?? false)
+                            {
+                                ageGroups.Add("18+");
+                            }
+                            if (Model.NineteenPlus ?? false)
+                            {
+                                ageGroups.Add("19+");
+                            }
+                        }
+                        @foreach (var ageGroup in ageGroups)
+                        {
+                            <p>@ageGroup</p>
+                        }
+                    </govuk-summary-list-row-value>
                 </govuk-summary-list-row>
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key>Guided learning hours (GLH)</govuk-summary-list-row-key>
@@ -138,9 +144,25 @@ asp-action="Index">
                 Save
             </button>
             <div class="govuk-form-group">
-                <a class="govuk-button" asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersOutcome" asp-route-qualificationReference="@Model.Qual.Qan" asp-route-mode="New">
-                    DfE funding review
-                </a>
+                @if (Model.FundingsOffersOutcomeStatus.HasValue)
+                {
+                    <a class="govuk-button" asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersSummary"
+                       asp-route-qualificationReference="@Model.Qual.Qan"
+                       asp-route-qualificationVersionId="@Model.Id"
+                       asp-route-qualificationId="@Model.QualificationId"
+                       asp-route-mode="New">
+                        DfE funding review
+                    </a>
+                    
+                }
+                else
+                {
+                    <a class="govuk-button" asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersOutcome"
+                       asp-route-qualificationReference="@Model.Qual.Qan"
+                       asp-route-mode="New">
+                        DfE funding review
+                    </a>
+                }
             </div>
         </div>
     </div>
