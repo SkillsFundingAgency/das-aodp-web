@@ -1,6 +1,4 @@
-﻿using SFA.DAS.AODP.Infrastructure.File;
-
-namespace SFA.DAS.AODP.Web.Models.TimelineComponents;
+﻿namespace SFA.DAS.AODP.Web.Models.TimelineComponents;
 
 public abstract class TimelineItemBase
 {

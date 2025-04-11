@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Razor.TagHelpers;
+﻿using Azure;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Web.Enums;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SFA.DAS.AODP.Web.Models.Qualifications;
 
@@ -13,6 +14,7 @@ public class ChangedQualificationDetailsViewModel
     public Guid VersionFieldChangesId { get; set; }
     public Guid ProcessStatusId { get; set; }
     public int AdditionalKeyChangesReceivedFlag { get; set; }
+    public string? VersionFieldChanges { get; set; }
     public Guid LifecycleStageId { get; set; }
     public string? ChangedFieldNames { get; set; }
     public string? OutcomeJustificationNotes { get; set; }
@@ -33,7 +35,7 @@ public class ChangedQualificationDetailsViewModel
     public DateTime RegulationStartDate { get; set; }
     [DataType(DataType.DateTime)]
     [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy HH:mm}")]
-    
+
     public DateTime OperationalStartDate { get; set; }
 
     [DataType(DataType.DateTime)]
@@ -43,6 +45,7 @@ public class ChangedQualificationDetailsViewModel
     public DateTime? CertificationEndDate { get; set; }
     public DateTime? ReviewDate { get; set; }
     public bool OfferedInEngland { get; set; }
+    public bool? FundedInEngland { get; set; }
     public bool OfferedInNi { get; set; }
     public bool? OfferedInternationally { get; set; }
     public string? Specialism { get; set; }
@@ -79,6 +82,16 @@ public class ChangedQualificationDetailsViewModel
     public virtual ProcessStatus ProcStatus { get; set; } = null!;
     public AdditionalFormActions AdditionalActions { get; set; } = new AdditionalFormActions();
     public List<ProcessStatus> ProcessStatuses { get; set; } = new List<ProcessStatus>();
+    public List<OfferFundingDetails> FundingDetails { get; set; } = new();
+
+    public class OfferFundingDetails
+    {
+        public string FundingOfferName { get; set; }
+        [DisplayName("Start date")]
+        public DateOnly? StartDate { get; set; }
+        [DisplayName("End date")]
+        public DateOnly? EndDate { get; set; }
+    }
 
     public string Priority
     {
@@ -127,6 +140,19 @@ public class ChangedQualificationDetailsViewModel
         return priority;
     }
 
+    internal void MapFundedOffers(GetFeedbackForQualificationFundingByIdQueryResponse feedbackForQualificationFunding)
+    {
+        foreach (var offer in feedbackForQualificationFunding.QualificationFundedOffers)
+        {
+            FundingDetails.Add(new()
+            {
+                FundingOfferName = offer.FundedOfferName,
+                StartDate = offer.StartDate,
+                EndDate = offer.EndDate
+            });
+        }
+    }
+
     public List<KeyFieldChanges> KeyFieldChanges { get; set; } = new();
     public partial class LifecycleStage
     {
@@ -152,6 +178,8 @@ public class ChangedQualificationDetailsViewModel
         public Guid Id { get; set; }
         public string Qan { get; set; } = null!;
         public string? QualificationName { get; set; }
+
+        public List<ChangedQualificationDetailsViewModel> Versions { get; set; }
     }
 
     public class ActionType
@@ -216,6 +244,7 @@ public class ChangedQualificationDetailsViewModel
             CertificationEndDate = entity.CertificationEndDate,
             ReviewDate = entity.ReviewDate,
             OfferedInEngland = entity.OfferedInEngland,
+            FundedInEngland = entity.FundedInEngland,
             OfferedInNi = entity.OfferedInNi,
             OfferedInternationally = entity.OfferedInternationally,
             Specialism = entity.Specialism,
@@ -266,14 +295,101 @@ public class ChangedQualificationDetailsViewModel
             {
                 Id = entity.Qual.Id,
                 Qan = entity.Qual.Qan,
-                QualificationName = entity.Qual.QualificationName
+                QualificationName = entity.Qual.QualificationName,
+                Versions = (List<ChangedQualificationDetailsViewModel>)entity.Qual.Versions.Select(i => new ChangedQualificationDetailsViewModel()
+                {
+
+                    Id = i.Id,
+                    QualificationId = i.QualificationId,
+                    VersionFieldChangesId = i.VersionFieldChangesId,
+                    ProcessStatusId = i.ProcessStatusId,
+                    AdditionalKeyChangesReceivedFlag = i.AdditionalKeyChangesReceivedFlag,
+                    LifecycleStageId = i.LifecycleStageId,
+                    ChangedFieldNames = i.VersionFieldChanges,
+                    OutcomeJustificationNotes = i.OutcomeJustificationNotes,
+                    AwardingOrganisationId = i.AwardingOrganisationId,
+                    Status = i.Status,
+                    Type = i.Type,
+                    Ssa = i.Ssa,
+                    Level = i.Level,
+                    SubLevel = i.SubLevel,
+                    EqfLevel = i.EqfLevel,
+                    GradingType = i.GradingType,
+                    GradingScale = i.GradingScale,
+                    TotalCredits = i.TotalCredits,
+                    Tqt = i.Tqt,
+                    Glh = i.Glh,
+                    MinimumGlh = i.MinimumGlh,
+                    MaximumGlh = i.MaximumGlh,
+                    RegulationStartDate = i.RegulationStartDate,
+                    OperationalStartDate = i.OperationalStartDate,
+                    OperationalEndDate = i.OperationalEndDate,
+                    CertificationEndDate = i.CertificationEndDate,
+                    ReviewDate = i.ReviewDate,
+                    OfferedInEngland = i.OfferedInEngland,
+                    OfferedInNi = i.OfferedInNi,
+                    OfferedInternationally = i.OfferedInternationally,
+                    Specialism = i.Specialism,
+                    Pathways = i.Pathways,
+                    AssessmentMethods = i.AssessmentMethods,
+                    ApprovedForDelFundedProgramme = i.ApprovedForDelFundedProgramme,
+                    LinkToSpecification = i.LinkToSpecification,
+                    ApprenticeshipStandardReferenceNumber = i.ApprenticeshipStandardReferenceNumber,
+                    ApprenticeshipStandardTitle = i.ApprenticeshipStandardTitle,
+                    RegulatedByNorthernIreland = i.RegulatedByNorthernIreland,
+                    NiDiscountCode = i.NiDiscountCode,
+                    GceSizeEquivelence = i.GceSizeEquivelence,
+                    GcseSizeEquivelence = i.GcseSizeEquivelence,
+                    EntitlementFrameworkDesign = i.EntitlementFrameworkDesign,
+                    LastUpdatedDate = i.LastUpdatedDate,
+                    UiLastUpdatedDate = i.UiLastUpdatedDate,
+                    InsertedDate = i.InsertedDate,
+                    InsertedTimestamp = i.InsertedTimestamp,
+                    Version = i.Version,
+                    AppearsOnPublicRegister = i.AppearsOnPublicRegister,
+                    LevelId = i.LevelId,
+                    TypeId = i.TypeId,
+                    SsaId = i.SsaId,
+                    GradingTypeId = i.GradingTypeId,
+                    GradingScaleId = i.GradingScaleId,
+                    PreSixteen = i.PreSixteen,
+                    SixteenToEighteen = i.SixteenToEighteen,
+                    EighteenPlus = i.EighteenPlus,
+                    NineteenPlus = i.NineteenPlus,
+                    ImportStatus = i.ImportStatus,
+                    Stage = new LifecycleStage
+                    {
+                        Id = i.Stage.Id,
+                        Name = i.Stage.Name,
+                    },
+                    Organisation = new AwardingOrganisation
+                    {
+                        Id = i.Organisation.Id,
+                        Ukprn = i.Organisation.Ukprn,
+                        RecognitionNumber = i.Organisation.RecognitionNumber,
+                        NameLegal = i.Organisation.NameLegal,
+                        NameOfqual = i.Organisation.NameOfqual,
+                        NameGovUk = i.Organisation.NameGovUk,
+                        Name_Dsi = i.Organisation.Name_Dsi,
+                        Acronym = i.Organisation.Acronym,
+                    },
+                    Qual = new Qualification
+                    {
+                        Id = entity.Qual.Id,
+                        Qan = entity.Qual.Qan,
+                        QualificationName = entity.Qual.QualificationName
+                    }
+
+
+                }).ToList()
             },
             ProcStatus = new ProcessStatus()
             {
                 Id = entity.ProcStatus.Id,
                 Name = entity.ProcStatus.Name,
                 IsOutcomeDecision = entity.ProcStatus.IsOutcomeDecision,
-            }
+            },
+
         };
     }
 }

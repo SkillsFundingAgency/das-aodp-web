@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 using SFA.DAS.AODP.Application;
+using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Domain.Interfaces;
 using SFA.DAS.AODP.Infrastructure.Cache;
 using SFA.DAS.AODP.Infrastructure.File;
@@ -12,6 +13,7 @@ using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Areas.Review.Models.Home;
 using SFA.DAS.AODP.Web.Helpers.User;
+using SFA.DAS.AODP.Web.Models.FormBuilder.Form;
 using System.IO.Compression;
 
 namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
@@ -23,7 +25,7 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
         private readonly Mock<IMediator> _mediatorMock = new();
         private readonly Mock<IUserHelperService> _userHelperServiceMock = new();
         private readonly Mock<IFileService> _fileServiceMock = new();
-        private readonly Web.Areas.Review.Controllers.ApplicationsReviewController _controller;
+        private readonly ApplicationsReviewController _controller;
 
         public ApplicationsReviewControllerTests() => _controller = new(_loggerMock.Object, _mediatorMock.Object, _userHelperServiceMock.Object, _fileServiceMock.Object);
 
@@ -167,5 +169,6 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
             // Act & Assert
             await Assert.ThrowsAsync<IOException>(() => _controller.DownloadAllApplicationFiles(applicationReviewId));
         }
+
     }
 }

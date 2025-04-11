@@ -40,7 +40,7 @@ namespace SFA.DAS.AODP.Application.Tests.Commands.Qualifications
             var request = _fixture.Create<CreateQualificationDiscussionHistoryNoteForFundingOffersCommand>();
             var expectedResponse = new BaseMediatrResponse<EmptyResponse> { Success = true };
             _apiClientMock
-                .Setup(a => a.Put(It.IsAny<CreateQualificationDiscussionHistoryApiRequest>()))
+                .Setup(a => a.Put(It.IsAny<CreateQualificationDiscussionHistoryNoteForFundingApiRequest>()))
                 .Returns(Task.CompletedTask);
 
             // Act
@@ -48,7 +48,7 @@ namespace SFA.DAS.AODP.Application.Tests.Commands.Qualifications
 
             // Assert
             _apiClientMock
-                .Verify(a => a.Put(It.Is<CreateQualificationDiscussionHistoryApiRequest>(r => r.QualificationVersionId == request.QualificationVersionId && r.Data == request)), Times.Once);
+                .Verify(a => a.Put(It.Is<CreateQualificationDiscussionHistoryNoteForFundingApiRequest>(r => r.QualificationVersionId == request.QualificationVersionId && r.Data == request)), Times.Once);
 
             Assert.NotNull(response);
             Assert.True(response.Success);
@@ -61,7 +61,7 @@ namespace SFA.DAS.AODP.Application.Tests.Commands.Qualifications
             var request = _fixture.Create<CreateQualificationDiscussionHistoryNoteForFundingOffersCommand>();
             var expectedException = _fixture.Create<Exception>();
             _apiClientMock
-                .Setup(a => a.Put(It.IsAny<CreateQualificationDiscussionHistoryApiRequest>()))
+                .Setup(a => a.Put(It.IsAny<CreateQualificationDiscussionHistoryNoteForFundingApiRequest>()))
                 .ThrowsAsync(expectedException);
 
             // Act

@@ -4,8 +4,8 @@
     ViewData["Title"] = "Qualification Details";
 }
 <a class="govuk-back-link"
-asp-controller="changed"
-asp-action="Index">
+   asp-controller="changed"
+   asp-action="Index">
     Back
 </a>
 
@@ -62,7 +62,7 @@ asp-action="Index">
                 </govuk-summary-list-row>
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key>Awarding organisation</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.Organisation.NameLegal</govuk-summary-list-row-value>
+                    <govuk-summary-list-row-value>@Model.Organisation.NameOfqual</govuk-summary-list-row-value>
                 </govuk-summary-list-row>
 
                 <govuk-summary-list-row>
@@ -78,7 +78,7 @@ asp-action="Index">
                     <govuk-summary-list-row-value>@Model.Specialism</govuk-summary-list-row-value>
                 </govuk-summary-list-row>
                 <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>Age Group</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-key>Age group(s)</govuk-summary-list-row-key>
                     @if (Model.NineteenPlus ?? false)
                     {
                         <govuk-summary-list-row-value>19+</govuk-summary-list-row-value>
@@ -105,11 +105,26 @@ asp-action="Index">
                     <govuk-summary-list-row-value>@Model.OfferedInEngland</govuk-summary-list-row-value>
                 </govuk-summary-list-row>
                 <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>GLH</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-key>Ofqual Funding in England</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>@Model.FundedInEngland</govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>DfE offers funded</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>
+                        @foreach (var offerfunded in Model.FundingDetails)
+                        {
+                            <p>
+                                @($"Offer: {offerfunded.FundingOfferName ?? ""} ({offerfunded.StartDate?.ToString("MM/dd/yyyy") ?? ""} - {offerfunded.EndDate?.ToString("MM/dd/yyyy") ?? ""})")
+                            </p>
+                        }
+                    </govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>Guided learning hours (GLH)</govuk-summary-list-row-key>
                     <govuk-summary-list-row-value>@Model.Glh</govuk-summary-list-row-value>
                 </govuk-summary-list-row>
                 <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>TQT</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-key>Total qualification time (TQT)</govuk-summary-list-row-key>
                     <govuk-summary-list-row-value>@Model.Tqt</govuk-summary-list-row-value>
                 </govuk-summary-list-row>
                 <govuk-summary-list-row>
@@ -118,37 +133,34 @@ asp-action="Index">
                 </govuk-summary-list-row>
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key> Operational Start Date</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.OperationalStartDate</govuk-summary-list-row-value>
+                    <govuk-summary-list-row-value>@Html.ValueFor(m => m.OperationalStartDate, "{0:MM/dd/yy hh:mm}")</govuk-summary-list-row-value>
                 </govuk-summary-list-row>
                 <govuk-summary-list-row>
-                    <govuk-summary-list-row-key> Operational Start Date</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.OperationalEndDate</govuk-summary-list-row-value>
+                    <govuk-summary-list-row-key> Operational End Date</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>@Html.ValueFor(m => m.OperationalEndDate, "{0:MM/dd/yy hh:mm}")</govuk-summary-list-row-value>
                 </govuk-summary-list-row>
-
-                <govuk-summary-list-row>
-                    <govuk-summary-list-row-key> Operational Start Date</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.OperationalEndDate</govuk-summary-list-row-value>
-                </govuk-summary-list-row>
-
             </govuk-summary-list>
 
-            <h3 class="govuk-!-margin-top-8">Changes</h3>
 
-            <div class="govuk-!-margin-bottom-8">
-                <govuk-summary-list>
-                    @foreach (var change in Model.KeyFieldChanges.OrderBy(item => item.Name))
-                    {
-                        <govuk-summary-list-row>
-                            <govuk-summary-list-row-key>@change.Name</govuk-summary-list-row-key>
-                            <govuk-summary-list-row-value>
-                                <p class="govuk-body govuk-!-font-weight-bold">Was:<span class="govuk-body govuk-!-font-weight-regular"> @change.Was</span></p>
-                                <p class="govuk-body govuk-!-font-weight-bold">Now:<span class="govuk-body govuk-!-font-weight-regular"> @change.Now</span></p>
-                            </govuk-summary-list-row-value>
-                        </govuk-summary-list-row>
-                    }
-                   </govuk-summary-list>
-            </div>
-       
+            @if (Model.KeyFieldChanges.Any())
+            {
+                <h3 class="govuk-!-margin-top-8">Changes</h3>
+
+                <div class="govuk-!-margin-bottom-8">
+                    <govuk-summary-list>
+                        @foreach (var change in Model.KeyFieldChanges.OrderBy(item => item.Name))
+                        {
+                            <govuk-summary-list-row>
+                                <govuk-summary-list-row-key>@change.Name</govuk-summary-list-row-key>
+                                <govuk-summary-list-row-value>
+                                    <p class="govuk-body govuk-!-font-weight-bold">Was:<span class="govuk-body govuk-!-font-weight-regular"> @change.Was</span></p>
+                                    <p class="govuk-body govuk-!-font-weight-bold">Now:<span class="govuk-body govuk-!-font-weight-regular"> @change.Now</span></p>
+                                </govuk-summary-list-row-value>
+                            </govuk-summary-list-row>
+                        }
+                    </govuk-summary-list>
+                </div>
+            }
 
             <div class="govuk-form-group">
                 <govuk-textarea asp-for="@Model.AdditionalActions.Note">
@@ -173,7 +185,7 @@ asp-action="Index">
                 Save
             </button>
             <div class="govuk-form-group">
-                <a class="govuk-button" asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersOutcome" asp-route-qualificationReference="@Model.Qual.Qan">
+                <a class="govuk-button" asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersOutcome" asp-route-qualificationReference="@Model.Qual.Qan" asp-route-mode="Changed">
                     DfE funding review
                 </a>
             </div>

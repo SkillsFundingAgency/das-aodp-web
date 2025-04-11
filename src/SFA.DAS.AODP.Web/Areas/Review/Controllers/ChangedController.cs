@@ -36,7 +36,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             this._userHelperService = userHelperService;
         }
 
-        public async Task<IActionResult> Index(int pageNumber = 0, int recordsPerPage = 10, string name = "", string organisation = "", string qan = "")
+        public async Task<IActionResult> Index(List<Guid>? processStatusIds, int pageNumber = 0, int recordsPerPage = 10, string name = "", string organisation = "", string qan = "")
         {
             var viewModel = new ChangedQualificationsViewModel();
             try
@@ -46,6 +46,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 {
                     ShowNotificationIfKeyExists(NewQualDataKeys.InvalidPageParams.ToString(), ViewNotificationMessageType.Error, "Invalid parameters.");
                 }
+
+                var procStatuses = await Send(new GetProcessStatusesQuery());
 
                 // Initial page load will not load records and have a page number of 0
                 if (pageNumber > 0)
@@ -66,13 +68,25 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                         query.QAN = qan;
                     }
 
+
+                    if (processStatusIds?.Any() ?? false)
+                    {
+                        query.ProcessStatusIds = processStatusIds;
+                    }
                     query.Take = recordsPerPage;
                     query.Skip = recordsPerPage * (pageNumber - 1);
 
                     var response = await Send(query);
-                    viewModel = ChangedQualificationsViewModel.Map(response, organisation, qan, name);
+                    viewModel = ChangedQualificationsViewModel.Map(response, procStatuses.ProcessStatuses, organisation, qan, name);
                 }
-
+                viewModel.Filter = new NewQualificationFilterViewModel()
+                {
+                    Organisation = organisation,
+                    QualificationName = name,
+                    QAN = qan,
+                    ProcessStatusIds = processStatusIds
+                };
+                viewModel.ProcessStatuses = [.. procStatuses.ProcessStatuses];
                 return View(viewModel);
             }
             catch (Exception ex)
@@ -93,7 +107,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     recordsPerPage = viewModel.PaginationViewModel.RecordsPerPage,
                     name = viewModel.Filter.QualificationName,
                     organisation = viewModel.Filter.Organisation,
-                    qan = viewModel.Filter.QAN
+                    qan = viewModel.Filter.QAN,
+                    processStatusIds = viewModel.Filter.ProcessStatusIds,
                 });
             }
             catch (Exception ex)
@@ -164,9 +179,59 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 return Redirect("/Home/Error");
             }
 
-            NewQualificationDetailsTimelineViewModel result = await Send(new GetDiscussionHistoriesForQualificationQuery { QualificationReference = qualificationReference });
-            result.Qan = qualificationReference;
-            return View(result);
+            try
+            {
+                QualificationDetailsTimelineViewModel discussionHistoryDetailsResult = await Send(new GetDiscussionHistoriesForQualificationQuery { QualificationReference = qualificationReference });
+                ChangedQualificationDetailsViewModel qualificationWithVersions = await Send(new GetQualificationDetailWithVersionsQuery { QualificationReference = qualificationReference });
+
+                var latestVersionNumber = qualificationWithVersions.Qual.Versions.Max(i => i.Version) ?? 0;
+
+                var currentVersion = qualificationWithVersions.Qual.Versions.Where(i => i.Version == latestVersionNumber).FirstOrDefault();
+                if (latestVersionNumber > 1)
+                {
+                    for (int? i = latestVersionNumber; i > 1; i--)
+                    {
+                        if (i != latestVersionNumber)
+                            currentVersion = qualificationWithVersions.Qual.Versions.Where(v => v.Version == i).FirstOrDefault();
+                        var previousVersion = qualificationWithVersions.Qual.Versions.Where(v => v.Version == i - 1).FirstOrDefault();
+                        var keyFieldsChanges = currentVersion.ChangedFieldNames.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+                        GetKeyFieldChanges(currentVersion, previousVersion, keyFieldsChanges);
+
+                        if (currentVersion.KeyFieldChanges.Any())
+                        {
+                            var notes = BuildChangeString(currentVersion);
+                            discussionHistoryDetailsResult.QualificationDiscussionHistories.Add(new()
+                            {
+                                Notes = notes,
+                                Title = "Change",
+                                UserDisplayName = "OFQUAL Import",
+                                Timestamp = currentVersion.InsertedTimestamp
+                            });
+                        }
+                    }
+                }
+                discussionHistoryDetailsResult.Qan = qualificationReference;
+                return View(discussionHistoryDetailsResult);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+                return Redirect("/Home/Error");
+                ;
+            }
+        }
+
+        private static string BuildChangeString(ChangedQualificationDetailsViewModel qualVersion)
+        {
+            string comment = "";
+            foreach (var item in qualVersion.KeyFieldChanges)
+            {
+                comment += item.Name + "<br/>Was:" + item.Was + "<br/>"
+            + "Now:" + item.Now + "<br/><br/>"
+                ;
+            }
+            return comment;
         }
 
         [Route("/Review/Changed/QualificationDetails")]
@@ -178,17 +243,19 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
             try
             {
-
                 ChangedQualificationDetailsViewModel latestVersion = await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });
                 latestVersion.ProcessStatuses = [.. await GetProcessStatuses()];
- 
+                
                 ShowNotificationIfKeyExists(NewQualDataKeys.CommentSaved.ToString(), ViewNotificationMessageType.Success, "The comment has been saved.");
+                
+                var feedbackForQualificationFunding = await Send(new GetFeedbackForQualificationFundingByIdQuery(latestVersion.Id));
+                latestVersion.MapFundedOffers(feedbackForQualificationFunding);
 
                 if (latestVersion.Version > 1)
                 {
                     var previousVersion = await Send(new GetQualificationVersionQuery() { QualificationReference = qualificationReference, Version = latestVersion.Version - 1 });
 
-                    var keyFieldsChanges = latestVersion.ChangedFieldNames.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                    var keyFieldsChanges = latestVersion?.ChangedFieldNames?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
                     GetKeyFieldChanges(latestVersion, previousVersion, keyFieldsChanges);
                 }
                 return View(latestVersion);
@@ -201,14 +268,14 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
         }
 
-        private static void GetKeyFieldChanges(ChangedQualificationDetailsViewModel latestVersion, GetQualificationDetailsQueryResponse previousVersion, string[] keyFieldsChanges)
+        private static void GetKeyFieldChanges(ChangedQualificationDetailsViewModel latestVersion, ChangedQualificationDetailsViewModel previousVersion, string[] keyFieldsChanges)
         {
             foreach (var item in keyFieldsChanges)
             {
                 switch (item)
                 {
                     case "OrganisationName":
-                        latestVersion.KeyFieldChanges.Add(new() { Name = "Organisation Name", Was = previousVersion.Organisation.NameLegal, Now = latestVersion.Organisation.NameLegal });
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Organisation Name", Was = previousVersion.Organisation.NameOfqual, Now = latestVersion.Organisation.NameOfqual });
                         break;
                     case "Title":
                         latestVersion.KeyFieldChanges.Add(new() { Name = "Title", Was = previousVersion.Qual.QualificationName, Now = latestVersion.Qual.QualificationName });
@@ -243,24 +310,23 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     case "NineteenPlus":
                         latestVersion.KeyFieldChanges.Add(new() { Name = "Nineteen Plus", Was = previousVersion.NineteenPlus.ToString(), Now = latestVersion.NineteenPlus.ToString() });
                         break;
-                    //case "FundingInEngland":
-                    //    latestVersion.KeyFieldChanges.Add(new() { Name = "Nineteen Plus", Was = previousVersion.eng.ToString(), Now = latestVersion.NineteenPlus.ToString() });
-                    //    break;
-                    case "Glh":
-                        latestVersion.KeyFieldChanges.Add(new() { Name = "GLH", Was = previousVersion.Glh.ToString(), Now = latestVersion.Glh.ToString() });
+                    case "FundingInEngland":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Nineteen Plus", Was = previousVersion.FundedInEngland.ToString(), Now = latestVersion.FundedInEngland.ToString() });
+                        break;
+                    case "GLH":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Guided learning hours (GLH)", Was = previousVersion.Glh.ToString(), Now = latestVersion.Glh.ToString() });
                         break;
                     case "MinimumGlh":
                         latestVersion.KeyFieldChanges.Add(new() { Name = "Minimum GLH", Was = previousVersion.MinimumGlh.ToString(), Now = latestVersion.MinimumGlh.ToString() });
                         break;
-                    case "Tqt":
-                        latestVersion.KeyFieldChanges.Add(new() { Name = "TQT", Was = previousVersion.Tqt.ToString(), Now = latestVersion.Tqt.ToString() });
+                    case "TQT":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Total qualification time (TQT)", Was = previousVersion.Tqt.ToString(), Now = latestVersion.Tqt.ToString() });
                         break;
                     case "OperationalEndDate":
-                        latestVersion.KeyFieldChanges.Add(new() { Name = "Operational End Date", Was = previousVersion.OperationalEndDate.ToString(), Now = latestVersion.OperationalEndDate.ToString() });
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Operational End Date", Was = String.Format("{0:MM/dd/yy hh:mm}", previousVersion.OperationalEndDate.ToString()), Now = String.Format("{0:MM/dd/yy HH:mm}", latestVersion.OperationalEndDate.ToString()) });
                         break;
-
                     case "LastUpdatedDate":
-                        latestVersion.KeyFieldChanges.Add(new() { Name = "Last updated date", Was = previousVersion.LastUpdatedDate.ToString(), Now = latestVersion.LastUpdatedDate.ToString() });
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Last updated date", Was = String.Format("{0:MM/dd/yy hh:mm}", previousVersion.LastUpdatedDate.ToString()), Now = String.Format("{0:MM/dd/yy HH:mm}", latestVersion.LastUpdatedDate.ToString()) });
 
                         break;
                     case "Version":
@@ -378,6 +444,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 return writer.ToString();
             }
         }
+
         private class CsvExportResult
         {
             public bool Success { get; set; }

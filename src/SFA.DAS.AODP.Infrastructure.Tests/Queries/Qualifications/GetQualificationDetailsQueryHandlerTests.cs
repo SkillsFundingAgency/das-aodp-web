@@ -1,11 +1,8 @@
 ﻿using AutoFixture;
 using AutoFixture.AutoMoq;
 using Moq;
-using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Domain.Interfaces;
-using SFA.DAS.AODP.Domain.Qualifications.Requests;
-using Xunit;
 
 namespace SFA.DAS.AODP.Infrastructure.Tests.Queries.Qualifications;
 
@@ -18,6 +15,9 @@ public class GetQualificationDetailsQueryHandlerTests
     public GetQualificationDetailsQueryHandlerTests()
     {
         _fixture = new Fixture().Customize(new AutoMoqCustomization());
+        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+         .ForEach(b => _fixture.Behaviors.Remove(b));
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
         _apiClientMock = _fixture.Freeze<Mock<IApiClient>>();
         _handler = _fixture.Create<GetQualificationDetailsQueryHandler>();
     }
@@ -27,6 +27,10 @@ public class GetQualificationDetailsQueryHandlerTests
     {
         // Arrange
         var query = _fixture.Create<GetQualificationDetailsQuery>();
+        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>()
+.ToList()
+.ForEach(b => _fixture.Behaviors.Remove(b));
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
         var response = _fixture.Create<GetQualificationDetailsQueryResponse>();
 
         _apiClientMock.Setup(x => x.Get<GetQualificationDetailsQueryResponse>(It.IsAny<GetQualificationDetailsApiRequest>()))

@@ -10,6 +10,7 @@ using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 using System.Diagnostics.CodeAnalysis;
+using static SFA.DAS.AODP.Application.Queries.Qualifications.GetProcessStatusesQueryResponse;
 
 namespace SFA.DAS.AODP.Web.Test.Controllers;
 
@@ -26,9 +27,9 @@ public class ReviewChangedControllerTests
         _fixture = new Fixture().Customize(new AutoMoqCustomization());
         _loggerMock = _fixture.Freeze<Mock<ILogger<ChangedController>>>();
         _loggerMock = _fixture.Freeze<Mock<ILogger<ChangedController>>>();
-        _userHelper= _fixture.Freeze<Mock<IUserHelperService>>();
+        _userHelper = _fixture.Freeze<Mock<IUserHelperService>>();
         _mediatorMock = _fixture.Freeze<Mock<IMediator>>();
-        _controller = new ChangedController(_loggerMock.Object, _mediatorMock.Object,_userHelper.Object);
+        _controller = new ChangedController(_loggerMock.Object, _mediatorMock.Object, _userHelper.Object);
     }
 
     [Fact]
@@ -42,12 +43,18 @@ public class ReviewChangedControllerTests
         _mediatorMock.Setup(m => m.Send(It.IsAny<GetChangedQualificationsQuery>(), default))
                      .ReturnsAsync(queryResponse);
 
+        var processResponse = _fixture.Create<BaseMediatrResponse<GetProcessStatusesQueryResponse>>();
+        processResponse.Success = true;
+        processResponse.Value.ProcessStatuses = _fixture.CreateMany<ProcessStatus>(2).ToList();
+        _mediatorMock.Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), default))
+                     .ReturnsAsync(processResponse);
+
         // Act
-        var result = await _controller.Index();
+        var result = await _controller.Index(processStatusIds: new List<Guid>());
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
-        var model = Assert.IsAssignableFrom<ChangedQualificationsViewModel>(viewResult.ViewData.Model);        
+        var model = Assert.IsAssignableFrom<ChangedQualificationsViewModel>(viewResult.ViewData.Model);
     }
 
     [Fact]
@@ -64,8 +71,14 @@ public class ReviewChangedControllerTests
         _mediatorMock.Setup(m => m.Send(It.IsAny<GetChangedQualificationsQuery>(), default))
                      .ReturnsAsync(queryResponse);
 
+        var processResponse = _fixture.Create<BaseMediatrResponse<GetProcessStatusesQueryResponse>>();
+        processResponse.Success = true;
+        processResponse.Value.ProcessStatuses = _fixture.CreateMany<ProcessStatus>(2).ToList();
+        _mediatorMock.Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), default))
+                     .ReturnsAsync(processResponse);
+
         // Act
-        var result = await _controller.Index(pageNumber: 1, recordsPerPage: 10);
+        var result = await _controller.Index(processStatusIds: new List<Guid>(), pageNumber: 1, recordsPerPage: 10);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -88,7 +101,7 @@ public class ReviewChangedControllerTests
                      .ReturnsAsync(queryResponse);
 
         // Act
-        var result = await _controller.Index(pageNumber: 1, recordsPerPage: 10);
+        var result = await _controller.Index(processStatusIds: new List<Guid>(), pageNumber: 1, recordsPerPage: 10);
 
         // Assert
         var redirect = Assert.IsType<RedirectResult>(result);
@@ -144,7 +157,7 @@ public class ReviewChangedControllerTests
         var result = await _controller.QualificationDetails(string.Empty);
 
         // Assert
-        var badRequestResult = Assert.IsType<RedirectResult>(result);        
+        var badRequestResult = Assert.IsType<RedirectResult>(result);
     }
 
     [Fact]
@@ -163,7 +176,7 @@ public class ReviewChangedControllerTests
 
         // Assert
         var viewResult = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal("Index",viewResult.ActionName);
+        Assert.Equal("Index", viewResult.ActionName);
     }
 
     [Fact]
@@ -189,7 +202,7 @@ public class ReviewChangedControllerTests
     public async Task Search()
     {
         // Arrange
-        var viewModel = _fixture.Create<ChangedQualificationsViewModel>();       
+        var viewModel = _fixture.Create<ChangedQualificationsViewModel>();
 
         // Act
         var result = await _controller.Search(viewModel);

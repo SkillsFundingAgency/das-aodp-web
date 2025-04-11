@@ -9,6 +9,7 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications.Fundings
         public List<FundingOffer> FundingOffers { get; set; } = new();
         public Guid QualificationId { get; set; }
         public string? QualificationReference { get; set; }
+        public string Mode { get; set; }
 
         public class OfferFundingDetails
         {
