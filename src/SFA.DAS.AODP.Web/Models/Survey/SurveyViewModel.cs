@@ -21,6 +21,7 @@ namespace SFA.DAS.AODP.Web.Models.Survey
         public SatisfactionScoreIndex? SatisfactionScore { get; set; }
 
         [Required]
+        [StringLength(1200, MinimumLength = 1, ErrorMessage = "Comments 1200 characters maximum.")]
         public string Comments { get; set; }
     }
 }
