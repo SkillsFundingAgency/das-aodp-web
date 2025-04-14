@@ -13,6 +13,8 @@ using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.File;
 using SFA.DAS.AODP.Web.Helpers.User;
+using StackExchange.Redis;
+using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers;
@@ -41,8 +43,8 @@ public class ApplicationMessagesController : ControllerBase
     [Route("review/{applicationReviewId}/messages")]
     public async Task<IActionResult> ApplicationMessagesAsync(Guid applicationReviewId)
     {
-        var applicationId = await GetApplicationIdAsync(applicationReviewId);
-        var response = await Send(new GetApplicationMessagesByIdQuery(applicationId, UserType.ToString()));
+        var applicationId = await GetApplicationIdWithAccessValidationAsync(applicationReviewId);
+        var response = await Send(new GetApplicationMessagesByApplicationIdQuery(applicationId, UserType.ToString()));
         var messages = response.Messages;
 
         var timelineFiles = await GetApplicationMessageFilesAsync(applicationId);
@@ -105,7 +107,7 @@ public class ApplicationMessagesController : ControllerBase
     public async Task<IActionResult> ApplicationMessages([FromForm] ApplicationMessagesViewModel model)
     {
         model.FileSettings = _formBuilderSettings;
-        var applicationId = await GetApplicationIdAsync(model.ApplicationReviewId);
+        var applicationId = await GetApplicationIdWithAccessValidationAsync(model.ApplicationReviewId);
 
         if (!ModelState.IsValid)
         {
@@ -178,7 +180,7 @@ public class ApplicationMessagesController : ControllerBase
     [Route("review/{applicationReviewId}/messages/read")]
     public async Task<IActionResult> ReadApplicationMessages([FromForm] MarkApplicationMessagesAsReadViewModel model)
     {
-        var applicationId = await GetApplicationIdAsync(model.ApplicationReviewId);
+        var applicationId = await GetApplicationIdWithAccessValidationAsync(model.ApplicationReviewId);
 
         await Send(new MarkAllMessagesAsReadCommand()
         {
@@ -193,21 +195,37 @@ public class ApplicationMessagesController : ControllerBase
 
     [HttpPost]
     [Route("review/{applicationReviewId}/message-file-download")]
-    public async Task<IActionResult> ApplicationReviewMessageFileDownload([FromForm] string filePath, [FromRoute] Guid applicationReviewId)
+    public async Task<IActionResult> ApplicationReviewMessageFileDownload([FromForm] string filePath, [FromRoute] Guid applicationReviewId, [FromForm] Guid messageId)
     {
-        var applicationId = await GetApplicationIdAsync(applicationReviewId);
+        var applicationId = await GetApplicationIdWithAccessValidationAsync(applicationReviewId);
 
-        if (!filePath.StartsWith($"messages/{applicationId}/"))
+        if (!filePath.StartsWith($"messages/{applicationId}/{messageId}/"))
         {
             return BadRequest();
         }
+
+        // Now check whether the user has access to this particular message
+        var message = await Send(new GetApplicationMessageByIdQuery(messageId));
+        if (message == null) return BadRequest();
+
+        var availableToUserType = false;
+        var userType = _userHelperService.GetUserType();
+        if ((userType == UserType.Qfau && message.SharedWithDfe) ||
+              (userType == UserType.SkillsEngland && message.SharedWithSkillsEngland) ||
+              (userType == UserType.Ofqual && message.SharedWithOfqual))
+        {
+            availableToUserType = true;
+        }
+
+        if (!availableToUserType) return BadRequest();
+
 
         var file = await _fileService.GetBlobDetails(filePath.ToString());
         var fileStream = await _fileService.OpenReadStreamAsync(filePath);
         return File(fileStream, "application/octet-stream", file.FileNameWithPrefix);
     }
 
-    private async Task<Guid> GetApplicationIdAsync(Guid applicationReviewId)
+    private async Task<Guid> GetApplicationIdWithAccessValidationAsync(Guid applicationReviewId)
     {
         var shared = await Send(new GetApplicationReviewSharingStatusByIdQuery(applicationReviewId));
 

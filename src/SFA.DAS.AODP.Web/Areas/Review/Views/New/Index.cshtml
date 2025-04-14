@@ -18,7 +18,7 @@
                 {
                     <div class="govuk-inset-text">Import for this cycle ran: @(Model.JobStatusViewModel.LastRunTime.HasValue ? Model.JobStatusViewModel.LastRunTime.Value.ToString("G") : "Never")</div>
                     <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
-                }                
+                }
                 <form asp-controller="New" asp-action="Search" asp-area="Review" method="post">
                     <div class="govuk-grid-row" id="New_Qual_FilterSection">
                         <div class="govuk-grid-column-full">
@@ -28,64 +28,46 @@
                                 </div>
                             </div>
                             <div class="govuk-grid-row">
-                                <div class="govuk-grid-column-one-quarter">                                
-                                    <div class="govuk-form-group">                                    
-                                        <govuk-input asp-for="@Model.Filter.QualificationName" input-class="govuk-input--width-50" inputmode="text" spellcheck="false">
-                                            <govuk-input-label is-page-heading="false" class="govuk-label--s">Qualification Name</govuk-input-label>                                        
-                                        </govuk-input>
-                                    </div>                                
+                                <div class="govuk-grid-column-one-quarter">
                                     <div class="govuk-form-group">
-                                        <govuk-input asp-for="@Model.Filter.QAN" input-class="govuk-input--width-50" inputmode="text" spellcheck="false">
-                                            <govuk-input-label is-page-heading="false" class="govuk-label--s">QAN</govuk-input-label>                                       
+                                        <govuk-input asp-for="@Model.Filter.QualificationName" value="@Html.Encode(Model.Filter.QualificationName)" inputmode="text" spellcheck="false">
+                                            <govuk-input-label is-page-heading="false" class="govuk-label--s">Qualification Name</govuk-input-label>
                                         </govuk-input>
-                                    </div>                                
-                                    <div class="govuk-form-group">
-                                        <govuk-input asp-for="@Model.Filter.Organisation" input-class="govuk-input--width-50" inputmode="text" spellcheck="false">
-                                            <govuk-input-label is-page-heading="false" class="govuk-label--s">Awarding Organisation</govuk-input-label>                                       
-                                        </govuk-input>
-                                    </div>                                   
-                                </div>
-                                <div class="govuk-grid-column-three-quarters">
-                                    <div class="govuk-tabs" data-module="govuk-tabs">
-                                        <h5 class="govuk-tabs__title">
-                                            Filter Options
-                                        </h5>
-                                        <ul class="govuk-tabs__list">
-                                            <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
-                                                <a class="govuk-tabs__tab" href="#filter-tabs-type">
-                                                    Type
-                                                </a>
-                                            </li>
-                                        </ul>
-                                        <div class="govuk-tabs__panel" id="filter-tabs-type">
-                                            <div class="govuk-grid-row">
-                                                <div class="govuk-grid-column-full">
-                                                    <div class="govuk-form-group">
-                                                        <fieldset class="govuk-fieldset">
-                                                            <govuk-checkboxes name="Filter[ProcessStatusIds]" class="govuk-checkboxes--small" asp-for="@Model.Filter.ProcessStatusIds">
-
-                                                                <govuk-checkboxes-fieldset>
-
-                                                                    <govuk-checkboxes-fieldset-legend is-page-heading="false" class="govuk-label--s">
-                                                                        <div class="govuk-label govuk-label--s">Status</div>
-                                                                    </govuk-checkboxes-fieldset-legend>
-                                                                    @Html.RenderPartialAsync("Validation/_CheckboxValidationPartial", nameof(Model.Filter.ProcessStatusIds))
-                                                                    
-                                                                    @foreach (var status in Model.ProcessStatuses)
-                                                                    {
-                                                                        <govuk-checkboxes-item checked="@Model.Filter.ProcessStatusIds?.Contains(status.Id)" value="@status.Id">@status.Name</govuk-checkboxes-item>
-                                                                    }
-                                                                    
-                                                                </govuk-checkboxes-fieldset>
-
-                                                            </govuk-checkboxes>
-                                                        </fieldset>
-                                                    </div>
-                                                </div>
-
-                                            </div>
-                                        </div>
                                     </div>
+                                    <div class="govuk-form-group">
+                                        <govuk-input asp-for="@Model.Filter.QAN" value="@Html.Encode(Model.Filter.QAN)" inputmode="text" spellcheck="false">
+                                            <govuk-input-label is-page-heading="false" class="govuk-label--s">QAN</govuk-input-label>
+                                        </govuk-input>
+                                    </div>
+                                    <div class="govuk-form-group">
+                                        <govuk-input asp-for="@Model.Filter.Organisation" value="@Html.Encode(Model.Filter.Organisation)" inputmode="text" spellcheck="false">
+                                            <govuk-input-label is-page-heading="false" class="govuk-label--s">Awarding Organisation</govuk-input-label>
+                                        </govuk-input>
+                                    </div>
+                                </div>
+                                <div class="govuk-grid-column-three-quarters">                                    
+                                    <div class="govuk-form-group">
+                                        <fieldset class="govuk-fieldset govuk-!-static-padding-left-5">
+                                            <govuk-checkboxes name="Filter[ProcessStatusIds]" asp-for="@Model.Filter.ProcessStatusIds">
+
+                                                <govuk-checkboxes-fieldset>
+
+                                                    <govuk-checkboxes-fieldset-legend is-page-heading="false" class="govuk-label--s">
+                                                        <div class="govuk-label govuk-label--s">Status</div>
+                                                    </govuk-checkboxes-fieldset-legend>
+                                                    
+                                                    @Html.RenderPartialAsync("Validation/_CheckboxValidationPartial", nameof(Model.Filter.ProcessStatusIds))
+                                                                    
+                                                    @foreach (var status in Model.ProcessStatuses)
+                                                    {
+                                                        <govuk-checkboxes-item checked="@Model.Filter.ProcessStatusIds?.Contains(status.Id)" value="@status.Id">@status.Name</govuk-checkboxes-item>
+                                                    }
+                                                                    
+                                                </govuk-checkboxes-fieldset>
+
+                                            </govuk-checkboxes>
+                                        </fieldset>
+                                    </div>                                                                                   
                                 </div>
                             </div>
                             <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
@@ -110,11 +92,11 @@
                                                 name="Search">
                                             Search
                                         </button>
-                                            <a class="govuk-button govuk-button--secondary" asp-action="Clear" asp-controller="New" asp-area="Review" asp-route-recordsPerPAge="@Model.PaginationViewModel.RecordsPerPage">
+                                        <a class="govuk-button govuk-button--secondary" asp-action="Clear" asp-controller="New" asp-area="Review" asp-route-recordsPerPAge="@Model.PaginationViewModel.RecordsPerPage">
                                             Clear
                                         </a>
                                     </div>
-                                </div>                            
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -124,68 +106,68 @@
                     <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
                     @if (Model.NewQualifications.Any())
                     {
-                    <div class="govuk-grid-row" id="New_Qual_Pagination_Header_Section">
-                        <div class="govuk-grid-column-full">
-                            <p class="">Viewing @(Model.PaginationViewModel.StartRecord) - @(Model.PaginationViewModel.EndRecord) of @(Model.PaginationViewModel.TotalRecords) Qualifications</p>
+                        <div class="govuk-grid-row" id="New_Qual_Pagination_Header_Section">
+                            <div class="govuk-grid-column-full">
+                                <p class="">Viewing @(Model.PaginationViewModel.StartRecord) - @(Model.PaginationViewModel.EndRecord) of @(Model.PaginationViewModel.TotalRecords) Qualifications</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="govuk-grid-row" id="New_Qual_Data_Section">
-                        <div class="govuk-grid-column-full">
-                            <table class="govuk-table">
-                                <thead class="govuk-table__head">
-                                    <tr class="govuk-table__row">
-                                        <th class="govuk-table__header">QAN</th>
-                                        <th class="govuk-table__header">Qualification Title</th>
-                                        <th class="govuk-table__header">Age Group</th>                                                                                                 
-                                    </tr>
-                                </thead>
-                                <tbody class="govuk-table__body">
-                                    @foreach (var qualification in Model.NewQualifications)
-                                    {
+                        <div class="govuk-grid-row" id="New_Qual_Data_Section">
+                            <div class="govuk-grid-column-full">
+                                <table class="govuk-table">
+                                    <thead class="govuk-table__head">
                                         <tr class="govuk-table__row">
-                                            <td class="govuk-table__cell">@qualification.Reference</td>
-                                            <td class="govuk-table__cell">
-                                                <a class="govuk-link" href="@Url.Action("QualificationDetails", "New", new { area = "Review", qualificationReference = qualification.Reference })">
-                                                    @qualification.Title
-                                                </a>
-                                            </td>
-                                            <td class="govuk-table__cell">@qualification.AgeGroup</td>                                                                                  
+                                            <th class="govuk-table__header">QAN</th>
+                                            <th class="govuk-table__header">Qualification Title</th>
+                                            <th class="govuk-table__header">Age Group</th>
                                         </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                        @if (Model.PaginationViewModel.TotalPages > 0)
-                        {
-                            <div class="govuk-grid-row" id="New_Qual_Pagination_Footer_Section">
-                                <div class="govuk-grid-column-three-quarters">
-                                    <nav class="govuk-pagination" aria-label="Pagination">
-                                        @if (Model.PaginationViewModel.HasPreviousPage)
+                                    </thead>
+                                    <tbody class="govuk-table__body">
+                                        @foreach (var qualification in Model.NewQualifications)
                                         {
-                                            <div class="govuk-pagination__prev">
-                                                    <a class="govuk-link govuk-pagination__link" rel="prev" 
-                                                        asp-controller="New" 
-                                                        asp-action="ChangePage" 
-                                                        asp-route-area="Review"
-                                                        asp-route-newPage="@Model.PaginationViewModel.PreviousPage"
-                                                        asp-route-recordsPerPAge="@Model.PaginationViewModel.RecordsPerPage"
-                                                        asp-route-name="@Model.Filter.QualificationName"
-                                                        asp-route-organisation="@Model.Filter.Organisation"
-                                                        asp-route-qan="@Model.Filter.QAN">
-                                                    <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
-                                                        <path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z"></path>
-                                                    </svg>
-                                                    <span class="govuk-pagination__link-title">
-                                                        Previous<span class="govuk-visually-hidden"> page</span>
-                                                    </span>
-                                                </a>
-                                            </div>
+                                            <tr class="govuk-table__row">
+                                                <td class="govuk-table__cell">@qualification.Reference</td>
+                                                <td class="govuk-table__cell">
+                                                    <a class="govuk-link" href="@Url.Action("QualificationDetails", "New", new { area = "Review", qualificationReference = qualification.Reference })">
+                                                        @qualification.Title
+                                                    </a>
+                                                </td>
+                                                <td class="govuk-table__cell">@qualification.AgeGroup</td>
+                                            </tr>
                                         }
-                                        <ul class="govuk-pagination__list">
-                                            @if(Model.PaginationViewModel.ShowExtendedPreviousNavigation)
+                                    </tbody>
+                                </table>
+                            </div>
+                            @if (Model.PaginationViewModel.TotalPages > 0)
+                            {
+                                <div class="govuk-grid-row" id="New_Qual_Pagination_Footer_Section">
+                                    <div class="govuk-grid-column-three-quarters">
+                                        <nav class="govuk-pagination" aria-label="Pagination">
+                                            @if (Model.PaginationViewModel.HasPreviousPage)
                                             {
-                                                <li class="govuk-pagination__item">
-                                                        <a class="govuk-link govuk-pagination__link" aria-label="Page @Model.PaginationViewModel.FirstPage" 
+                                                <div class="govuk-pagination__prev">
+                                                    <a class="govuk-link govuk-pagination__link" rel="prev"
+                                                       asp-controller="New"
+                                                       asp-action="ChangePage"
+                                                       asp-route-area="Review"
+                                                       asp-route-newPage="@Model.PaginationViewModel.PreviousPage"
+                                                       asp-route-recordsPerPAge="@Model.PaginationViewModel.RecordsPerPage"
+                                                       asp-route-name="@Model.Filter.QualificationName"
+                                                       asp-route-organisation="@Model.Filter.Organisation"
+                                                       asp-route-qan="@Model.Filter.QAN">
+                                                        <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+                                                            <path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z"></path>
+                                                        </svg>
+                                                        <span class="govuk-pagination__link-title">
+                                                            Previous<span class="govuk-visually-hidden"> page</span>
+                                                        </span>
+                                                    </a>
+                                                </div>
+                                            }
+                                            <ul class="govuk-pagination__list">
+                                                @if (Model.PaginationViewModel.ShowExtendedPreviousNavigation)
+                                                {
+                                                    <li class="govuk-pagination__item">
+                                                        <a class="govuk-link govuk-pagination__link" aria-label="Page @Model.PaginationViewModel.FirstPage"
                                                            asp-controller="New"
                                                            asp-action="ChangePage"
                                                            asp-route-area="Review"
@@ -194,17 +176,17 @@
                                                            asp-route-name="@Model.Filter.QualificationName"
                                                            asp-route-organisation="@Model.Filter.Organisation"
                                                            asp-route-qan="@Model.Filter.QAN">
-                                                        @Model.PaginationViewModel.FirstPage
-                                                    </a>
-                                                </li>
-                                                <li class="govuk-pagination__item govuk-pagination__item--ellipses">
-                                                    &ctdot;
-                                                </li>
-                                            }
-                                            @if (Model.PaginationViewModel.HasPreviousPage)
-                                            {
-                                                <li class="govuk-pagination__item">
-                                                    <a class="govuk-link govuk-pagination__link" aria-label="Page @(Model.PaginationViewModel.PreviousPage)"
+                                                            @Model.PaginationViewModel.FirstPage
+                                                        </a>
+                                                    </li>
+                                                    <li class="govuk-pagination__item govuk-pagination__item--ellipses">
+                                                        &ctdot;
+                                                    </li>
+                                                }
+                                                @if (Model.PaginationViewModel.HasPreviousPage)
+                                                {
+                                                    <li class="govuk-pagination__item">
+                                                        <a class="govuk-link govuk-pagination__link" aria-label="Page @(Model.PaginationViewModel.PreviousPage)"
                                                            asp-controller="New"
                                                            asp-action="ChangePage"
                                                            asp-route-area="Review"
@@ -214,17 +196,17 @@
                                                            asp-route-organisation="@Model.Filter.Organisation"
                                                            asp-route-qan="@Model.Filter.QAN">
                                                             @(Model.PaginationViewModel.PreviousPage)
+                                                        </a>
+                                                    </li>
+                                                }
+                                                <li class="govuk-pagination__item govuk-pagination__item--current">
+                                                    <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page @Model.PaginationViewModel.CurrentPage" aria-current="Page @Model.PaginationViewModel.CurrentPage">
+                                                        @Model.PaginationViewModel.CurrentPage
                                                     </a>
                                                 </li>
-                                            }
-                                            <li class="govuk-pagination__item govuk-pagination__item--current">
-                                                    <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page @Model.PaginationViewModel.CurrentPage" aria-current="Page @Model.PaginationViewModel.CurrentPage">
-                                                    @Model.PaginationViewModel.CurrentPage
-                                                </a>
-                                            </li>
-                                            @if (Model.PaginationViewModel.HasNextPage)
-                                            {
-                                                <li class="govuk-pagination__item">
+                                                @if (Model.PaginationViewModel.HasNextPage)
+                                                {
+                                                    <li class="govuk-pagination__item">
                                                         <a class="govuk-link govuk-pagination__link" aria-label="Page @(Model.PaginationViewModel.NextPage)"
                                                            asp-controller="New"
                                                            asp-action="ChangePage"
@@ -235,16 +217,16 @@
                                                            asp-route-organisation="@Model.Filter.Organisation"
                                                            asp-route-qan="@Model.Filter.QAN">
                                                             @(Model.PaginationViewModel.NextPage)
-                                                    </a>
-                                                </li>
-                                            }
-                                            @if (Model.PaginationViewModel.ShowExtendedNextNavigation)
-                                            {
-                                                <li class="govuk-pagination__item govuk-pagination__item--ellipses">
-                                                    &ctdot;
-                                                </li>
-                                                <li class="govuk-pagination__item">
-                                                    <a class="govuk-link govuk-pagination__link" aria-label="Page @Model.PaginationViewModel.TotalPages"
+                                                        </a>
+                                                    </li>
+                                                }
+                                                @if (Model.PaginationViewModel.ShowExtendedNextNavigation)
+                                                {
+                                                    <li class="govuk-pagination__item govuk-pagination__item--ellipses">
+                                                        &ctdot;
+                                                    </li>
+                                                    <li class="govuk-pagination__item">
+                                                        <a class="govuk-link govuk-pagination__link" aria-label="Page @Model.PaginationViewModel.TotalPages"
                                                            asp-controller="New"
                                                            asp-action="ChangePage"
                                                            asp-route-area="Review"
@@ -253,15 +235,15 @@
                                                            asp-route-name="@Model.Filter.QualificationName"
                                                            asp-route-organisation="@Model.Filter.Organisation"
                                                            asp-route-qan="@Model.Filter.QAN">
-                                                        @Model.PaginationViewModel.TotalPages
-                                                    </a>
-                                                </li>                                                
-                                            }
-                                        </ul>
-                                        @if (Model.PaginationViewModel.HasNextPage)
-                                        {
-                                            <div class="govuk-pagination__next">
-                                                <a class="govuk-link govuk-pagination__link" rel="next"
+                                                            @Model.PaginationViewModel.TotalPages
+                                                        </a>
+                                                    </li>
+                                                }
+                                            </ul>
+                                            @if (Model.PaginationViewModel.HasNextPage)
+                                            {
+                                                <div class="govuk-pagination__next">
+                                                    <a class="govuk-link govuk-pagination__link" rel="next"
                                                        asp-controller="New"
                                                        asp-action="ChangePage"
                                                        asp-route-area="Review"
@@ -270,27 +252,27 @@
                                                        asp-route-name="@Model.Filter.QualificationName"
                                                        asp-route-organisation="@Model.Filter.Organisation"
                                                        asp-route-qan="@Model.Filter.QAN">
-                                                    <span class="govuk-pagination__link-title">
-                                                        Next<span class="govuk-visually-hidden"> page</span>
-                                                    </span>
-                                                    <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
-                                                        <path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path>
-                                                    </svg>
-                                                </a>
-                                            </div>
-                                        }
-                                    </nav>
-                                </div>                                                                
-                            </div>
-                            <div class="govuk-grid-row">
-                                <div class="govuk-button-group">
-                                    <a class="govuk-button govuk-button--secondary" asp-controller="New" asp-action="ExportData" asp-route-area="Review" asp-route-status="New">
-                                        Download
-                                    </a>
+                                                        <span class="govuk-pagination__link-title">
+                                                            Next<span class="govuk-visually-hidden"> page</span>
+                                                        </span>
+                                                        <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+                                                            <path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path>
+                                                        </svg>
+                                                    </a>
+                                                </div>
+                                            }
+                                        </nav>
+                                    </div>
                                 </div>
-                            </div>
-                        }
-                    </div>
+                                <div class="govuk-grid-row">
+                                    <div class="govuk-button-group">
+                                        <a class="govuk-button govuk-button--secondary" asp-controller="New" asp-action="ExportData" asp-route-area="Review" asp-route-status="New">
+                                            Download
+                                        </a>
+                                    </div>
+                                </div>
+                            }
+                        </div>
                     }
                     else
                     {
@@ -301,15 +283,15 @@
                                         <tr class="govuk-table__row">
                                             <th class="govuk-table__header">QAN</th>
                                             <th class="govuk-table__header">Qualification Title</th>
-                                            <th class="govuk-table__header">Age Group</th>                                            
+                                            <th class="govuk-table__header">Age Group</th>
                                         </tr>
                                     </thead>
-                                    <tbody class="govuk-table__body">                                        
-                                            <tr class="govuk-table__row">
+                                    <tbody class="govuk-table__body">
+                                        <tr class="govuk-table__row">
                                             <td class="govuk-table__cell">No qualifications match your search criteria</td>
-                                                <td class="govuk-table__cell"></td>
-                                                <td class="govuk-table__cell"></td>                                                
-                                            </tr>                                        
+                                            <td class="govuk-table__cell"></td>
+                                            <td class="govuk-table__cell"></td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>

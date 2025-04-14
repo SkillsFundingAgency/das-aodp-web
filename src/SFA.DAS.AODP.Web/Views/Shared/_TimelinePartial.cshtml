@@ -36,6 +36,7 @@
 
                                     <form method="post" action="@file.FormUrl">
                                         <input type="hidden" name="FilePath" value="@file.FullPath" />
+                                        <input type="hidden" name="MessageId" value="@item.Id" />
                                         <button type="submit" class="govuk-button govuk-button--secondary">
                                             Download <span class="govuk-visually-hidden">@file.FileDisplayName</span>
                                         </button>

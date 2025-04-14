@@ -9,6 +9,7 @@ using Moq;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.Application.Application;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Routes;
+using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Areas.Apply.Controllers;
@@ -142,25 +143,55 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Apply.Controllers
         {
             // Arrange
             var applicationId = _fixture.Create<Guid>();
-            var file = $"messages/{applicationId}/";
+            var messageId = _fixture.Create<Guid>();
+            var file = $"messages/{applicationId}/{messageId}/";
 
             var blob = _fixture.Create<UploadedBlob>();
             string content = "Test file content";
+
+            BaseMediatrResponse<GetApplicationMessageByIdQueryResponse> response = new()
+            {
+                Value = new() { SharedWithAwardingOrganisation = true },
+                Success = true,
+            };
+            _mediatorMock.Setup(m => m.Send(It.IsAny<GetApplicationMessageByIdQuery>(), default)).ReturnsAsync(response);
 
             _fileService.Setup(f => f.GetBlobDetails(file)).ReturnsAsync(blob);
             _fileService.Setup(fs => fs.OpenReadStreamAsync(It.IsAny<string>()))
               .ReturnsAsync(new MemoryStream(System.Text.Encoding.UTF8.GetBytes(content)));
 
             // Act
-            var result = await _controller.ApplicationMessageFileDownload(file, applicationId);
+            var result = await _controller.ApplicationMessageFileDownload(file, applicationId, messageId);
 
             // Assert
             var fileResult = Assert.IsType<FileStreamResult>(result);
             Assert.Equal("application/octet-stream", fileResult.ContentType);
-            Assert.Equal(blob.FileNameWithPrefix, fileResult.FileDownloadName);
+            Assert.Equal(blob.FileName, fileResult.FileDownloadName);
 
             using StreamReader reader = new(fileResult.FileStream);
             Assert.Equal(content, reader.ReadToEnd());
+        }
+
+        [Fact]
+        public async Task ApplicationMessageFileDownload_MessageNotSharedWithAo_ReturnsBadRequest()
+        {
+            // Arrange
+            var messageId = _fixture.Create<Guid>();
+            var applicationId = _fixture.Create<Guid>();
+            var file = $"messages/{applicationId}/{messageId}/";
+
+            BaseMediatrResponse<GetApplicationMessageByIdQueryResponse> response = new()
+            {
+                Value = new() { SharedWithAwardingOrganisation = false },
+                Success = true,
+            };
+            _mediatorMock.Setup(m => m.Send(It.IsAny<GetApplicationMessageByIdQuery>(), default)).ReturnsAsync(response);
+
+            // Act
+            var result = await _controller.ApplicationMessageFileDownload(file, applicationId, messageId);
+
+            // Assert
+            Assert.IsType<BadRequestResult>(result);
         }
 
         [Fact]
@@ -169,9 +200,10 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Apply.Controllers
             // Arrange
             var applicationId = _fixture.Create<Guid>();
             var file = $"messages/{Guid.NewGuid()}/";
+            var messageId = _fixture.Create<Guid>();
 
             // Act
-            var result = await _controller.ApplicationMessageFileDownload(file, applicationId);
+            var result = await _controller.ApplicationMessageFileDownload(file, applicationId, messageId);
 
             // Assert
             Assert.IsType<BadRequestResult>(result);

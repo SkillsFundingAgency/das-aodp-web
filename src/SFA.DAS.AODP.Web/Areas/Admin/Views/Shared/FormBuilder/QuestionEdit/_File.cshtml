@@ -6,6 +6,7 @@
                  name="FileUpload[FileNamePrefix]"
                  type="text"
                  asp-for="FileNamePrefix"
+                 value="@Html.Encode(Model.FileNamePrefix)"
                  input-class="govuk-input--width-30"
                  spellcheck="false" autocomplete="off">
         <govuk-input-label is-page-heading="false" class="govuk-label--s">What is the file naming prefix shown to admins reviewing the applications? (optional)</govuk-input-label>
@@ -20,6 +21,7 @@
                  name="FileUpload[NumberOfFiles]"
                  type="number"
                  asp-for="NumberOfFiles"
+                 value="@Html.Encode(Model.NumberOfFiles)"
                  input-class="govuk-input--width-3"
                  inputmode="numeric" pattern="[0-9]*"
                  spellcheck="false" autocomplete="off">
@@ -34,7 +36,7 @@
         Allowed file types
     </govuk-details-summary>
     <govuk-details-text>
-        The system currently allowes for the following fie types to be uploaded:
+        The system currently allows for the following fie types to be uploaded:
         <br />
         <ul>
             @foreach (var fileType in Model.FileTypes ?? [])
