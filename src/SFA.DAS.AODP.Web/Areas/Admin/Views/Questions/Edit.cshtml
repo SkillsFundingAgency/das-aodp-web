@@ -32,7 +32,7 @@
     @Html.AntiForgeryToken()
 
     <div class="govuk-form-group">
-        <govuk-input disabled="@(!Model.Editable)" asp-for="@Model.Title" value="@Html.Encode(Model.Title)" inputmode="text" value="@Model.Title" autocomplete="off">
+        <govuk-input disabled="@(!Model.Editable)" asp-for="@Model.Title" inputmode="text" value="@Model.Title" autocomplete="off">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Title</govuk-input-label>
             @{
                 await Html.RenderPartialAsync("Validation/_TextInputValidationPartial", nameof(Model.Title));
@@ -41,7 +41,7 @@
     </div>
 
     <div class="govuk-form-group">
-        <govuk-input asp-for="@Model.Type" value="@Html.Encode(Model.Type)" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" disabled=true spellcheck="false" autocomplete="off" id="questiontype">
+        <govuk-input asp-for="@Model.Type" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" disabled=true spellcheck="false" autocomplete="off" id="questiontype">
           <govuk-input-label is-page-heading="false" class="govuk-label--s">Question type</govuk-input-label>
         </govuk-input>
     </div>
@@ -73,7 +73,7 @@
 
 
     <div class="govuk-form-group">
-        <govuk-input disabled="@(!Model.Editable)" asp-for="@Model.Hint" value="@Html.Encode(Model.Hint)" inputmode="text" autocomplete="off">
+        <govuk-input disabled="@(!Model.Editable)" asp-for="@Model.Hint" inputmode="text" autocomplete="off">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Hint (optional)</govuk-input-label>
 
             <govuk-input-hint>
