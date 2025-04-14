@@ -17,11 +17,11 @@ namespace SFA.DAS.AODP.Web.Models.Survey
         public string Page { get; set; }
 
         [DisplayName("Satisfaction score")]
-        [Required]
+        [Required(ErrorMessage = "Please select a satisfaction score.")]
         public SatisfactionScoreIndex? SatisfactionScore { get; set; }
 
-        [Required]
-        [StringLength(1200, MinimumLength = 1, ErrorMessage = "Comments 1200 characters maximum.")]
+        [Required(ErrorMessage = "Please provide your comments.")]
+        [StringLength(1200, MinimumLength = 1, ErrorMessage = "Comments must not exceed 1200 characters.")]
         public string Comments { get; set; }
     }
 }
