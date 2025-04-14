@@ -11,7 +11,6 @@
 
     @Html.AntiForgeryToken()
     @Html.HiddenFor(v => v.FormVersionId)
-    @Html.HiddenFor(m => m.ChosenSectionId)
     <div class="govuk-form-group">
 
         @if (Model.AreSectionsEmpty)
@@ -39,7 +38,7 @@
                 Select one option. Only sections and pages with questions requiring user to select an option are shown.
             </div>
 
-            @await Html.PartialAsync("Validation/_RadioValidationPartial", nameof(Model.ChosenPageId))
+            @await Html.PartialAsync("Validation/_RadioValidationPartial", nameof(Model.SectionPageCombined))
 
             @foreach (var sectionInformation in Model.Sections.OrderBy(o => o.Order))
             {
@@ -48,7 +47,7 @@
                         Section @(sectionInformation.Order). @sectionInformation.Title
                     </h2>
 
-                    <govuk-radios asp-for="@Model.ChosenPageId">
+                    <govuk-radios asp-for="@Model.SectionPageCombined">
                         <govuk-radios-fieldset>
                             <govuk-radios-fieldset-legend>
                                 <h3 class="govuk-heading-s">Choose page</h3>
@@ -56,8 +55,9 @@
 
                             @foreach (var pageInformation in sectionInformation.Pages.OrderBy(o => o.Order))
                             {
+                                var combinedValue = $"{pageInformation.Id}|{sectionInformation.Id}";
                                 <govuk-radios-item data-section-id="@sectionInformation.Id"
-                                onchange="setChosenSection(this)" value="@pageInformation.Id">
+                                                   value="@combinedValue">
                                     Page @(pageInformation.Order). @pageInformation.Title
                                 </govuk-radios-item>
                             }

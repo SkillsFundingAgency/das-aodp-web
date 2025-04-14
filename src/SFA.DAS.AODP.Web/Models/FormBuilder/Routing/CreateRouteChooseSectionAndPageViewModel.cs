@@ -10,16 +10,15 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Routing
         public Guid FormVersionId { get; set; }
 
         [DisplayName("Section")]
-        [Required]
         public Guid? ChosenSectionId { get; set; }
-
-        [Required]
         [DisplayName("Page")]
         public Guid? ChosenPageId { get; set; }
 
         public List<SectionInformation> Sections { get; set; } = new();
         public bool AreSectionsEmpty => !Sections.Any();
-
+        [Required]
+        [DisplayName("Page")]
+        public string? SectionPageCombined { get; set; }
         public class SectionInformation
         {
             public Guid Id { get; set; }

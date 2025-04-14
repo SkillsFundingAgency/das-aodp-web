@@ -3,9 +3,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Routes;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Routes;
+using SFA.DAS.AODP.Domain.FormBuilder.Requests.Pages;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Routing;
+using static SFA.DAS.AODP.Web.Models.FormBuilder.Routing.CreateRouteChooseSectionAndPageViewModel;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers.FormBuilder;
@@ -72,6 +74,11 @@ public class RoutesController : ControllerBase
     {
         try
         {
+            if (!string.IsNullOrEmpty(model.SectionPageCombined) && model.SectionPageCombined.Contains('|'))
+            {
+                model.ChosenPageId = Guid.Parse(model.SectionPageCombined.Split('|')[0]);
+                model.ChosenSectionId = Guid.Parse(model.SectionPageCombined.Split('|')[1]);
+            }
             if (!ModelState.IsValid)
             {
                 var query = new GetAvailableSectionsAndPagesForRoutingQuery()
@@ -82,6 +89,8 @@ public class RoutesController : ControllerBase
                 var viewModel = CreateRouteChooseSectionAndPageViewModel.MapToViewModel(response, model.FormVersionId);
                 viewModel.ChosenSectionId = model.ChosenSectionId;
                 viewModel.ChosenPageId = model.ChosenPageId;
+                if (model.ChosenSectionId.HasValue && model.ChosenPageId.HasValue)
+                    viewModel.SectionPageCombined = $"{model.ChosenPageId}|{model.ChosenSectionId}";
                 return View(viewModel);
             }
 
