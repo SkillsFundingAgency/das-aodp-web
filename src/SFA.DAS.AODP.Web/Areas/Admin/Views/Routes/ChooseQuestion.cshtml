@@ -7,7 +7,7 @@
 
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
-<form asp-controller="Routes" asp-action="ChooseQuestion" method="post">
+<form asp-controller="Routes" asp-action="ChooseQuestion" method="post" gfa-prepend-error-summary="false">
 
     @Html.AntiForgeryToken()
     @Html.HiddenFor(v => v.FormVersionId)
