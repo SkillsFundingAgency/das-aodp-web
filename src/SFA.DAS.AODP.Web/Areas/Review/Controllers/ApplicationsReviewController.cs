@@ -226,7 +226,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         public async Task<IActionResult> QfauFundingReviewDecision(Guid applicationReviewId)
         {
             var offers = await Send(new GetFundingOffersQuery());
-            var review = await Send(new GetFeedbackForApplicationReviewByIdQuery(applicationReviewId, _userHelperService.GetUserType().ToString()));
+            var review = await Send(new GetQfauFeedbackForApplicationReviewConfirmationQuery(applicationReviewId));
 
             var model = QfauFundingDecisionViewModel.Map(review, offers);
             model.ApplicationReviewId = applicationReviewId;

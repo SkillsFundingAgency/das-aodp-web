@@ -1,7 +1,9 @@
 ﻿@using SFA.DAS.AODP.Models.Forms
+@using SFA.DAS.AODP.Models.Settings
 @using SFA.DAS.AODP.Web.Helpers.ApplicationPageViewHelpers
 @using SFA.DAS.AODP.Web.Models.Application
 @using SFA.DAS.AODP.Web.Models.GdsComponents
+@inject FormBuilderSettings FormBuilderSettings
 @model ApplicationPageViewModel.Question
 
 
@@ -13,6 +15,9 @@
         && (k.Key == Model.Id.ToString() || ApplicationPageErrorHelper.ExtractOrderFromErrorKey(k.Key) == Model.Order - 1));
     var formGroupErrorClass = errored ? "govuk-form-group--error" : "";
     var inputErrorClass = errored ? "govuk-input--error" : "";
+
+    var maxFileSizeMb = FormBuilderSettings.MaxUploadFileSize;
+    var allowedFileTypes = FormBuilderSettings.UploadFileTypesAllowed;
 }
 
 
@@ -128,6 +133,15 @@
     {
         @if (!ViewBag.IsSubmitted)
         {
+            <govuk-details>
+                <govuk-details-summary>
+                    File restrictions
+                </govuk-details-summary>
+                <govuk-details-text>
+                    Files must not be more than @maxFileSizeMb mb each and must be one of the following types: @string.Join(", ", allowedFileTypes).
+                </govuk-details-text>
+            </govuk-details>
+            
             <input class="govuk-file-upload govuk-body govuk-!-static-padding-2"
                    name="Questions[@(Model.Order - 1)].Answer.FormFiles"
                    id="@questionHtmlId"

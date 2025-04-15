@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Razor.TagHelpers;
+﻿using Azure;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Web.Enums;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SFA.DAS.AODP.Web.Models.Qualifications;
 
@@ -44,6 +45,7 @@ public class ChangedQualificationDetailsViewModel
     public DateTime? CertificationEndDate { get; set; }
     public DateTime? ReviewDate { get; set; }
     public bool OfferedInEngland { get; set; }
+    public bool? FundedInEngland { get; set; }
     public bool OfferedInNi { get; set; }
     public bool? OfferedInternationally { get; set; }
     public string? Specialism { get; set; }
@@ -80,6 +82,17 @@ public class ChangedQualificationDetailsViewModel
     public virtual ProcessStatus ProcStatus { get; set; } = null!;
     public AdditionalFormActions AdditionalActions { get; set; } = new AdditionalFormActions();
     public List<ProcessStatus> ProcessStatuses { get; set; } = new List<ProcessStatus>();
+    public List<OfferFundingDetails> FundingDetails { get; set; } = new();
+    public bool? FundingsOffersOutcomeStatus { get; set; }
+
+    public class OfferFundingDetails
+    {
+        public string FundingOfferName { get; set; }
+        [DisplayName("Start date")]
+        public DateOnly? StartDate { get; set; }
+        [DisplayName("End date")]
+        public DateOnly? EndDate { get; set; }
+    }
 
     public string Priority
     {
@@ -94,7 +107,7 @@ public class ChangedQualificationDetailsViewModel
         var priority = "Green";
         if (!string.IsNullOrWhiteSpace(priority) && Status != ActionTypeEnum.NoActionRequired)
         {
-            var changedFields = ChangedFieldNames.Split(',').Select(s => s.Trim()).ToList();
+            var changedFields = ChangedFieldNames?.Split(',').Select(s => s.Trim()).ToList();
             var redChanges = new List<string>() { "Level", "SSA", "GLH" };
             var yellowChanges = new List<string>()
                 {
@@ -126,6 +139,19 @@ public class ChangedQualificationDetailsViewModel
 
         }
         return priority;
+    }
+
+    internal void MapFundedOffers(GetFeedbackForQualificationFundingByIdQueryResponse feedbackForQualificationFunding)
+    {
+        foreach (var offer in feedbackForQualificationFunding.QualificationFundedOffers)
+        {
+            FundingDetails.Add(new()
+            {
+                FundingOfferName = offer.FundedOfferName,
+                StartDate = offer.StartDate,
+                EndDate = offer.EndDate
+            });
+        }
     }
 
     public List<KeyFieldChanges> KeyFieldChanges { get; set; } = new();
@@ -219,6 +245,7 @@ public class ChangedQualificationDetailsViewModel
             CertificationEndDate = entity.CertificationEndDate,
             ReviewDate = entity.ReviewDate,
             OfferedInEngland = entity.OfferedInEngland,
+            FundedInEngland = entity.FundedInEngland,
             OfferedInNi = entity.OfferedInNi,
             OfferedInternationally = entity.OfferedInternationally,
             Specialism = entity.Specialism,

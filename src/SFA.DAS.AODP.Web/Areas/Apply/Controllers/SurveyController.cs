@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Web.Models.Survey;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
@@ -6,6 +7,7 @@ using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
 {
     [Area("Apply")]
+    [Authorize()]
     public class SurveyController : ControllerBase
     {
         public SurveyController(IMediator mediator, ILogger<SurveyController> logger) : base(mediator, logger)

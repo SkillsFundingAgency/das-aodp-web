@@ -58,7 +58,8 @@
                               id="messageText"
                               name="MessageText"
                               rows="5"
-                              aria-describedby="@(ViewData.ModelState["MessageText"]?.Errors.Count > 0 ? "messageText-error" : "more-detail-hint")">@Model.MessageText</textarea>
+                              aria-describedby="@(ViewData.ModelState["MessageText"]?.Errors.Count > 0 ? "messageText-error" : "more-detail-hint")"
+                              autocomplete="off">@Model.MessageText</textarea>
                     @if (ViewData.ModelState["MessageText"]?.Errors.Count > 0)
                     {
                         <p id="messageText-error" class="govuk-error-message">
@@ -78,7 +79,8 @@
                     <select asp-for="SelectedMessageType"
                             asp-items="@(Model.MessageTypeSelectOptions)"
                             class="govuk-select @(ViewData.ModelState["SelectedMessageType"]?.Errors.Count > 0 ? "govuk-select--error" : "")"
-                            aria-describedby="@(ViewData.ModelState["SelectedMessageType"]?.Errors.Count > 0 ? "messageType-error" : "message-type-hint")">
+                            aria-describedby="@(ViewData.ModelState["SelectedMessageType"]?.Errors.Count > 0 ? "messageType-error" : null)"
+                            id="messageType">
                     </select>
 
                 </div>
@@ -136,6 +138,10 @@
                         You can upload a maximum of @Model.FileSettings.MaxUploadNumberOfFiles files. Each file must not be more than @Model.FileSettings.MaxUploadFileSize mb and must be one of the following types: @string.Join(", ", Model.FileSettings.UploadFileTypesAllowed).
                     </govuk-details-text>
                 </govuk-details>
+
+                <govuk-warning-text>
+                    Your message will be logged but no notification will be sent.
+                </govuk-warning-text>
 
                 <div class="govuk-grid-row">
                     <div class="govuk-grid-column-three-quarters">

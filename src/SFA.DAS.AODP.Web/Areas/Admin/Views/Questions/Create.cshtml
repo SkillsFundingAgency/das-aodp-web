@@ -18,7 +18,7 @@
     @Html.AntiForgeryToken()
 
     <div class="govuk-form-group">
-        <govuk-input asp-for="Title" input-class="govuk-input--width-50" inputmode="text" autocomplete="off">
+        <govuk-input asp-for="Title" inputmode="text" autocomplete="off">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Title</govuk-input-label>
             @Html.RenderPartialAsync("Validation/_TextInputValidationPartial", nameof(Model.Title))
         </govuk-input>

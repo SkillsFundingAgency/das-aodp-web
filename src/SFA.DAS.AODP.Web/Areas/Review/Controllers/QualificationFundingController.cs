@@ -84,19 +84,19 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         [Route("review/qualifications/{qualificationId}/qualificationVersion/{qualificationVersionId}/funding-offers/{qualificationReference}")]
         public async Task<IActionResult> QualificationFundingOffers(string qualificationReference, Guid qualificationVersionId, Guid qualificationId, [FromQuery] string mode)
         {
-            var offers = await Send(new GetFundingOffersQuery());
-            var review = await Send(new GetFeedbackForQualificationFundingByIdQuery(qualificationVersionId));
+            var fundingOffers = await Send(new GetFundingOffersQuery());
+            var feedbackForQualificationFunding = await Send(new GetFeedbackForQualificationFundingByIdQuery(qualificationVersionId));
 
             QualificationFundingsOffersSelectViewModel model = new()
             {
-                SelectedOfferIds = review.QualificationFundedOffers?.Select(s => s.FundingOfferId).ToList() ?? [],
+                SelectedOfferIds = feedbackForQualificationFunding.QualificationFundedOffers?.Select(s => s.FundingOfferId).ToList() ?? [],
                 QualificationVersionId = qualificationVersionId,
                 QualificationReference = qualificationReference,
                 QualificationId = qualificationId,
                 Mode = mode,
             };
 
-            model.MapOffers(offers);
+            model.MapOffers(fundingOffers);
 
             return View(model);
         }
@@ -131,10 +131,10 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         [Route("review/qualifications/{qualificationId}/qualificationVersion/{qualificationVersionId}/funding-offers-details/{qualificationReference}")]
         public async Task<IActionResult> QualificationFundingOffersDetails(string qualificationReference, Guid qualificationVersionId, Guid qualificationId, [FromQuery] string mode)
         {
-            var offers = await Send(new GetFundingOffersQuery());
-            var review = await Send(new GetFeedbackForQualificationFundingByIdQuery(qualificationVersionId));
+            var fundingOffers = await Send(new GetFundingOffersQuery());
+            var feedbackForQualificationFunding = await Send(new GetFeedbackForQualificationFundingByIdQuery(qualificationVersionId));
 
-            var model = QualificationFundingsOfferDetailsViewModel.Map(review, offers);
+            var model = QualificationFundingsOfferDetailsViewModel.Map(feedbackForQualificationFunding, fundingOffers);
             model.QualificationId = qualificationId;
             model.Mode = mode;
 
@@ -148,8 +148,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         {
             if (!ModelState.IsValid)
             {
-                var offers = await Send(new GetFundingOffersQuery());
-                model.MapOffers(offers);
+                var fundingOffers = await Send(new GetFundingOffersQuery());
+                model.MapOffers(fundingOffers);
 
                 return View(model);
             }
@@ -166,12 +166,12 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         {
             try
             {
-                var offers = await Send(new GetFundingOffersQuery());
-                var review = await Send(new GetFeedbackForQualificationFundingByIdQuery(qualificationVersionId));
+                var fundingOffers = await Send(new GetFundingOffersQuery());
+                var feedbackForQualificationFunding = await Send(new GetFeedbackForQualificationFundingByIdQuery(qualificationVersionId));
 
-                var model = QualificationFundingsOffersSummaryViewModel.Map(review, offers);
+                var model = QualificationFundingsOffersSummaryViewModel.Map(feedbackForQualificationFunding, fundingOffers);
                 model.QualificationVersionId = qualificationVersionId;
-                model.QualificationReference = review.QualificationReference;
+                model.QualificationReference = feedbackForQualificationFunding.QualificationReference;
                 model.QualificationId = qualificationId;
                 model.Mode = mode;
 

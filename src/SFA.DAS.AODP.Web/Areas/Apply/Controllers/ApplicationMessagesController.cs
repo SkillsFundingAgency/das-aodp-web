@@ -43,7 +43,7 @@ public class ApplicationMessagesController : ControllerBase
     [Route("apply/organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/messages")]
     public async Task<IActionResult> ApplicationMessages(Guid organisationId, Guid applicationId, Guid formVersionId)
     {
-        var response = await Send(new GetApplicationMessagesByIdQuery(applicationId, UserType.ToString()));
+        var response = await Send(new GetApplicationMessagesByApplicationIdQuery(applicationId, UserType.ToString()));
         var messages = response.Messages;
 
         var timelineFiles = await GetApplicationMessageFilesAsync(applicationId);
@@ -187,16 +187,22 @@ public class ApplicationMessagesController : ControllerBase
 
     [HttpPost]
     [Route("apply/organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/message-file-download")]
-    public async Task<IActionResult> ApplicationMessageFileDownload([FromForm] string filePath, [FromRoute] Guid applicationId)
+    public async Task<IActionResult> ApplicationMessageFileDownload([FromForm] string filePath, [FromRoute] Guid applicationId, [FromForm] Guid messageId)
     {
-        if (!filePath.StartsWith($"messages/{applicationId}/"))
+        // Ensure file path application id matches the route application id and the form message id
+        // The [ValidateApplication] filter ensures the user has access to the application id in the route
+        if (!filePath.StartsWith($"messages/{applicationId}/{messageId}/"))
         {
             return BadRequest();
         }
 
+        // Now check whether the user has access to this particular message
+        var message = await Send(new GetApplicationMessageByIdQuery(messageId));
+        if (message == null || !message.SharedWithAwardingOrganisation) return BadRequest();
+
         var file = await _fileService.GetBlobDetails(filePath.ToString());
         var fileStream = await _fileService.OpenReadStreamAsync(filePath);
-        return File(fileStream, "application/octet-stream", file.FileNameWithPrefix);
+        return File(fileStream, "application/octet-stream", file.FileName);
     }
 
     private async Task HandleFileUploadsAsync(Guid applicationId, Guid messageId, List<IFormFile> files)
