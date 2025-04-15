@@ -60,8 +60,9 @@
 
                 @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.Required))
 
-                <govuk-radios-item value="true">Mandatory</govuk-radios-item>
-                <govuk-radios-item value="false">
+                <govuk-radios-item value="true" checked="@Model.Required">Mandatory</govuk-radios-item>
+                <govuk-radios-item value="false" checked="@Model.Required == false">
+
                     Optional
                     <govuk-radios-hint class="govuk-hint govuk-radios__hint govuk-!-static-padding-0" id="pages-question-input-is-optional-true-hint">
                         We’ll add ‘(optional)’ to the end of the question text.
