@@ -1,5 +1,44 @@
-﻿@{
-    ViewData["Title"] = "Output file";
-}
+@model SFA.DAS.AODP.Web.Models.OutputFile.GenerateViewModel
 
-<h1>Output file</h1>
+
+@{
+    ViewData["Title"] = "Output File";
+}
+<a class="govuk-back-link"
+   asp-controller="Forms"
+   asp-action="Index">
+    Return to admin page
+</a>
+<h1 class="govuk-heading-xl">Output File</h1>
+
+
+<form asp-controller="OutputFile" asp-action="Create" method="post">
+
+    <div class="aodp-timeline">
+        <ol class="aodp-timeline__items">
+            @foreach (var item in Model.GeneratedFiles.OrderByDescending(v => v.Created.GetValueOrDefault()))
+            {
+                <li class="aodp-timeline__item">
+                    <b>@item.DisplayName</b>
+                    else if (!string.IsNullOrEmpty(item.FormattedTimestamp))
+                    {
+                        <span class="govuk-caption-m">
+                            @item.FormattedTimestamp
+                        </span>
+                    }
+                </li>
+            }
+        </ol>
+    </div>
+
+    <div class="govuk-button-group">
+        <button type="submit"
+                class="govuk-button"
+                data-module="govuk-button"
+                data-prevent-double-click="true"
+                value="true"
+                name="AdditionalFormActions[GenerateFile]">
+            Generate File
+        </button>
+    </div>
+</form>
