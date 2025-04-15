@@ -2,6 +2,7 @@
 using AutoFixture.AutoMoq;
 using Moq;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
+using SFA.DAS.AODP.Application.Queries.OutputFile;
 using SFA.DAS.AODP.Domain.FormBuilder.Requests.Forms;
 using SFA.DAS.AODP.Domain.Interfaces;
 
