@@ -37,22 +37,28 @@
             </govuk-radios-fieldset>
         </govuk-radios>
     </div>
-    <div class="govuk-form-group @(ViewData.ModelState["Comments"]?.Errors.Count > 0 ? "govuk-form-group--error" : "") govuk-character-count" data-module="govuk-character-count" data-maxlength="1200">
-        <h1 class="govuk-label-wrapper">
-            <label class="govuk-label govuk-label--m" for="Comments">
-                How could we improve this service?
-            </label>
-        </h1>
-        <div id="Comments-hint" class="govuk-hint">
-            Do not include any personal or financial information, for example your National Insurance or credit card numbers.
-        </div>
-        @Html.ValidationMessageFor(m => m.Comments, "", new { @class = "govuk-error-message" })
-        <textarea asp-for="Comments" class="govuk-textarea govuk-js-character-count @(ViewData.ModelState["Comments"]?.Errors.Count > 0 ? "govuk-textarea--error" : "")" id="Comments" rows="5" aria-describedby="Comments-info Comments-hint"></textarea>
-        <div id="Comments-info" class="govuk-hint govuk-character-count__message">
-            You can enter up to 1200 characters
+    <div class="govuk-form-group @(ViewData.ModelState["Comments"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+        <label class="govuk-label govuk-label--m" for="Comments">
+            How could we improve this service?
+        </label>
+        @if (ViewData.ModelState["Comments"]?.Errors.Count > 0)
+        {
+            <p id="CommentsText-error" class="govuk-error-message">
+                <span class="govuk-visually-hidden">Error:</span> @ViewData.ModelState["Comments"]?.Errors[0].ErrorMessage
+            </p>
+        }
+        <textarea asp-for="Comments"
+                  class="govuk-textarea @(ViewData.ModelState["Comments"]?.Errors.Count > 0 ? "govuk-textarea--error" : "")"
+                  id="Comments"
+                  rows="5"
+                  maxlength="1200"
+                  aria-describedby="Comments-info @(ViewData.ModelState["Comments"]?.Errors.Count > 0 ? "CommentsText-error" : "")"></textarea>
+        <div id="Comments-info" class="govuk-hint">
+            You can enter up to 1200 characters.
         </div>
     </div>
-    <button class="govuk-button" data-module="govuk-button">
+    <button class="govuk-button">
         Send feedback
     </button>
+
 </form>
