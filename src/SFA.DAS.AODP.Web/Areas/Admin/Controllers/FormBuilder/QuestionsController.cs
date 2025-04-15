@@ -210,7 +210,7 @@ public class QuestionsController : ControllerBase
 
         var response = await Send(query);
 
-        var vm = DeleteQuestionViewModel.MapToViewModel(response, formVersionId, sectionId);
+        var vm = DeleteQuestionViewModel.MapToViewModel(response, formVersionId, sectionId, pageId, questionId);
 
         return View(vm);
 
