@@ -1,0 +1,43 @@
+﻿﻿@using SFA.DAS.AODP.Web.Models.FormBuilder.Routing
+
+@model CreateRouteChoosePageViewModel
+
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
+@{
+    ViewData["Title"] = "Choose page";
+}
+<form asp-controller="Routes" asp-action="ChoosePage" method="post" gfa-prepend-error-summary="false">
+
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(v => v.FormVersionId)
+    @Html.HiddenFor(v => v.ChosenSectionId)
+
+    <div class="govuk-form-group">
+        <govuk-radios asp-for="@Model.ChosenPageId">
+            <govuk-radios-fieldset>
+                <govuk-radios-fieldset-legend is-page-heading="true">
+                    <h1 class="govuk-heading-l govuk-!-margin-top-5">Choose page</h1>
+                </govuk-radios-fieldset-legend>
+
+                <govuk-radios-hint>
+                    Select one option.
+                </govuk-radios-hint>
+
+                @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.ChosenPageId))
+
+                @foreach (var pageInformation in Model.Pages.OrderBy(o => o.Order))
+                {
+                    <govuk-radios-item value="@pageInformation.Id">
+
+                        Page @(pageInformation.Order). @pageInformation.Title
+                    </govuk-radios-item>
+                }
+            </govuk-radios-fieldset>
+        </govuk-radios>
+
+    </div>
+
+    <govuk-button type="submit">Continue to choose question</govuk-button>
+
+</form>
