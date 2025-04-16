@@ -57,11 +57,11 @@ internal class Program
 
         builder.Services.AddApplicationInsightsTelemetry();
 
-        //builder.Services.Configure<FormOptions>(options =>
-        //{
-        //    // Set the limit to 100 MB for form data
-        //    options.MultipartBodyLengthLimit = 104857600;
-        //});
+        builder.Services.Configure<FormOptions>(options =>
+        {
+            // Set the limit to 100 MB for form data
+            options.MultipartBodyLengthLimit = 115343360;
+        });
 
         var app = builder.Build();
 
