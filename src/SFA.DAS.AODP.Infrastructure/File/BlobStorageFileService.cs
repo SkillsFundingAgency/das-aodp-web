@@ -92,6 +92,13 @@ namespace SFA.DAS.AODP.Infrastructure.File
             await blobClient.DeleteAsync(DeleteSnapshotsOption.IncludeSnapshots);
         }
 
+        public string GetBlobContentType(string filePath)
+        {
+            var blobProps = GetBlobClient(filePath)
+                .GetProperties();
+            return blobProps.Value.ContentType;
+        }
+
         private BlobClient GetBlobClient(string filePath)
         {
             EnsureBlobContainerClient();

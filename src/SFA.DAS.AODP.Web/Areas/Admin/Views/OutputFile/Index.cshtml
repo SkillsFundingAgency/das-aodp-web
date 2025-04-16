@@ -5,26 +5,42 @@
     ViewData["Title"] = "Output File";
 }
 <a class="govuk-back-link"
-   asp-controller="Forms"
-   asp-action="Index">
+asp-controller="Forms"
+asp-action="Index">
     Return to admin page
 </a>
-<h1 class="govuk-heading-xl">Output File</h1>
+<h1 class="govuk-heading-xl">Output File History</h1>
 
 
 <form asp-controller="OutputFile" asp-action="Create" method="post">
 
     <div class="aodp-timeline">
         <ol class="aodp-timeline__items">
-            @foreach (var item in Model.GeneratedFiles.OrderByDescending(v => v.Created.GetValueOrDefault()))
+            @foreach (var item in Model.GeneratedFiles.OrderByDescending(v => v.Created.GetValueOrDefault(DateTime.Now)))
             {
                 <li class="aodp-timeline__item">
                     <b>@item.DisplayName</b>
+                    @if (item.IsInProgress)
+                    {
+                        <p>In progress</p>
+                        @if (!string.IsNullOrEmpty(item.FormattedTimestamp))
+                        {
+                            <span class="govuk-caption-m">
+                                Started at: @item.FormattedTimestamp
+                            </span>
+                        }
+                    }
                     else if (!string.IsNullOrEmpty(item.FormattedTimestamp))
                     {
                         <span class="govuk-caption-m">
                             @item.FormattedTimestamp
                         </span>
+                    }
+                    @if (!string.IsNullOrEmpty(item.BlobName))
+                    {
+                        <a class="govuk-link" href="/admin/outputfile/download/@item.BlobName" target="_blank">
+                            Download
+                        </a>
                     }
                 </li>
             }

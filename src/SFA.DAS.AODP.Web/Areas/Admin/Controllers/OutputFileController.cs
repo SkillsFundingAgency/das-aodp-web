@@ -6,17 +6,20 @@ using SFA.DAS.AODP.Application.Queries.OutputFile;
 using SFA.DAS.AODP.Web.Areas.Admin.Controllers.FormBuilder;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Models.OutputFile;
+using SFA.DAS.AODP.Infrastructure.File;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers;
 
 [Area("Admin")]
-[Authorize(Policy = PolicyConstants.IsAdminImportUser)]
+//[Authorize(Policy = PolicyConstants.IsAdminImportUser)]
 public class OutputFileController : ControllerBase
 {
-    public OutputFileController(IMediator mediator, ILogger<FormsController> logger) : base(mediator, logger)
-    { }
+    public OutputFileController(IMediator mediator, ILogger<OutputFileController> logger) : base(mediator, logger)
+    { 
+    }
 
+    [Route("/admin/outputfile")]
     public async Task<IActionResult> Index()
     {
         try
@@ -31,6 +34,9 @@ public class OutputFileController : ControllerBase
             return Redirect("/Home/Error");
         }
     }
+
+
+    [Route("/admin/outputfile")]
     [HttpPost]
     public async Task<IActionResult> Index([FromBody]GenerateViewModel model)
     {
@@ -46,6 +52,23 @@ public class OutputFileController : ControllerBase
         {
             LogException(ex);
             return View(model);
+        }
+    }
+
+
+    [Route("/admin/outputfile/download/{fileName}")]
+    [HttpGet]
+    public async Task<IActionResult> Download(string fileName)
+    {
+        try
+        {
+            var response = await Send(new GetOutputFileDownloadQuery(fileName));
+            return File(response.FileStream, response.ContentType, fileName);
+        }
+        catch (Exception e)
+        {
+            LogException(e);
+            return Redirect("/Home/Error");
         }
     }
 }

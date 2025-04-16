@@ -6,6 +6,7 @@ namespace SFA.DAS.AODP.Infrastructure.File
     public interface IFileService
     {
         Task DeleteFileAsync(string filePath);
+        string GetBlobContentType(string filePath);
         Task<UploadedBlob> GetBlobDetails(string fileName);
         List<UploadedBlob> ListBlobs(string folderName);
         Task<Stream> OpenReadStreamAsync(string filePath);
