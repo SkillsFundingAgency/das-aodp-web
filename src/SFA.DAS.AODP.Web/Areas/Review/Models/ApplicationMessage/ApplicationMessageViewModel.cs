@@ -6,6 +6,7 @@ using SFA.DAS.AODP.Web.Models.TimelineComponents;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
+using SFA.DAS.AODP.Web.Extensions.Startup;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationMessage;
 
@@ -71,8 +72,7 @@ public class ApplicationMessageViewModel : TimelineItemBase
     {
         get
         {
-            //return $"{SentByName}, {SentAt.ToString("dd MMM yyyy 'at' HH:mm", CultureInfo.InvariantCulture)}";
-            return $"{SentByName}, {SentAt.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)} at {SentAt.ToLocalTime().ToString("HH:mm")}";
+            return $"{SentByName}, {SentAt.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)} at {SentAt.ToLocalDateTime().ToString("HH:mm")}";
         }
     }
 
