@@ -94,7 +94,7 @@ public class ApplicationMessagesController : ControllerBase
             model.AdditionalActions.Preview = false;
         }
 
-        ShowNotificationIfKeyExists(NotificationKeys.MessageSentBanner.ToString(), ViewNotificationMessageType.Success, "Your message has been sent");
+        ShowNotificationIfKeyExists(NotificationKeys.MessageSentBanner.ToString(), ViewNotificationMessageType.Success, "Your message has been logged but no notification will be sent.");
         ShowNotificationIfKeyExists(NotificationKeys.MarkAsReadBanner.ToString(), ViewNotificationMessageType.Success, "All messages have been marked as read.");
 
         model.FileSettings = _formBuilderSettings;
@@ -152,7 +152,7 @@ public class ApplicationMessagesController : ControllerBase
                     await HandleFileUploadsAsync(model.ApplicationId, response.Id, model.Files);
                 }
 
-                TempData[NotificationKeys.MessageSentBanner.ToString()] = "Your message has been sent";
+                TempData[NotificationKeys.MessageSentBanner.ToString()] = true;
                 TempData.Remove("PreviewMessage");
                 TempData.Remove("EditMessage");
                 break;
