@@ -8,7 +8,7 @@
             <div class="govuk-error-summary__body">
                 <ul class="govuk-list govuk-error-summary__list">
 
-                    @foreach (var ms in ViewContext.ModelState)
+                    @foreach (var ms in ViewContext.ModelState.Reverse())
                     {
                         var error = @ms.Value.Errors.FirstOrDefault();
                         if (error == null) continue;
