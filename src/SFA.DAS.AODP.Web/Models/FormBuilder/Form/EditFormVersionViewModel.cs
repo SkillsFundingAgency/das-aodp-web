@@ -38,7 +38,7 @@ public class EditFormVersionViewModel
         viewModel.Title = response.Title;
         viewModel.Description = response.Description;
         viewModel.DescriptionHTML = response.DescriptionHTML;
-        viewModel.Version = response.Version.ToString("yyyy-MM-dd HH:mm");
+        viewModel.Version = response.Version.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
         viewModel.Status = response.Status.ToString();
         viewModel.Order = response.Order;
         foreach (var section in response.Sections)

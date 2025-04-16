@@ -71,7 +71,8 @@ public class ApplicationMessageViewModel : TimelineItemBase
     {
         get
         {
-            return $"{SentByName}, {SentAt.ToString("dd MMM yyyy 'at' HH:mm", CultureInfo.InvariantCulture)}";
+            //return $"{SentByName}, {SentAt.ToString("dd MMM yyyy 'at' HH:mm", CultureInfo.InvariantCulture)}";
+            return $"{SentByName}, {SentAt.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)} at {SentAt.ToLocalTime().ToString("HH:mm")}";
         }
     }
 
