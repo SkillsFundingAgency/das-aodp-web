@@ -29,37 +29,40 @@
                     </h2>
                     <div class="govuk-error-summary__body">
                         <ul class="govuk-list govuk-error-summary__list">
-
-                            @foreach (var error in ViewContext.ModelState)
-                            {
-                                var errorMsg = @error.Value.Errors.FirstOrDefault()?.ErrorMessage;
-                                if (string.IsNullOrEmpty(errorMsg)) continue;
-
-                                var question = ApplicationPageErrorHelper.GetQuestionByErrorKey(Model.Questions, error.Key);
-                                if (question != null)
+                            @{
+                                // Sort ModelState errors based on the Questions.Order property
+                                var orderedErrors = ViewContext.ModelState
+                                .Where(ms => ms.Value.Errors.Any())
+                                .Select(ms => new
                                 {
+                                    Key = ms.Key,
+                                    ErrorMessage = ms.Value.Errors.FirstOrDefault()?.ErrorMessage,
+                                    Question = ApplicationPageErrorHelper.GetQuestionByErrorKey(Model.Questions, ms.Key)
+                                })
+                                .Where(e => e.Question != null)
+                                .OrderBy(e => e.Question.Order);
+
+                                foreach (var error in orderedErrors)
+                                {
+                                    var question = error.Question;
                                     string href = $"#question-{question.Id}";
 
                                     if (question.Type == SFA.DAS.AODP.Models.Forms.QuestionType.Date)
                                     {
                                         href = $"#Questions[{question.Order - 1}][Answer][DateValue.Day]";
                                     }
+
                                     <li>
-                                        <a href="@href">Question @(question.Order). @errorMsg</a>
+                                        <a href="@href">Question @(question.Order). @error.ErrorMessage</a>
                                     </li>
                                 }
-                                else
-                                {
-                                    <li>@errorMsg</li>
-                                }
-
                             }
-
                         </ul>
                     </div>
                 </div>
             </div>
         }
+
 
 
         <form asp-controller="Applications" asp-action="ApplicationPage" method="post" enctype="multipart/form-data">

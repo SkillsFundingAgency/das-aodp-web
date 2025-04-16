@@ -1,4 +1,5 @@
 ﻿using SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
+using System.ComponentModel.DataAnnotations;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SFA.DAS.AODP.Web.Models.FormBuilder.Section
@@ -6,6 +7,7 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Section
     public class EditSectionViewModel
     {
         public int Order { get; set; }
+        [Required]
         public string Title { get; set; }
         public Guid FormVersionId { get; set; }
         public Guid SectionId { get; set; }
