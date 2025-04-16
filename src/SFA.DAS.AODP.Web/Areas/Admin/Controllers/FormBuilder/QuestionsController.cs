@@ -10,7 +10,6 @@ using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.Markdown;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Question;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 
