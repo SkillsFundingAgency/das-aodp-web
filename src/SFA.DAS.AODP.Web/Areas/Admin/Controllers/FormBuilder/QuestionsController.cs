@@ -246,11 +246,67 @@ public class QuestionsController : ControllerBase
     #region Validation
     private void ValidateEditQuestionViewModel(EditQuestionViewModel editQuestionViewModel)
     {
-        if (editQuestionViewModel.Type == AODP.Models.Forms.QuestionType.File)
+        switch (editQuestionViewModel.Type)
         {
-            if (editQuestionViewModel.FileUpload.NumberOfFiles > _formBuilderSettings.MaxUploadNumberOfFiles)
+            case AODP.Models.Forms.QuestionType.File:
             {
-                ModelState.AddModelError("FileUpload.NumberOfFiles", $"The number of files cannot be greater than {_formBuilderSettings.MaxUploadNumberOfFiles}");
+                if (editQuestionViewModel.FileUpload.NumberOfFiles > _formBuilderSettings.MaxUploadNumberOfFiles)
+                {
+                    ModelState.AddModelError("FileUpload.NumberOfFiles", $"The number of files cannot be greater than {_formBuilderSettings.MaxUploadNumberOfFiles}");
+                }
+                break;
+            }
+            case AODP.Models.Forms.QuestionType.Text:
+            {
+                if (editQuestionViewModel.TextInput.MinLength > editQuestionViewModel.TextInput.MaxLength)
+                {
+                    ModelState.AddModelError("TextInput.MinLength", $"The minimum length cannot be greater than {editQuestionViewModel.TextInput.MaxLength}");
+                }
+                if (editQuestionViewModel.TextInput.MaxLength < editQuestionViewModel.TextInput.MinLength)
+                {
+                    ModelState.AddModelError("TextInput.MaxLength", $"The maximum length cannot be less than {editQuestionViewModel.TextInput.MinLength}");
+                }
+                break;
+            }
+            case AODP.Models.Forms.QuestionType.Number:
+            {
+                if (editQuestionViewModel.NumberInput.LessThanOrEqualTo >= editQuestionViewModel.NumberInput.GreaterThanOrEqualTo)
+                {
+                    ModelState.AddModelError("NumberInput.LessThanOrEqualTo", $"The number provided cannot be greater than or equal to {editQuestionViewModel.NumberInput.GreaterThanOrEqualTo}");
+                }
+                if (editQuestionViewModel.NumberInput.GreaterThanOrEqualTo <= editQuestionViewModel.NumberInput.LessThanOrEqualTo)
+                {
+                    ModelState.AddModelError("NumberInput.GreaterThanOrEqualTo", $"The number provided cannot be less than or equal to {editQuestionViewModel.NumberInput.LessThanOrEqualTo}");
+                }
+                break;
+            }
+            case AODP.Models.Forms.QuestionType.MultiChoice:
+            {
+                if (editQuestionViewModel.Checkbox.MinNumberOfOptions > editQuestionViewModel.Checkbox.MaxNumberOfOptions)
+                {
+                    ModelState.AddModelError("Checkbox.MinNumberOfOptions", $"The number of checkbox options must be less than {editQuestionViewModel.Checkbox.MaxNumberOfOptions}");
+                }
+                if (editQuestionViewModel.Checkbox.MaxNumberOfOptions < editQuestionViewModel.Checkbox.MinNumberOfOptions)
+                {
+                    ModelState.AddModelError("Checkbox.MaxNumberOfOptions", $"The number of checkbox options must be greater than {editQuestionViewModel.Checkbox.MinNumberOfOptions}");
+                }
+                break;
+            }
+            case AODP.Models.Forms.QuestionType.Date:
+            {
+                if (editQuestionViewModel.DateInput.LessThanOrEqualTo >= editQuestionViewModel.DateInput.GreaterThanOrEqualTo)
+                {
+                    ModelState.AddModelError("DateInput.LessThanOrEqualTo", $"The date provided must be earlier than {editQuestionViewModel.DateInput.GreaterThanOrEqualTo}");
+                }
+                if (editQuestionViewModel.DateInput.GreaterThanOrEqualTo <= editQuestionViewModel.DateInput.LessThanOrEqualTo)
+                {
+                    ModelState.AddModelError("DateInput.GreaterThanOrEqualTo", $"The date provided must be later than {editQuestionViewModel.DateInput.LessThanOrEqualTo}");
+                }
+                break;
+            }
+            default:
+            {
+                break;
             }
         }
         else if (editQuestionViewModel.Options?.Options != null)
