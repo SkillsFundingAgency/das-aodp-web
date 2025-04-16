@@ -253,6 +253,17 @@ public class QuestionsController : ControllerBase
                 ModelState.AddModelError("FileUpload.NumberOfFiles", $"The number of files cannot be greater than {_formBuilderSettings.MaxUploadNumberOfFiles}");
             }
         }
+        else if (editQuestionViewModel.Options?.Options != null)
+        {
+            editQuestionViewModel.Options.Options
+                .Select((option, index) => new { Option = option, Index = index })
+                .Where(item => string.IsNullOrWhiteSpace(item.Option.Value))
+                .ToList()
+                .ForEach(item =>
+                {
+                    ModelState.AddModelError($"Options-{item.Index}", "Option text cannot be empty");
+                });
+        }
     }
     #endregion
 }
