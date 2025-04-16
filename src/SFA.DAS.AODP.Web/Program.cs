@@ -1,5 +1,4 @@
 using GovUk.Frontend.AspNetCore;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Authentication.Extensions;
@@ -59,8 +58,8 @@ internal class Program
 
         builder.Services.Configure<FormOptions>(options =>
         {
-            // Set the limit to 100 MB for form data
-            options.MultipartBodyLengthLimit = 104857600;
+            // Set the limit to 110 MB for form data
+            options.MultipartBodyLengthLimit = 115343360;
         });
 
         var app = builder.Build();
