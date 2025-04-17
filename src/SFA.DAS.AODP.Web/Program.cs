@@ -1,5 +1,4 @@
 using GovUk.Frontend.AspNetCore;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Authentication.Extensions;
@@ -59,8 +58,8 @@ internal class Program
 
         builder.Services.Configure<FormOptions>(options =>
         {
-            // Set the limit to 100 MB for form data
-            options.MultipartBodyLengthLimit = 104857600;
+            // Set the limit to 110 MB for form data
+            options.MultipartBodyLengthLimit = 115343360;
         });
 
         var app = builder.Build();
@@ -83,16 +82,6 @@ internal class Program
             .UseHttpsRedirection()
             .UseStaticFiles()
             .UseCookiePolicy()
-            .UseWhen(context => context.Request.ContentType != null && context.Request.ContentType.StartsWith("multipart/form-data"), appBuilder =>
-            {
-                appBuilder.Use((context, next) =>
-                {
-                    // Set the maximum request body size to 110 MB (115343360 bytes).
-                    // This is 10% larger than the MultipartBodyLengthLimit (100 MB) to provide a buffer for request overhead.
-                    context.Features.Get<IHttpMaxRequestBodySizeFeature>().MaxRequestBodySize = 115343360; 
-                    return next.Invoke();
-                });
-            })
             .UseRouting()
             .UseAuthentication()
             .UseAuthorization()
