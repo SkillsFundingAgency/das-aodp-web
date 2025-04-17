@@ -107,7 +107,7 @@ public class ChangedQualificationDetailsViewModel
         var priority = "Green";
         if (!string.IsNullOrWhiteSpace(priority) && Status != ActionTypeEnum.NoActionRequired)
         {
-            var changedFields = ChangedFieldNames?.Split(',').Select(s => s.Trim()).ToList();
+            var changedFields = ChangedFieldNames?.Split(',').Select(s => s.Trim()).ToList() ?? [];
             var redChanges = new List<string>() { "Level", "SSA", "GLH" };
             var yellowChanges = new List<string>()
                 {
@@ -397,7 +397,7 @@ public class ChangedQualificationDetailsViewModel
 
 public class KeyFieldChanges
 {
-    public string Was { get; set; }
-    public string Now { get; set; }
-    public string Name { get; set; }
+    public string? Was { get; set; }
+    public string? Now { get; set; }
+    public string? Name { get; set; }
 }

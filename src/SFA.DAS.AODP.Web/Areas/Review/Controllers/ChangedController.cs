@@ -186,7 +186,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
                 var latestVersionNumber = qualificationWithVersions.Qual.Versions.Max(i => i.Version) ?? 0;
 
-                var currentVersion = qualificationWithVersions.Qual.Versions.Where(i => i.Version == latestVersionNumber).FirstOrDefault();
+                var currentVersion = qualificationWithVersions.Qual.Versions.Where(i => i.Version == latestVersionNumber).First();
                 if (latestVersionNumber > 1)
                 {
                     for (int? i = latestVersionNumber; i > 1; i--)
@@ -194,7 +194,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                         if (i != latestVersionNumber)
                             currentVersion = qualificationWithVersions.Qual.Versions.Where(v => v.Version == i).FirstOrDefault();
                         var previousVersion = qualificationWithVersions.Qual.Versions.Where(v => v.Version == i - 1).FirstOrDefault();
-                        var keyFieldsChanges = currentVersion.ChangedFieldNames.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                        var keyFieldsChanges = currentVersion?.ChangedFieldNames?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [];
+
+                        if (currentVersion == null || previousVersion == null) continue;
 
                         GetKeyFieldChanges(currentVersion, previousVersion, keyFieldsChanges);
 
@@ -259,7 +261,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 {
                     var previousVersion = await Send(new GetQualificationVersionQuery() { QualificationReference = qualificationReference, Version = latestVersion.Version - 1 });
 
-                    var keyFieldsChanges = latestVersion?.ChangedFieldNames?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                    var keyFieldsChanges = latestVersion?.ChangedFieldNames?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [];
                     GetKeyFieldChanges(latestVersion, previousVersion, keyFieldsChanges);
                 }
                 return View(latestVersion);
@@ -297,7 +299,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                         latestVersion.KeyFieldChanges.Add(new() { Name = "SSA", Was = previousVersion.Ssa.ToString(), Now = latestVersion.Ssa.ToString() });
                         break;
                     case "GradingType":
-                        latestVersion.KeyFieldChanges.Add(new() { Name = "Grading Type", Was = previousVersion.GradingType.ToString(), Now = latestVersion.GradingType.ToString() });
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Grading Type", Was = previousVersion.GradingType?.ToString(), Now = latestVersion.GradingType?.ToString() });
                         break;
                     case "OfferedInEngland":
                         latestVersion.KeyFieldChanges.Add(new() { Name = "Offered In England", Was = previousVersion.OfferedInEngland.ToString(), Now = latestVersion.OfferedInEngland.ToString() });

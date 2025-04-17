@@ -43,7 +43,7 @@
                     <govuk-summary-list-row-key>Priority</govuk-summary-list-row-key>
                     <govuk-summary-list-row-value>@Model.Priority</govuk-summary-list-row-value>
                 </govuk-summary-list-row>
-                @if (@Model.ChangedFieldNames != "")
+                @if (Model.ChangedFieldNames != null && Model.ChangedFieldNames != "")
                 {
                     <govuk-summary-list-row>
                         <govuk-summary-list-row-key>Changes</govuk-summary-list-row-key>
