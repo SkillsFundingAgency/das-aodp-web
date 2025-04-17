@@ -26,10 +26,11 @@
                     <div class="govuk-form-group">
                         <govuk-radios asp-for="ImportType">
                             <govuk-radios-fieldset>
-                                <govuk-radios-fieldset-legend is-page-heading="false" class="govuk-fieldset__legend--s"></govuk-radios-fieldset-legend>
-                                <govuk-radios-hint>
-                                    Select one option
-                                </govuk-radios-hint>
+                                <govuk-radios-fieldset-legend is-page-heading="false" class="govuk-fieldset__legend--s">
+                                    <div class="govuk-hint" id="ImportType-hint">
+                                        Select one option
+                                    </div>
+                                </govuk-radios-fieldset-legend>
 
                                 @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.ImportType))
 

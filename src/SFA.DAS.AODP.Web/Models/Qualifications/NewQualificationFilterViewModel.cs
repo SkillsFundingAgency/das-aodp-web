@@ -12,5 +12,6 @@
         public string Organisation {  get; set; }
         public string QualificationName { get; set; }
         public string QAN { get; set; }
+        public List<Guid>? ProcessStatusIds { get; set; } = new List<Guid>();
     }
 }

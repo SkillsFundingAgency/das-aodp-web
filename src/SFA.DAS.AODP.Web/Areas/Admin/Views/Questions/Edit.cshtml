@@ -32,7 +32,7 @@
     @Html.AntiForgeryToken()
 
     <div class="govuk-form-group">
-        <govuk-input disabled="@(!Model.Editable)" asp-for="@Model.Title" input-class="govuk-input--width-50" inputmode="text" value="@Model.Title" autocomplete="off">
+        <govuk-input disabled="@(!Model.Editable)" asp-for="@Model.Title" inputmode="text" value="@Model.Title" autocomplete="off">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Title</govuk-input-label>
             @{
                 await Html.RenderPartialAsync("Validation/_TextInputValidationPartial", nameof(Model.Title));
@@ -73,7 +73,7 @@
 
 
     <div class="govuk-form-group">
-        <govuk-input disabled="@(!Model.Editable)" asp-for="@Model.Hint" input-class="govuk-input--width-50" inputmode="text" autocomplete="off">
+        <govuk-input disabled="@(!Model.Editable)" asp-for="@Model.Hint" inputmode="text" autocomplete="off">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Hint (optional)</govuk-input-label>
 
             <govuk-input-hint>

@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using SFA.DAS.AODP.Infrastructure.File;
+using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationMessage;
 using SFA.DAS.AODP.Web.Enums;
@@ -17,16 +19,37 @@ public class ApplicationMessagesViewModel
     [Required]
     public string SelectedMessageType => MessageType.ReplyToInformationRequest.ToString();
     public string SelectedMessageTypeDisplay => MessageTypeConfigurationRules.GetMessageSharingSettings(SelectedMessageType).DisplayName;
+
+    public List<IFormFile> Files { get; set; } = new();
+
     public UserType UserType { get; set; }
     public List<SelectListItem> MessageTypeSelectOptions => MessageTypeSelectOptionRules.GetMessageTypeSelectOptions(UserType);
     public List<ApplicationMessageViewModel>? TimelineMessages { get; set; } = new();
     public MessageActions AdditionalActions { get; set; } = new();
+    public FileUploadSetting? FileSettings { get; set; }
 
     public class MessageActions
     {
         public bool Preview { get; set; }
         public bool Send { get; set; }
         public bool Edit { get; set; }
+    }
+
+    public class FileUploadSetting
+    {
+        public List<string> UploadFileTypesAllowed { get; set; }
+        public int MaxUploadFileSize { get; set; }
+        public int MaxUploadNumberOfFiles { get; set; }
+
+        public static implicit operator FileUploadSetting(FormBuilderSettings formBuilderSettings)
+        {
+            return new()
+            {
+                UploadFileTypesAllowed = formBuilderSettings.UploadFileTypesAllowed,
+                MaxUploadFileSize = formBuilderSettings.MaxUploadFileSize,
+                MaxUploadNumberOfFiles = formBuilderSettings.MaxUploadNumberOfFiles,
+            };
+        }
     }
 }
 

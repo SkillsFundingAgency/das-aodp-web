@@ -26,13 +26,11 @@
                 If you want to view the qualification details to review the qualification, make a change to the decision or confirm the decision and inform AO, go to qualification details.
             </p>
 
-
-            <a 
-               class="govuk-button"
+            <a class="govuk-button"
                asp-area="Review"
                asp-action="QualificationDetails"
                asp-route-qualificationReference="@Model.QualificationReference"
-               asp-controller="New">Qualification details</a>
+               asp-controller="@Model.Mode">Qualification details</a>
 
             <p class="govuk-body">
                 If you want to view a different qualification, go to dashboard.
@@ -41,7 +39,10 @@
             <a class="govuk-button"
                asp-area="Review"
                asp-action="Index"
-               asp-controller="New">Back to dashboard</a>
+               asp-controller="@Model.Mode">
+                Back to dashboard
+            </a>
+           
         </div>
     </div>
 </div>

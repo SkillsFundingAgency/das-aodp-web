@@ -29,12 +29,13 @@ public class MovePageDownCommandHandler : IRequestHandler<MovePageDownCommand, B
 
         try
         {
-            await _apiClient.Put(new MovePageDownApiRequest()
+            var apiRequest = new MovePageDownApiRequest()
             {
-                FormVersionId = request.FormVersionId,
                 PageId = request.PageId,
-                SectionId = request.SectionId
-            });
+                FormVersionId = request.FormVersionId,
+                SectionId = request.SectionId,
+            };
+            await _apiClient.Put(apiRequest);
             response.Success = true;
         }
         catch (Exception ex)

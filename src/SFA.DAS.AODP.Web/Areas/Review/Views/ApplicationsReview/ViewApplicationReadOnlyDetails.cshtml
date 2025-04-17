@@ -69,6 +69,16 @@
         {
             <p>No sections available.</p>
         }
+        
+        @if (Model.HasFiles)
+        {
+            <form method="post" asp-route-applicationReviewId="@Model.ApplicationReviewId" asp-area="Review" asp-controller="ApplicationsReview" asp-action="DownloadAllApplicationFiles">
+                @Html.HiddenFor(m => m.ApplicationReviewId)
+                <button type="submit" class="govuk-button">
+                    Download all files
+                </button>
+            </form>
+        }
 
         <a class="govuk-button govuk-button--secondary"
            asp-action="ViewApplication"

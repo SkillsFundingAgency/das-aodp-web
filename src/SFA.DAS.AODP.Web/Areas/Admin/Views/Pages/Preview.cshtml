@@ -2,6 +2,10 @@
 @model PreviewPageViewModel
 
 @{
+    ViewData["Title"] = "Preview Question page";
+}
+
+@{
     Model.Value.Questions = Model.Value.Questions.OrderBy(o => o.Order).ToList();
 }
 

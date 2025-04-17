@@ -102,7 +102,6 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
         public class FileUploadOptions
         {
             public List<string>? FileTypes { get; set; } = new();
-            public int MaxSize { get; set; }
             public string? FileNamePrefix { get; set; }
             public int NumberOfFiles { get; set; }
         }
@@ -191,7 +190,6 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
                 {
                     FileTypes = settings.UploadFileTypesAllowed,
                     FileNamePrefix = response.FileUpload?.FileNamePrefix,
-                    MaxSize = response.FileUpload?.MaxSize ?? settings.MaxUploadFileSize,
                     NumberOfFiles = response.FileUpload?.NumberOfFiles ?? settings.MaxUploadNumberOfFiles,
                 };
             }
@@ -267,7 +265,6 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
                 {
                     FileNamePrefix = model.FileUpload.FileNamePrefix,
                     NumberOfFiles = model.FileUpload.NumberOfFiles,
-                    MaxSize = model.FileUpload.MaxSize,
                 };
             }
 

@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Models.TimelineComponents;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 
@@ -12,10 +14,14 @@ public class ApplicationMessagesViewModel
 {
     public Guid ApplicationReviewId { get; set; }
     public string Hint => (UserType == UserType.Qfau) ?
-        "Leave messages, comments and recommendations to other DfE staff members, IfATE, Ofqual or the AO applicant owner."
-        : "Leave messages, comments and recommendations to DfE or the AO applicant owner.";
+        "Leave messages, comments and recommendations to other DfE staff members, IfATE, Ofqual or the AO applicant owner. You will be able to upload files when you are previewing the message."
+        : "Leave messages, comments and recommendations to DfE or the AO applicant owner. You will be able to upload files when you are previewing the message.";
+    
+    [DisplayName("Message")]
     [Required]
     public string MessageText { get; set; }
+
+    [DisplayName("Message type")]
     [Required]
     public string SelectedMessageType { get; set; }
     public MessageTypeConfiguration SelectedMessageTypeConfiguration => MessageTypeConfigurationRules.GetMessageSharingSettings(SelectedMessageType);
@@ -26,11 +32,32 @@ public class ApplicationMessagesViewModel
     public List<ApplicationMessageViewModel>? TimelineMessages { get; set; } = new();
     public MessageActions AdditionalActions { get; set; } = new();
 
+    public FileUploadSetting? FileSettings { get; set; }
+    public List<IFormFile> Files { get; set; } = new();
+
     public class MessageActions
     {
         public bool Preview { get; set; }
         public bool Send { get; set; }
         public bool Edit { get; set; }
+    }
+
+
+    public class FileUploadSetting
+    {
+        public List<string> UploadFileTypesAllowed { get; set; }
+        public int MaxUploadFileSize { get; set; }
+        public int MaxUploadNumberOfFiles { get; set; }
+
+        public static implicit operator FileUploadSetting(FormBuilderSettings formBuilderSettings)
+        {
+            return new()
+            {
+                UploadFileTypesAllowed = formBuilderSettings.UploadFileTypesAllowed,
+                MaxUploadFileSize = formBuilderSettings.MaxUploadFileSize,
+                MaxUploadNumberOfFiles = formBuilderSettings.MaxUploadNumberOfFiles,
+            };
+        }
     }
 }
 

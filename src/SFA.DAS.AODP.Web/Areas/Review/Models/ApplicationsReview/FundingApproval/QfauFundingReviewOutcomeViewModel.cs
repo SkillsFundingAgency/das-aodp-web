@@ -7,7 +7,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApprova
         public Guid ApplicationReviewId { get; set; }
         public string? Comments { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "You must select an outcome for funding in order to proceed.")]
         public bool? Approved { get; set; }
         public bool? NewDecision { get; set; }
     }

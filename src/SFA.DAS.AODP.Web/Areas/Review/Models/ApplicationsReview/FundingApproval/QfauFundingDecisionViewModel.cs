@@ -29,14 +29,23 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
             public string Name { get; set; }
         }
 
-        public static QfauFundingReviewOutcomeSummaryViewModel Map(GetFeedbackForApplicationReviewByIdQueryResponse response, GetFundingOffersQueryResponse offers)
+        public Qualification? RelatedQualification { get; set; }
+
+        public class Qualification
+        {
+            public string? Qan { get; set; }
+            public string? Status { get; set; }
+            public string? Name { get; set; }
+        }
+
+        public static QfauFundingDecisionViewModel Map(GetQfauFeedbackForApplicationReviewConfirmationQueryResponse response, GetFundingOffersQueryResponse offers)
         {
             Enum.TryParse(response.Status, out ApplicationStatus status);
-            QfauFundingReviewOutcomeSummaryViewModel model = new()
+            QfauFundingDecisionViewModel model = new()
             {
                 Approved = status == ApplicationStatus.Approved,
                 Comments = response.Comments,
-                Status = status
+                Status = status,
             };
 
             foreach (var funding in response.FundedOffers ?? [])
@@ -48,6 +57,16 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
                     StartDate = funding.StartDate,
                     FundingOfferId = funding.FundingOfferId,
                 });
+            }
+
+            if (response.RelatedQualification != null)
+            {
+                model.RelatedQualification = new()
+                {
+                    Qan = response.RelatedQualification.Qan,
+                    Status = response.RelatedQualification.Status,
+                    Name = response.RelatedQualification.Name,
+                };
             }
 
             model.MapOffers(offers);

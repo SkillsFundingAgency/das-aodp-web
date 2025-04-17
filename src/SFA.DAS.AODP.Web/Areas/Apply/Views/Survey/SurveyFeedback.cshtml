@@ -1,0 +1,64 @@
+﻿@using SFA.DAS.AODP.Web.Models.Survey
+@model SurveyViewModel
+@{
+    ViewData["Title"] = "Give feedback on this service";
+}
+
+<h1 class="govuk-heading-l">Give feedback on this service</h1>
+
+<h2 class="govuk-heading-m">Satisfaction survey</h2>
+<partial name="_ValidationSummaryPartial" />
+
+<form asp-action="SurveyFeedback" asp-controller="Survey" method="post" gfa-prepend-error-summary="false">
+    @Html.HiddenFor(m => m.Page)
+    @Html.AntiForgeryToken()
+    <div class="govuk-form-group @(ViewData.ModelState["SatisfactionScore"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+        <govuk-radios asp-for="SatisfactionScore">
+            <govuk-radios-fieldset>
+                <govuk-radios-fieldset-legend is-page-heading="false" class="govuk-fieldset__legend--s">
+                    Overall, how did you feel about the service you received today?
+                </govuk-radios-fieldset-legend>
+                @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.SatisfactionScore))
+                <govuk-radios-item value="@(SatisfactionScoreIndex.VerySatisfied)">
+                    Very satisfied
+                </govuk-radios-item>
+                <govuk-radios-item value="@(SatisfactionScoreIndex.Satisfied)">
+                    Satisfied
+                </govuk-radios-item>
+                <govuk-radios-item value="@(SatisfactionScoreIndex.NeitherSatisfiedOrDissatisfied)">
+                    Neither satisfied or dissatisfied
+                </govuk-radios-item>
+                <govuk-radios-item value="@(SatisfactionScoreIndex.Dissatisfied)">
+                    Dissatisfied
+                </govuk-radios-item>
+                <govuk-radios-item value="@(SatisfactionScoreIndex.VeryDissatisfied)">
+                    Very dissatisfied
+                </govuk-radios-item>
+            </govuk-radios-fieldset>
+        </govuk-radios>
+    </div>
+    <div class="govuk-form-group @(ViewData.ModelState["Comments"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+        <label class="govuk-label govuk-label--m" for="Comments">
+            How could we improve this service?
+        </label>
+        @if (ViewData.ModelState["Comments"]?.Errors.Count > 0)
+        {
+            <p id="CommentsText-error" class="govuk-error-message">
+                <span class="govuk-visually-hidden">Error:</span> @ViewData.ModelState["Comments"]?.Errors[0].ErrorMessage
+            </p>
+        }
+        <textarea asp-for="Comments"
+                  class="govuk-textarea @(ViewData.ModelState["Comments"]?.Errors.Count > 0 ? "govuk-textarea--error" : "")"
+                  id="Comments"
+                  rows="5"
+                  maxlength="1200"
+                  aria-describedby="Comments-info @(ViewData.ModelState["Comments"]?.Errors.Count > 0 ? "CommentsText-error" : "")"></textarea>
+        <div id="Comments-info" class="govuk-hint">
+            You can enter up to 1200 characters.
+        </div>
+    </div>
+    <button class="govuk-button">
+        Send feedback
+    </button>
+
+</form>
