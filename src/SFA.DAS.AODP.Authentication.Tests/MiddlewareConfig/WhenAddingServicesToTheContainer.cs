@@ -86,8 +86,7 @@ public class WhenAddingServicesToTheContainer
                 new("DfEOidcConfiguration:KeyVaultIdentifier", "https://test.com/"),
                 new("ProviderSharedUIConfiguration:DashboardUrl", "https://test.com/"),
                 new("DfEOidcConfiguration:DfELoginSessionConnectionString", "https://test.com/"),
-                new("DfEOidcConfiguration:LoginSlidingExpiryTimeOutInMinutes", "30"),
-                new("ResourceEnvironmentName", "test"),
+                new("DfEOidcConfiguration:LoginSlidingExpiryTimeOutInMinutes", "30")
             }
         };
 

@@ -10,8 +10,7 @@ namespace SFA.DAS.AODP.Authentication.Extensions
         public static void AddAuthenticationCookie(
             this AuthenticationBuilder services,
             string cookieName,
-            string signedOutCallbackPath,
-            string resourceEnvironmentName
+            string signedOutCallbackPath
      )
         {
             services.AddCookie(options =>
