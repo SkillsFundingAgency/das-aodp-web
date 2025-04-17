@@ -397,7 +397,7 @@ public class ChangedQualificationDetailsViewModel
 
 public class KeyFieldChanges
 {
-    public string Was { get; set; }
-    public string Now { get; set; }
-    public string Name { get; set; }
+    public string? Was { get; set; }
+    public string? Now { get; set; }
+    public string? Name { get; set; }
 }
