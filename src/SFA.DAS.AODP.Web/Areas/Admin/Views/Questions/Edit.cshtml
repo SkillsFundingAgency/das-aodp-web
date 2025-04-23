@@ -72,15 +72,35 @@
     <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
 
 
-    <div class="govuk-form-group">
-        <govuk-input disabled="@(!Model.Editable)" asp-for="@Model.Hint" inputmode="text" autocomplete="off">
+    <div class="govuk-form-group @(ViewData.ModelState["Hint"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+       @*  <govuk-input disabled="@(!Model.Editable)" asp-for="@Model.Hint" inputmode="text" autocomplete="off">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Hint (optional)</govuk-input-label>
 
             <govuk-input-hint>
-                Keep hint text to a single short sentence, without any full stops.
+                Keep hint text to a single short sentence upto 150 characters, without any full stops.
             </govuk-input-hint>
 
-        </govuk-input>
+        </govuk-input> *@
+
+        <label for="Hint" class="govuk-label govuk-label--s">Hint (optional)</label>
+        @if (ViewData.ModelState["Hint"]?.Errors.Count > 0)
+        {
+            <p id="Hint-error" class="govuk-error-message">
+                <span class="govuk-visually-hidden">Error:</span> @ViewData.ModelState["Hint"]?.Errors[0].ErrorMessage
+            </p>
+        }
+        <div class="govuk-hint" id="Hint-hint">
+            Keep hint text to a single short sentence upto 150 characters, without any full stops.
+        </div>
+        <input disabled="@(!Model.Editable)" 
+        class="govuk-input" 
+        asp-for="@Model.Hint" 
+        inputmode="text" 
+        autocomplete="off" 
+        maxlength="150"
+               aria-describedby="Hint-hint @(ViewData.ModelState["Hint"]?.Errors.Count > 0 ? "Hint-error" : "")"
+               pattern="[^.]*" />
+
     </div>
     <div class="govuk-form-group">
         <govuk-textarea disabled="@(!Model.Editable)" asp-for="@Model.Helper" autocomplete="off">
