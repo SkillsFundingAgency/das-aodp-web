@@ -1,4 +1,6 @@
-﻿namespace SFA.DAS.AODP.Web.Models.FormBuilder.Form;
+﻿using SFA.DAS.AODP.Web.Extensions.Startup;
+
+namespace SFA.DAS.AODP.Web.Models.FormBuilder.Form;
 public class EditFormVersionViewModel
 {
     public Guid Id { get; set; }
@@ -38,7 +40,7 @@ public class EditFormVersionViewModel
         viewModel.Title = response.Title;
         viewModel.Description = response.Description;
         viewModel.DescriptionHTML = response.DescriptionHTML;
-        viewModel.Version = response.Version.ToString("yyyy-MM-dd HH:mm");
+        viewModel.Version = response.Version.ToLocalDateTime().ToString("yyyy-MM-dd HH:mm");
         viewModel.Status = response.Status.ToString();
         viewModel.Order = response.Order;
         foreach (var section in response.Sections)
