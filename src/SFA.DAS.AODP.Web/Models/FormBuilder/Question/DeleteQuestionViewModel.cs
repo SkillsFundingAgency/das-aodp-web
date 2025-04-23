@@ -11,12 +11,12 @@ public class DeleteQuestionViewModel
     public string Title { get; set; }
     public List<RouteInformation> Routes { get; set; } = new();
 
-    public static DeleteQuestionViewModel MapToViewModel(GetQuestionByIdQueryResponse response, Guid formVersionId, Guid sectionId)
+    public static DeleteQuestionViewModel MapToViewModel(GetQuestionByIdQueryResponse response, Guid formVersionId, Guid sectionId, Guid pageId, Guid questionId)
     {
         return new DeleteQuestionViewModel()
         {
-            QuestionId = response.Id,
-            PageId = response.PageId,
+            QuestionId = questionId,
+            PageId = pageId,
             SectionId = sectionId,
             FormVersionId = formVersionId,
             Title = response.Title,

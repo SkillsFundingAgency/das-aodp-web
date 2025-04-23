@@ -1,83 +1,170 @@
-﻿@model SFA.DAS.AODP.Web.Models.Qualifications.QualificationDetailsViewModel
+﻿@using System.Globalization
+@model SFA.DAS.AODP.Web.Models.Qualifications.NewQualificationDetailsViewModel
 
 @{
     ViewData["Title"] = "Qualification Details";
 }
+<a class="govuk-back-link"
+asp-controller="New"
+asp-action="Index">
+    Return to qualifications
+</a>
 
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
+<span class="govuk-caption-xl">
+    Newly regulated qualification
+</span>
 <h1 class="govuk-heading-xl">Qualification Details</h1>
 
-<govuk-summary-list>
-    <govuk-summary-list-row>
-        <govuk-summary-list-row-key>Status</govuk-summary-list-row-key>
-        <govuk-summary-list-row-value>@Model.Status</govuk-summary-list-row-value>
-    </govuk-summary-list-row>
-    <govuk-summary-list-row>
-        <govuk-summary-list-row-key>Priority</govuk-summary-list-row-key>
-        <govuk-summary-list-row-value>@Model.Priority</govuk-summary-list-row-value>
-    </govuk-summary-list-row>
-    <govuk-summary-list-row>
-        <govuk-summary-list-row-key>Changes</govuk-summary-list-row-key>
-        <govuk-summary-list-row-value>@Model.Changes</govuk-summary-list-row-value>
-    </govuk-summary-list-row>
-    <govuk-summary-list-row>
-        <govuk-summary-list-row-key>Qualification Reference</govuk-summary-list-row-key>
-        <govuk-summary-list-row-value>@Model.QualificationReference</govuk-summary-list-row-value>
-    </govuk-summary-list-row>
-        <govuk-summary-list-row>
-        <govuk-summary-list-row-key>Awarding Organisation</govuk-summary-list-row-key>
-        <govuk-summary-list-row-value>@Model.AwardingOrganisation</govuk-summary-list-row-value>
-    </govuk-summary-list-row>
-    <govuk-summary-list-row>
-        <govuk-summary-list-row-key>Title</govuk-summary-list-row-key>
-        <govuk-summary-list-row-value>@Model.Title</govuk-summary-list-row-value>
-    </govuk-summary-list-row>
-        <govuk-summary-list-row>
-        <govuk-summary-list-row-key>Qualification Type</govuk-summary-list-row-key>
-        <govuk-summary-list-row-value>@Model.QualificationType</govuk-summary-list-row-value>
-    </govuk-summary-list-row>
-    <govuk-summary-list-row>
-        <govuk-summary-list-row-key>Level</govuk-summary-list-row-key>
-        <govuk-summary-list-row-value>@Model.Level</govuk-summary-list-row-value>
-    </govuk-summary-list-row>
-    <govuk-summary-list-row>
-        <govuk-summary-list-row-key>Proposed Changes</govuk-summary-list-row-key>
-        <govuk-summary-list-row-value>@Model.ProposedChanges</govuk-summary-list-row-value>
-    </govuk-summary-list-row>
-    <govuk-summary-list-row>
-        <govuk-summary-list-row-key>Age Group</govuk-summary-list-row-key>
-        <govuk-summary-list-row-value>@Model.AgeGroup</govuk-summary-list-row-value>
-    </govuk-summary-list-row>
-    <govuk-summary-list-row>
-        <govuk-summary-list-row-key>Category</govuk-summary-list-row-key>
-        <govuk-summary-list-row-value>@Model.Category</govuk-summary-list-row-value>
-    </govuk-summary-list-row>
-    <govuk-summary-list-row>
-        <govuk-summary-list-row-key>Subject</govuk-summary-list-row-key>
-        <govuk-summary-list-row-value>@Model.Subject</govuk-summary-list-row-value>
-    </govuk-summary-list-row>
-    <govuk-summary-list-row>
-        <govuk-summary-list-row-key>Sector Subject Area</govuk-summary-list-row-key>
-        <govuk-summary-list-row-value>@Model.SectorSubjectArea</govuk-summary-list-row-value>
-    </govuk-summary-list-row>
-    <govuk-summary-list-row>
-        <govuk-summary-list-row-key>Comments</govuk-summary-list-row-key>
-        <govuk-summary-list-row-value>
-            <govuk-textarea name="Comments">
-                <govuk-textarea-label class="govuk-label--l" is-page-heading="true">
-                </govuk-textarea-label>
-                <govuk-textarea-value>
-                @Model.Comments
-                </govuk-textarea-value>
-            </govuk-textarea>
-            </govuk-summary-list-row-value>
-    </govuk-summary-list-row>
-</govuk-summary-list>
-<div class="govuk-grid-row">
-    <h2 class="govuk-heading-m">DfE funding review</h2>
-    <p class="govuk-body">Qualification funding, make decision on approval and funding options.</p>
+<form asp-controller="New" asp-action="QualificationDetails" method="post">
+    @Html.HiddenFor(m => m.Qual.Qan)
 
-    <a class="govuk-button" asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersOutcome" asp-route-qualificationReference="@Model.QualificationReference">
-        DfE funding review
-    </a>
-</div>
+    <div class="govuk-tabs" data-module="govuk-tabs">
+        <ul class="govuk-tabs__list">
+            <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+                <a class="govuk-link" href="/Review/New/QualificationDetails?qualificationReference=@Model.Qual.Qan">
+                    Overview
+                </a>
+            </li>
+            <li class="govuk-tabs__list-item govuk-tabs__list-item">
+                <a class="govuk-link" href="/Review/New/QualificationDetails/Timeline?qualificationReference=@Model.Qual.Qan">
+                    History
+                </a>
+            </li>
+        </ul>
+        <div class="govuk-tabs__panel" id="details">
+            <govuk-summary-list>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>Status</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>@Model.ProcStatus.Name</govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>QAN</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>@Model.Qual.Qan</govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>Qualification title</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>@Model.Qual.QualificationName</govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>Awarding organisation</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>@Model.Organisation.NameOfqual</govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>Qualification type</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>@Model.Type</govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>Level</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>@Model.Level</govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>Sector subject area</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>@Model.Ssa</govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>Age group(s)</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>
+                        @{
+                            var ageGroups = new List<string>();
+
+                            if (Model.PreSixteen ?? false)
+                            {
+                                ageGroups.Add("Pre 16");
+                            }
+                            if (Model.SixteenToEighteen ?? false)
+                            {
+                                ageGroups.Add("16-18");
+                            }
+                            if (Model.EighteenPlus ?? false)
+                            {
+                                ageGroups.Add("18+");
+                            }
+                            if (Model.NineteenPlus ?? false)
+                            {
+                                ageGroups.Add("19+");
+                            }
+                        }
+                        @foreach (var ageGroup in ageGroups)
+                        {
+                            <p>@ageGroup</p>
+                        }
+                    </govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>Guided learning hours (GLH)</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>@Model.Glh</govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>Total qualification time (TQT)</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>@Model.Tqt</govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>Regulation start date</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>@Model.RegulationStartDate.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)</govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>Operational start date</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>@Model.OperationalStartDate.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)</govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>Operational end date</govuk-summary-list-row-key>
+                    @if (Model.OperationalEndDate.HasValue)
+                    {
+                        <govuk-summary-list-row-value>@Model.OperationalEndDate.Value.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)</govuk-summary-list-row-value>
+                    }
+                    else
+                    {
+                        <govuk-summary-list-row-value></govuk-summary-list-row-value>
+                    }
+                </govuk-summary-list-row>
+            </govuk-summary-list>
+            <div class="govuk-form-group">
+                <govuk-textarea asp-for="@Model.AdditionalActions.Note" autocomplete="false">
+                    <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Comments</govuk-textarea-label>
+                    <govuk-textarea-hint>Leave comments and recommendations. Give as much detail as you can. </govuk-textarea-hint>
+                </govuk-textarea>
+            </div>
+            <div class="govuk-form-group">
+                <govuk-select asp-for="@Model.AdditionalActions.ProcessStatusId">
+                    <govuk-select-label is-page-heading="false" class="govuk-label--s">Status</govuk-select-label>
+                    <govuk-select-item value="@null">Choose status</govuk-select-item>
+                    @foreach (var item in Model.ProcessStatuses)
+                    {
+                        <govuk-select-item value="@item.Id">@item.Name</govuk-select-item>
+                    }
+                </govuk-select>
+            </div>
+            <button
+                    type="submit"
+                    class="govuk-button"
+                    data-module="govuk-button"
+                    data-prevent-double-click="true">
+                Save
+            </button>
+            <div class="govuk-form-group">
+                @if (Model.FundingsOffersOutcomeStatus.HasValue)
+                {
+                    <a class="govuk-button" asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersSummary"
+                       asp-route-qualificationReference="@Model.Qual.Qan"
+                       asp-route-qualificationVersionId="@Model.Id"
+                       asp-route-qualificationId="@Model.QualificationId"
+                       asp-route-mode="New">
+                        DfE funding review
+                    </a>
+                    
+                }
+                else
+                {
+                    <a class="govuk-button" asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersOutcome"
+                       asp-route-qualificationReference="@Model.Qual.Qan"
+                       asp-route-mode="New">
+                        DfE funding review
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+</form>
 

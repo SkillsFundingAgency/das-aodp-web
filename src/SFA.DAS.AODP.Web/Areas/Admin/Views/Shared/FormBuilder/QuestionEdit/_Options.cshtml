@@ -25,7 +25,7 @@
                     }
                     <input type="text"
                            name="Options[Options][@i][Value]"
-                           class="govuk-input govuk-input--width-50"
+                           class="govuk-input"
                            value="@Model.Options[i].Value"
                            id="Options-@i"
                            autocomplete="off"/>
@@ -54,7 +54,14 @@
         <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button"
                 data-prevent-double-click="true" name="Options[AdditionalFormActions][AddOption]" value="true" data-govuk-button-init=""
                 @(ViewBag.AutoFocusOnAddOptionButton != null ? "autofocus" : "")>
-            Add another option
+            @if (Model.Options.Any())
+            {
+                <span>Add another option</span>
+            }
+            else
+            {
+                <span>Add option</span>
+            }
         </button>
     }
 

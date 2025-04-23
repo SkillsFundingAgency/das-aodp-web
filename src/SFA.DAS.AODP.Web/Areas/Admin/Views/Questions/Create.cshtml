@@ -18,7 +18,7 @@
     @Html.AntiForgeryToken()
 
     <div class="govuk-form-group">
-        <govuk-input asp-for="Title" input-class="govuk-input--width-50" inputmode="text" autocomplete="off">
+        <govuk-input asp-for="Title" inputmode="text" autocomplete="off">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Title</govuk-input-label>
             @Html.RenderPartialAsync("Validation/_TextInputValidationPartial", nameof(Model.Title))
         </govuk-input>
@@ -60,8 +60,8 @@
 
                 @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.Required))
 
-                <govuk-radios-item value="true">Mandatory</govuk-radios-item>
-                <govuk-radios-item value="false">
+                <govuk-radios-item value="true" checked="@Model.Required">Mandatory</govuk-radios-item>
+                <govuk-radios-item value="false" checked="@Model.Required == false">
                     Optional
                     <govuk-radios-hint class="govuk-hint govuk-radios__hint govuk-!-static-padding-0" id="pages-question-input-is-optional-true-hint">
                         We’ll add ‘(optional)’ to the end of the question text.

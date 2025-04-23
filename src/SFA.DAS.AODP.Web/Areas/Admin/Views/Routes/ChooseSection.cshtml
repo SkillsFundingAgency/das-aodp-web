@@ -1,11 +1,11 @@
 ﻿﻿@using SFA.DAS.AODP.Web.Models.FormBuilder.Routing
 
-@model CreateRouteChooseSectionAndPageViewModel
+@model CreateRouteChooseSectionViewModel
 
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
 @{
-    ViewData["Title"] = "Choose section and page";
+    ViewData["Title"] = "Choose section";
 }
 <form asp-controller="Routes" asp-action="ChooseSection" method="post" gfa-prepend-error-summary="false">
 
@@ -35,7 +35,7 @@
             <govuk-radios asp-for="@Model.ChosenSectionId">
                 <govuk-radios-fieldset>
                     <govuk-radios-fieldset-legend is-page-heading="true">
-                        <h1 class="govuk-heading-l govuk-!-margin-top-5">Choose section and page</h1>
+                        <h1 class="govuk-heading-l govuk-!-margin-top-5">Choose section</h1>
                     </govuk-radios-fieldset-legend>
 
                     <govuk-radios-hint>
@@ -45,32 +45,12 @@
                     @if (!Model.AreSectionsEmpty)
                     {
                         @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.ChosenSectionId))
-                        @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.ChosenPageId))
 
                         @foreach (var sectionInformation in Model.Sections.OrderBy(o => o.Order))
                         {
                             <govuk-radios-item value="@sectionInformation.Id">
 
                                 Section @(sectionInformation.Order). @sectionInformation.Title
-
-                                <govuk-radios-item-conditional>
-                                    <govuk-radios asp-for="@Model.ChosenPageId">
-                                        <govuk-radios-fieldset>
-                                            <govuk-radios-fieldset-legend is-page-heading="true">
-                                                <h2 class="govuk-heading-s">Choose page</h2>
-                                            </govuk-radios-fieldset-legend>
-
-                                            @foreach (var pageInformation in sectionInformation.Pages.OrderBy(o => o.Order))
-                                            {
-                                                <govuk-radios-item value="@pageInformation.Id">
-                                                    Page @(pageInformation.Order). @pageInformation.Title
-                                                </govuk-radios-item>
-                                            }
-
-                                        </govuk-radios-fieldset>
-                                    </govuk-radios>
-                                </govuk-radios-item-conditional>
-
                             </govuk-radios-item>
                         }
                     }
@@ -91,7 +71,7 @@
     }
     else
     {
-        <govuk-button type="submit">Continue to choose question</govuk-button>
+        <govuk-button type="submit">Continue to choose page</govuk-button>
     }
 
 </form>

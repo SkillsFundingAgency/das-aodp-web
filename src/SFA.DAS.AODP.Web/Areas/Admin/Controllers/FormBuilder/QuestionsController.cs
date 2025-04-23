@@ -10,7 +10,6 @@ using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.Markdown;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Question;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 
@@ -210,7 +209,7 @@ public class QuestionsController : ControllerBase
 
         var response = await Send(query);
 
-        var vm = DeleteQuestionViewModel.MapToViewModel(response, formVersionId, sectionId);
+        var vm = DeleteQuestionViewModel.MapToViewModel(response, formVersionId, sectionId, pageId, questionId);
 
         return View(vm);
 
@@ -248,14 +247,21 @@ public class QuestionsController : ControllerBase
     {
         if (editQuestionViewModel.Type == AODP.Models.Forms.QuestionType.File)
         {
-            if (editQuestionViewModel.FileUpload.MaxSize > _formBuilderSettings.MaxUploadFileSize)
-            {
-                ModelState.AddModelError("FileUpload.MaxSize", $"The file upload size cannot be greater than {_formBuilderSettings.MaxUploadFileSize}");
-            }
             if (editQuestionViewModel.FileUpload.NumberOfFiles > _formBuilderSettings.MaxUploadNumberOfFiles)
             {
                 ModelState.AddModelError("FileUpload.NumberOfFiles", $"The number of files cannot be greater than {_formBuilderSettings.MaxUploadNumberOfFiles}");
             }
+        }
+        else if (editQuestionViewModel.Options?.Options != null)
+        {
+            editQuestionViewModel.Options.Options
+                .Select((option, index) => new { Option = option, Index = index })
+                .Where(item => string.IsNullOrWhiteSpace(item.Option.Value))
+                .ToList()
+                .ForEach(item =>
+                {
+                    ModelState.AddModelError($"Options-{item.Index}", "Option text cannot be empty");
+                });
         }
     }
     #endregion

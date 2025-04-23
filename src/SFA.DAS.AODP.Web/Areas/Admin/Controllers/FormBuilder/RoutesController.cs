@@ -53,8 +53,9 @@ public class RoutesController : ControllerBase
             return View(model);
         }
     }
+
     [HttpGet()]
-    [Route("/admin/forms/{formVersionId}/routes/choose-section-page")]
+    [Route("/admin/forms/{formVersionId}/routes/choose-section")]
     public async Task<IActionResult> ChooseSection(Guid formVersionId)
     {
         var query = new GetAvailableSectionsAndPagesForRoutingQuery()
@@ -62,13 +63,13 @@ public class RoutesController : ControllerBase
             FormVersionId = formVersionId
         };
         var response = await Send(query);
-        return View(CreateRouteChooseSectionAndPageViewModel.MapToViewModel(response, formVersionId));
+        return View(CreateRouteChooseSectionViewModel.MapToViewModel(response, formVersionId));
 
     }
 
     [HttpPost()]
-    [Route("/admin/forms/{formVersionId}/routes/choose-section-page")]
-    public async Task<IActionResult> ChooseSection(CreateRouteChooseSectionAndPageViewModel model)
+    [Route("/admin/forms/{formVersionId}/routes/choose-section")]
+    public async Task<IActionResult> ChooseSection(CreateRouteChooseSectionViewModel model)
     {
         try
         {
@@ -79,7 +80,47 @@ public class RoutesController : ControllerBase
                     FormVersionId = model.FormVersionId
                 };
                 var response = await Send(query);
-                var viewModel = CreateRouteChooseSectionAndPageViewModel.MapToViewModel(response, model.FormVersionId);
+                var viewModel = CreateRouteChooseSectionViewModel.MapToViewModel(response, model.FormVersionId);
+                viewModel.ChosenSectionId = model.ChosenSectionId;
+                return View(viewModel);
+            }
+
+            return RedirectToAction(nameof(ChoosePage), new { formVersionId = model.FormVersionId, sectionId = model.ChosenSectionId });
+        }
+        catch (Exception ex)
+        {
+            LogException(ex);
+            return View(model);
+        }
+    }
+
+    [HttpGet()]
+    [Route("/admin/forms/{formVersionId}/routes/sections/{sectionId}/choose-page")]
+    public async Task<IActionResult> ChoosePage(Guid formVersionId, Guid sectionId)
+    {
+        var query = new GetAvailableSectionsAndPagesForRoutingQuery()
+        {
+            FormVersionId = formVersionId
+        };
+        var response = await Send(query);
+        return View(CreateRouteChoosePageViewModel.MapToViewModel(response, formVersionId, sectionId));
+
+    }
+
+    [HttpPost()]
+    [Route("/admin/forms/{formVersionId}/routes/sections/{sectionId}/choose-page")]
+    public async Task<IActionResult> ChoosePage(CreateRouteChoosePageViewModel model)
+    {
+        try
+        {
+            if (!ModelState.IsValid)
+            {
+                var query = new GetAvailableSectionsAndPagesForRoutingQuery()
+                {
+                    FormVersionId = model.FormVersionId
+                };
+                var response = await Send(query);
+                var viewModel = CreateRouteChoosePageViewModel.MapToViewModel(response, model.FormVersionId, model.ChosenSectionId);
                 viewModel.ChosenSectionId = model.ChosenSectionId;
                 viewModel.ChosenPageId = model.ChosenPageId;
                 return View(viewModel);

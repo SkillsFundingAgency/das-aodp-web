@@ -16,20 +16,6 @@
 
 <div class="govuk-form-group">
     <govuk-input disabled="@(!ViewBag.IsEditable)"
-                 id="FileUpload.MaxSize"
-                 name="FileUpload[MaxSize]"
-                 type="number"
-                 asp-for="MaxSize"
-                 input-class="govuk-input--width-3"
-                 inputmode="numeric" pattern="[0-9]*"
-                 spellcheck="false" autocomplete="off">
-        <govuk-input-label is-page-heading="false" class="govuk-label--s">What is the maximum, inclusive, individual file size allowed in megabytes(mb)?</govuk-input-label>
-        <govuk-input-hint>The system allows for maximum of 256mb files to be uploaded per page.</govuk-input-hint>
-    </govuk-input>
-</div>
-
-<div class="govuk-form-group">
-    <govuk-input disabled="@(!ViewBag.IsEditable)"
                  id="FileUpload.NumberOfFiles"
                  name="FileUpload[NumberOfFiles]"
                  type="number"
@@ -38,6 +24,7 @@
                  inputmode="numeric" pattern="[0-9]*"
                  spellcheck="false" autocomplete="off">
         <govuk-input-label is-page-heading="false" class="govuk-label--s">What is the maximum, inclusive, number of files allowed?</govuk-input-label>
+        <govuk-input-hint>Up to 10 files are allowed per question. Each file size will be limited to 5MB.</govuk-input-hint>
     </govuk-input>
 </div>
 
@@ -47,7 +34,7 @@
         Allowed file types
     </govuk-details-summary>
     <govuk-details-text>
-        The system currently allowes for the following fie types to be uploaded:
+        The system currently allows for the following fie types to be uploaded:
         <br />
         <ul>
             @foreach (var fileType in Model.FileTypes ?? [])

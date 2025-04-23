@@ -2,11 +2,16 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SFA.DAS.AODP.Application.Commands.Qualification;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Authentication.DfeSignInApi.Models;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
+using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 using System.Globalization;
+using System.Linq;
+using System.Reflection;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
@@ -18,15 +23,23 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
     {
         private readonly ILogger<NewController> _logger;
         private readonly IMediator _mediator;
-        public enum NewQualDataKeys { InvalidPageParams, }
-        public NewController(ILogger<NewController> logger, IMediator mediator) : base(mediator, logger)
+        private readonly IUserHelperService _userHelperService;
+        private List<string> ReviewerAllowedStatuses { get; set; } = new List<string>()
+        {
+            "Decision Required",
+            "No Action Required",
+        };
+        public enum NewQualDataKeys { InvalidPageParams, CommentSaved}
+
+        public NewController(ILogger<NewController> logger, IMediator mediator, IUserHelperService userHelperService) : base(mediator, logger)
         {
             _logger = logger;
             _mediator = mediator;
+            _userHelperService = userHelperService;
         }
 
         [Route("/Review/New/Index")]
-        public async Task<IActionResult> Index(int pageNumber = 0, int recordsPerPage = 10, string name = "", string organisation = "", string qan = "")
+        public async Task<IActionResult> Index(List<Guid>? processStatusIds, int pageNumber = 0, int recordsPerPage = 10, string name = "", string organisation = "", string qan = "")
         {
             var viewModel = new NewQualificationsViewModel();
             try
@@ -36,6 +49,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 {
                     ShowNotificationIfKeyExists(NewQualDataKeys.InvalidPageParams.ToString(), ViewNotificationMessageType.Error, "Invalid parameters.");
                 }
+                var procStatuses = await Send(new GetProcessStatusesQuery());
 
                 // Initial page load will not load records and have a page number of 0
                 if (pageNumber > 0)
@@ -55,14 +69,25 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     {
                         query.QAN = qan;
                     }
+                    if (processStatusIds?.Any() ?? false)
+                    {
+                        query.ProcessStatusFilter = new Domain.Models.ProcessStatusFilter() { ProcessStatusIds = processStatusIds };
+                    }
 
                     query.Take = recordsPerPage;
                     query.Skip = recordsPerPage * (pageNumber - 1);
 
                     var response = await Send(query);
-                    viewModel = NewQualificationsViewModel.Map(response, organisation, qan, name);
-                }                                                                                  
-                
+                    viewModel = NewQualificationsViewModel.Map(response, procStatuses.ProcessStatuses, organisation, qan, name);
+                }
+                viewModel.Filter = new NewQualificationFilterViewModel()
+                {
+                    Organisation = organisation,
+                    QualificationName = name,
+                    QAN = qan,
+                    ProcessStatusIds = processStatusIds
+                };
+                viewModel.ProcessStatuses = [.. procStatuses.ProcessStatuses];
                 return View(viewModel);
             }
             catch (Exception ex)
@@ -78,14 +103,15 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         {
             try
             {
-                    return RedirectToAction(nameof(Index), new
-                    {
-                        pageNumber = 1,
-                        recordsPerPage = viewModel.PaginationViewModel.RecordsPerPage,
-                        name = viewModel.Filter.QualificationName,
-                        organisation = viewModel.Filter.Organisation,
-                        qan = viewModel.Filter.QAN
-                    });               
+                return RedirectToAction(nameof(Index), new
+                {
+                    pageNumber = 1,
+                    recordsPerPage = viewModel.PaginationViewModel.RecordsPerPage,
+                    name = viewModel.Filter.QualificationName,
+                    organisation = viewModel.Filter.Organisation,
+                    qan = viewModel.Filter.QAN,
+                    processStatusIds = viewModel.Filter.ProcessStatusIds,
+                });               
             }
             catch(Exception ex)
             {
@@ -153,14 +179,92 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         public async Task<IActionResult> QualificationDetails([FromQuery] string qualificationReference)
         {            
             if (string.IsNullOrWhiteSpace(qualificationReference))
-            {               
+            {
                 return Redirect("/Home/Error");
             }
+            try
+            {
+                ShowNotificationIfKeyExists(NewQualDataKeys.CommentSaved.ToString(), ViewNotificationMessageType.Success, "The comment has been saved.");
 
-            var result = await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });           
+                NewQualificationDetailsViewModel model = await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });
+                model.ProcessStatuses = [.. await GetProcessStatuses()];
+                
+                var feedbackForQualificationFunding = await Send(new GetFeedbackForQualificationFundingByIdQuery(model.Id));
+                if (feedbackForQualificationFunding != null)
+                {
+                    model.MapFundedOffers(feedbackForQualificationFunding);
+                    model.FundingsOffersOutcomeStatus = feedbackForQualificationFunding.Approved;
+                }
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+                return Redirect("/Home/Error");
+            }
+        }
 
-            var viewModel = MapToViewModel(result);
-            return View(viewModel);
+        [Route("/Review/New/QualificationDetails")]
+        [HttpPost]
+        public async Task<IActionResult> QualificationDetails(NewQualificationDetailsViewModel model)
+        {
+            try
+            {
+                Guid? procStatus = model.AdditionalActions.ProcessStatusId;
+                if (!procStatus.HasValue && !string.IsNullOrEmpty(model.AdditionalActions.Note))
+                {
+                    await Send(new AddQualificationDiscussionHistoryCommand
+                    {
+                        QualificationReference = model.Qual.Qan,
+                        Notes = model.AdditionalActions.Note,
+                        UserDisplayName = HttpContext.User?.Identity?.Name
+                    });
+
+                    TempData[NewQualDataKeys.CommentSaved.ToString()] = true;
+                    return RedirectToAction(nameof(QualificationDetails), new { qualificationReference = model.Qual.Qan });
+                }
+                else if (!procStatus.HasValue)
+                    return RedirectToAction(nameof(QualificationDetails), new { qualificationReference = model.Qual.Qan });
+
+                model.ProcessStatuses = [.. await GetProcessStatuses()];
+                if (!CheckUserIsAbleToSetStatus(model, procStatus.Value))
+                    return RedirectToAction(nameof(QualificationDetails), new { qualificationReference = model.Qual.Qan });
+
+                await Send(new UpdateQualificationStatusCommand
+                {
+                    QualificationReference = model.Qual.Qan,
+                    ProcessStatusId = procStatus.Value,
+                    Notes = model.AdditionalActions.Note,
+                    UserDisplayName = HttpContext.User?.Identity?.Name
+                });
+                return RedirectToAction(nameof(QualificationDetails), new { qualificationReference = model.Qual.Qan });
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+                return RedirectToAction(nameof(QualificationDetails), new { qualificationReference = model.Qual.Qan });
+            }
+        }
+
+        [Route("/Review/New/QualificationDetails/Timeline")]
+        public async Task<IActionResult> QualificationDetailsTimeline([FromQuery] string qualificationReference)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(qualificationReference))
+                {
+                    return Redirect("/Home/Error");
+                }
+
+                QualificationDetailsTimelineViewModel result = await Send(new GetDiscussionHistoriesForQualificationQuery { QualificationReference = qualificationReference });
+                result.Qan = qualificationReference;
+                return View(result);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+                return RedirectToAction(nameof(QualificationDetails), new { qualificationReference = qualificationReference });
+            }
         }
 
         [Route("/Review/New/ExportData")]
@@ -186,6 +290,25 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
         }
 
+        private bool CheckUserIsAbleToSetStatus(NewQualificationDetailsViewModel model, Guid procStatusId)
+        {
+            if (_userHelperService.GetUserRoles().Contains(RoleConstants.QFAUApprover))
+                return true;
+            string processStatName = model.ProcessStatuses.FirstOrDefault(v => v.Id == procStatusId)?.Name ?? "";
+            return ReviewerAllowedStatuses.Contains(processStatName);
+        }
+
+        public async Task<List<GetProcessStatusesQueryResponse.ProcessStatus>> GetProcessStatuses()
+        {
+            var procStatuses = await Send(new GetProcessStatusesQuery());
+            if (!_userHelperService.GetUserRoles().Contains(RoleConstants.QFAUApprover))
+            {
+                return procStatuses.ProcessStatuses
+                    .Where(p => ReviewerAllowedStatuses.Contains(p.Name ?? "")).ToList();
+            }
+            return procStatuses.ProcessStatuses;
+        }
+
         private FileContentResult WriteCsvToResponse(IEnumerable<QualificationExport> qualifications)
         {            
             var csvData = GenerateCsv(qualifications);
@@ -202,33 +325,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 csv.WriteRecords(qualifications);
                 return writer.ToString();
             }
-        }      
-
-        private static QualificationDetailsViewModel MapToViewModel(GetQualificationDetailsQueryResponse response)
-        {
-            if (response == null)
-            {
-                return null;
-            }
-
-            return new QualificationDetailsViewModel
-            {
-                Id = response.Id,
-                Status = response.Status,
-                Priority = response.Priority,
-                Changes = response.Changes,
-                QualificationReference = response.QualificationReference,
-                AwardingOrganisation = response.AwardingOrganisation,
-                Title = response.Title,
-                QualificationType = response.QualificationType,
-                Level = response.Level,
-                ProposedChanges = response.ProposedChanges,
-                AgeGroup = response.AgeGroup,
-                Category = response.Category,
-                Subject = response.Subject,
-                SectorSubjectArea = response.SectorSubjectArea,
-                Comments = response.Comments
-            };
         }
 
         private class CsvExportResult

@@ -16,7 +16,7 @@
 <form asp-action="Edit" method="post">
 
     <div class="govuk-form-group">
-        <govuk-input disabled="@(!Model.Editable)" asp-for="@Model.Title" input-class="govuk-input--width-50" inputmode="text" pattern="[0-9]*" spellcheck="false" autocomplete="off">
+        <govuk-input disabled="@(!Model.Editable)" asp-for="@Model.Title" inputmode="text" pattern="[0-9]*" spellcheck="false" autocomplete="off">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Name</govuk-input-label>
         </govuk-input>
     </div>
@@ -53,8 +53,9 @@
             </tr>
         </thead>
         <tbody class="govuk-table__body">
-            @foreach (var (item, i) in Model.Questions.OrderBy(o => o.Order).Select((v, i) => (v, i)))
-            {
+            @if(Model.Questions.Count() >= 1){
+                @foreach (var (item, i) in Model.Questions.OrderBy(o => o.Order).Select((v, i) => (v, i)))
+                {
                 <tr class="govuk-table__row">
                     <th scope="row">@item.Order</th>
                     <td>@item.Title</td>
@@ -98,7 +99,15 @@
                         }
                     </td>
                 </tr>
+                }
             }
+            else
+            {
+                <tr class="govuk-table__row">
+                    <td colspan="3">No data available</td>
+                </tr>
+            }
+
         </tbody>
     </table>
 </form>

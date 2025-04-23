@@ -10,14 +10,14 @@ namespace SFA.DAS.AODP.Application.Tests.Commands.Qualifications
     {
         private readonly IFixture _fixture;
         private readonly Mock<IApiClient> _apiClientMock;
-        private readonly CreateQualificationDiscussionHistoryCommandHandler _handler;
+        private readonly CreateQualificationDiscussionHistoryNoteForFundingOffersCommandHandler _handler;
 
         public WhenHandlingCreateQualificationDiscussionHistoryCommand()
         {
             _fixture = new Fixture().Customize(new AutoMoqCustomization());
             _fixture.Customizations.Add(new DateOnlySpecimenBuilder());
             _apiClientMock = _fixture.Freeze<Mock<IApiClient>>();
-            _handler = new CreateQualificationDiscussionHistoryCommandHandler(_apiClientMock.Object);
+            _handler = new CreateQualificationDiscussionHistoryNoteForFundingOffersCommandHandler(_apiClientMock.Object);
         }
 
         public class DateOnlySpecimenBuilder : ISpecimenBuilder
@@ -37,10 +37,10 @@ namespace SFA.DAS.AODP.Application.Tests.Commands.Qualifications
         public async Task Then_The_CommandResult_Is_Returned_As_Expected()
         {
             // Arrange
-            var request = _fixture.Create<CreateQualificationDiscussionHistoryCommand>();
+            var request = _fixture.Create<CreateQualificationDiscussionHistoryNoteForFundingOffersCommand>();
             var expectedResponse = new BaseMediatrResponse<EmptyResponse> { Success = true };
             _apiClientMock
-                .Setup(a => a.Put(It.IsAny<CreateQualificationDiscussionHistoryApiRequest>()))
+                .Setup(a => a.Put(It.IsAny<CreateQualificationDiscussionHistoryNoteForFundingApiRequest>()))
                 .Returns(Task.CompletedTask);
 
             // Act
@@ -48,7 +48,7 @@ namespace SFA.DAS.AODP.Application.Tests.Commands.Qualifications
 
             // Assert
             _apiClientMock
-                .Verify(a => a.Put(It.Is<CreateQualificationDiscussionHistoryApiRequest>(r => r.QualificationVersionId == request.QualificationVersionId && r.Data == request)), Times.Once);
+                .Verify(a => a.Put(It.Is<CreateQualificationDiscussionHistoryNoteForFundingApiRequest>(r => r.QualificationVersionId == request.QualificationVersionId && r.Data == request)), Times.Once);
 
             Assert.NotNull(response);
             Assert.True(response.Success);
@@ -58,10 +58,10 @@ namespace SFA.DAS.AODP.Application.Tests.Commands.Qualifications
         public async Task And_Api_Errors_Then_The_FailCommandResult_Is_Returned()
         {
             // Arrange
-            var request = _fixture.Create<CreateQualificationDiscussionHistoryCommand>();
+            var request = _fixture.Create<CreateQualificationDiscussionHistoryNoteForFundingOffersCommand>();
             var expectedException = _fixture.Create<Exception>();
             _apiClientMock
-                .Setup(a => a.Put(It.IsAny<CreateQualificationDiscussionHistoryApiRequest>()))
+                .Setup(a => a.Put(It.IsAny<CreateQualificationDiscussionHistoryNoteForFundingApiRequest>()))
                 .ThrowsAsync(expectedException);
 
             // Act
