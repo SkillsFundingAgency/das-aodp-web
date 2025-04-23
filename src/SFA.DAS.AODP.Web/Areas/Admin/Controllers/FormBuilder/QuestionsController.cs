@@ -144,6 +144,12 @@ public class QuestionsController : ControllerBase
                 }
             }
 
+            if(model.Hint != null && model.Hint.Contains('.'))
+            {
+                ModelState.AddModelError("Hint", "Hint text cannot contain full stops");
+                return View(model);
+            }
+
 
             ValidateEditQuestionViewModel(model);
             if (!ModelState.IsValid)
