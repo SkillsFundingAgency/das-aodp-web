@@ -10,8 +10,7 @@ namespace SFA.DAS.AODP.Authentication.Extensions
         public static void AddStubAuthentication(
             this IServiceCollection services,
             string authenticationCookieName,
-            string signedOutCallbackPath,
-            string resourceEnvironmentName)
+            string signedOutCallbackPath)
         {
             services
                 .AddAuthentication(sharedOptions =>
@@ -32,7 +31,7 @@ namespace SFA.DAS.AODP.Authentication.Extensions
                     };
                 });
 
-            services.AddAuthentication(authenticationCookieName).AddAuthenticationCookie(authenticationCookieName, signedOutCallbackPath, resourceEnvironmentName);
+            services.AddAuthentication(authenticationCookieName).AddAuthenticationCookie(authenticationCookieName, signedOutCallbackPath);
         }
     }
 }

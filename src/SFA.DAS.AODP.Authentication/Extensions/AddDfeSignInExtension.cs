@@ -16,7 +16,7 @@ namespace SFA.DAS.AODP.Authentication.Extensions
             var stubAuth = configuration["StubAuth"] ?? "false";
             if (stubAuth.Equals("true", StringComparison.CurrentCultureIgnoreCase))
             {
-                services.AddStubAuthentication(authenticationCookieName, signedOutCallbackPath, configuration["ResourceEnvironmentName"]);
+                services.AddStubAuthentication(authenticationCookieName, signedOutCallbackPath);
             }
             else
             {
