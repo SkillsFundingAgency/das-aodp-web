@@ -9,6 +9,5 @@ namespace SFA.DAS.AODP.Authentication.Configuration
         public string APIServiceId { get; set; }
         public string APIServiceSecret { get; set; }
         public int LoginSlidingExpiryTimeOutInMinutes { get; set; } = 30;
-        public string DfELoginSessionConnectionString { get; set; }
     }
 }
