@@ -10,7 +10,6 @@ using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.Markdown;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Question;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 
@@ -248,6 +247,10 @@ public class QuestionsController : ControllerBase
     {
         switch (editQuestionViewModel.Type)
         {
+            case AODP.Models.Forms.QuestionType.Radio:
+            {
+                break;
+            }
             case AODP.Models.Forms.QuestionType.File:
             {
                 if (editQuestionViewModel.FileUpload.NumberOfFiles > _formBuilderSettings.MaxUploadNumberOfFiles)
@@ -258,14 +261,12 @@ public class QuestionsController : ControllerBase
             }
             case AODP.Models.Forms.QuestionType.Text:
             {
-                if (editQuestionViewModel.TextInput.MinLength > editQuestionViewModel.TextInput.MaxLength)
-                {
-                    ModelState.AddModelError("TextInput.MinLength", $"The minimum length cannot be greater than {editQuestionViewModel.TextInput.MaxLength}");
-                }
-                if (editQuestionViewModel.TextInput.MaxLength < editQuestionViewModel.TextInput.MinLength)
-                {
-                    ModelState.AddModelError("TextInput.MaxLength", $"The maximum length cannot be less than {editQuestionViewModel.TextInput.MinLength}");
-                }
+                ValidateTextQuestionViewModel(editQuestionViewModel);
+                break;
+            }
+            case AODP.Models.Forms.QuestionType.TextArea:
+            {
+                ValidateTextQuestionViewModel(editQuestionViewModel);
                 break;
             }
             case AODP.Models.Forms.QuestionType.Number:
@@ -278,17 +279,41 @@ public class QuestionsController : ControllerBase
                 {
                     ModelState.AddModelError("NumberInput.GreaterThanOrEqualTo", $"The number provided cannot be less than or equal to {editQuestionViewModel.NumberInput.LessThanOrEqualTo}");
                 }
+                if (editQuestionViewModel.NumberInput.NotEqualTo <= editQuestionViewModel.NumberInput.LessThanOrEqualTo)
+                {
+                    ModelState.AddModelError("NumberInput.NotEqualTo.LessThanOrEqualTo", $"The not allowed value/s provided cannot be less than or equal to {editQuestionViewModel.NumberInput.LessThanOrEqualTo}");
+                }
+                if (editQuestionViewModel.NumberInput.NotEqualTo >= editQuestionViewModel.NumberInput.GreaterThanOrEqualTo)
+                {
+                    ModelState.AddModelError("NumberInput.NotEqualTo.GreaterThanOrEqualTo", $"The not allowed value/s provided cannot be greater than or equal to {editQuestionViewModel.NumberInput.GreaterThanOrEqualTo}");
+                }
                 break;
             }
             case AODP.Models.Forms.QuestionType.MultiChoice:
             {
+                if (editQuestionViewModel.Checkbox.MinNumberOfOptions < 0)
+                {
+                    ModelState.AddModelError("Checkbox.MinNumberOfOptions.Negative", $"The minimum number of checkbox options must not be a negative number");
+                }
+                if (editQuestionViewModel.Checkbox.MaxNumberOfOptions < 0)
+                {
+                    ModelState.AddModelError("Checkbox.MaxNumberOfOptions.Negative", $"The maximum number of checkbox options must not be a negative number");
+                }
                 if (editQuestionViewModel.Checkbox.MinNumberOfOptions > editQuestionViewModel.Checkbox.MaxNumberOfOptions)
                 {
-                    ModelState.AddModelError("Checkbox.MinNumberOfOptions", $"The number of checkbox options must be less than {editQuestionViewModel.Checkbox.MaxNumberOfOptions}");
+                    ModelState.AddModelError("Checkbox.MinNumberOfOptions", $"The minimum number of checkbox options must be less than {editQuestionViewModel.Checkbox.MaxNumberOfOptions}");
                 }
                 if (editQuestionViewModel.Checkbox.MaxNumberOfOptions < editQuestionViewModel.Checkbox.MinNumberOfOptions)
                 {
-                    ModelState.AddModelError("Checkbox.MaxNumberOfOptions", $"The number of checkbox options must be greater than {editQuestionViewModel.Checkbox.MinNumberOfOptions}");
+                    ModelState.AddModelError("Checkbox.MaxNumberOfOptions", $"The maximum number of checkbox options must be greater than {editQuestionViewModel.Checkbox.MinNumberOfOptions}");
+                }                
+                if (editQuestionViewModel.Options.Options.Count < editQuestionViewModel.Checkbox.MinNumberOfOptions)
+                {
+                    ModelState.AddModelError("Options.Options.Count", $"The number of checkbox options cannot be less than {editQuestionViewModel.Checkbox.MinNumberOfOptions}");
+                }
+                if (editQuestionViewModel.Options.Options.Count > editQuestionViewModel.Checkbox.MaxNumberOfOptions)
+                {
+                    ModelState.AddModelError("Options.Options.Count", $"The number of checkbox options cannot be greater than {editQuestionViewModel.Checkbox.MaxNumberOfOptions}");
                 }
                 break;
             }
@@ -306,8 +331,22 @@ public class QuestionsController : ControllerBase
             }
             default:
             {
+                ModelState.AddModelError("Type", $"The type provided must be valid.");
                 break;
             }
+// fix ids for modelstate model errors
+        }
+    }
+
+    private void ValidateTextQuestionViewModel(EditQuestionViewModel editQuestionViewModel)
+    {
+        if (editQuestionViewModel.TextInput.MinLength > editQuestionViewModel.TextInput.MaxLength)
+        {
+            ModelState.AddModelError("TextInput.MinLength", $"The minimum length cannot be greater than {editQuestionViewModel.TextInput.MaxLength}");
+        }
+        if (editQuestionViewModel.TextInput.MaxLength < editQuestionViewModel.TextInput.MinLength)
+        {
+            ModelState.AddModelError("TextInput.MaxLength", $"The maximum length cannot be less than {editQuestionViewModel.TextInput.MinLength}");
         }
     }
     #endregion

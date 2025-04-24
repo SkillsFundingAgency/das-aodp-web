@@ -244,13 +244,150 @@ public class QuestionsControllerTests
         Assert.Contains("NumberInput.GreaterThanOrEqualTo", viewResult.ViewData.ModelState.Keys);
     }
 
-[Fact]
+    [Fact]
+    public async Task Validate_Number_NotEqualIsLessThanOrEqualTo_OnSuccess()
+    {
+        // Arrange
+
+
+        var model = new EditQuestionViewModel()
+        {
+            Type = AODP.Models.Forms.QuestionType.Number,
+            NumberInput = new()
+            {
+                
+                LessThanOrEqualTo = 1,
+                NotEqualTo = 2,
+            }
+        };
+
+        var queryResponse = _fixture.Create<BaseMediatrResponse<GetQuestionByIdQueryResponse>>();
+        queryResponse.Success = true;
+
+        _mediatorMock.Setup(m => m.Send(It.IsAny<GetQuestionByIdQuery>(), default))
+                     .ReturnsAsync(queryResponse);
+
+        // Act
+        var result = await _controller.Edit(model);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var routeModel = Assert.IsAssignableFrom<EditQuestionViewModel>(viewResult.ViewData.Model);
+        Assert.Equal(0, viewResult.ViewData.ModelState.ErrorCount);
+        Assert.True(viewResult.ViewData.ModelState.IsValid);
+        Assert.DoesNotContain("NumberInput.LessThanOrEqualTo", viewResult.ViewData.ModelState.Keys);
+    }
+
+    [Fact]
+    public async Task Validate_Number_NotEqualIsGreaterThanOrEqualTo_OnSuccess()
+    {
+        // Arrange
+
+
+        var model = new EditQuestionViewModel()
+        {
+            Type = AODP.Models.Forms.QuestionType.Number,
+            NumberInput = new()
+            {
+
+                GreaterThanOrEqualTo = 3,
+                NotEqualTo = 2,
+            }
+        };
+
+        var queryResponse = _fixture.Create<BaseMediatrResponse<GetQuestionByIdQueryResponse>>();
+        queryResponse.Success = true;
+
+        _mediatorMock.Setup(m => m.Send(It.IsAny<GetQuestionByIdQuery>(), default))
+                     .ReturnsAsync(queryResponse);
+
+        // Act
+        var result = await _controller.Edit(model);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var routeModel = Assert.IsAssignableFrom<EditQuestionViewModel>(viewResult.ViewData.Model);
+        Assert.Equal(0, viewResult.ViewData.ModelState.ErrorCount);
+        Assert.True(viewResult.ViewData.ModelState.IsValid);
+        Assert.DoesNotContain("NumberInput.GreaterThanOrEqualTo", viewResult.ViewData.ModelState.Keys);
+    }
+
+    [Fact]
+    public async Task Validate_Number_NotEqualToIsLessThanOrEqualTo_OnFailure()
+    {
+        // Arrange
+        var model = new EditQuestionViewModel()
+        {
+            Type = AODP.Models.Forms.QuestionType.Number,
+            NumberInput = new()
+            {
+                LessThanOrEqualTo = 3,
+                NotEqualTo = 2,
+            }
+        };
+
+        var queryResponse = _fixture.Create<BaseMediatrResponse<GetQuestionByIdQueryResponse>>();
+        queryResponse.Success = true;
+
+        _mediatorMock.Setup(m => m.Send(It.IsAny<GetQuestionByIdQuery>(), default))
+                     .ReturnsAsync(queryResponse);
+
+        // Act
+        var result = await _controller.Edit(model);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var routeModel = Assert.IsAssignableFrom<EditQuestionViewModel>(viewResult.ViewData.Model);
+        Assert.False(viewResult.ViewData.ModelState.IsValid);
+        Assert.Equal(1, viewResult.ViewData.ModelState.ErrorCount);
+        Assert.Contains("NumberInput.NotEqualTo.LessThanOrEqualTo", viewResult.ViewData.ModelState.Keys);
+    }
+
+    [Fact]
+    public async Task Validate_Number_NotEqualToIsGreaterThanOrEqualTo_OnFailure()
+    {
+        // Arrange
+        var model = new EditQuestionViewModel()
+        {
+            Type = AODP.Models.Forms.QuestionType.Number,
+            NumberInput = new()
+            {
+                NotEqualTo = 3,
+                GreaterThanOrEqualTo = 3
+            }
+        };
+
+        var queryResponse = _fixture.Create<BaseMediatrResponse<GetQuestionByIdQueryResponse>>();
+        queryResponse.Success = true;
+
+        _mediatorMock.Setup(m => m.Send(It.IsAny<GetQuestionByIdQuery>(), default))
+                     .ReturnsAsync(queryResponse);
+
+        // Act
+        var result = await _controller.Edit(model);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var routeModel = Assert.IsAssignableFrom<EditQuestionViewModel>(viewResult.ViewData.Model);
+        Assert.False(viewResult.ViewData.ModelState.IsValid);
+        Assert.Equal(1, viewResult.ViewData.ModelState.ErrorCount);
+        Assert.Contains("NumberInput.NotEqualTo.GreaterThanOrEqualTo", viewResult.ViewData.ModelState.Keys);
+    }
+
+    [Fact]
     public async Task Validate_Checkbox_NumOptions_OnSuccess()
     {
         // Arrange
         var model = new EditQuestionViewModel()
         {
             Type = AODP.Models.Forms.QuestionType.MultiChoice,
+            Options = new()
+            {
+                Options = new()
+                {
+                    new()
+                }
+            },
             Checkbox = new()
             {
                 MinNumberOfOptions = 1,
@@ -283,6 +420,14 @@ public class QuestionsControllerTests
         var model = new EditQuestionViewModel()
         {
             Type = AODP.Models.Forms.QuestionType.MultiChoice,
+            Options = new()
+            {
+                Options = new()
+                {
+                    new(),
+                    new()
+                }
+            },
             Checkbox = new()
             {
                 MinNumberOfOptions = 2,
@@ -303,9 +448,294 @@ public class QuestionsControllerTests
         var viewResult = Assert.IsType<ViewResult>(result);
         var routeModel = Assert.IsAssignableFrom<EditQuestionViewModel>(viewResult.ViewData.Model);
         Assert.False(viewResult.ViewData.ModelState.IsValid);
-        Assert.Equal(2, viewResult.ViewData.ModelState.ErrorCount);
+        Assert.Equal(3, viewResult.ViewData.ModelState.ErrorCount);
         Assert.Contains("Checkbox.MinNumberOfOptions", viewResult.ViewData.ModelState.Keys);
         Assert.Contains("Checkbox.MaxNumberOfOptions", viewResult.ViewData.ModelState.Keys);
+        Assert.Contains("Options.Options.Count", viewResult.ViewData.ModelState.Keys);
+    }
+
+    [Fact]
+    public async Task Validate_Checkbox_MinNumOptions_Negative_OnSuccess()
+    {
+        // Arrange
+        var model = new EditQuestionViewModel()
+        {
+            Type = AODP.Models.Forms.QuestionType.MultiChoice,
+            Options = new()
+            {
+                Options = new()
+                {
+                    new()
+                }
+            },
+            Checkbox = new()
+            {
+                MinNumberOfOptions = 1
+            }
+        };
+
+        var queryResponse = _fixture.Create<BaseMediatrResponse<GetQuestionByIdQueryResponse>>();
+        queryResponse.Success = true;
+
+        _mediatorMock.Setup(m => m.Send(It.IsAny<GetQuestionByIdQuery>(), default))
+                     .ReturnsAsync(queryResponse);
+
+        // Act
+        var result = await _controller.Edit(model);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var routeModel = Assert.IsAssignableFrom<EditQuestionViewModel>(viewResult.ViewData.Model);
+        Assert.True(viewResult.ViewData.ModelState.IsValid);
+        Assert.Equal(0, viewResult.ViewData.ModelState.ErrorCount);
+        Assert.DoesNotContain("Checkbox.MinNumberOfOptions.Negative", viewResult.ViewData.ModelState.Keys);
+    }
+
+    [Fact]
+    public async Task Validate_Checkbox_MinNumOptions_Negative_OnFailure()
+    {
+        // Arrange
+        var model = new EditQuestionViewModel()
+        {
+            Type = AODP.Models.Forms.QuestionType.MultiChoice,
+            Options = new()
+            {
+                Options = new()
+                {
+                    new(),
+                    new()
+                }
+            },
+            Checkbox = new()
+            {
+                MinNumberOfOptions = -1
+            }
+        };
+
+        var queryResponse = _fixture.Create<BaseMediatrResponse<GetQuestionByIdQueryResponse>>();
+        queryResponse.Success = true;
+
+        _mediatorMock.Setup(m => m.Send(It.IsAny<GetQuestionByIdQuery>(), default))
+                     .ReturnsAsync(queryResponse);
+
+        // Act
+        var result = await _controller.Edit(model);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var routeModel = Assert.IsAssignableFrom<EditQuestionViewModel>(viewResult.ViewData.Model);
+        Assert.False(viewResult.ViewData.ModelState.IsValid);
+        Assert.Equal(1, viewResult.ViewData.ModelState.ErrorCount);
+        Assert.Contains("Checkbox.MinNumberOfOptions.Negative", viewResult.ViewData.ModelState.Keys);
+    }
+
+    [Fact]
+    public async Task Validate_Checkbox_MaxNumOptions_Negative_OnSuccess()
+    {
+        // Arrange
+        var model = new EditQuestionViewModel()
+        {
+            Type = AODP.Models.Forms.QuestionType.MultiChoice,
+            Checkbox = new()
+            {
+                MaxNumberOfOptions = 1
+            }
+        };
+
+        var queryResponse = _fixture.Create<BaseMediatrResponse<GetQuestionByIdQueryResponse>>();
+        queryResponse.Success = true;
+
+        _mediatorMock.Setup(m => m.Send(It.IsAny<GetQuestionByIdQuery>(), default))
+                     .ReturnsAsync(queryResponse);
+
+        // Act
+        var result = await _controller.Edit(model);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var routeModel = Assert.IsAssignableFrom<EditQuestionViewModel>(viewResult.ViewData.Model);
+        Assert.True(viewResult.ViewData.ModelState.IsValid);
+        Assert.Equal(0, viewResult.ViewData.ModelState.ErrorCount);
+        Assert.DoesNotContain("Checkbox.MaxNumOptions.Negative", viewResult.ViewData.ModelState.Keys);
+    }
+
+    [Fact]
+    public async Task Validate_Checkbox_MaxNumOptions_Negative_OnFailure()
+    {
+        // Arrange
+        var model = new EditQuestionViewModel()
+        {
+            Type = AODP.Models.Forms.QuestionType.MultiChoice,
+            Checkbox = new()
+            {
+                MaxNumberOfOptions = -1
+            }
+        };
+
+        var queryResponse = _fixture.Create<BaseMediatrResponse<GetQuestionByIdQueryResponse>>();
+        queryResponse.Success = true;
+
+        _mediatorMock.Setup(m => m.Send(It.IsAny<GetQuestionByIdQuery>(), default))
+                     .ReturnsAsync(queryResponse);
+
+        // Act
+        var result = await _controller.Edit(model);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var routeModel = Assert.IsAssignableFrom<EditQuestionViewModel>(viewResult.ViewData.Model);
+        Assert.False(viewResult.ViewData.ModelState.IsValid);
+        Assert.Equal(2, viewResult.ViewData.ModelState.ErrorCount);
+        Assert.Contains("Checkbox.MaxNumberOfOptions.Negative", viewResult.ViewData.ModelState.Keys);
+        Assert.Contains("Options.Options.Count", viewResult.ViewData.ModelState.Keys);
+    }
+
+    [Fact]
+    public async Task Validate_Checkbox_OptionsCount_LessThan_OnSuccess()
+    {
+        // Arrange
+        var model = new EditQuestionViewModel()
+        {
+            Type = AODP.Models.Forms.QuestionType.MultiChoice,
+            Options = new()
+            {
+                Options = new()
+                {
+                    new()
+                }
+            },
+            Checkbox = new()
+            {
+                MinNumberOfOptions = 0
+            }
+        };
+
+        var queryResponse = _fixture.Create<BaseMediatrResponse<GetQuestionByIdQueryResponse>>();
+        queryResponse.Success = true;
+
+        _mediatorMock.Setup(m => m.Send(It.IsAny<GetQuestionByIdQuery>(), default))
+                     .ReturnsAsync(queryResponse);
+
+        // Act
+        var result = await _controller.Edit(model);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var routeModel = Assert.IsAssignableFrom<EditQuestionViewModel>(viewResult.ViewData.Model);
+        Assert.True(viewResult.ViewData.ModelState.IsValid);
+        Assert.Equal(0, viewResult.ViewData.ModelState.ErrorCount);
+        Assert.DoesNotContain("Options.Options.Count", viewResult.ViewData.ModelState.Keys);
+    }
+
+    [Fact]
+    public async Task Validate_Checkbox_OptionsCount_LessThan_OnFailure()
+    {
+        // Arrange
+        var model = new EditQuestionViewModel()
+        {
+            Type = AODP.Models.Forms.QuestionType.MultiChoice,
+            Options = new()
+            {
+                Options = new()
+                {
+                    new()
+                }
+            },
+            Checkbox = new()
+            {
+                MinNumberOfOptions = 2
+            }
+        };
+
+        var queryResponse = _fixture.Create<BaseMediatrResponse<GetQuestionByIdQueryResponse>>();
+        queryResponse.Success = true;
+
+        _mediatorMock.Setup(m => m.Send(It.IsAny<GetQuestionByIdQuery>(), default))
+                     .ReturnsAsync(queryResponse);
+
+        // Act
+        var result = await _controller.Edit(model);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var routeModel = Assert.IsAssignableFrom<EditQuestionViewModel>(viewResult.ViewData.Model);
+        Assert.False(viewResult.ViewData.ModelState.IsValid);
+        Assert.Equal(1, viewResult.ViewData.ModelState.ErrorCount);
+        Assert.Contains("Options.Options.Count", viewResult.ViewData.ModelState.Keys);
+    }
+
+    [Fact]
+    public async Task Validate_Checkbox_OptionsCount_GreaterThan_OnSuccess()
+    {
+        // Arrange
+        var model = new EditQuestionViewModel()
+        {
+            Type = AODP.Models.Forms.QuestionType.MultiChoice,
+            Options = new()
+            {
+                Options = new()
+                {
+                    new()
+                }
+            },
+            Checkbox = new()
+            {
+                MaxNumberOfOptions = 2
+            }
+        };
+
+        var queryResponse = _fixture.Create<BaseMediatrResponse<GetQuestionByIdQueryResponse>>();
+        queryResponse.Success = true;
+
+        _mediatorMock.Setup(m => m.Send(It.IsAny<GetQuestionByIdQuery>(), default))
+                     .ReturnsAsync(queryResponse);
+
+        // Act
+        var result = await _controller.Edit(model);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var routeModel = Assert.IsAssignableFrom<EditQuestionViewModel>(viewResult.ViewData.Model);
+        Assert.True(viewResult.ViewData.ModelState.IsValid);
+        Assert.Equal(0, viewResult.ViewData.ModelState.ErrorCount);
+        Assert.DoesNotContain("Options.Options.Count", viewResult.ViewData.ModelState.Keys);
+    }
+
+    [Fact]
+    public async Task Validate_Checkbox_OptionsCount_GreaterThan_OnFailure()
+    {
+        // Arrange
+        var model = new EditQuestionViewModel()
+        {
+            Type = AODP.Models.Forms.QuestionType.MultiChoice,
+            Options = new()
+            {
+                Options = new()
+                {
+                    new()
+                }
+            },
+            Checkbox = new()
+            {
+                MaxNumberOfOptions = 0
+            }
+        };
+
+        var queryResponse = _fixture.Create<BaseMediatrResponse<GetQuestionByIdQueryResponse>>();
+        queryResponse.Success = true;
+
+        _mediatorMock.Setup(m => m.Send(It.IsAny<GetQuestionByIdQuery>(), default))
+                     .ReturnsAsync(queryResponse);
+
+        // Act
+        var result = await _controller.Edit(model);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var routeModel = Assert.IsAssignableFrom<EditQuestionViewModel>(viewResult.ViewData.Model);
+        Assert.False(viewResult.ViewData.ModelState.IsValid);
+        Assert.Equal(1, viewResult.ViewData.ModelState.ErrorCount);
+        Assert.Contains("Options.Options.Count", viewResult.ViewData.ModelState.Keys);
     }
 
     [Fact]
