@@ -116,7 +116,7 @@ public class QuestionsController : ControllerBase
                 model.HelperHTML = MarkdownHelper.ToGovUkHtml(model.Helper);
                 ViewBag.AutoFocusOnUpdateDescriptionButton = true;
                 return View(model);
-            }
+            }          
 
             if (model.Options.AdditionalFormActions.AddOption)
             {
@@ -262,7 +262,21 @@ public class QuestionsController : ControllerBase
                 {
                     ModelState.AddModelError($"Options-{item.Index}", "Option text cannot be empty");
                 });
-        }
+
+            if ((editQuestionViewModel.Options.Options.Count == 0) && (editQuestionViewModel.Checkbox.MinNumberOfOptions > 0))
+            {
+                ModelState.AddModelError("Options.Options", $"At least {editQuestionViewModel.Checkbox.MinNumberOfOptions} option are required");
+            }
+            if ((editQuestionViewModel.Checkbox.MinNumberOfOptions > 0) && (editQuestionViewModel.Options.Options.Count < editQuestionViewModel.Checkbox.MinNumberOfOptions))
+            {
+                ModelState.AddModelError("Options.Options", $"The number of options cannot be lesser than specified minimum number which is {editQuestionViewModel.Checkbox.MinNumberOfOptions}");
+            }
+
+            if ((editQuestionViewModel.Checkbox.MaxNumberOfOptions > 0) && (editQuestionViewModel.Options.Options.Count > editQuestionViewModel.Checkbox.MaxNumberOfOptions))
+            {
+                ModelState.AddModelError("Options.Options", $"The number of options cannot be greater than specified maximum number which is {editQuestionViewModel.Checkbox.MaxNumberOfOptions}");
+            }
+        }         
     }
     #endregion
 }
