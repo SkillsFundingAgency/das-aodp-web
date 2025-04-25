@@ -99,9 +99,6 @@ internal class Program
             // Enable XSS protection
             context.Response.Headers.Add("X-XSS-Protection", "1; mode=block");
 
-            // Control referrer information
-            context.Response.Headers.Add("Referrer-Policy", "no-referrer");
-
             // Define a strict Content Security Policy
             context.Response.Headers.Add("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self';");
 
