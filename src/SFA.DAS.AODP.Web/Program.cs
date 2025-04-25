@@ -62,6 +62,17 @@ internal class Program
             options.MultipartBodyLengthLimit = 115343360;
         });
 
+        // Configure HSTS options
+        if (!builder.Environment.IsDevelopment())
+        {
+            builder.Services.AddHsts(options =>
+            {
+                options.MaxAge = TimeSpan.FromDays(365); // Set max age to 1 year
+                options.IncludeSubDomains = true;       // Apply HSTS to all subdomains
+                options.Preload = true;                 // Indicate readiness for preload list
+            });
+        }
+
         var app = builder.Build();
 
         app.UseStatusCodePagesWithRedirects("/Error/{0}");
@@ -72,10 +83,30 @@ internal class Program
         }
         else
         {
-            app
-                .UseExceptionHandler("/Home/Error")
-                .UseHsts();
+            app.UseExceptionHandler("/Home/Error");
+            app.UseHsts(); // Use the configured HSTS options
         }
+
+        // Add security headers middleware
+        app.Use(async (context, next) =>
+        {
+            // Prevent MIME type sniffing
+            context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
+
+            // Prevent the page from being embedded in an iframe except same-origin
+            context.Response.Headers.Add("X-Frame-Options", "SAMEORIGIN");
+
+            // Enable XSS protection
+            context.Response.Headers.Add("X-XSS-Protection", "1; mode=block");
+
+            // Define a strict Content Security Policy
+            context.Response.Headers.Add("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self';");
+
+            // Restrict browser features
+            context.Response.Headers.Add("Permissions-Policy", "geolocation=(), microphone=(), camera=()");
+
+            await next();
+        });
 
         app
             .UseHealthChecks("/ping")
