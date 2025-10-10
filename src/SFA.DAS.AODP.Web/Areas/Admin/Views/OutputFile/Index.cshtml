@@ -1,5 +1,32 @@
 ﻿@{
     ViewData["Title"] = "Output file";
 }
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+<div class="govuk-width-container">
+    <main class="govuk-main-wrapper">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
 
-<h1>Output file</h1>
+                <a class="govuk-back-link" asp-action="Index" asp-controller="Home" asp-area="Review">
+                    Back 
+                </a>
+
+                <h1 class="govuk-heading-1">Output File</h1>
+
+
+
+                <form asp-controller="OutputFile" asp-action="GetExport" asp-area="Admin" method="get">
+
+                    @Html.AntiForgeryToken()
+
+                    <div class="govuk-grid-row">
+                        <div class="govuk-form-group">
+                            <govuk-button type="submit">Download</govuk-button>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </main>
+</div>
