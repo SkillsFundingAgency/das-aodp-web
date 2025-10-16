@@ -4,26 +4,26 @@ using SFA.DAS.AODP.Domain.Qualifications.Requests;
 
 namespace SFA.DAS.AODP.Application.Queries.Qualifications
 {
-    public class GetQualificationsExportFileHandler : IRequestHandler<GetQualificationExportFileQuery, BaseMediatrResponse<GetQualificationExportFileResponse>>
+    public class GetQualificationOutputFileQueryHandler : IRequestHandler<GetQualificationOutputFileQuery, BaseMediatrResponse<GetQualificationOutputFileResponse>>
     {
         private readonly IApiClient _apiClient;
 
-        public GetQualificationsExportFileHandler(IApiClient apiClient)
+        public GetQualificationOutputFileQueryHandler(IApiClient apiClient)
         {
             _apiClient = apiClient;
         }
 
-        public async Task<BaseMediatrResponse<GetQualificationExportFileResponse>> Handle(GetQualificationExportFileQuery request, CancellationToken cancellationToken)
+        public async Task<BaseMediatrResponse<GetQualificationOutputFileResponse>> Handle(GetQualificationOutputFileQuery request, CancellationToken cancellationToken)
         {
-            var response = new BaseMediatrResponse<GetQualificationExportFileResponse>();
+            var response = new BaseMediatrResponse<GetQualificationOutputFileResponse>();
 
             try
             {
-                var result = await _apiClient.Get<GetQualificationExportFileResponse>(new GetQualificationExportFileApiRequest());
+                var result = await _apiClient.Get<GetQualificationOutputFileResponse>(new GetQualificationExportFileApiRequest());
                 if(result is null || result.ZipFileContent is null || result.ZipFileContent.Length == 0)
                 {
                     response.Success = false;
-                    response.ErrorMessage = "Export file not available.";
+                    response.ErrorMessage = "Output file not available.";
                 }
                 else
                 {

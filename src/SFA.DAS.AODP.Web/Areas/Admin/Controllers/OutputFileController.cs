@@ -21,14 +21,14 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
             return View();
         }
 
-        [HttpGet("export")]
-        public async Task<IActionResult> GetExport(CancellationToken cancellationToken)
+        [HttpGet("output-file")]
+        public async Task<IActionResult> GetOutputFile(CancellationToken cancellationToken)
         {
-            var result = await _mediator.Send(new GetQualificationExportFileQuery(), cancellationToken);
+            var result = await _mediator.Send(new GetQualificationOutputFileQuery(), cancellationToken);
 
             if (!result.Success || result.Value is null)
             {
-                return Problem(result.ErrorMessage ?? "Unable to retrieve export file.");
+                return Problem(result.ErrorMessage ?? "Unable to retrieve output file.");
             }
 
             return File(

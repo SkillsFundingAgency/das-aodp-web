@@ -1,6 +1,6 @@
 ﻿namespace SFA.DAS.AODP.Application.Queries.Qualifications
 {
-    public class GetQualificationExportFileResponse
+    public class GetQualificationOutputFileResponse
     {
         public byte[] ZipFileContent { get; set; }
         public string FileName { get; set; }
