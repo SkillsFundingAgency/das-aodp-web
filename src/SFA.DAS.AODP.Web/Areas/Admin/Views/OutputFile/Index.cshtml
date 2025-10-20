@@ -1,25 +1,49 @@
-﻿@{
-    ViewData["Title"] = "Output file";
+﻿@using SFA.DAS.AODP.Web.Models.OutputFile
+@model OutputFileViewModel
+@{
+    ViewData["Title"] = "Download a record of all active and archived funding requests";
 }
-<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
 <div class="govuk-width-container">
-    <main class="govuk-main-wrapper">
+    <main class="govuk-main-wrapper" id="main-content">
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
 
-                <a class="govuk-back-link" asp-action="Index" asp-controller="Home" asp-area="Review">
-                    Back 
-                </a>
+                <form asp-controller="OutputFile" asp-action="StartDownload" asp-area="Admin" method="post">
+                    @Html.AntiForgeryToken()
+                    <a class="govuk-back-link" asp-action="Index" asp-controller="Home" asp-area="Review">Back</a>
 
-                <h1 class="govuk-heading-1">Output File</h1>
+                    <h1 class="govuk-heading-xl govuk-!-margin-bottom-5">
+                        Download a record of all active and archived funding requests
+                    </h1>
+
+                    <p class="govuk-body">This will export two CSV files to your device.</p>
+
+                    <button type="submit" class="govuk-button" data-module="govuk-button">
+                        Download files
+                    </button>
+                </form>
 
                 <form asp-controller="OutputFile" asp-action="GetOutputFile" asp-area="Admin" method="get">
-                    <div class="govuk-grid-row">
-                        <div class="govuk-form-group">
-                            <govuk-button type="submit">Download</govuk-button>
-                        </div>
-                    </div>
-                </form>
+
+                    @Html.AntiForgeryToken()
+
+                @if (Model?.OutputFileLogs != null && Model.OutputFileLogs.Any())
+                {
+                    <dl class="govuk-summary-list">
+                        @foreach (var log in Model.OutputFileLogs)
+                        {
+                            <div class="govuk-summary-list__row">
+                                <dt class="govuk-summary-list__key">@log.UserDisplayName</dt>
+                                <dd class="govuk-summary-list__value">@log.Timestamp?.ToString("d MMMM yyyy")</dd>
+                            </div>
+                        }
+                    </dl>
+                }
+                else
+                {
+                    <p class="govuk-body">No logs to display.</p>
+                }
 
             </div>
         </div>

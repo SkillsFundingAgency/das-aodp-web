@@ -1,8 +1,12 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Authentication;
+using SFA.DAS.AODP.Web.Models.OutputFile;
+using System;
 using SFA.DAS.AODP.Web.Enums;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
@@ -16,8 +20,14 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
         public const string OutputFileDefaultErrorMessage = "Error downloading output file";
 
         public OutputFileController(ILogger<OutputFileController> logger, IMediator mediator) : base(mediator, logger)
-        { 
-        }
+        { }
+
+        [HttpGet]
+        public async Task<IActionResult> Index(CancellationToken ct)
+        {
+            var logsEnvelope = await _mediator.Send(new GetQualificationOutputFileLogQuery(), ct);
+            var logs = logsEnvelope.Value?.OutputFileLogs ?? Enumerable.Empty<GetQualificationOutputFileLogResponse.QualificationOutputFileLog>();
+
 
         public async Task<IActionResult> Index()
         {
@@ -26,7 +36,12 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
                 ViewNotificationMessageType.Error,
                 TempData[$"{OutputFileFailed}:Message"] as string);
 
-            return View();
+            var viewModel = new OutputFileViewModel
+            {
+                OutputFileLogs = orderedLogs
+            };
+
+            return View(viewModel);
         }
 
         [HttpGet("outputfile")]
@@ -43,11 +58,11 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            return File(
-                fileContents: result.Value.ZipFileContent,
-                contentType: result.Value.ContentType,
-                fileDownloadName: result.Value.FileName
-            );
+            var bytes = result.Value.ZipFileContent;
+            var contentType = string.IsNullOrWhiteSpace(result.Value.ContentType) ? "application/zip" : result.Value.ContentType;
+            var fileName = string.IsNullOrWhiteSpace(result.Value.FileName) ? "export.zip" : result.Value.FileName;
+
+            return File(bytes, contentType, fileName);
         }
     }
 }
