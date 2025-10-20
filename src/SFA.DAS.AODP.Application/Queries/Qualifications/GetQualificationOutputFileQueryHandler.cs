@@ -19,7 +19,7 @@ namespace SFA.DAS.AODP.Application.Queries.Qualifications
 
             try
             {
-                var result = await _apiClient.Get<GetQualificationOutputFileResponse>(new GetQualificationExportFileApiRequest());
+                var result = await _apiClient.Get<GetQualificationOutputFileResponse>(new GetQualificationOutputFileApiRequest());
                 if(result is null || result.ZipFileContent is null || result.ZipFileContent.Length == 0)
                 {
                     response.Success = false;

@@ -29,7 +29,7 @@ namespace SFA.DAS.AODP.Application.Tests.Queries.Qualifications
             var request = _fixture.Create<GetQualificationOutputFileQuery>();
 
             _apiClient
-                .Setup(a => a.Get<GetQualificationOutputFileResponse>(It.IsAny<GetQualificationExportFileApiRequest>()))
+                .Setup(a => a.Get<GetQualificationOutputFileResponse>(It.IsAny<GetQualificationOutputFileApiRequest>()))
                 .ReturnsAsync(expectedResponse);
 
             // Act
@@ -37,7 +37,7 @@ namespace SFA.DAS.AODP.Application.Tests.Queries.Qualifications
 
             // Assert
             _apiClient.Verify(a => a.Get<GetQualificationOutputFileResponse>(
-                                  It.IsAny<GetQualificationExportFileApiRequest>()),
+                                  It.IsAny<GetQualificationOutputFileApiRequest>()),
                               Times.Once);
 
             Assert.NotNull(response);
@@ -61,7 +61,7 @@ namespace SFA.DAS.AODP.Application.Tests.Queries.Qualifications
             var request = _fixture.Create<GetQualificationOutputFileQuery>();
 
             _apiClient
-                .Setup(a => a.Get<GetQualificationOutputFileResponse>(It.IsAny<GetQualificationExportFileApiRequest>()))
+                .Setup(a => a.Get<GetQualificationOutputFileResponse>(It.IsAny<GetQualificationOutputFileApiRequest>()))
                 .ReturnsAsync(emptyResponse);
 
             // Act
@@ -83,7 +83,7 @@ namespace SFA.DAS.AODP.Application.Tests.Queries.Qualifications
             var request = _fixture.Create<GetQualificationOutputFileQuery>();
 
             _apiClient
-                .Setup(a => a.Get<GetQualificationOutputFileResponse>(It.IsAny<GetQualificationExportFileApiRequest>()))
+                .Setup(a => a.Get<GetQualificationOutputFileResponse>(It.IsAny<GetQualificationOutputFileApiRequest>()))
                 .ThrowsAsync(expectedException);
 
             // Act
