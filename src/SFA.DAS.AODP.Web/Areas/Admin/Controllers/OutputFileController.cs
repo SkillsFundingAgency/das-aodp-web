@@ -23,8 +23,8 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
 
         [HttpGet("output-file")]
         public async Task<IActionResult> GetOutputFile(CancellationToken cancellationToken)
-        {
-            var result = await _mediator.Send(new GetQualificationOutputFileQuery(), cancellationToken);
+        { 
+            var result = await _mediator.Send(new GetQualificationOutputFileQuery { CurrentUsername = HttpContext.User?.Identity?.Name! }, cancellationToken);
 
             if (!result.Success || result.Value is null)
             {
