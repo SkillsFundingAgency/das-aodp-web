@@ -10,7 +10,6 @@
             <div class="govuk-grid-column-two-thirds">
 
                 <form asp-controller="OutputFile" asp-action="StartDownload" asp-area="Admin" method="post">
-                    @Html.AntiForgeryToken()
                     <a class="govuk-back-link" asp-action="Index" asp-controller="Home" asp-area="Review">Back</a>
 
                     <h1 class="govuk-heading-xl govuk-!-margin-bottom-5">
@@ -23,6 +22,10 @@
                         Download files
                     </button>
                 </form>
+
+                <h2 class="govuk-heading-l govuk-!-margin-top-7">
+                    Download history
+                </h2>
 
                 @if (Model?.OutputFileLogs != null && Model.OutputFileLogs.Any())
                 {
@@ -40,6 +43,7 @@
                 {
                     <p class="govuk-body">No logs to display.</p>
                 }
+                
 
             </div>
         </div>

@@ -25,20 +25,21 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
         [HttpGet]
         public async Task<IActionResult> Index(CancellationToken ct)
         {
-            var logsEnvelope = await _mediator.Send(new GetQualificationOutputFileLogQuery(), ct);
-            var logs = logsEnvelope.Value?.OutputFileLogs ?? Enumerable.Empty<GetQualificationOutputFileLogResponse.QualificationOutputFileLog>();
-
-
-        public async Task<IActionResult> Index()
-        {
+    var logs    = logsEnvelope.Value?.OutputFileLogs ?? Enumerable.Empty<GetQualificationOutputFileLogResponse.QualificationOutputFileLog>();
             ShowNotificationIfKeyExists(
                 OutputFileFailed,
                 ViewNotificationMessageType.Error,
                 TempData[$"{OutputFileFailed}:Message"] as string);
 
+           
+
             var viewModel = new OutputFileViewModel
             {
-                OutputFileLogs = orderedLogs
+                OutputFileLogs = logs.Select(x => new OutputFileLogModel
+                {
+                    UserDisplayName = x.UserDisplayName,
+                    Timestamp = x.Timestamp
+                }).ToList()
             };
 
             return View(viewModel);
