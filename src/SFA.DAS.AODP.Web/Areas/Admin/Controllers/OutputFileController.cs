@@ -30,7 +30,6 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
                     UserDisplayName = x.UserDisplayName,
                     Timestamp = x.Timestamp
                 })
-                .OrderByDescending(x => x.Timestamp ?? DateTime.MinValue)
                 .ToList();
 
             var viewModel = new OutputFileViewModel
