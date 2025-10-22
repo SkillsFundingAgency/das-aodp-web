@@ -21,7 +21,7 @@ namespace SFA.DAS.AODP.Application.Queries.Qualifications
             {
                 var result = await _apiClient.Get<GetQualificationOutputFileLogResponse>(new GetQualificationOutputFileLogApiRequest());
 
-                if (result is null || result.OutputFileLogs is null || !result.OutputFileLogs.Any())
+                if (result is null || !result.OutputFileLogs.Any())
                 {
                     response.Success = false;
                     response.ErrorMessage = "No output file logs available.";
