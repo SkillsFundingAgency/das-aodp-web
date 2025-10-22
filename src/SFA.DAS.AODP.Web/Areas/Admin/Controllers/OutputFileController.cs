@@ -39,7 +39,7 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
                 {
                     UserDisplayName = x.UserDisplayName,
                     Timestamp = x.Timestamp
-                }).ToList()
+
             };
 
             return View(viewModel);
