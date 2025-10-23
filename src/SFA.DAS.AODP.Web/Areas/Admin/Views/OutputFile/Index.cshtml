@@ -24,10 +24,6 @@
                     </button>
                 </form>
 
-                <form asp-controller="OutputFile" asp-action="GetOutputFile" asp-area="Admin" method="get">
-
-                    @Html.AntiForgeryToken()
-
                 @if (Model?.OutputFileLogs != null && Model.OutputFileLogs.Any())
                 {
                     <dl class="govuk-summary-list">
