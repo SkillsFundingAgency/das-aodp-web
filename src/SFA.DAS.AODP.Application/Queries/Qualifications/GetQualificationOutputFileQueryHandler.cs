@@ -19,25 +19,29 @@ namespace SFA.DAS.AODP.Application.Queries.Qualifications
 
             try
             {
-                var result = await _apiClient.Get<GetQualificationOutputFileResponse>(new GetQualificationOutputFileApiRequest());
-                if(result is null || result.ZipFileContent is null || result.ZipFileContent.Length == 0)
+                var result = await _apiClient.Get<BaseMediatrResponse<GetQualificationOutputFileResponse>>(
+                    new GetQualificationOutputFileApiRequest());
+
+                if (result is null || !result.Success || result.Value is null ||
+                    result.Value.ZipFileContent is null || result.Value.ZipFileContent.Length == 0)
                 {
                     response.Success = false;
-                    response.ErrorMessage = "Output file not available.";
+                    response.ErrorMessage = result?.ErrorMessage ?? "Output file not available.";
+
                 }
                 else
                 {
                     response.Success = true;
-                    response.Value = result; 
+                    response.Value = result.Value;
                 }
-
+                
             }
             catch (Exception ex)
             {
                 response.Success = false;
                 response.ErrorMessage = ex.Message;
+                return response;
             }
-
             return response;
         }
     }
