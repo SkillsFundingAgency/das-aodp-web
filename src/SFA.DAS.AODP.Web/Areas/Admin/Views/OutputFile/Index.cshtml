@@ -13,12 +13,7 @@
 
                 <h1 class="govuk-heading-1">Output File</h1>
 
-
-
                 <form asp-controller="OutputFile" asp-action="GetOutputFile" asp-area="Admin" method="get">
-
-                    @Html.AntiForgeryToken()
-
                     <div class="govuk-grid-row">
                         <div class="govuk-form-group">
                             <govuk-button type="submit">Download</govuk-button>
