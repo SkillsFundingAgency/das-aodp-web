@@ -16,7 +16,7 @@
                 </div>
                 @if (Model.PaginationViewModel.CurrentPage > 0)
                 {
-                    <div class="govuk-inset-text">Import for this cycle ran: @(Model.JobStatusViewModel.LastRunTime.HasValue ? Model.JobStatusViewModel.LastRunTime.Value.ToString("G") : "Never")</div>
+                    <div class="govuk-inset-text">Import for this cycle ran: @(Model.JobStatusViewModel.LastRunTime.HasValue? Model.JobStatusViewModel.LastRunTime.Value.ToString("G") : "Never")</div>
                     <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
                 }
                 <form asp-controller="New" asp-action="Search" asp-area="Review" method="post">
@@ -45,7 +45,7 @@
                                         </govuk-input>
                                     </div>
                                 </div>
-                                <div class="govuk-grid-column-three-quarters">                                    
+                                <div class="govuk-grid-column-three-quarters">
                                     <div class="govuk-form-group">
                                         <fieldset class="govuk-fieldset govuk-!-static-padding-left-5">
                                             <govuk-checkboxes name="Filter[ProcessStatusIds]" asp-for="@Model.Filter.ProcessStatusIds">
@@ -55,19 +55,19 @@
                                                     <govuk-checkboxes-fieldset-legend is-page-heading="false" class="govuk-label--s">
                                                         <div class="govuk-label govuk-label--s">Status</div>
                                                     </govuk-checkboxes-fieldset-legend>
-                                                    
+
                                                     @Html.RenderPartialAsync("Validation/_CheckboxValidationPartial", nameof(Model.Filter.ProcessStatusIds))
-                                                                    
+
                                                     @foreach (var status in Model.ProcessStatuses)
                                                     {
                                                         <govuk-checkboxes-item checked="@Model.Filter.ProcessStatusIds?.Contains(status.Id)" value="@status.Id">@status.Name</govuk-checkboxes-item>
                                                     }
-                                                                    
+
                                                 </govuk-checkboxes-fieldset>
 
                                             </govuk-checkboxes>
                                         </fieldset>
-                                    </div>                                                                                   
+                                    </div>
                                 </div>
                             </div>
                             <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
@@ -125,7 +125,12 @@
                                         @foreach (var qualification in Model.NewQualifications)
                                         {
                                             <tr class="govuk-table__row">
-                                                <td class="govuk-table__cell">@qualification.Reference</td>
+                                                @* <td class="govuk-table__cell">@qualification.Reference</td> *@
+                                                <td class="govuk-table__cell">
+                                                    <a href="https://find-a-qualification.services.ofqual.gov.uk/qualifications/@qualification.Reference" target="_blank">
+                                                        @qualification.Reference
+                                                    </a>
+                                                </td>
                                                 <td class="govuk-table__cell">
                                                     <a class="govuk-link" href="@Url.Action("QualificationDetails", "New", new { area = "Review", qualificationReference = qualification.Reference })">
                                                         @qualification.Title
