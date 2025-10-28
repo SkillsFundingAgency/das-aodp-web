@@ -1,13 +1,10 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
-using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Authentication;
-using SFA.DAS.AODP.Web.Models.OutputFile;
-using System;
 using SFA.DAS.AODP.Web.Enums;
+using SFA.DAS.AODP.Web.Models.OutputFile;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
@@ -23,15 +20,15 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
         { }
 
         [HttpGet]
-        public async Task<IActionResult> Index(CancellationToken ct)
+        public async Task<IActionResult> Index()
         {
-    var logs    = logsEnvelope.Value?.OutputFileLogs ?? Enumerable.Empty<GetQualificationOutputFileLogResponse.QualificationOutputFileLog>();
+            var logsEnvelope = await _mediator.Send(new GetQualificationOutputFileLogQuery());
+            var logs = logsEnvelope.Value?.OutputFileLogs ?? Enumerable.Empty<GetQualificationOutputFileLogResponse.QualificationOutputFileLog>();
+
             ShowNotificationIfKeyExists(
                 OutputFileFailed,
                 ViewNotificationMessageType.Error,
                 TempData[$"{OutputFileFailed}:Message"] as string);
-
-           
 
             var viewModel = new OutputFileViewModel
             {
@@ -39,16 +36,16 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
                 {
                     UserDisplayName = x.UserDisplayName,
                     Timestamp = x.Timestamp
-
+                }).ToList()
             };
 
             return View(viewModel);
         }
 
         [HttpGet("outputfile")]
-        public async Task<IActionResult> GetOutputFile(CancellationToken cancellationToken)
+        public async Task<IActionResult> GetOutputFile()
         { 
-            var result = await _mediator.Send(new GetQualificationOutputFileQuery { CurrentUsername = HttpContext.User?.Identity?.Name! }, cancellationToken);
+            var result = await _mediator.Send(new GetQualificationOutputFileQuery(HttpContext.User?.Identity?.Name!));
 
             if (!result.Success || result.Value is null || result.Value.ZipFileContent is null || result.Value.ZipFileContent.Length == 0)
             {
