@@ -1,7 +1,9 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Models.OutputFile;
@@ -22,14 +24,13 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var logsEnvelope = await _mediator.Send(new GetQualificationOutputFileLogQuery());
-            var logs = logsEnvelope.Value?.OutputFileLogs ?? Enumerable.Empty<GetQualificationOutputFileLogResponse.QualificationOutputFileLog>();
-
             ShowNotificationIfKeyExists(
                 OutputFileFailed,
                 ViewNotificationMessageType.Error,
                 TempData[$"{OutputFileFailed}:Message"] as string);
 
+            var logsEnvelope = await _mediator.Send(new GetQualificationOutputFileLogQuery());
+            var logs = logsEnvelope.Value?.OutputFileLogs ?? Enumerable.Empty<GetQualificationOutputFileLogResponse.QualificationOutputFileLog>();
             var viewModel = new OutputFileViewModel
             {
                 OutputFileLogs = logs.Select(x => new OutputFileLogModel
