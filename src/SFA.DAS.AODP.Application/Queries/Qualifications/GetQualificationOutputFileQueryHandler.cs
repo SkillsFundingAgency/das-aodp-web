@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Domain.Interfaces;
 using SFA.DAS.AODP.Domain.Qualifications.Requests;
 
@@ -15,34 +16,47 @@ namespace SFA.DAS.AODP.Application.Queries.Qualifications
 
         public async Task<BaseMediatrResponse<GetQualificationOutputFileResponse>> Handle(GetQualificationOutputFileQuery request, CancellationToken cancellationToken)
         {
-            var response = new BaseMediatrResponse<GetQualificationOutputFileResponse>();
-
             try
             {
                 var result = await _apiClient.Get<BaseMediatrResponse<GetQualificationOutputFileResponse>>(
                     new GetQualificationOutputFileApiRequest(request.CurrentUsername));
 
-                if (result is null || !result.Success || result.Value is null ||
-                    result.Value.ZipFileContent is null || result.Value.ZipFileContent.Length == 0)
+                if (result == null)
                 {
-                    response.Success = false;
-                    response.ErrorMessage = result?.ErrorMessage ?? "Output file not available.";
-
-                }
-                else
-                {
-                    response.Success = true;
-                    response.Value = result.Value;
+                    return new BaseMediatrResponse<GetQualificationOutputFileResponse>
+                    {
+                        Success = false,
+                        ErrorMessage = "No response received from inner API",
+                        ErrorCode = ErrorCodes.UnexpectedError
+                    };
                 }
                 
+                if (!result.Success || result.Value is null ||
+                    result.Value.ZipFileContent is null || result.Value.ZipFileContent.Length == 0)
+                {
+                    return new BaseMediatrResponse<GetQualificationOutputFileResponse>
+                    {
+                        Success = false,
+                        ErrorMessage = result?.ErrorMessage ?? "Unexpected error",
+                        ErrorCode = result?.ErrorCode ?? ErrorCodes.UnexpectedError
+                    };
+                }
+
+                return new BaseMediatrResponse<GetQualificationOutputFileResponse>
+                {
+                    Success = true,
+                    Value = result.Value,
+                };
             }
             catch (Exception ex)
             {
-                response.Success = false;
-                response.ErrorMessage = ex.Message;
-                return response;
+                return new BaseMediatrResponse<GetQualificationOutputFileResponse>
+                {
+                    Success = false,
+                    ErrorMessage = ex.Message,
+                    ErrorCode = ErrorCodes.UnexpectedError
+                };
             }
-            return response;
         }
     }
 }

@@ -1,23 +1,38 @@
-﻿@using SFA.DAS.AODP.Web.Models.OutputFile
+﻿@using SFA.DAS.AODP.Web.Areas.Admin.Controllers
+@using SFA.DAS.AODP.Web.Models.OutputFile
 @model OutputFileViewModel
 @{
     ViewData["Title"] = "Download a record of all active and archived funding requests";
 }
 
+<a class="govuk-back-link" asp-action="Index" asp-controller="Home" asp-area="Review">Back</a>
 <div class="govuk-width-container">
     <main class="govuk-main-wrapper" id="main-content">
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
+                @if (TempData[OutputFileController.OutputFileFailed] != null && (bool)TempData[OutputFileController.OutputFileFailed])
+                {
+                    var message = TempData[$"{OutputFileController.OutputFileFailed}:Message"]?.ToString() ?? "There was a problem generating the output file.";
 
-                <form asp-controller="OutputFile" asp-action="StartDownload" asp-area="Admin" method="post">
-                    <a class="govuk-back-link" asp-action="Index" asp-controller="Home" asp-area="Review">Back</a>
+                    <div class="govuk-error-summary" data-module="govuk-error-summary">
+                        <div role="alert">
+                            <h2 class="govuk-error-summary__title">
+                                There is a problem
+                            </h2>
+                            <div class="govuk-error-summary__body">
+                                <ul class="govuk-list govuk-error-summary__list">
+                                    <li>@Html.Raw(message.Replace("\n", "<br/>"))</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                }
+                <h1 class="govuk-heading-xl govuk-!-margin-bottom-5">
+                    Download a record of all active and archived funding requests
+                </h1>
 
-                    <h1 class="govuk-heading-xl govuk-!-margin-bottom-5">
-                        Download a record of all active and archived funding requests
-                    </h1>
-
-                    <p class="govuk-body">This will export two CSV files to your device.</p>
-
+                <p class="govuk-body">This will export two CSV files to your device.</p>
+                <form asp-controller="OutputFile" asp-action="GetOutputFile" asp-area="Admin" method="get">
                     <button type="submit" class="govuk-button" data-module="govuk-button">
                         Download files
                     </button>
@@ -43,8 +58,6 @@
                 {
                     <p class="govuk-body">No logs to display.</p>
                 }
-                
-
             </div>
         </div>
     </main>

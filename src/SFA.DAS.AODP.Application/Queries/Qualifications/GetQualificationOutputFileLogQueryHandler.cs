@@ -19,9 +19,10 @@ namespace SFA.DAS.AODP.Application.Queries.Qualifications
 
             try
             {
-                var result = await _apiClient.Get<GetQualificationOutputFileLogResponse>(new GetQualificationOutputFileLogApiRequest());
+                var result = await _apiClient.Get<BaseMediatrResponse<GetQualificationOutputFileLogResponse>>(
+                    new GetQualificationOutputFileLogApiRequest());
 
-                if (result is null || !result.OutputFileLogs.Any())
+                if (result is null || !result.Success || !result.Value.OutputFileLogs.Any())
                 {
                     response.Success = false;
                     response.ErrorMessage = "No output file logs available.";
@@ -29,7 +30,7 @@ namespace SFA.DAS.AODP.Application.Queries.Qualifications
                 else
                 {
                     response.Success = true;
-                    response.Value = result;
+                    response.Value = result.Value;
                 }
             }
             catch (Exception ex)

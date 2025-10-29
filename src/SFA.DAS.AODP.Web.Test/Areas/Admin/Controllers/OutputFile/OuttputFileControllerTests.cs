@@ -127,7 +127,7 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
         }
 
         [Fact]
-        public async Task StartDownload_ReturnsFile_WhenQuerySucceeds()
+        public async Task GetOutputFile_ReturnsFile_WhenQuerySucceeds()
         {
             // Arrange
             SetUserOnController(_controller, TestUser);
@@ -155,7 +155,6 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
             {
                 var file = result as FileContentResult;
                 Assert.NotNull(file);
-
                 Assert.Equal(DefaultContentType, file!.ContentType);
                 Assert.Equal(TestFileName, file.FileDownloadName);
                 Assert.Equal(bytes, file.FileContents);
@@ -171,6 +170,7 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
             var mediatorResponse = _fixture.Build<BaseMediatrResponse<GetQualificationOutputFileResponse>>()
                                            .With(r => r.Success, false)
                                            .With(r => r.ErrorMessage, ErrorMessageFromMediator)
+                                           .With(r => r.ErrorCode, ErrorCodes.UnexpectedError)
                                            .With(r => r.Value, (GetQualificationOutputFileResponse?)null)
                                            .Create();
 
@@ -187,8 +187,8 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
                 Assert.NotNull(redirect);
                 Assert.Equal(nameof(OutputFileController.Index), redirect!.ActionName);
 
-                Assert.True((bool)_controller.TempData[TempDataKeyFailed]);
-                Assert.Equal(ErrorMessageFromMediator, _controller.TempData[TempDataKeyFailedMessage]);
+                Assert.True((bool)_controller.TempData[TempDataKeyFailed]!);
+                Assert.Equal(OutputFileController.OutputFileDefaultErrorMessage, _controller.TempData[TempDataKeyFailedMessage]);
             });
         }
 
@@ -201,6 +201,7 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
             var mediatorResponse = _fixture.Build<BaseMediatrResponse<GetQualificationOutputFileResponse>>()
                                            .With(r => r.Success, false)
                                            .With(r => r.ErrorMessage, (string?)null)
+                                           .With(r => r.ErrorCode, (string?)null)
                                            .With(r => r.Value, (GetQualificationOutputFileResponse?)null)
                                            .Create();
 
@@ -216,14 +217,13 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
                 var redirect = result as RedirectToActionResult;
                 Assert.NotNull(redirect);
                 Assert.Equal(nameof(OutputFileController.Index), redirect!.ActionName);
-
-                Assert.True((bool)_controller.TempData[TempDataKeyFailed]);
-                Assert.Equal(ControllerDefaultErrorMessage, _controller.TempData[TempDataKeyFailedMessage]);
+                Assert.True((bool)_controller.TempData[TempDataKeyFailed]!);
+                Assert.Equal(OutputFileController.OutputFileDefaultErrorMessage, _controller.TempData[TempDataKeyFailedMessage]);
             });
         }
 
         [Fact]
-        public async Task StartDownload_DefaultsContentTypeAndFileName_WhenMissing()
+        public async Task GetOutputFile_DefaultsContentTypeAndFileName_WhenMissing()
         {
             // Arrange
             SetUserOnController(_controller, TestUser);
@@ -256,6 +256,38 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
                 Assert.Equal(DefaultContentType, file!.ContentType);
                 Assert.Equal(DefaultFileName, file.FileDownloadName);
                 Assert.Equal(bytes, file.FileContents);
+            });
+        }
+
+        [Fact]
+        public async Task GetOutputFile_NoDataErrorCode_SetsNoDataMessageAndRedirects()
+        {
+            // Arrange
+            SetTempData(_controller);
+
+            var mediatorResponse = new BaseMediatrResponse<GetQualificationOutputFileResponse>
+            {
+                Success = false,
+                ErrorCode = ErrorCodes.NoData,
+                ErrorMessage = "ignored",
+                Value = new GetQualificationOutputFileResponse()
+            };
+
+            _mediatorMock.Setup(m => m.Send(It.IsAny<GetQualificationOutputFileQuery>(), It.IsAny<CancellationToken>()))
+                         .ReturnsAsync(mediatorResponse);
+
+            // Act
+            var result = await _controller.GetOutputFile();
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                var redirect = result as RedirectToActionResult;
+                Assert.NotNull(redirect);
+                Assert.Equal(nameof(OutputFileController.Index), redirect!.ActionName);
+
+                Assert.True((bool)_controller.TempData[OutputFileController.OutputFileFailed]!);
+                Assert.Equal(OutputFileController.OutputFileNoDataErrorMessage, _controller.TempData[$"{OutputFileController.OutputFileFailed}:Message"]);
             });
         }
 

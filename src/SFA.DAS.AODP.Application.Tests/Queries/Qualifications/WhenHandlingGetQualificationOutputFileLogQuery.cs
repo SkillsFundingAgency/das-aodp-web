@@ -1,4 +1,5 @@
 using AutoFixture;
+using Microsoft.VisualStudio.TestPlatform.Utilities;
 using Moq;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Domain.Interfaces;
@@ -31,17 +32,24 @@ namespace SFA.DAS.AODP.Application.Tests.Queries.Qualifications
                                            .Create();
             var request = _fixture.Create<GetQualificationOutputFileLogQuery>();
 
+
             _apiClient
-                .Setup(a => a.Get<GetQualificationOutputFileLogResponse>(It.IsAny<GetQualificationOutputFileLogApiRequest>()))
-                .ReturnsAsync(expectedResponse);
+                .Setup(a => a.Get<BaseMediatrResponse<GetQualificationOutputFileLogResponse>>(It.IsAny<GetQualificationOutputFileLogApiRequest>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetQualificationOutputFileLogResponse>
+                {
+                    Success = true,
+                    Value = expectedResponse
+                });
+
 
             // Act
             var response = await _handler.Handle(request, default);
 
             // Assert
-            _apiClient.Verify(a => a.Get<GetQualificationOutputFileLogResponse>(
+            _apiClient.Verify(a => a.Get<BaseMediatrResponse<GetQualificationOutputFileLogResponse>>(
                                   It.IsAny<GetQualificationOutputFileLogApiRequest>()),
                               Times.Once);
+
 
             Assert.Multiple(() =>
             {
@@ -124,7 +132,7 @@ namespace SFA.DAS.AODP.Application.Tests.Queries.Qualifications
                 Assert.NotNull(response);
                 Assert.False(response.Success);
                 Assert.NotEmpty(response.ErrorMessage!);
-                Assert.Equal(expectedException.Message, response.ErrorMessage);
+                Assert.Equal(noLogsmessage, response.ErrorMessage);
                 Assert.NotNull(response.Value);
             });
         }
