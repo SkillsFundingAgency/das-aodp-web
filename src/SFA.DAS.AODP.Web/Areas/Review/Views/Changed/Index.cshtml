@@ -15,7 +15,7 @@
                 <div class="govuk-grid-column-full" id="guide-contents">
                     <div class="govuk-grid-row">
                         <div class="govuk-grid-column-one-half">
-                            <h2 class="govuk-heading-l">Qualifications with changes</h2>
+                            <h2 class="govuk-heading-l">Qualifications with changes</h2>@**@
                         </div>
                     </div>
                     @if (Model.PaginationViewModel.CurrentPage > 0)
@@ -128,7 +128,15 @@
                                             @foreach (var qualification in Model.ChangedQualifications)
                                             {
                                                 <tr class="govuk-table__row">
-                                                    <td class="govuk-table__cell">@qualification.QualificationReference</td>
+                                                    <td>
+                                                        @if (!string.IsNullOrWhiteSpace(@qualification.QualificationReference))
+                                                        {
+                                                            <a href="https://find-a-qualification.services.ofqual.gov.uk/qualifications/@qualification.QualificationReference" target="_blank">
+                                                                @qualification.QualificationReference
+                                                            </a>
+                                                        }
+                                                    </td>
+                                                    @* <td class="govuk-table__cell">@qualification.QualificationReference</td> *@
                                                     <td class="govuk-table__cell">
                                                         <a class="govuk-link" asp-action="QualificationDetails" asp-controller="changed" asp-route-qualificationReference="@qualification.QualificationReference" asp-route-status="changed">
                                                             @qualification.QualificationTitle

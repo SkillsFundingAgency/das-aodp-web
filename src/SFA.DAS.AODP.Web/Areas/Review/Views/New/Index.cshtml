@@ -125,11 +125,13 @@
                                         @foreach (var qualification in Model.NewQualifications)
                                         {
                                             <tr class="govuk-table__row">
-                                                @* <td class="govuk-table__cell">@qualification.Reference</td> *@
                                                 <td class="govuk-table__cell">
-                                                    <a href="https://find-a-qualification.services.ofqual.gov.uk/qualifications/@qualification.Reference" target="_blank">
-                                                        @qualification.Reference
-                                                    </a>
+                                                    @if (!string.IsNullOrWhiteSpace(qualification.Reference))
+                                                    {
+                                                        <a href="https://find-a-qualification.services.ofqual.gov.uk/qualifications/@qualification.Reference" target="_blank">
+                                                            @qualification.Reference
+                                                        </a>
+                                                    }
                                                 </td>
                                                 <td class="govuk-table__cell">
                                                     <a class="govuk-link" href="@Url.Action("QualificationDetails", "New", new { area = "Review", qualificationReference = qualification.Reference })">
