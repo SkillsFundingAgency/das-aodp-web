@@ -4,6 +4,12 @@ namespace SFA.DAS.AODP.Domain.Qualifications.Requests
 {
     public class GetQualificationOutputFileApiRequest : IGetApiRequest
     {
-        public string GetUrl => "api/qualifications/outputfile";
+        public string CurrentUsername { get; set; } = string.Empty;
+        public string GetUrl => $"api/qualifications/outputfile/{CurrentUsername}";
+
+        public GetQualificationOutputFileApiRequest(string currentUsername)
+        {
+            CurrentUsername = currentUsername;
+        }
     }
 }

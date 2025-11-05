@@ -7,37 +7,37 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Remove="Areas\Funding\Data\**" />
-	  <Compile Remove="Areas\Funding\Models\**" />
-	  <Compile Remove="Areas\Review\Views\Review\**" />
-	  <Compile Remove="Areas\Review\Views\Shared\**" />
-	  <Content Remove="Areas\Funding\Data\**" />
-	  <Content Remove="Areas\Funding\Models\**" />
-	  <Content Remove="Areas\Review\Views\Review\**" />
-	  <Content Remove="Areas\Review\Views\Shared\**" />
-	  <EmbeddedResource Remove="Areas\Funding\Data\**" />
-	  <EmbeddedResource Remove="Areas\Funding\Models\**" />
-	  <EmbeddedResource Remove="Areas\Review\Views\Review\**" />
-	  <EmbeddedResource Remove="Areas\Review\Views\Shared\**" />
-	  <None Remove="Areas\Funding\Data\**" />
-	  <None Remove="Areas\Funding\Models\**" />
+		<Compile Remove="Areas\Funding\Data\**" />
+		<Compile Remove="Areas\Funding\Models\**" />
+		<Compile Remove="Areas\Review\Views\Review\**" />
+		<Compile Remove="Areas\Review\Views\Shared\**" />
+		<Content Remove="Areas\Funding\Data\**" />
+		<Content Remove="Areas\Funding\Models\**" />
+		<Content Remove="Areas\Review\Views\Review\**" />
+		<Content Remove="Areas\Review\Views\Shared\**" />
+		<EmbeddedResource Remove="Areas\Funding\Data\**" />
+		<EmbeddedResource Remove="Areas\Funding\Models\**" />
+		<EmbeddedResource Remove="Areas\Review\Views\Review\**" />
+		<EmbeddedResource Remove="Areas\Review\Views\Shared\**" />
+		<None Remove="Areas\Funding\Data\**" />
+		<None Remove="Areas\Funding\Models\**" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Compile Remove="Models\Helpers\**" />
-	  <Compile Remove="Models\Pages\**" />
-	  <Compile Remove="Models\Sections\**" />
-	  <Content Remove="Models\Helpers\**" />
-	  <Content Remove="Models\Pages\**" />
-	  <Content Remove="Models\Sections\**" />
-	  <EmbeddedResource Remove="Models\Helpers\**" />
-	  <EmbeddedResource Remove="Models\Pages\**" />
-	  <EmbeddedResource Remove="Models\Sections\**" />
-	  <None Remove="Areas\Review\Views\Review\**" />
-	  <None Remove="Areas\Review\Views\Shared\**" />
-	  <None Remove="Models\Helpers\**" />
-	  <None Remove="Models\Pages\**" />
-	  <None Remove="Models\Sections\**" />
+		<Compile Remove="Models\Helpers\**" />
+		<Compile Remove="Models\Pages\**" />
+		<Compile Remove="Models\Sections\**" />
+		<Content Remove="Models\Helpers\**" />
+		<Content Remove="Models\Pages\**" />
+		<Content Remove="Models\Sections\**" />
+		<EmbeddedResource Remove="Models\Helpers\**" />
+		<EmbeddedResource Remove="Models\Pages\**" />
+		<EmbeddedResource Remove="Models\Sections\**" />
+		<None Remove="Areas\Review\Views\Review\**" />
+		<None Remove="Areas\Review\Views\Shared\**" />
+		<None Remove="Models\Helpers\**" />
+		<None Remove="Models\Pages\**" />
+		<None Remove="Models\Sections\**" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -67,61 +67,58 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Content Update="Areas\Admin\Views\Routes\Delete.cshtml">
-	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-	  </Content>
-	  <Content Update="Areas\Apply\Views\Applications\SubmitConfirmation.cshtml">
-	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-	  </Content>
-	  <Content Update="Areas\Apply\Views\Applications\Submit.cshtml">
-	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-	  </Content>
-	  <Content Update="Areas\Apply\Views\Applications\Edit.cshtml">
-	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-	  </Content>
-	  <Content Update="Areas\Admin\Views\Shared\FormBuilder\QuestionEdit\_DateInput.cshtml">
-	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-	  </Content>
-	  <Content Update="Areas\Admin\Views\Shared\FormBuilder\QuestionEdit\_File.cshtml">
-	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-	  </Content>
-	  <Content Update="Areas\Admin\Views\Shared\FormBuilder\QuestionEdit\_Options.cshtml">
-	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-	  </Content>
+		<Content Update="Areas\Admin\Views\Routes\Delete.cshtml">
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
+		<Content Update="Areas\Apply\Views\Applications\SubmitConfirmation.cshtml">
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
+		<Content Update="Areas\Apply\Views\Applications\Submit.cshtml">
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
+		<Content Update="Areas\Apply\Views\Applications\Edit.cshtml">
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
+		<Content Update="Areas\Admin\Views\Shared\FormBuilder\QuestionEdit\_DateInput.cshtml">
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
+		<Content Update="Areas\Admin\Views\Shared\FormBuilder\QuestionEdit\_File.cshtml">
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
+		<Content Update="Areas\Admin\Views\Shared\FormBuilder\QuestionEdit\_Options.cshtml">
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Content Update="Areas\Admin\Views\Shared\FormBuilder\QuestionEdit\_Options.cshtml">
-	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-	  </Content>
-	  <Content Update="Areas\Review\Views\ApplicationsReview\Index.cshtml">
-	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-	  </Content>
-	  <Content Update="Areas\Review\Views\ApplicationsReview\QfauFundingReviewSummary.cshtml">
-	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-	    <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-	  </Content>
-	  <Content Update="wwwroot\js\site.js">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Update="wwwroot\js\site.min.js">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
+		<Content Update="Areas\Admin\Views\Shared\FormBuilder\QuestionEdit\_Options.cshtml">
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
+		<Content Update="Areas\Review\Views\ApplicationsReview\Index.cshtml">
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
+		<Content Update="Areas\Review\Views\ApplicationsReview\QfauFundingReviewSummary.cshtml">
+			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
+		<Content Update="wwwroot\js\site.js">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Update="wwwroot\js\site.min.js">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
 	</ItemGroup>
 
 	<PropertyGroup>
 		<PrepareForBuildDependsOn>$(PrepareForBuildDependsOn)</PrepareForBuildDependsOn>
 	</PropertyGroup>
-
-
-
 </Project>

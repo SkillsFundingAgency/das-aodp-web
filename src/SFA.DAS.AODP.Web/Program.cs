@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Authentication.Extensions;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Extensions.Startup;
+using System.Diagnostics;
 using System.Reflection;
 
 internal class Program
@@ -11,6 +12,8 @@ internal class Program
     private static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+
+        Debug.WriteLine($"Environment: {builder.Environment.EnvironmentName}");
 
         var configuration = builder.Configuration.LoadConfiguration(builder.Services, builder.Environment.IsDevelopment());
 
@@ -88,22 +91,29 @@ internal class Program
         }
 
         // Add security headers middleware
+        //AWARD-792 Untested code breaks cookie banner
         app.Use(async (context, next) =>
         {
             // Prevent MIME type sniffing
-            context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
+            context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
 
             // Prevent the page from being embedded in an iframe except same-origin
-            context.Response.Headers.Add("X-Frame-Options", "SAMEORIGIN");
+            context.Response.Headers.Append("X-Frame-Options", "SAMEORIGIN");
 
             // Enable XSS protection
-            context.Response.Headers.Add("X-XSS-Protection", "1; mode=block");
+            context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
 
             // Define a strict Content Security Policy
-            context.Response.Headers.Add("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self';");
+            context.Response.Headers.Append("Content-Security-Policy",
+                "default-src 'self'; " +
+                "script-src 'self' 'unsafe-inline' https://*.googletagmanager.com; " +
+                "style-src 'self' 'unsafe-inline'; " +
+                "connect-src 'self' http://localhost:* https://localhost:* ws://localhost:* wss://localhost:* https://*.google-analytics.com; " +
+                "font-src 'self' data:; " +
+                "img-src 'self';");
 
             // Restrict browser features
-            context.Response.Headers.Add("Permissions-Policy", "geolocation=(), microphone=(), camera=()");
+            context.Response.Headers.Append("Permissions-Policy", "geolocation=(), microphone=(), camera=()");
 
             await next();
         });
