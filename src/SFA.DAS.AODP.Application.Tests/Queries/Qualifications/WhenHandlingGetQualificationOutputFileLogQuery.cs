@@ -1,4 +1,6 @@
 using AutoFixture;
+using Castle.Core.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestPlatform.Utilities;
 using Moq;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
@@ -13,13 +15,14 @@ namespace SFA.DAS.AODP.Application.Tests.Queries.Qualifications
     {
         private readonly Fixture _fixture = new();
         private readonly Mock<IApiClient> _apiClient = new();
+        private readonly Mock<ILogger<GetQualificationOutputFileLogQueryHandler>> _logger = new();
         private readonly GetQualificationOutputFileLogQueryHandler _handler;
 
         private const string noLogsmessage = "No output file logs available.";
 
         public WhenHandlingGetQualificationOutputFileLogQuery()
         {
-            _handler = new(_apiClient.Object);
+            _handler = new(_apiClient.Object, _logger.Object);
         }
 
         [Fact]
@@ -31,7 +34,6 @@ namespace SFA.DAS.AODP.Application.Tests.Queries.Qualifications
                                            .With(r => r.OutputFileLogs, logs)
                                            .Create();
             var request = _fixture.Create<GetQualificationOutputFileLogQuery>();
-
 
             _apiClient
                 .Setup(a => a.Get<BaseMediatrResponse<GetQualificationOutputFileLogResponse>>(It.IsAny<GetQualificationOutputFileLogApiRequest>()))

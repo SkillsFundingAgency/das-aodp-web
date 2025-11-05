@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.Extensions.Logging;
 using SFA.DAS.AODP.Domain.Interfaces;
 using SFA.DAS.AODP.Domain.Qualifications.Requests;
 
@@ -7,10 +8,12 @@ namespace SFA.DAS.AODP.Application.Queries.Qualifications
     public class GetQualificationOutputFileLogQueryHandler : IRequestHandler<GetQualificationOutputFileLogQuery, BaseMediatrResponse<GetQualificationOutputFileLogResponse>>
     {
         private readonly IApiClient _apiClient;
+        private readonly ILogger<GetQualificationOutputFileLogQueryHandler> _logger;
 
-        public GetQualificationOutputFileLogQueryHandler(IApiClient apiClient)
+        public GetQualificationOutputFileLogQueryHandler(IApiClient apiClient, ILogger<GetQualificationOutputFileLogQueryHandler> logger)
         {
             _apiClient = apiClient;
+            _logger = logger;
         }
 
         public async Task<BaseMediatrResponse<GetQualificationOutputFileLogResponse>> Handle(GetQualificationOutputFileLogQuery request, CancellationToken cancellationToken)
@@ -36,7 +39,8 @@ namespace SFA.DAS.AODP.Application.Queries.Qualifications
             catch (Exception ex)
             {
                 response.Success = false;
-                response.ErrorMessage = ex.Message;
+                response.ErrorMessage = "An unexpected issue occurred while retrieving output file logs.";
+                _logger.LogError(ex, response.ErrorMessage);
             }
 
             return response;
