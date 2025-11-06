@@ -56,7 +56,8 @@
 		<PackageReference Include="System.Text.Json" Version="9.0.0" />
 		<PackageReference Include="MediatR" Version="12.4.1" />
 		<PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
-		<PackageReference Include="Microsoft.Build" Version="17.8.43" PrivateAssets="all" ExcludeAssets="runtime" />
+		<PackageReference Include="BuildBundlerMinifier" Version="3.2.449" PrivateAssets="All"/>
+
 	</ItemGroup>
 
 	<ItemGroup>
