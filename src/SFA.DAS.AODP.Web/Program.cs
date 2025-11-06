@@ -78,7 +78,6 @@ internal class Program
 
         var app = builder.Build();
 
-        app.UseStatusCodePagesWithRedirects("/Error/{0}");
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
@@ -91,7 +90,6 @@ internal class Program
         }
 
         // Add security headers middleware
-        //AWARD-792 Untested code breaks cookie banner
         app.Use(async (context, next) =>
         {
             // Prevent MIME type sniffing
