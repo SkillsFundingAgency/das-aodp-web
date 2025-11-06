@@ -6,7 +6,6 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
 
-	<!-- your existing removes -->
 	<ItemGroup>
 		<Compile Remove="Areas\Funding\Data\**" />
 		<Compile Remove="Areas\Funding\Models\**" />
@@ -41,7 +40,6 @@
 		<None Remove="Models\Sections\**" />
 	</ItemGroup>
 
-	<!-- packages -->
 	<ItemGroup>
 		<PackageReference Include="CsvHelper" Version="33.0.1" />
 		<PackageReference Include="GovUk.Frontend.AspNetCore" Version="2.8.1" />
@@ -62,7 +60,6 @@
 		<PackageReference Include="BuildBundlerMinifier" Version="3.2.449" PrivateAssets="All" />
 	</ItemGroup>
 
-	<!-- project refs -->
 	<ItemGroup>
 		<ProjectReference Include="..\SFA.DAS.AODP.Application\SFA.DAS.AODP.Application.csproj" />
 		<ProjectReference Include="..\SFA.DAS.AODP.Authentication\SFA.DAS.AODP.Authentication.csproj" />
