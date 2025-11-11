@@ -1,24 +1,31 @@
-﻿@using SFA.DAS.AODP.Web.Areas.Admin.Controllers
+﻿@using SFA.DAS.AODP.Web.Extensions
 @using SFA.DAS.AODP.Web.Models.OutputFile
 @model OutputFileViewModel
+
 @{
     ViewData["Title"] = "Download a record of all active and archived funding requests";
+
+    var dateChoiceError = ViewData.ModelState.ContainsKey("DateChoice") && ViewData.ModelState["DateChoice"].Errors.Any();
+    var dayError = ViewData.ModelState.ContainsKey("Day") && ViewData.ModelState["Day"].Errors.Any();
+    var monthError = ViewData.ModelState.ContainsKey("Month") && ViewData.ModelState["Month"].Errors.Any();
+    var yearError = ViewData.ModelState.ContainsKey("Year") && ViewData.ModelState["Year"].Errors.Any();
+    var dateGroupError = dayError || monthError || yearError;
 }
 
 <a class="govuk-back-link" asp-action="Index" asp-controller="Home" asp-area="Review">Back</a>
+
 <div class="govuk-width-container">
     <main class="govuk-main-wrapper" id="main-content">
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
-                @if (TempData[OutputFileController.OutputFileFailed] != null && (bool)TempData[OutputFileController.OutputFileFailed])
+
+                @if (TempData["OutputFileFailed"] is true)
                 {
-                    var message = TempData[$"{OutputFileController.OutputFileFailed}:Message"]?.ToString() ?? "There was a problem generating the output file.";
+                    var message = TempData["OutputFileFailed:Message"]?.ToString() ?? "There was a problem generating the output file.";
 
                     <div class="govuk-error-summary" data-module="govuk-error-summary">
                         <div role="alert">
-                            <h2 class="govuk-error-summary__title">
-                                There is a problem
-                            </h2>
+                            <h2 class="govuk-error-summary__title">There is a problem</h2>
                             <div class="govuk-error-summary__body">
                                 <ul class="govuk-list govuk-error-summary__list">
                                     <li>@Html.Raw(message.Replace("\n", "<br/>"))</li>
@@ -27,29 +34,121 @@
                         </div>
                     </div>
                 }
-                <h1 class="govuk-heading-xl govuk-!-margin-bottom-5">
-                    Download a record of all active and archived funding requests
-                </h1>
 
-                <p class="govuk-body">This will export two CSV files to your device.</p>
-                <form asp-controller="OutputFile" asp-action="GetOutputFile" asp-area="Admin" method="get">
-                    <button type="submit" class="govuk-button" data-module="govuk-button">
-                        Download files
-                    </button>
+                <h1 class="govuk-heading-xl">Download a record of all active and archived funding requests</h1>
+
+                <form asp-controller="OutputFile" asp-action="CreateOutputFile" asp-area="Admin" method="post" novalidate>
+                    <div class="govuk-form-group @(dateChoiceError ? "govuk-form-group--error" : "")">
+                        <fieldset class="govuk-fieldset" aria-describedby="date-choice-hint">
+                            <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                                Do you want to use today’s date as the publication date?
+                            </legend>
+
+                            @if (dateChoiceError)
+                            {
+                                <p id="date-choice-error" class="govuk-error-message">
+                                    <span class="govuk-visually-hidden">Error:</span> @ViewData.ModelState["DateChoice"].Errors[0].ErrorMessage
+                                </p>
+                            }
+
+                            <div class="govuk-radios" data-module="govuk-radios">
+                                <div class="govuk-radios__item">
+                                    <input class="govuk-radios__input"
+                                           id="datechoice-today"
+                                           type="radio"
+                                           name="DateChoice"
+                                           value="Today"
+                                           checked="@(Model.DateChoice == PublicationDateMode.Today)" />
+                                    <label class="govuk-label govuk-radios__label" for="datechoice-today">
+                                        Yes, use @DateTime.UtcNow.ToDateDisplayFormat()
+                                    </label>
+                                </div>
+
+                                <div class="govuk-radios__item">
+                                    <input class="govuk-radios__input"
+                                           id="datechoice-manual"
+                                           type="radio"
+                                           name="DateChoice"
+                                           value="Manual"
+                                           data-aria-controls="conditional-publication-date"
+                                           checked="@(Model.DateChoice == PublicationDateMode.Manual)" />
+                                    <label class="govuk-label govuk-radios__label" for="datechoice-manual">
+                                        No, the publication date is different
+                                    </label>
+                                </div>
+
+                                <div class="govuk-radios__conditional @(Model.DateChoice == PublicationDateMode.Manual ? "" : "govuk-radios__conditional--hidden")"
+                                     id="conditional-publication-date">
+
+                                    <div class="govuk-form-group @(dateGroupError ? "govuk-form-group--error" : "")">
+                                        <fieldset class="govuk-fieldset" role="group" aria-describedby="publication-date-hint @(dateGroupError ? "publication-date-error" : "")">
+                                            <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">Publication date</legend>
+
+                                            @{
+                                                var publicationErrors = ViewData.ModelState["PublicationDate"]?.Errors.Select(e => e.ErrorMessage).Distinct().ToList() ?? new();
+                                                var showGroupError = publicationErrors.Any();
+                                            }
+
+                                            @if (showGroupError)
+                                            {
+                                                <span id="publication-date-error" class="govuk-error-message">
+                                                    <span class="govuk-visually-hidden">Error:</span> @publicationErrors.First()
+                                                </span>
+                                            }
+
+                                            <div id="publication-date-hint" class="govuk-hint">For example, 27 3 2024</div>
+
+                                            <div class="govuk-date-input">
+                                                
+                                                <div class="govuk-date-input__item">
+                                                    <div class="govuk-form-group">
+                                                        <label class="govuk-label govuk-date-input__label" for="Day">Day</label>
+                                                        <input class="govuk-input govuk-date-input__input govuk-input--width-2 @(dayError ? "govuk-input--error" : "")"
+                                                               asp-for="Day" maxlength="2" type="text" autocomplete="off" />
+                                                    </div>
+                                                </div>
+                                                <div class="govuk-date-input__item">
+                                                    <div class="govuk-form-group">
+                                                        <label class="govuk-label govuk-date-input__label" for="Month">Month</label>
+                                                        <input class="govuk-input govuk-date-input__input govuk-input--width-2 @(monthError ? "govuk-input--error" : "")"
+                                                               asp-for="Month" maxlength="2" type="text" autocomplete="off" />
+                                                    </div>
+                                                </div>
+                                                <div class="govuk-date-input__item">
+                                                    <div class="govuk-form-group">
+                                                        <label class="govuk-label govuk-date-input__label" for="Year">Year</label>
+                                                        <input class="govuk-input govuk-date-input__input govuk-input--width-4 @(yearError ? "govuk-input--error" : "")"
+                                                               asp-for="Year" maxlength="4" type="text" autocomplete="off" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+
+                    <button type="submit" class="govuk-button" data-module="govuk-button">Download files</button>
                 </form>
 
-                <h2 class="govuk-heading-l govuk-!-margin-top-7">
-                    Download history
-                </h2>
+                <h2 class="govuk-heading-l govuk-!-margin-top-7">Download history</h2>
 
-                @if (Model?.OutputFileLogs != null && Model.OutputFileLogs.Any())
+                @if (Model?.OutputFileLogs?.Any() == true)
                 {
                     <dl class="govuk-summary-list">
+                        <div class="govuk-summary-list__row">
+                            <dt class="govuk-summary-list__key"><strong>User</strong></dt>
+                            <dd class="govuk-summary-list__value"><strong>Download date</strong></dd>
+                            <dd class="govuk-summary-list__value"><strong>Publication date</strong></dd>
+                        </div>
+
                         @foreach (var log in Model.OutputFileLogs)
                         {
                             <div class="govuk-summary-list__row">
                                 <dt class="govuk-summary-list__key">@log.UserDisplayName</dt>
-                                <dd class="govuk-summary-list__value">@log.Timestamp?.ToString("d MMMM yyyy")</dd>
+                                <dd class="govuk-summary-list__value">@log.DownloadDate.ToDateTimeDisplayFormat()</dd>
+                                <dd class="govuk-summary-list__value">@log.PublicationDate.ToDateDisplayFormat()</dd>
                             </div>
                         }
                     </dl>
@@ -58,6 +157,7 @@
                 {
                     <p class="govuk-body">No logs to display.</p>
                 }
+
             </div>
         </div>
     </main>

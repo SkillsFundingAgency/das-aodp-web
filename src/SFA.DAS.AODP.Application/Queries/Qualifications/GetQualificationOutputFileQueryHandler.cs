@@ -18,8 +18,8 @@ namespace SFA.DAS.AODP.Application.Queries.Qualifications
         {
             try
             {
-                var result = await _apiClient.Get<BaseMediatrResponse<GetQualificationOutputFileResponse>>(
-                    new GetQualificationOutputFileApiRequest(request.CurrentUsername));
+                var result = await _apiClient.PostWithResponseCode<BaseMediatrResponse<GetQualificationOutputFileResponse>>(
+                    new GetQualificationOutputFileApiRequest { Data = request});
 
                 if (result == null)
                 {

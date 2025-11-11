@@ -4,8 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Authentication.Extensions;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Extensions.Startup;
+using SFA.DAS.AODP.Web.Validators;
 using System.Diagnostics;
 using System.Reflection;
+using FluentValidation.Validators;
+using FluentValidation;
+using SFA.DAS.AODP.Web.Models.OutputFile;
 
 internal class Program
 {
@@ -52,6 +56,8 @@ internal class Program
                  options.Filters.Add<AutoValidateAntiforgeryTokenAttribute>();
              });
 
+        builder.Services.AddScoped<IValidator<OutputFileViewModel>, OutputFileViewModelValidator>();
+
         builder.Services.AddMediatR(config =>
         {
             config.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
@@ -91,7 +97,6 @@ internal class Program
         }
 
         // Add security headers middleware
-        //AWARD-792 Untested code breaks cookie banner
         app.Use(async (context, next) =>
         {
             // Prevent MIME type sniffing

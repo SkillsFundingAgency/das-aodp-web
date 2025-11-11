@@ -13,6 +13,8 @@ using SFA.DAS.AODP.Web.Areas.Admin.Controllers;
 using SFA.DAS.AODP.Web.Models.OutputFile;
 using static SFA.DAS.AODP.Application.Queries.Qualifications.GetQualificationOutputFileLogResponse;
 using SFA.DAS.AODP.Web.Enums;
+using SFA.DAS.AODP.Web.Models.GdsComponents;
+using FluentValidation;
 
 namespace SFA.DAS.AODP.Web.Test.Controllers
 {
@@ -22,6 +24,7 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
         private readonly Mock<ILogger<OutputFileController>> _loggerMock;
         private readonly Mock<IMediator> _mediatorMock;
         private readonly OutputFileController _controller;
+        private readonly Mock<IValidator<OutputFileViewModel>> _validator;
 
         private const string ErrorMessageFromMediator = "Output file not available.";
         private const string DefaultContentType = "application/zip";
@@ -31,13 +34,19 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
         private const string TempDataKeyFailed = OutputFileController.OutputFileFailed;
         private const string TempDataKeyFailedMessage = OutputFileController.OutputFileFailed + ":Message";
         private const string ControllerDefaultErrorMessage = OutputFileController.OutputFileDefaultErrorMessage;
+        private OutputFileViewModel model = new OutputFileViewModel
+        {
+            
+        };
 
         public OutputFileControllerTests()
         {
             _fixture = new Fixture().Customize(new AutoMoqCustomization());
             _loggerMock = _fixture.Freeze<Mock<ILogger<OutputFileController>>>();
             _mediatorMock = _fixture.Freeze<Mock<IMediator>>();
-            _controller = new OutputFileController(_loggerMock.Object, _mediatorMock.Object);
+            _validator = _fixture.Create<Mock<IValidator<OutputFileViewModel>>>();
+
+            _controller = new OutputFileController(_loggerMock.Object, _mediatorMock.Object, _validator.Object);
 
             var httpContext = new DefaultHttpContext();
             _controller.ControllerContext = new ControllerContext { HttpContext = httpContext };
@@ -50,9 +59,9 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
             var t0 = DateTime.UtcNow;
             var logsIn = new List<QualificationOutputFileLog>
             {
-                new() { UserDisplayName = "Bob",   Timestamp = t0.AddMinutes(-1)  },
-                new() { UserDisplayName = "Alice", Timestamp = t0.AddMinutes(-10) },
-                new() { UserDisplayName = "Carol", Timestamp = t0.AddMinutes(-5)  }
+                new() { UserDisplayName = "Bob",   DownloadDate = t0.AddMinutes(-1), PublicationDate = t0.AddDays(3)  },
+                new() { UserDisplayName = "Alice", DownloadDate = t0.AddMinutes(-10), PublicationDate = t0.AddDays(4) },
+                new() { UserDisplayName = "Carol", DownloadDate = t0.AddMinutes(-5), PublicationDate = t0.AddDays(5)  }
             };
 
             var payload = new GetQualificationOutputFileLogResponse { OutputFileLogs = logsIn };
@@ -87,9 +96,9 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
                 {
                     var match = model.OutputFileLogs.Any(x =>
                         x.UserDisplayName == expected.UserDisplayName &&
-                        x.Timestamp == expected.Timestamp);
+                        x.DownloadDate == expected.DownloadDate);
 
-                    Assert.True(match, $"Expected log not found: {expected.UserDisplayName} @ {expected.Timestamp}");
+                    Assert.True(match, $"Expected log not found: {expected.UserDisplayName} @ {expected.DownloadDate}");
                 }
             });
         }
@@ -148,7 +157,7 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
                          .ReturnsAsync(mediatorResponse);
 
             // Act
-            var result = await _controller.GetOutputFile();
+            var result = await _controller.CreateOutputFile(model);
 
             // Assert
             Assert.Multiple(() =>
@@ -177,8 +186,9 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
             _mediatorMock.Setup(m => m.Send(It.IsAny<GetQualificationOutputFileQuery>(), It.IsAny<CancellationToken>()))
                          .ReturnsAsync(mediatorResponse);
 
+
             // Act
-            var result = await _controller.GetOutputFile();
+            var result = await _controller.CreateOutputFile(model);
 
             // Assert
             Assert.Multiple(() =>
@@ -209,7 +219,7 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
                          .ReturnsAsync(mediatorResponse);
 
             // Act
-            var result = await _controller.GetOutputFile();
+            var result = await _controller.CreateOutputFile(model);
 
             // Assert
             Assert.Multiple(() =>
@@ -245,7 +255,7 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
                          .ReturnsAsync(mediatorResponse);
 
             // Act
-            var result = await _controller.GetOutputFile();
+            var result = await _controller.CreateOutputFile(model);
 
             // Assert
             Assert.Multiple(() =>
@@ -277,7 +287,7 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
                          .ReturnsAsync(mediatorResponse);
 
             // Act
-            var result = await _controller.GetOutputFile();
+            var result = await _controller.CreateOutputFile(model);
 
             // Assert
             Assert.Multiple(() =>

@@ -38,7 +38,7 @@ namespace SFA.DAS.AODP.Application.Tests.Queries.Qualifications
             var request = _fixture.Create<GetQualificationOutputFileQuery>();
 
             _apiClient
-                .Setup(a => a.Get<BaseMediatrResponse<GetQualificationOutputFileResponse>>(
+                .Setup(a => a.PostWithResponseCode<BaseMediatrResponse<GetQualificationOutputFileResponse>>(
                     It.IsAny<GetQualificationOutputFileApiRequest>()))
                 .ReturnsAsync(outerEnvelope);
 
@@ -46,7 +46,7 @@ namespace SFA.DAS.AODP.Application.Tests.Queries.Qualifications
             var response = await _handler.Handle(request, default);
 
             // Assert
-            _apiClient.Verify(a => a.Get<BaseMediatrResponse<GetQualificationOutputFileResponse>>(
+            _apiClient.Verify(a => a.PostWithResponseCode<BaseMediatrResponse<GetQualificationOutputFileResponse>>(
                                    It.IsAny<GetQualificationOutputFileApiRequest>()),
                               Times.Once);
 
@@ -72,7 +72,7 @@ namespace SFA.DAS.AODP.Application.Tests.Queries.Qualifications
             var request = _fixture.Create<GetQualificationOutputFileQuery>();
 
             _apiClient
-                .Setup(a => a.Get<BaseMediatrResponse<GetQualificationOutputFileResponse>>(
+                .Setup(a => a.PostWithResponseCode<BaseMediatrResponse<GetQualificationOutputFileResponse>>(
                     It.IsAny<GetQualificationOutputFileApiRequest>()))
                 .ReturnsAsync(outerEnvelope);
 
@@ -95,7 +95,7 @@ namespace SFA.DAS.AODP.Application.Tests.Queries.Qualifications
             var request = _fixture.Create<GetQualificationOutputFileQuery>();
 
             _apiClient
-                .Setup(a => a.Get<BaseMediatrResponse<GetQualificationOutputFileResponse>>(
+                .Setup(a => a.PostWithResponseCode<BaseMediatrResponse<GetQualificationOutputFileResponse>>(
                     It.IsAny<GetQualificationOutputFileApiRequest>()))
                 .ThrowsAsync(expectedException);
 

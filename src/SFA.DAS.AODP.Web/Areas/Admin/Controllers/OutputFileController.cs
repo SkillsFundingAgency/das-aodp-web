@@ -1,9 +1,12 @@
-﻿using MediatR;
+﻿using FluentValidation;
+using FluentValidation.Results;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Web.Authentication;
+using SFA.DAS.AODP.Web.Extensions;
 using SFA.DAS.AODP.Web.Models.OutputFile;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
@@ -22,31 +25,45 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
             @"There is no data available to create an output file for this cycle because no applications have been reviewed yet. 
 
             Try again when you've processed one or more applications.";
+        private readonly IValidator<OutputFileViewModel> _outputModelValidator;
 
-        public OutputFileController(ILogger<OutputFileController> logger, IMediator mediator) : base(mediator, logger)
-        { }
+        public OutputFileController(ILogger<OutputFileController> logger, IMediator mediator, IValidator<OutputFileViewModel> validator) : base(mediator, logger)
+        { 
+            _outputModelValidator = validator;
+        }
 
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var logsEnvelope = await _mediator.Send(new GetQualificationOutputFileLogQuery());
-            var logs = logsEnvelope.Value?.OutputFileLogs ?? Enumerable.Empty<GetQualificationOutputFileLogResponse.QualificationOutputFileLog>();
-            var viewModel = new OutputFileViewModel
-            {
-                OutputFileLogs = logs.Select(x => new OutputFileLogModel
-                {
-                    UserDisplayName = x.UserDisplayName,
-                    Timestamp = x.Timestamp
-                }).ToList()
-            };
-
-            return View(viewModel);
+            return View(await BuildIndexViewModelAsync());
         }
 
-        [HttpGet("outputfile")]
-        public async Task<IActionResult> GetOutputFile()
-        { 
-            var result = await _mediator.Send(new GetQualificationOutputFileQuery(HttpContext.User?.Identity?.Name!));
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateOutputFile(
+            OutputFileViewModel vm)
+        {
+            ValidationResult validation = await _outputModelValidator.ValidateAsync(vm);
+
+            if (!validation.IsValid)
+            {
+                validation.AddToModelState(ModelState);
+
+                var viewModel = await BuildIndexViewModelAsync();
+                viewModel.DateChoice = vm.DateChoice;
+                viewModel.Day = vm.Day;
+                viewModel.Month = vm.Month;
+                viewModel.Year = vm.Year;
+
+                return View("Index", viewModel);
+            }
+
+            DateTime publicationDate = vm.DateChoice == PublicationDateMode.Today
+                ? DateTime.UtcNow.Date
+                : (vm.ParseDate(out var parsed) ? parsed : DateTime.UtcNow.Date);
+
+            var result = await _mediator.Send(
+                new GetQualificationOutputFileQuery(HttpContext.User?.Identity?.Name!, publicationDate));
 
             if (result == null || !result.Success)
             {
@@ -66,5 +83,23 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
 
             return File(bytes, contentType, fileName);
         }
+
+        private async Task<OutputFileViewModel> BuildIndexViewModelAsync()
+        {
+            var logsEnvelope = await _mediator.Send(new GetQualificationOutputFileLogQuery());
+            var logs = logsEnvelope.Value?.OutputFileLogs 
+                ?? Enumerable.Empty<GetQualificationOutputFileLogResponse.QualificationOutputFileLog>();
+            
+            return new OutputFileViewModel
+            {
+                OutputFileLogs = logs.Select(x => new OutputFileLogModel
+                {
+                    UserDisplayName = x.UserDisplayName,
+                    DownloadDate = x.DownloadDate,
+                    PublicationDate = x.PublicationDate
+                }).ToList()
+            };
+        }
+
     }
 }
