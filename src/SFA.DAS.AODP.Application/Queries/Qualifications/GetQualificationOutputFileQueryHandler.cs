@@ -32,7 +32,7 @@ namespace SFA.DAS.AODP.Application.Queries.Qualifications
                 }
                 
                 if (!result.Success || result.Value is null ||
-                    result.Value.ZipFileContent is null || result.Value.ZipFileContent.Length == 0)
+                    result.Value.FileContent is null || result.Value.FileContent.Length == 0)
                 {
                     return new BaseMediatrResponse<GetQualificationOutputFileResponse>
                     {

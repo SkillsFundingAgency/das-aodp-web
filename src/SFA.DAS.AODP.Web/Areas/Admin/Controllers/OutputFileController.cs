@@ -77,9 +77,9 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var bytes = result.Value.ZipFileContent;
-            var contentType = string.IsNullOrWhiteSpace(result.Value.ContentType) ? "application/zip" : result.Value.ContentType;
-            var fileName = string.IsNullOrWhiteSpace(result.Value.FileName) ? "export.zip" : result.Value.FileName;
+            var bytes = result.Value.FileContent;
+            var contentType = string.IsNullOrWhiteSpace(result.Value.ContentType) ? "text/csv" : result.Value.ContentType;
+            var fileName = string.IsNullOrWhiteSpace(result.Value.FileName) ? "export.csv" : result.Value.FileName;
 
             return File(bytes, contentType, fileName);
         }

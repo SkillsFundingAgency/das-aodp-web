@@ -27,10 +27,9 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
         private readonly Mock<IValidator<OutputFileViewModel>> _validator;
 
         private const string ErrorMessageFromMediator = "Output file not available.";
-        private const string DefaultContentType = "application/zip";
-        private const string DefaultFileName = "export.zip";
+        private const string DefaultContentType = "text/csv";
+        private const string DefaultFileName = "export.csv";
         private const string TestUser = "import.user@example.com";
-        private const string TestFileName = "qualifications_export.zip";
         private const string TempDataKeyFailed = OutputFileController.OutputFileFailed;
         private const string TempDataKeyFailedMessage = OutputFileController.OutputFileFailed + ":Message";
         private const string ControllerDefaultErrorMessage = OutputFileController.OutputFileDefaultErrorMessage;
@@ -143,8 +142,8 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
 
             var bytes = new byte[] { 1, 2, 3 };
             var payload = _fixture.Build<GetQualificationOutputFileResponse>()
-                                  .With(p => p.FileName, TestFileName)
-                                  .With(p => p.ZipFileContent, bytes)
+                                  .With(p => p.FileName, DefaultFileName)
+                                  .With(p => p.FileContent, bytes)
                                   .With(p => p.ContentType, DefaultContentType)
                                   .Create();
 
@@ -165,7 +164,7 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
                 var file = result as FileContentResult;
                 Assert.NotNull(file);
                 Assert.Equal(DefaultContentType, file!.ContentType);
-                Assert.Equal(TestFileName, file.FileDownloadName);
+                Assert.Equal(DefaultFileName, file.FileDownloadName);
                 Assert.Equal(bytes, file.FileContents);
             });
         }
@@ -241,7 +240,7 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
             var bytes = new byte[] { 9, 9, 9 };
             var payload = _fixture.Build<GetQualificationOutputFileResponse>()
                                   .With(p => p.FileName, " ")
-                                  .With(p => p.ZipFileContent, bytes)
+                                  .With(p => p.FileContent, bytes)
                                   .With(p => p.ContentType, string.Empty)
                                   .Create();
 
