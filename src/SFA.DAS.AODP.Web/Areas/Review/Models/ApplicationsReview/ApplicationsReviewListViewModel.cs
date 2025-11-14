@@ -15,6 +15,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
         public string? AwardingOrganisationSearch { get; set; }
         public List<ApplicationStatus> Status { get; set; }
         public string UserType { get; set; }
+        public string FindRegulatedQualificationUrl { get; set; } = string.Empty;
 
         public class Application
         {
@@ -28,6 +29,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
             public bool NewMessage { get; set; }
             public string? AwardingOrganisation { get; set; }
             public Guid ApplicationReviewId { get; set; }
+            public string FindRegulatedQualificationUrl { get; set; } = string.Empty;
 
 
         }
@@ -48,7 +50,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
                     Status = application.Status,
                     AwardingOrganisation = application.AwardingOrganisation,
                     NewMessage = application.NewMessage,
-                    ApplicationReviewId = application.ApplicationReviewId
+                    ApplicationReviewId = application.ApplicationReviewId,
+                    FindRegulatedQualificationUrl = application.FindRegulatedQualificationUrl
                 });
             }
         }

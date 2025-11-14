@@ -17,5 +17,8 @@ public static class AddConfigurationOptionsExtension
 
         services.Configure<BlobStorageSettings>(configuration.GetSection("BlobStorageSettings"));
         services.AddSingleton(cfg => cfg.GetRequiredService<IOptions<BlobStorageSettings>>().Value);
+
+        services.Configure<AodpConfiguration>(configuration);
+        services.AddSingleton(cfg => cfg.GetRequiredService<IOptions<AodpConfiguration>>().Value);
     }
 }

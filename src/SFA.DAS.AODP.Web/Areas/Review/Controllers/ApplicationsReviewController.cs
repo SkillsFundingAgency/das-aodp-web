@@ -1,18 +1,20 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using SFA.DAS.AODP.Application.Queries.Application.Form;
+using SFA.DAS.AODP.Application.Queries.Review;
+using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Application;
+using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApproval;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.User;
-using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
-using SFA.DAS.AODP.Infrastructure.File;
-using SFA.DAS.AODP.Application.Queries.Application.Form;
-using SFA.DAS.AODP.Application.Queries.Review;
 using System.IO.Compression;
+using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 {
@@ -27,11 +29,14 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         private readonly IUserHelperService _userHelperService;
         private readonly UserType UserType;
         private readonly IFileService _fileService;
-        public ApplicationsReviewController(ILogger<ApplicationsReviewController> logger, IMediator mediator, IUserHelperService userHelperService, IFileService fileService) : base(mediator, logger)
+        private readonly IOptions<AodpConfiguration> _aodpConfiguration;
+
+        public ApplicationsReviewController(ILogger<ApplicationsReviewController> logger, IMediator mediator, IUserHelperService userHelperService, IFileService fileService, IOptions<AodpConfiguration> aodpConfiguration) : base(mediator, logger)
         {
             _userHelperService = userHelperService;
             UserType = userHelperService.GetUserType();
             _fileService = fileService;
+            _aodpConfiguration = aodpConfiguration;
         }
 
         [Route("review/application-reviews")]
@@ -46,7 +51,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 ApplicationSearch = model.ApplicationSearch,
                 AwardingOrganisationSearch = model.AwardingOrganisationSearch,
                 Limit = model.ItemsPerPage,
-                Offset = model.ItemsPerPage * (model.Page - 1)
+                Offset = model.ItemsPerPage * (model.Page - 1),
+                FindRegulatedQualificationUrl = model.FindRegulatedQualificationUrl = _aodpConfiguration.Value.FindRegulatedQualificationUrl
 
             });
 

@@ -21,6 +21,8 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
         public JobStatusViewModel JobStatusViewModel { get; set; }
         public List<ProcessStatus> ProcessStatuses { get; set; } = new List<ProcessStatus>();
 
+        public string FindRegulatedQualificationUrl { get; set; } = string.Empty;
+
         public class ProcessStatus
         {
             public Guid Id { get; set; }
@@ -37,9 +39,10 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
             }
         }
 
-        public static NewQualificationsViewModel Map(GetNewQualificationsQueryResponse response, List<GetProcessStatusesQueryResponse.ProcessStatus> processStatuses, string organisation = "", string qan = "", string name = "")
+        public static NewQualificationsViewModel Map(GetNewQualificationsQueryResponse response, List<GetProcessStatusesQueryResponse.ProcessStatus> processStatuses, string organisation = "", string qan = "", string name = "", string findRegulatedQualificationUrl = "")
         {
             var viewModel = new NewQualificationsViewModel();
+            viewModel.FindRegulatedQualificationUrl = findRegulatedQualificationUrl;
             viewModel.PaginationViewModel = new PaginationViewModel(response.TotalRecords, response.Skip, response.Take);
             viewModel.NewQualifications = response.Data.Select(s => new NewQualificationViewModel()
             {
