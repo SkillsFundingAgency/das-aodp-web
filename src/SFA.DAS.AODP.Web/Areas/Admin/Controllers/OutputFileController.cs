@@ -5,7 +5,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Infrastructure.Cache;
 using SFA.DAS.AODP.Web.Authentication;
+using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Extensions;
 using SFA.DAS.AODP.Web.Models.OutputFile;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
@@ -16,7 +18,7 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
     [Authorize(Policy = PolicyConstants.IsAdminImportUser)]
     public class OutputFileController : ControllerBase
     {
-        public const string OutputFileFailed = "OutputFileFailed";
+        #region Success and Failure Messaging
         public const string OutputFileDefaultErrorMessage =
             @"Something went wrong while generating the output file.
 
@@ -25,11 +27,18 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
             @"There is no data available to create an output file for this cycle because no applications have been reviewed yet. 
 
             Try again when you've processed one or more applications.";
-        private readonly IValidator<OutputFileViewModel> _outputModelValidator;
 
-        public OutputFileController(ILogger<OutputFileController> logger, IMediator mediator, IValidator<OutputFileViewModel> validator) : base(mediator, logger)
+        public const string OutputFileSuccessMessage = "Your file has been downloaded";
+
+        #endregion
+
+        private readonly IValidator<OutputFileViewModel> _outputModelValidator;
+        private readonly ICacheService _cacheService;
+
+        public OutputFileController(ILogger<OutputFileController> logger, IMediator mediator, IValidator<OutputFileViewModel> validator, ICacheService cacheService) : base(mediator, logger)
         { 
             _outputModelValidator = validator;
+            _cacheService = cacheService;
         }
 
         [HttpGet]
@@ -67,9 +76,9 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
 
             if (result == null || !result.Success)
             {
-                TempData[OutputFileFailed] = true;
+                TempData[OutputFileTempDataKeys.Failed] = true;
 
-                TempData[$"{OutputFileFailed}:Message"] =
+                TempData[OutputFileTempDataKeys.FailedMessage] =
                     result?.ErrorCode == ErrorCodes.NoData
                     ? OutputFileNoDataErrorMessage
                     : OutputFileDefaultErrorMessage;
@@ -77,11 +86,27 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            var bytes = result.Value.FileContent;
-            var contentType = string.IsNullOrWhiteSpace(result.Value.ContentType) ? "text/csv" : result.Value.ContentType;
-            var fileName = string.IsNullOrWhiteSpace(result.Value.FileName) ? "export.csv" : result.Value.FileName;
+            var token = Guid.NewGuid().ToString("n");
+            await _cacheService.SetAsync($"download:{token}", result.Value); 
 
-            return File(bytes, contentType, fileName);
+            TempData[OutputFileTempDataKeys.Success] = true;
+            TempData[OutputFileTempDataKeys.SuccessMessage] = OutputFileSuccessMessage;
+            TempData[OutputFileTempDataKeys.SuccessToken] = token;
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Download(string token)
+        {
+            if (string.IsNullOrWhiteSpace(token)) return NotFound();
+
+            var file = await _cacheService.GetAsync<GetQualificationOutputFileResponse>($"download:{token}");
+            if (file is null) return NotFound();
+
+             await _cacheService.RemoveAsync($"download:{token}");
+
+            return File(file.FileContent, file.ContentType, file.FileName);
         }
 
         private async Task<OutputFileViewModel> BuildIndexViewModelAsync()

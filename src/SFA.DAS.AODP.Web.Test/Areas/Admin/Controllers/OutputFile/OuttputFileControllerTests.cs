@@ -1,6 +1,6 @@
-﻿using System.Security.Claims;
-using AutoFixture;
+﻿using AutoFixture;
 using AutoFixture.AutoMoq;
+using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -9,12 +9,12 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Infrastructure.Cache;
 using SFA.DAS.AODP.Web.Areas.Admin.Controllers;
+using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Models.OutputFile;
+using System.Security.Claims;
 using static SFA.DAS.AODP.Application.Queries.Qualifications.GetQualificationOutputFileLogResponse;
-using SFA.DAS.AODP.Web.Enums;
-using SFA.DAS.AODP.Web.Models.GdsComponents;
-using FluentValidation;
 
 namespace SFA.DAS.AODP.Web.Test.Controllers
 {
@@ -25,17 +25,19 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
         private readonly Mock<IMediator> _mediatorMock;
         private readonly OutputFileController _controller;
         private readonly Mock<IValidator<OutputFileViewModel>> _validator;
+        private readonly Mock<ICacheService> _cacheService;
 
         private const string ErrorMessageFromMediator = "Output file not available.";
         private const string DefaultContentType = "text/csv";
         private const string DefaultFileName = "export.csv";
         private const string TestUser = "import.user@example.com";
-        private const string TempDataKeyFailed = OutputFileController.OutputFileFailed;
-        private const string TempDataKeyFailedMessage = OutputFileController.OutputFileFailed + ":Message";
         private const string ControllerDefaultErrorMessage = OutputFileController.OutputFileDefaultErrorMessage;
         private OutputFileViewModel model = new OutputFileViewModel
         {
-            
+            DateChoice = PublicationDateMode.Today,
+            Day = DateTime.UtcNow.Day,
+            Month = DateTime.UtcNow.Month,
+            Year = DateTime.UtcNow.Year
         };
 
         public OutputFileControllerTests()
@@ -44,8 +46,9 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
             _loggerMock = _fixture.Freeze<Mock<ILogger<OutputFileController>>>();
             _mediatorMock = _fixture.Freeze<Mock<IMediator>>();
             _validator = _fixture.Create<Mock<IValidator<OutputFileViewModel>>>();
+            _cacheService = _fixture.Create<Mock<ICacheService>>();
 
-            _controller = new OutputFileController(_loggerMock.Object, _mediatorMock.Object, _validator.Object);
+            _controller = new OutputFileController(_loggerMock.Object, _mediatorMock.Object, _validator.Object, _cacheService.Object);
 
             var httpContext = new DefaultHttpContext();
             _controller.ControllerContext = new ControllerContext { HttpContext = httpContext };
@@ -135,114 +138,19 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
         }
 
         [Fact]
-        public async Task GetOutputFile_ReturnsFile_WhenQuerySucceeds()
+        public async Task CreateOutputFile_OnSuccess_CachesFile_SetsSuccessTempData_AndRedirectsToIndex()
         {
             // Arrange
             SetUserOnController(_controller, TestUser);
-
-            var bytes = new byte[] { 1, 2, 3 };
-            var payload = _fixture.Build<GetQualificationOutputFileResponse>()
-                                  .With(p => p.FileName, DefaultFileName)
-                                  .With(p => p.FileContent, bytes)
-                                  .With(p => p.ContentType, DefaultContentType)
-                                  .Create();
-
-            var mediatorResponse = _fixture.Build<BaseMediatrResponse<GetQualificationOutputFileResponse>>()
-                                           .With(r => r.Success, true)
-                                           .With(r => r.Value, payload)
-                                           .Create();
-
-            _mediatorMock.Setup(m => m.Send(It.IsAny<GetQualificationOutputFileQuery>(), It.IsAny<CancellationToken>()))
-                         .ReturnsAsync(mediatorResponse);
-
-            // Act
-            var result = await _controller.CreateOutputFile(model);
-
-            // Assert
-            Assert.Multiple(() =>
-            {
-                var file = result as FileContentResult;
-                Assert.NotNull(file);
-                Assert.Equal(DefaultContentType, file!.ContentType);
-                Assert.Equal(DefaultFileName, file.FileDownloadName);
-                Assert.Equal(bytes, file.FileContents);
-            });
-        }
-
-        [Fact]
-        public async Task GetOutputFile_Failure_SetsTempData_AndRedirectsToIndex()
-        {
-            // Arrange
             SetTempData(_controller);
 
-            var mediatorResponse = _fixture.Build<BaseMediatrResponse<GetQualificationOutputFileResponse>>()
-                                           .With(r => r.Success, false)
-                                           .With(r => r.ErrorMessage, ErrorMessageFromMediator)
-                                           .With(r => r.ErrorCode, ErrorCodes.UnexpectedError)
-                                           .With(r => r.Value, (GetQualificationOutputFileResponse?)null)
-                                           .Create();
-
-            _mediatorMock.Setup(m => m.Send(It.IsAny<GetQualificationOutputFileQuery>(), It.IsAny<CancellationToken>()))
-                         .ReturnsAsync(mediatorResponse);
-
-
-            // Act
-            var result = await _controller.CreateOutputFile(model);
-
-            // Assert
-            Assert.Multiple(() =>
+            var fileBytes = new byte[] { 1, 2, 3 };
+            var payload = new GetQualificationOutputFileResponse
             {
-                var redirect = result as RedirectToActionResult;
-                Assert.NotNull(redirect);
-                Assert.Equal(nameof(OutputFileController.Index), redirect!.ActionName);
-
-                Assert.True((bool)_controller.TempData[TempDataKeyFailed]!);
-                Assert.Equal(OutputFileController.OutputFileDefaultErrorMessage, _controller.TempData[TempDataKeyFailedMessage]);
-            });
-        }
-
-        [Fact]
-        public async Task GetOutputFile_Failure_WithNullMessage_UsesDefaultText_AndRedirects()
-        {
-            // Arrange
-            SetTempData(_controller);
-
-            var mediatorResponse = _fixture.Build<BaseMediatrResponse<GetQualificationOutputFileResponse>>()
-                                           .With(r => r.Success, false)
-                                           .With(r => r.ErrorMessage, (string?)null)
-                                           .With(r => r.ErrorCode, (string?)null)
-                                           .With(r => r.Value, (GetQualificationOutputFileResponse?)null)
-                                           .Create();
-
-            _mediatorMock.Setup(m => m.Send(It.IsAny<GetQualificationOutputFileQuery>(), It.IsAny<CancellationToken>()))
-                         .ReturnsAsync(mediatorResponse);
-
-            // Act
-            var result = await _controller.CreateOutputFile(model);
-
-            // Assert
-            Assert.Multiple(() =>
-            {
-                var redirect = result as RedirectToActionResult;
-                Assert.NotNull(redirect);
-                Assert.Equal(nameof(OutputFileController.Index), redirect!.ActionName);
-                Assert.True((bool)_controller.TempData[TempDataKeyFailed]!);
-                Assert.Equal(OutputFileController.OutputFileDefaultErrorMessage, _controller.TempData[TempDataKeyFailedMessage]);
-            });
-        }
-
-        [Fact]
-        public async Task GetOutputFile_DefaultsContentTypeAndFileName_WhenMissing()
-        {
-            // Arrange
-            SetUserOnController(_controller, TestUser);
-
-            var bytes = new byte[] { 9, 9, 9 };
-            var payload = _fixture.Build<GetQualificationOutputFileResponse>()
-                                  .With(p => p.FileName, " ")
-                                  .With(p => p.FileContent, bytes)
-                                  .With(p => p.ContentType, string.Empty)
-                                  .Create();
+                FileName = DefaultFileName,
+                FileContent = fileBytes,
+                ContentType = DefaultContentType
+            };
 
             var mediatorResponse = new BaseMediatrResponse<GetQualificationOutputFileResponse>
             {
@@ -250,8 +158,22 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
                 Value = payload
             };
 
-            _mediatorMock.Setup(m => m.Send(It.IsAny<GetQualificationOutputFileQuery>(), It.IsAny<CancellationToken>()))
-                         .ReturnsAsync(mediatorResponse);
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetQualificationOutputFileQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mediatorResponse);
+
+            // Capture cache call
+            string? cachedKey = null;
+            GetQualificationOutputFileResponse? cachedFile = null;
+
+            _cacheService
+                .Setup(c => c.SetAsync(It.IsAny<string>(), It.IsAny<GetQualificationOutputFileResponse>()))
+                .Callback<string, GetQualificationOutputFileResponse>((key, value) =>
+                {
+                    cachedKey = key;
+                    cachedFile = value;
+                })
+                .Returns(Task.CompletedTask);
 
             // Act
             var result = await _controller.CreateOutputFile(model);
@@ -259,17 +181,31 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
             // Assert
             Assert.Multiple(() =>
             {
-                var file = result as FileContentResult;
-                Assert.NotNull(file);
+                // 1️⃣ Redirect back to Index
+                var redirect = Assert.IsType<RedirectToActionResult>(result);
+                Assert.Equal(nameof(OutputFileController.Index), redirect.ActionName);
 
-                Assert.Equal(DefaultContentType, file!.ContentType);
-                Assert.Equal(DefaultFileName, file.FileDownloadName);
-                Assert.Equal(bytes, file.FileContents);
+                // 2️⃣ Mediator called correctly
+                _mediatorMock.Verify(m => m.Send(It.IsAny<GetQualificationOutputFileQuery>(), It.IsAny<CancellationToken>()), Times.Once);
+
+                // 3️⃣ File cached with expected data
+                Assert.NotNull(cachedKey);
+                Assert.StartsWith("download:", cachedKey);
+                Assert.NotNull(cachedFile);
+                Assert.Equal(DefaultFileName, cachedFile!.FileName);
+                Assert.Equal(DefaultContentType, cachedFile.ContentType);
+                Assert.Equal(fileBytes, cachedFile.FileContent);
+
+                // 4️⃣ TempData success keys set correctly
+                Assert.True((bool)_controller.TempData[OutputFileTempDataKeys.Success]!);
+                Assert.Equal(OutputFileController.OutputFileSuccessMessage,
+                    _controller.TempData[OutputFileTempDataKeys.SuccessMessage]);
+                Assert.NotNull(_controller.TempData[OutputFileTempDataKeys.SuccessToken]);
             });
         }
 
         [Fact]
-        public async Task GetOutputFile_NoDataErrorCode_SetsNoDataMessageAndRedirects()
+        public async Task CreateOutputFile_WhenMediatorReturnsNoData_SetsFailureTempData_AndRedirectsToIndex()
         {
             // Arrange
             SetTempData(_controller);
@@ -278,12 +214,12 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
             {
                 Success = false,
                 ErrorCode = ErrorCodes.NoData,
-                ErrorMessage = "ignored",
-                Value = new GetQualificationOutputFileResponse()
+                ErrorMessage = "ignored"
             };
 
-            _mediatorMock.Setup(m => m.Send(It.IsAny<GetQualificationOutputFileQuery>(), It.IsAny<CancellationToken>()))
-                         .ReturnsAsync(mediatorResponse);
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetQualificationOutputFileQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mediatorResponse);
 
             // Act
             var result = await _controller.CreateOutputFile(model);
@@ -291,12 +227,174 @@ namespace SFA.DAS.AODP.Web.Test.Controllers
             // Assert
             Assert.Multiple(() =>
             {
-                var redirect = result as RedirectToActionResult;
-                Assert.NotNull(redirect);
-                Assert.Equal(nameof(OutputFileController.Index), redirect!.ActionName);
+                // Redirects to Index
+                var redirect = Assert.IsType<RedirectToActionResult>(result);
+                Assert.Equal(nameof(OutputFileController.Index), redirect.ActionName);
 
-                Assert.True((bool)_controller.TempData[OutputFileController.OutputFileFailed]!);
-                Assert.Equal(OutputFileController.OutputFileNoDataErrorMessage, _controller.TempData[$"{OutputFileController.OutputFileFailed}:Message"]);
+                // Sets TempData failure flags
+                Assert.True((bool)_controller.TempData[OutputFileTempDataKeys.Failed]!);
+                Assert.Equal(OutputFileController.OutputFileNoDataErrorMessage,
+                    _controller.TempData[OutputFileTempDataKeys.FailedMessage]);
+
+                // No file cached on failure
+                _cacheService.Verify(c =>
+                    c.SetAsync(It.IsAny<string>(), It.IsAny<GetQualificationOutputFileResponse>()),
+                    Times.Never);
+            });
+
+            // Mediator called exactly once
+            _mediatorMock.Verify(m => m.Send(It.IsAny<GetQualificationOutputFileQuery>(), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task CreateOutputFile_WhenMediatorReturnsUnexpectedError_SetsDefaultFailureTempData_AndRedirectsToIndex()
+        {
+            // Arrange
+            SetTempData(_controller);
+
+            var mediatorResponse = new BaseMediatrResponse<GetQualificationOutputFileResponse>
+            {
+                Success = false,
+                ErrorCode = ErrorCodes.UnexpectedError,
+                ErrorMessage = "Some server failure"
+            };
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetQualificationOutputFileQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(mediatorResponse);
+
+            // Act
+            var result = await _controller.CreateOutputFile(model);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                // Redirects back to Index
+                var redirect = Assert.IsType<RedirectToActionResult>(result);
+                Assert.Equal(nameof(OutputFileController.Index), redirect.ActionName);
+
+                // Sets TempData failure flags with default error text
+                Assert.True((bool)_controller.TempData[OutputFileTempDataKeys.Failed]!);
+                Assert.Equal(OutputFileController.OutputFileDefaultErrorMessage,
+                    _controller.TempData[OutputFileTempDataKeys.FailedMessage]);
+
+                // No file cached
+                _cacheService.Verify(c =>
+                    c.SetAsync(It.IsAny<string>(), It.IsAny<GetQualificationOutputFileResponse>()),
+                    Times.Never);
+            });
+
+            // Mediator called once
+            _mediatorMock.Verify(m =>
+                m.Send(It.IsAny<GetQualificationOutputFileQuery>(), It.IsAny<CancellationToken>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task CreateOutputFile_WhenModelValidationFails_ReturnsIndexView_WithValidationErrors()
+        {
+            // Arrange
+            SetTempData(_controller);
+
+            var validationFailures = new List<FluentValidation.Results.ValidationFailure>
+            {
+                new("DateChoice", "You must select a date option."),
+                new("Day", "Day is required.")
+            };
+
+            var validationResult = new FluentValidation.Results.ValidationResult(validationFailures);
+
+            _validator
+                .Setup(v => v.ValidateAsync(It.IsAny<OutputFileViewModel>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(validationResult);
+
+            // Act
+            var result = await _controller.CreateOutputFile(model);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                // Returns Index view (not redirect)
+                var view = Assert.IsType<ViewResult>(result);
+                Assert.Equal("Index", view.ViewName);
+
+                // ModelState contains expected errors
+                Assert.False(_controller.ModelState.IsValid);
+                Assert.True(_controller.ModelState.ContainsKey("DateChoice"));
+                Assert.True(_controller.ModelState.ContainsKey("Day"));
+
+                // Mediator not called
+                _mediatorMock.Verify(m =>
+                    m.Send(It.IsAny<GetQualificationOutputFileQuery>(), It.IsAny<CancellationToken>()),
+                    Times.Never);
+
+                // No file cached
+                _cacheService.Verify(c =>
+                    c.SetAsync(It.IsAny<string>(), It.IsAny<GetQualificationOutputFileResponse>()),
+                    Times.Never);
+            });
+        }
+
+        [Fact]
+        public async Task Download_WhenCacheMiss_ReturnsNotFound()
+        {
+            // Arrange
+            const string token = "missingtoken123";
+            _cacheService
+                .Setup(c => c.GetAsync<GetQualificationOutputFileResponse>($"download:{token}"))
+                .ReturnsAsync((GetQualificationOutputFileResponse?)null);
+
+            // Act
+            var result = await _controller.Download(token);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                // Returns NotFound
+                Assert.IsType<NotFoundResult>(result);
+
+                // Cache not removed
+                _cacheService.Verify(c => c.RemoveAsync(It.IsAny<string>()), Times.Never);
+
+                // Mediator not called
+                _mediatorMock.Verify(m => m.Send(It.IsAny<GetQualificationOutputFileQuery>(), It.IsAny<CancellationToken>()), Times.Never);
+            });
+        }
+
+        [Fact]
+        public async Task Download_WhenCacheHit_ReturnsFile_AndRemovesFromCache()
+        {
+            // Arrange
+            const string token = "validtoken456";
+
+            var file = new GetQualificationOutputFileResponse
+            {
+                FileName = DefaultFileName,
+                ContentType = DefaultContentType,
+                FileContent = new byte[] { 1, 2, 3 }
+            };
+
+            _cacheService
+                .Setup(c => c.GetAsync<GetQualificationOutputFileResponse>($"download:{token}"))
+                .ReturnsAsync(file);
+
+            // Act
+            var result = await _controller.Download(token);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                // Correct result type and headers
+                var fileResult = Assert.IsType<FileContentResult>(result);
+                Assert.Equal(DefaultContentType, fileResult.ContentType);
+                Assert.Equal(DefaultFileName, fileResult.FileDownloadName);
+                Assert.Equal(file.FileContent, fileResult.FileContents);
+
+                // Cache cleaned up
+                _cacheService.Verify(c => c.RemoveAsync($"download:{token}"), Times.Once);
+
+                // Mediator untouched
+                _mediatorMock.Verify(m => m.Send(It.IsAny<GetQualificationOutputFileQuery>(), It.IsAny<CancellationToken>()), Times.Never);
             });
         }
 
