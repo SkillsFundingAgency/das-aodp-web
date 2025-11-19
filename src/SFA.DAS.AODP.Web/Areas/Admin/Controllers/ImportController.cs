@@ -42,7 +42,7 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
             }
 
             if (!string.IsNullOrWhiteSpace(viewModel?.ImportType) &&
-                string.Equals(viewModel.ImportType.Trim(), "Upload defunding list", StringComparison.OrdinalIgnoreCase))
+                string.Equals(viewModel.ImportType.Trim(), "Defunding list", StringComparison.OrdinalIgnoreCase))
             {
                 return RedirectToAction("Index", "Import", new { area = "Import" });
             }

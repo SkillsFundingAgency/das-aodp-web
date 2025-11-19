@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.Import;
-using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Web.Areas.Import.Models;
 using SFA.DAS.AODP.Web.Authentication;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
@@ -14,14 +13,10 @@ namespace SFA.DAS.AODP.Web.Areas.Import.Controllers;
 [Route("import")]
 public class ImportController : ControllerBase
 {
-    private readonly IFileService _fileService;
-
     public ImportController(
         IMediator mediator,
-        ILogger<ImportController> logger,
-        IFileService fileService) : base(mediator, logger)
+        ILogger<ImportController> logger) : base(mediator, logger)
     {
-        _fileService = fileService;
     }
 
     [HttpGet("defunding-list")]

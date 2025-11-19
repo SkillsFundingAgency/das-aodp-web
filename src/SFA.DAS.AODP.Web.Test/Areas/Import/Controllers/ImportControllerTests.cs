@@ -6,7 +6,6 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.Import;
-using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Web.Areas.Import.Controllers;
 using SFA.DAS.AODP.Web.Areas.Import.Models;
 
@@ -21,22 +20,11 @@ public class ImportControllerTests
     private readonly Mock<IMediator> mediator = new();
     private readonly Mock<ILogger<ImportController>> logger = new();
 
-    private static IFormFile CreateFormFile(string fileName, byte[] content)
-    {
-        var stream = new MemoryStream(content);
-        return new FormFile(stream, 0, stream.Length, "File", fileName)
-        {
-            Headers = new HeaderDictionary(),
-            ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        };
-    }
-
     [Fact]
     public void When_GetIndexView_ShouldReturnIndexView()
     {
         // Arrange
-        var fileService = new Mock<IFileService>();
-        var controller = new ImportController(mediator.Object, logger.Object, fileService.Object);
+        var controller = new ImportController(mediator.Object, logger.Object);
 
         // Act
         var result = controller.Index();
@@ -50,8 +38,7 @@ public class ImportControllerTests
     public async Task When_Post_Index_ModelStateInvalid_Should_Return_IndexViewWithModel()
     {
         // Arrange
-        var fileService = new Mock<IFileService>();
-        var controller = new ImportController(mediator.Object, logger.Object, fileService.Object);
+        var controller = new ImportController(mediator.Object, logger.Object);
 
         var model = new UploadDefundingListViewModel();
         controller.ModelState.AddModelError("some", "some error");
@@ -69,8 +56,7 @@ public class ImportControllerTests
     public async Task When_Post_Index_FileNull_Should_Return_IndexViewWithModelError()
     {
         // Arrange
-        var fileService = new Mock<IFileService>();
-        var controller = new ImportController(mediator.Object, logger.Object, fileService.Object);
+        var controller = new ImportController(mediator.Object, logger.Object);
 
         var model = new UploadDefundingListViewModel
         {
@@ -92,8 +78,7 @@ public class ImportControllerTests
     public async Task When_Post_Index_FileLengthZero_Should_Return_IndexViewWithModelError()
     {
         // Arrange
-        var fileService = new Mock<IFileService>();
-        var controller = new ImportController(mediator.Object, logger.Object, fileService.Object);
+        var controller = new ImportController(mediator.Object, logger.Object);
 
         var emptyFile = CreateFormFile("test.xlsx", Array.Empty<byte>());
 
@@ -117,8 +102,7 @@ public class ImportControllerTests
     public async Task When_Post_Index_WrongExtension_Should_Returns_IndexViewWithModelError()
     {
         // Arrange
-        var fileService = new Mock<IFileService>();
-        var controller = new ImportController(mediator.Object, logger.Object, fileService.Object);
+        var controller = new ImportController(mediator.Object, logger.Object);
 
         var txtFile = CreateFormFile("test.txt", new byte[] { 1, 2, 3 });
 
@@ -152,8 +136,7 @@ public class ImportControllerTests
             .Setup(m => m.Send(It.IsAny<ImportDefundingListCommand>(), default))
             .ReturnsAsync(msgResponse);
 
-        var fileService = new Mock<IFileService>();
-        var controller = new ImportController(mediator.Object, logger.Object, fileService.Object);
+        var controller = new ImportController(mediator.Object, logger.Object);
 
         var xlsxFile = CreateFormFile("list.xlsx", new byte[] { 1, 2, 3 });
 
@@ -182,8 +165,7 @@ public class ImportControllerTests
             .Setup(m => m.Send(It.IsAny<object>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("error"));
 
-        var fileService = new Mock<IFileService>();
-        var controller = new ImportController(mediator.Object, logger.Object, fileService.Object);
+        var controller = new ImportController(mediator.Object, logger.Object);
 
         var xlsxFile = CreateFormFile("list.xlsx", new byte[] { 1, 2, 3 });
 
@@ -202,5 +184,15 @@ public class ImportControllerTests
         Assert.True(controller.ModelState.ContainsKey(string.Empty));
         var entry = controller.ModelState[string.Empty];
         Assert.Contains(entry.Errors, e => e.ErrorMessage.Contains("unexpected", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static IFormFile CreateFormFile(string fileName, byte[] content)
+    {
+        var stream = new MemoryStream(content);
+        return new FormFile(stream, 0, stream.Length, "File", fileName)
+        {
+            Headers = new HeaderDictionary(),
+            ContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        };
     }
 }

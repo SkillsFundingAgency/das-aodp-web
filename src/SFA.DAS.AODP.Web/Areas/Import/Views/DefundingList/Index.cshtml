@@ -4,53 +4,47 @@
     var allowed = ".xlsx";
     var fileErrors = ViewData.ModelState["File"]?.Errors;
     var hasFileError = fileErrors != null && fileErrors.Count > 0;
+    var inputClass = hasFileError ? "govuk-file-upload govuk-file-upload--error" : "govuk-file-upload govuk-!-margin-top-2";
 }
 <partial name="~/Views/Shared/_ValidationSummaryPartial.cshtml" />
 <div class="govuk-width-container">
-    <a class="govuk-back-link" href="javascript:history.back()">Back</a>
+    <a class="govuk-back-link" asp-action="Index" asp-controller="Import" asp-area="Admin">Back</a>
 
-    <h1 class="govuk-heading-xl">Upload defunding list data</h1>
+    <h1 class="govuk-heading-xl">Import defunding list data</h1>
 
     <form asp-area="Import" asp-controller="Import" asp-action="Index" method="post" enctype="multipart/form-data" novalidate>
         @Html.AntiForgeryToken()
 
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
-                @if (hasFileError)
-                {
-                    <div class="govuk-form-group govuk-form-group--error">
-                        <label class="govuk-label" for="File">
-                            Import file
-                        </label>
+                <div class="govuk-form-group @(hasFileError ? "govuk-form-group--error" : "")">
+                    <label class="govuk-label" for="File">
+                        Import file
+                    </label>
+
+                    @if (hasFileError)
+                    {
                         <p id="File-error" class="govuk-error-message">
                             <span class="govuk-visually-hidden">Error:</span>
                             @(fileErrors.First().ErrorMessage ?? "Select a file")
                         </p>
-                        <input class="govuk-file-upload govuk-file-upload--error"
-                               id="File"
-                               name="File"
-                               type="file"
-                               aria-describedby="File-error"
-                               accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
-                    </div>
-                }
-                else
-                {
-                    <div class="govuk-form-group">
-                        <label class="govuk-label" for="File">Import file</label>
+                    }
+                    else
+                    {
                         <div class="govuk-hint">
                             This must be an @allowed file
                         </div>
+                    }
 
-                        <input class="govuk-file-upload govuk-!-margin-top-2"
-                               id="File"
-                               name="File"
-                               type="file"
-                               accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />
+                    <input class="@inputClass"
+                           id="File"
+                           name="File"
+                           type="file"
+                           accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                           @(hasFileError ? "aria-describedby=\"File-error\"" : "") />
 
-                        <span asp-validation-for="File" class="govuk-error-message" />
-                    </div>
-                }
+                    <span asp-validation-for="File" class="govuk-error-message" />
+                </div>
 
                 <div class="govuk-form-group">
                     <govuk-button type="submit">Continue</govuk-button>
