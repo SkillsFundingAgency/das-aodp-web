@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using SFA.DAS.AODP.Domain.Interfaces;
 using SFA.DAS.AODP.Domain.Models;
@@ -125,6 +126,37 @@ namespace SFA.DAS.AODP.Infrastructure.ApiClient
             var response = await _httpClient.SendAsync(requestMessage).ConfigureAwait(false);
 
             response.EnsureSuccessStatusCode();
+        }
+
+        public async Task<TResponse?> PostWithMultipartFormData<TResponse>(IPostApiRequest request)
+        {
+            var requestData = request.Data as IFormFile;
+            using var content = new MultipartFormDataContent();
+            using var fileStream = requestData?.OpenReadStream();
+
+            var fileContent = new StreamContent(fileStream!);
+            fileContent.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("form-data")
+            {
+                Name = "file",
+                FileName = requestData?.FileName
+            };
+
+            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(requestData!.ContentType);
+            content.Add(fileContent, "file", requestData.FileName);
+
+            // Create HttpRequestMessage so we can add authentication headers
+            using var requestMessage = new HttpRequestMessage(HttpMethod.Post, request.PostUrl)
+            {
+                Content = content
+            };
+            AddAuthenticationHeader(requestMessage);
+
+            var response = await _httpClient.SendAsync(requestMessage).ConfigureAwait(false);
+
+            var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            response.EnsureSuccessStatusCode();
+            return JsonConvert.DeserializeObject<TResponse>(responseContent) ?? default;
         }
 
         private void AddAuthenticationHeader(HttpRequestMessage httpRequestMessage)

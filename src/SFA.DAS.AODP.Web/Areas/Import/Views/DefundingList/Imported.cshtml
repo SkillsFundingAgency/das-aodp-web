@@ -1,0 +1,36 @@
+﻿@{
+    Layout = "_Layout";
+}
+
+<div class="govuk-width-container">
+    <main class="govuk-main-wrapper">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+
+                <!-- Confirmation panel (uses existing govuk panel confirmation style used elsewhere in the app) -->
+                <div class="govuk-panel govuk-panel--confirmation">
+                    <h1 class="govuk-panel__title">Defunding list imported</h1>
+                </div>
+
+                <h2 class="govuk-heading-s">What you can do now</h2>
+                <ul class="govuk-list">
+                    <li>
+                        <a class="govuk-link" href="https://qfast.example.gov.uk" target="_blank" rel="noopener noreferrer">
+                            Go to the QFAST homepage to manage qualification funding applications
+                        </a>
+                    </li>
+                    <li>
+                        <a class="govuk-link" asp-area="Admin" asp-controller="OutputFile" asp-action="Index">
+                            Download a record of all active and archived funding requests
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="govuk-!-margin-top-6">
+                    <a class="govuk-button govuk-button--secondary" asp-area="Review" asp-controller="Home" asp-action="Index">Return to dashboard</a>
+                </div>
+
+            </div>
+        </div>
+    </main>
+</div>

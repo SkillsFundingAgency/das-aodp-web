@@ -1,0 +1,62 @@
+﻿@model SFA.DAS.AODP.Web.Areas.Import.Models.UploadDefundingListViewModel
+@{
+    Layout = "_Layout";
+    var allowed = ".xlsx";
+    var fileErrors = ViewData.ModelState["File"]?.Errors;
+    var hasFileError = fileErrors != null && fileErrors.Count > 0;
+}
+<partial name="~/Views/Shared/_ValidationSummaryPartial.cshtml" />
+<div class="govuk-width-container">
+    <a class="govuk-back-link" href="javascript:history.back()">Back</a>
+
+    <h1 class="govuk-heading-xl">Upload defunding list data</h1>
+
+    <form asp-area="Import" asp-controller="Import" asp-action="Index" method="post" enctype="multipart/form-data" novalidate>
+        @Html.AntiForgeryToken()
+
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                @if (hasFileError)
+                {
+                    <div class="govuk-form-group govuk-form-group--error">
+                        <label class="govuk-label" for="File">
+                            Import file
+                        </label>
+                        <p id="File-error" class="govuk-error-message">
+                            <span class="govuk-visually-hidden">Error:</span>
+                            @(fileErrors.First().ErrorMessage ?? "Select a file")
+                        </p>
+                        <input class="govuk-file-upload govuk-file-upload--error"
+                               id="File"
+                               name="File"
+                               type="file"
+                               aria-describedby="File-error"
+                               accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+                    </div>
+                }
+                else
+                {
+                    <div class="govuk-form-group">
+                        <label class="govuk-label" for="File">Import file</label>
+                        <div class="govuk-hint">
+                            This must be an @allowed file
+                        </div>
+
+                        <input class="govuk-file-upload govuk-!-margin-top-2"
+                               id="File"
+                               name="File"
+                               type="file"
+                               accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />
+
+                        <span asp-validation-for="File" class="govuk-error-message" />
+                    </div>
+                }
+
+                <div class="govuk-form-group">
+                    <govuk-button type="submit">Continue</govuk-button>
+                </div>
+
+            </div>
+        </div>
+    </form>
+</div>
