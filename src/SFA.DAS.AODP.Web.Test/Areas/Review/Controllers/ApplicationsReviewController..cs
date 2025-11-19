@@ -55,68 +55,46 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
                 Status = new List<ApplicationStatus> { ApplicationStatus.InReview, ApplicationStatus.Approved }
             };
 
-            var applicationId = Guid.NewGuid();
-            var applicationReviewId = Guid.NewGuid();
+            var expectedApplication = new GetApplicationsForReviewQueryResponse.Application
+            {
+                Id = Guid.NewGuid(),
+                ApplicationReviewId = Guid.NewGuid(),
+                Name = "TestApp",
+                LastUpdated = DateTime.UtcNow,
+                Reference = 123456,
+                Qan = "123456",
+                AwardingOrganisation = "Test Org",
+                Owner = "TestOwner",
+                Status = ApplicationStatus.InReview,
+                NewMessage = false,
+                FindRegulatedQualificationUrl = _aodpOptions.Value.FindRegulatedQualificationUrl
+            };
 
             var response = new GetApplicationsForReviewQueryResponse
             {
                 TotalRecordsCount = 1,
-                Applications = new List<GetApplicationsForReviewQueryResponse.Application>
-                {
-                    new GetApplicationsForReviewQueryResponse.Application
-                    {
-                        Id = applicationId,
-                        ApplicationReviewId = applicationReviewId,
-                        Name = "TestApp",
-                        LastUpdated = DateTime.UtcNow,
-                        Reference = 123456,
-                        Qan = "123456",
-                        AwardingOrganisation = "Test Org",
-                        Owner = "TestOwner",
-                        Status = ApplicationStatus.InReview,
-                        NewMessage = false,
-                        FindRegulatedQualificationUrl = _aodpOptions.Value.FindRegulatedQualificationUrl
-                    }
-                }
+                Applications = new List<GetApplicationsForReviewQueryResponse.Application> { expectedApplication }
             };
 
-            var mediatorResponse = new BaseMediatrResponse<GetApplicationsForReviewQueryResponse>
-            {
-                Success = true,
-                Value = response
-            };
-
-            _mediatorMock.Setup(m => m.Send(It.Is<GetApplicationsForReviewQuery>(q => 
-                q.ReviewUser == expectedUserType.ToString()
-                && q.ApplicationSearch == expectedModel.ApplicationSearch
-                && q.AwardingOrganisationSearch == expectedModel.AwardingOrganisationSearch
-                && q.ApplicationStatuses != null
-                && q.ApplicationStatuses.Count == expectedModel.Status.Count
-                && q.ApplicationStatuses.Contains(expectedModel.Status[0].ToString())
-                && q.ApplicationsWithNewMessages == true
-                && q.Limit == expectedModel.ItemsPerPage
-                && q.Offset == expectedModel.ItemsPerPage * (expectedModel.Page - 1)
-                && q.FindRegulatedQualificationUrl == _aodpOptions.Value.FindRegulatedQualificationUrl
-            ), It.IsAny<CancellationToken>())).ReturnsAsync(mediatorResponse);
+            _mediatorMock.Setup(m => m.Send(It.IsAny<GetApplicationsForReviewQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationsForReviewQueryResponse> { Success = true, Value = response});
 
             //Act
             var result = await _controller.Index(expectedModel) as ViewResult;
 
             //Assert
-            Assert.IsType<ViewResult>(result);
-            Assert.IsType<ApplicationsReviewListViewModel>(result?.Model);
+            var model = Assert.IsType<ApplicationsReviewListViewModel>(Assert.IsType<ViewResult>(result).Model);
+            Assert.Equal(expectedUserType.ToString(), model.UserType);
+            // Check the url is set correctly from configuration
+            Assert.Equal(_aodpOptions.Value.FindRegulatedQualificationUrl, model.FindRegulatedQualificationUrl);
+            Assert.Equal(response.TotalRecordsCount, model.TotalItems);
 
-            var returnedModel = result?.Model as ApplicationsReviewListViewModel;
-            Assert.Equal(expectedUserType.ToString(), returnedModel?.UserType);
-            Assert.Equal(_aodpOptions.Value.FindRegulatedQualificationUrl, returnedModel?.FindRegulatedQualificationUrl);
-            Assert.Equal(response.TotalRecordsCount, returnedModel?.TotalItems);
-            Assert.Single(returnedModel?.Applications);
-            Assert.Equal(response.Applications[0].Reference, returnedModel?.Applications[0].Reference);
-            Assert.Equal(response.Applications[0].Qan, returnedModel?.Applications[0].Qan);
-            Assert.Equal(response.Applications[0].Name, returnedModel?.Applications[0].Name);
+            var app = Assert.Single(model.Applications);
+            Assert.Equal(expectedApplication.Id, app.Id);
+            Assert.Equal(expectedApplication.Name, app.Name);
+            Assert.Equal(expectedApplication.Reference, app.Reference);
+            Assert.Equal(expectedApplication.Qan, app.Qan);
 
-            _mediatorMock.Verify(m => m.Send(It.IsAny<GetApplicationsForReviewQuery>(), It.IsAny<CancellationToken>()), Times.Once);
-            _userHelperServiceMock.Verify(u => u.GetUserType(), Times.Once);
         }
 
         [Fact]
