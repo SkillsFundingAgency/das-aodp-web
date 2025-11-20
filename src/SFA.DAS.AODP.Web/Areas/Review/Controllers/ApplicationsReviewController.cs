@@ -43,6 +43,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         public async Task<IActionResult> Index(ApplicationsReviewListViewModel model)
         {
             string userType = _userHelperService.GetUserType().ToString();
+            model.FindRegulatedQualificationUrl = _aodpConfiguration.Value.FindRegulatedQualificationUrl;
             var response = await Send(new GetApplicationsForReviewQuery()
             {
                 ReviewUser = userType,
@@ -52,8 +53,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 AwardingOrganisationSearch = model.AwardingOrganisationSearch,
                 Limit = model.ItemsPerPage,
                 Offset = model.ItemsPerPage * (model.Page - 1),
-                FindRegulatedQualificationUrl = model.FindRegulatedQualificationUrl = _aodpConfiguration.Value.FindRegulatedQualificationUrl
-
+                FindRegulatedQualificationUrl = model.FindRegulatedQualificationUrl
             });
 
             model.MapApplications(response);
