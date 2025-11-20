@@ -130,7 +130,9 @@
                                                     @if (!string.IsNullOrWhiteSpace(qualification.Reference))
                                                     {
                                                         var baseUrl = Model.FindRegulatedQualificationUrl ?? string.Empty;
-                                                        var fullUrl = baseUrl.EndsWith("/") ? baseUrl + qualification.Reference : baseUrl + "/" + qualification.Reference;
+                                                        var uriBuilder = new UriBuilder(baseUrl);
+                                                        uriBuilder.Path = uriBuilder.Path.TrimEnd('/') + "/" + qualification.Reference;
+                                                        var fullUrl = uriBuilder.Uri.ToString();
                                                         <a href="@fullUrl" target="_blank">@qualification.Reference</a>
                                                     }
                                                 </td>
