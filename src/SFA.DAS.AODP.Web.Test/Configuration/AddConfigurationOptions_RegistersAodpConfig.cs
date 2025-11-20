@@ -8,39 +8,6 @@ namespace SFA.DAS.AODP.Web.UnitTests.Configuration
 {
     public class AddConfigurationOptions_RegistersAodpConfigTests
     {
-        //    [Fact]
-        //    public void AddConfigurationOptions_RegistersAodpConfig()
-        //    {
-        //        // Arrange
-        //        var inmemorySettings = new Dictionary<string, string>
-        //        {
-        //            { "FindRegulatedQualificationUrl", "SomeSettingValue" },
-        //            { "AodpOuterApiSettings", "AodpOuterApiSettingValue" },
-        //            { "FormBuilderSettings", "FormBuilderSettingValue" },
-        //            { "BlobStorageSettings", "BlobStorageSettingValue" }
-        //        };
-        //        IConfiguration configuration = new ConfigurationBuilder()
-        //            .AddInMemoryCollection(inmemorySettings)
-        //            .Build();
-
-        //        var services = new ServiceCollection();
-
-        //        // Act
-        //        services.AddConfigurationOptions(configuration);
-        //        var serviceProvider = services.BuildServiceProvider();
-
-        //        // Assert 
-
-        //        // AodpOuterApiSettings
-
-        //        var FindRegulatedQualificationOptions = serviceProvider.GetRequiredService<IOptions<AodpConfiguration>>();
-        //        Assert.Equal("SomeSettingValue", FindRegulatedQualificationOptions.Value.FindRegulatedQualificationUrl);
-
-
-        //        var config = serviceProvider.GetRequiredService<AodpConfiguration>();
-        //        Assert.Equal("SomeSettingValue", config.FindRegulatedQualificationUrl);
-        //    }
-
         [Fact]
         public void AddConfigurationOptions_RegistersAodpOuterApiSettings()
         {
