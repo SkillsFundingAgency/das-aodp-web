@@ -40,7 +40,7 @@ public class ImportControllerTests
         // Arrange
         var controller = new ImportController(mediator.Object, logger.Object);
 
-        var model = new UploadDefundingListViewModel();
+        var model = new UploadDefundingListViewModel { File = null!};
         controller.ModelState.AddModelError("some", "some error");
 
         // Act
@@ -58,10 +58,7 @@ public class ImportControllerTests
         // Arrange
         var controller = new ImportController(mediator.Object, logger.Object);
 
-        var model = new UploadDefundingListViewModel
-        {
-            File = null
-        };
+        var model = new UploadDefundingListViewModel { File = null! };
 
         // Act
         var result = await controller.Index(model);
@@ -71,7 +68,7 @@ public class ImportControllerTests
         Assert.Equal(IndexViewPath, viewResult.ViewName);
         Assert.True(controller.ModelState.ContainsKey(nameof(model.File)));
         var entry = controller.ModelState[nameof(model.File)];
-        Assert.Contains(entry.Errors, e => e.ErrorMessage.Contains(".xlsx", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(entry!.Errors, e => e.ErrorMessage.Contains(".xlsx", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -95,7 +92,7 @@ public class ImportControllerTests
         Assert.Equal(IndexViewPath, viewResult.ViewName);
         Assert.True(controller.ModelState.ContainsKey(nameof(model.File)));
         var entry = controller.ModelState[nameof(model.File)];
-        Assert.Contains(entry.Errors, e => e.ErrorMessage.Contains(".xlsx", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(entry!.Errors, e => e.ErrorMessage.Contains(".xlsx", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -119,7 +116,7 @@ public class ImportControllerTests
         Assert.Equal(IndexViewPath, viewResult.ViewName);
         Assert.True(controller.ModelState.ContainsKey(nameof(model.File)));
         var entry = controller.ModelState[nameof(model.File)];
-        Assert.Contains(entry.Errors, e => e.ErrorMessage.Contains(".xlsx", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(entry!.Errors, e => e.ErrorMessage.Contains(".xlsx", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -183,10 +180,10 @@ public class ImportControllerTests
         Assert.Same(model, viewResult.Model);
         Assert.True(controller.ModelState.ContainsKey(string.Empty));
         var entry = controller.ModelState[string.Empty];
-        Assert.Contains(entry.Errors, e => e.ErrorMessage.Contains("unexpected", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(entry!.Errors, e => e.ErrorMessage.Contains("unexpected", StringComparison.OrdinalIgnoreCase));
     }
 
-    private static IFormFile CreateFormFile(string fileName, byte[] content)
+    private static FormFile CreateFormFile(string fileName, byte[] content)
     {
         var stream = new MemoryStream(content);
         return new FormFile(stream, 0, stream.Length, "File", fileName)

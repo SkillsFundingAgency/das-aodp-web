@@ -6,7 +6,5 @@ public class UploadDefundingListViewModel
 {
     [Required(ErrorMessage = "You must select an .xlsx file")]
     [Display(Name = "You must select an .xlsx file")]
-    public IFormFile File { get; set; }
-
-    //public FormBuilderSettings FileSettings { get; set; }
+    public required IFormFile File { get; set; }
 }

@@ -75,7 +75,7 @@ public class WhenImportDefundingListCommand
         mockApiClient.VerifyAll();
     }
 
-    private static IFormFile CreateFormFile(string content = "id,name\n1,Test", string fileName = "test.csv")
+    private static FormFile CreateFormFile(string content = "id,name\n1,Test", string fileName = "test.csv")
     {
         var contentBytes = System.Text.Encoding.UTF8.GetBytes(content);
         var stream = new MemoryStream(contentBytes);

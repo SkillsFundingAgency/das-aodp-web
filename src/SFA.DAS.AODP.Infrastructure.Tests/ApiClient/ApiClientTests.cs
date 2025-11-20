@@ -286,7 +286,7 @@ public class ApiClientTests
         });
     }
 
-    private HttpClient CreateHttpClient(Mock<HttpMessageHandler> handlerMock)
+    private static HttpClient CreateHttpClient(Mock<HttpMessageHandler> handlerMock)
     {
         var client = new HttpClient(handlerMock.Object)
         {
@@ -295,7 +295,7 @@ public class ApiClientTests
         return client;
     }
 
-    private IOptions<AodpOuterApiSettings> CreateOptions()
+    private static IOptions<AodpOuterApiSettings> CreateOptions()
     {
         return Options.Create(new AodpOuterApiSettings
         {
@@ -304,7 +304,7 @@ public class ApiClientTests
         });
     }
 
-    private Mock<HttpMessageHandler> CreateHandlerMock(string expectedJson, HttpStatusCode code = HttpStatusCode.OK)
+    private static Mock<HttpMessageHandler> CreateHandlerMock(string expectedJson, HttpStatusCode code = HttpStatusCode.OK)
     {
         var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 

@@ -50,7 +50,7 @@ public class ImportController : ControllerBase
                 File = model.File
             };
 
-            var result = await Send(command);
+            await Send(command);
 
             return View("~/Areas/Import/Views/DefundingList/Imported.cshtml");
         }
