@@ -165,9 +165,7 @@
                             @if (!string.IsNullOrWhiteSpace(item.Qan))
                             {
                                 var baseUrl = Model.FindRegulatedQualificationUrl ?? string.Empty;
-                                var uriBuilder = new UriBuilder(baseUrl);
-                                uriBuilder.Path = uriBuilder.Path.TrimEnd('/') + "/" + item.Qan;
-                                var fullUrl = uriBuilder.Uri.ToString();
+                                var fullUrl = $"{baseUrl}{item.Qan}";
                                 <a href="@fullUrl" target="_blank">@item.Qan</a>
                             }
                         </td>
