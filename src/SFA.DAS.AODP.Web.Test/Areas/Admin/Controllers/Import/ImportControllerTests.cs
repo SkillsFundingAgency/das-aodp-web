@@ -59,6 +59,75 @@ public class ImportControllerTests
     }
 
     [Fact]
+    public void SelectImport_WhenModelStateIsInvalid_ShouldReturnsIndexView()
+    {
+        // Arrange
+        _controller.ModelState.AddModelError("ImportType", "Required");
+        var vm = new ImportRequestViewModel { ImportType = "Anything" };
+
+        // Act
+        var result = _controller.SelectImport(vm);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.Equal("Index", viewResult.ViewName);
+        Assert.Same(vm, viewResult.Model);
+    }
+
+    [Fact]
+    public void SelectImport_WhenImportTypeIsDefundingList_IgnoresCaseAndWhitespace_ShouldRedirectsToImportDefundingList()
+    {
+        // Arrange
+        var vm = new ImportRequestViewModel { ImportType = "  dEfUnDinG LiSt  " };
+
+        // Act
+        var result = _controller.SelectImport(vm);
+
+        // Assert
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal("Index", redirect.ActionName);
+        Assert.Equal("Import", redirect.ControllerName);
+        Assert.NotNull(redirect.RouteValues);
+        Assert.True(redirect.RouteValues.ContainsKey("area"));
+        Assert.Equal("Import", redirect.RouteValues["area"]);
+    }
+
+    [Fact]
+    public void SelectImport_WhenValidAndNotDefunding_ShouldRedirectsToConfirmImportSelection_WithViewModel()
+    {
+        // Arrange
+        var vm = new ImportRequestViewModel { ImportType = "Regulated Qualifications" };
+
+        // Act
+        var result = _controller.SelectImport(vm);
+
+        // Assert
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal("ConfirmImportSelection", redirect.ActionName);
+        // ControllerName should be null because overload used only action + route values
+        Assert.Null(redirect.ControllerName);
+        Assert.NotNull(redirect.RouteValues);
+        Assert.True(redirect.RouteValues.ContainsKey("ImportType"));
+        Assert.Equal(vm.ImportType, redirect.RouteValues["ImportType"]);
+    }
+
+    [Fact]
+    public void SelectImport_WhenViewModelIsNull_ShouldRedirectsToConfirmImportSelection()
+    {
+        // Arrange
+        ImportRequestViewModel vm = null!;
+
+        // Act
+        var result = _controller.SelectImport(vm);
+
+        // Assert
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal("ConfirmImportSelection", redirect.ActionName);
+        // RouteValues should be null because null was passed
+        Assert.Null(redirect.RouteValues);
+    }
+
+    [Fact]
     public void ConfirmImportSelection_ReturnsViewResult()
     {
         // Arrange
