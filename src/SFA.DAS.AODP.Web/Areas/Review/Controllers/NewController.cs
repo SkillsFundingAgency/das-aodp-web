@@ -92,8 +92,10 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
             catch (Exception ex)
             {
+                GetPropertyDisplayName<NewQualificationFilterViewModel>("Organisation");
                 LogException(ex);
                 return Redirect("/Home/Error");
+                
             }
         }
 
@@ -325,6 +327,27 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 csv.WriteRecords(qualifications);
                 return writer.ToString();
             }
+        }
+
+        private static void LogException(Exception ex)
+        {
+            // Placeholder for logging logic
+            // In a real application, you would use a logging framework to log the exception details
+            Console.WriteLine($"An error occurred: {ex.Message}");
+        }
+
+        private static string ? GetPropertyDisplayName<T>(string propertyName)
+        {
+            var propInfo = typeof(T).GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
+            if (propInfo != null)
+            {
+                var displayAttr = propInfo.GetCustomAttribute<System.ComponentModel.DataAnnotations.DisplayAttribute>();
+                if (displayAttr != null)
+                {
+                    return displayAttr.Name;
+                }
+            }
+            return null;
         }
 
         private class CsvExportResult
