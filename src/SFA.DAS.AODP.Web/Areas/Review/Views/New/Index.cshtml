@@ -16,7 +16,7 @@
                 </div>
                 @if (Model.PaginationViewModel.CurrentPage > 0)
                 {
-                    <div class="govuk-inset-text">Import for this cycle ran: @(Model.JobStatusViewModel.LastRunTime.HasValue? Model.JobStatusViewModel.LastRunTime.Value.ToString("G") : "Never")</div>
+                    <div class="govuk-inset-text">Import for this cycle ran: @(Model.JobStatusViewModel.LastRunTime.HasValue ? Model.JobStatusViewModel.LastRunTime.Value.ToString("G") : "Never")</div>
                     <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
                 }
                 <form asp-controller="New" asp-action="Search" asp-area="Review" method="post">

@@ -18,7 +18,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Configuration
                 { "AodpOuterApiSettings:BaseUrl", "https://localhost:7069/" }
             };
             IConfiguration configuration = new ConfigurationBuilder()
-                .AddInMemoryCollection(inmemorySettings)
+                .AddInMemoryCollection(inmemorySettings!)
                 .Build();
 
             var services = new ServiceCollection();
@@ -50,7 +50,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Configuration
             };
 
             IConfiguration configuration = new ConfigurationBuilder()
-                .AddInMemoryCollection(inMemorySettings)
+                .AddInMemoryCollection(inMemorySettings!)
                 .Build();
 
             var services = new ServiceCollection();
@@ -87,7 +87,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Configuration
             };
 
             IConfiguration configuration = new ConfigurationBuilder()
-                .AddInMemoryCollection(inmemorySettings)
+                .AddInMemoryCollection(inmemorySettings!)
                 .Build();
             var services = new ServiceCollection();
 
@@ -114,7 +114,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Configuration
                 { "FindRegulatedQualificationUrl", "ConfigSetUrl" }
             };
             IConfiguration configuration = new ConfigurationBuilder()
-                .AddInMemoryCollection(inmemorySettings)
+                .AddInMemoryCollection(inmemorySettings!)
                 .Build();
 
             var services = new ServiceCollection();
