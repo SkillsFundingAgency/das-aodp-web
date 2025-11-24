@@ -39,10 +39,9 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
             }
         }
 
-        public static NewQualificationsViewModel Map(GetNewQualificationsQueryResponse response, List<GetProcessStatusesQueryResponse.ProcessStatus> processStatuses, string organisation = "", string qan = "", string name = "", string findRegulatedQualificationUrl = "")
+        public static NewQualificationsViewModel Map(GetNewQualificationsQueryResponse response, List<GetProcessStatusesQueryResponse.ProcessStatus> processStatuses, string organisation = "", string qan = "", string name = "")
         {
             var viewModel = new NewQualificationsViewModel();
-            viewModel.FindRegulatedQualificationUrl = findRegulatedQualificationUrl;
             viewModel.PaginationViewModel = new PaginationViewModel(response.TotalRecords, response.Skip, response.Take);
             viewModel.NewQualifications = response.Data.Select(s => new NewQualificationViewModel()
             {

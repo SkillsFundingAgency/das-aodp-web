@@ -82,8 +82,10 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     query.Skip = recordsPerPage * (pageNumber - 1);
 
                     var response = await Send(query);
-                    viewModel = NewQualificationsViewModel.Map(response, procStatuses.ProcessStatuses, organisation, qan, name, _aodpConfiguration.Value.FindRegulatedQualificationUrl);
+                    viewModel = NewQualificationsViewModel.Map(response, procStatuses.ProcessStatuses, organisation, qan, name);
                 }
+
+                viewModel.FindRegulatedQualificationUrl = _aodpConfiguration.Value.FindRegulatedQualificationUrl;
                 viewModel.Filter = new NewQualificationFilterViewModel()
                 {
                     Organisation = organisation,

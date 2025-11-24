@@ -12,5 +12,4 @@ public class GetApplicationsForReviewQuery : IRequest<BaseMediatrResponse<GetApp
     public int? Limit { get; set; }
     public int? Offset { get; set; }
     public bool ApplicationsWithNewMessages { get; set; }
-    public string FindRegulatedQualificationUrl { get; set; } = string.Empty;
 }

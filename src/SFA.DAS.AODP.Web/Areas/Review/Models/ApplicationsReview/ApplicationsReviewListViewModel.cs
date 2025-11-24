@@ -50,8 +50,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
                     Status = application.Status,
                     AwardingOrganisation = application.AwardingOrganisation,
                     NewMessage = application.NewMessage,
-                    ApplicationReviewId = application.ApplicationReviewId,
-                    FindRegulatedQualificationUrl = application.FindRegulatedQualificationUrl
+                    ApplicationReviewId = application.ApplicationReviewId
                 });
             }
         }

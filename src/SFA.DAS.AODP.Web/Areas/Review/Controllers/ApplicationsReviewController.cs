@@ -52,8 +52,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 ApplicationSearch = model.ApplicationSearch,
                 AwardingOrganisationSearch = model.AwardingOrganisationSearch,
                 Limit = model.ItemsPerPage,
-                Offset = model.ItemsPerPage * (model.Page - 1),
-                FindRegulatedQualificationUrl = model.FindRegulatedQualificationUrl
+                Offset = model.ItemsPerPage * (model.Page - 1)
             });
 
             model.MapApplications(response);
