@@ -29,9 +29,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
             public bool NewMessage { get; set; }
             public string? AwardingOrganisation { get; set; }
             public Guid ApplicationReviewId { get; set; }
-            public string FindRegulatedQualificationUrl { get; set; } = string.Empty;
-
-
         }
 
         public void MapApplications(GetApplicationsForReviewQueryResponse response)
