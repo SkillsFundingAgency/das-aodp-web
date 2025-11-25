@@ -316,9 +316,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     case "NineteenPlus":
                         latestVersion.KeyFieldChanges.Add(new() { Name = "Nineteen Plus", Was = previousVersion.NineteenPlus.ToString(), Now = latestVersion.NineteenPlus.ToString() });
                         break;
-                    case "FundingInEngland":
-                        latestVersion.KeyFieldChanges.Add(new() { Name = "Nineteen Plus", Was = previousVersion.FundedInEngland.ToString(), Now = latestVersion.FundedInEngland.ToString() });
-                        break;
                     case "GLH":
                         latestVersion.KeyFieldChanges.Add(new() { Name = "Guided learning hours (GLH)", Was = previousVersion.Glh.ToString(), Now = latestVersion.Glh.ToString() });
                         break;
