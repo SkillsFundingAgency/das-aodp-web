@@ -2,8 +2,8 @@
 {
     public class GetQualificationOutputFileResponse
     {
-        public byte[] ZipFileContent { get; set; }
+        public byte[] FileContent { get; set; }
         public string FileName { get; set; }
-        public string ContentType { get; set; } = "application/zip";
+        public string ContentType { get; set; } = "text/csv";
     }
 }

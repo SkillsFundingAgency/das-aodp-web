@@ -18,8 +18,8 @@ namespace SFA.DAS.AODP.Application.Queries.Qualifications
         {
             try
             {
-                var result = await _apiClient.Get<BaseMediatrResponse<GetQualificationOutputFileResponse>>(
-                    new GetQualificationOutputFileApiRequest(request.CurrentUsername));
+                var result = await _apiClient.PostWithResponseCode<BaseMediatrResponse<GetQualificationOutputFileResponse>>(
+                    new GetQualificationOutputFileApiRequest { Data = request});
 
                 if (result == null)
                 {
@@ -32,7 +32,7 @@ namespace SFA.DAS.AODP.Application.Queries.Qualifications
                 }
                 
                 if (!result.Success || result.Value is null ||
-                    result.Value.ZipFileContent is null || result.Value.ZipFileContent.Length == 0)
+                    result.Value.FileContent is null || result.Value.FileContent.Length == 0)
                 {
                     return new BaseMediatrResponse<GetQualificationOutputFileResponse>
                     {

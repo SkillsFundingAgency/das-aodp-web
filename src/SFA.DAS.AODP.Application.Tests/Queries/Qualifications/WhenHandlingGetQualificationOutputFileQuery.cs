@@ -12,7 +12,9 @@ namespace SFA.DAS.AODP.Application.Tests.Queries.Qualifications
         private readonly Mock<IApiClient> _apiClient = new();
         private readonly GetQualificationOutputFileQueryHandler _handler;
 
-        private const string OutputFileError = "output file error goes here";
+        private const string OutputFileError = "Output file error";
+        private const string fileName = "filename.csv";
+        private const string contentType = "text/csv";
 
         public WhenHandlingGetQualificationOutputFileQuery()
         {
@@ -24,9 +26,9 @@ namespace SFA.DAS.AODP.Application.Tests.Queries.Qualifications
         {
             // Arrange
             var payload = _fixture.Build<GetQualificationOutputFileResponse>()
-                                  .With(r => r.FileName, "export.zip")
-                                  .With(r => r.ZipFileContent, new byte[] { 1, 2, 3 })
-                                  .With(r => r.ContentType, "application/zip")
+                                  .With(r => r.FileName, fileName)
+                                  .With(r => r.FileContent, new byte[] { 1, 2, 3 })
+                                  .With(r => r.ContentType, contentType)
                                   .Create();
 
             var outerEnvelope = new BaseMediatrResponse<GetQualificationOutputFileResponse>
@@ -38,7 +40,7 @@ namespace SFA.DAS.AODP.Application.Tests.Queries.Qualifications
             var request = _fixture.Create<GetQualificationOutputFileQuery>();
 
             _apiClient
-                .Setup(a => a.Get<BaseMediatrResponse<GetQualificationOutputFileResponse>>(
+                .Setup(a => a.PostWithResponseCode<BaseMediatrResponse<GetQualificationOutputFileResponse>>(
                     It.IsAny<GetQualificationOutputFileApiRequest>()))
                 .ReturnsAsync(outerEnvelope);
 
@@ -46,17 +48,17 @@ namespace SFA.DAS.AODP.Application.Tests.Queries.Qualifications
             var response = await _handler.Handle(request, default);
 
             // Assert
-            _apiClient.Verify(a => a.Get<BaseMediatrResponse<GetQualificationOutputFileResponse>>(
+            _apiClient.Verify(a => a.PostWithResponseCode<BaseMediatrResponse<GetQualificationOutputFileResponse>>(
                                    It.IsAny<GetQualificationOutputFileApiRequest>()),
                               Times.Once);
 
             Assert.NotNull(response);
             Assert.True(response.Success);
             Assert.NotNull(response.Value);
-            Assert.Equal("export.zip", response.Value.FileName);
-            Assert.NotNull(response.Value.ZipFileContent);
-            Assert.NotEmpty(response.Value.ZipFileContent!);
-            Assert.Equal("application/zip", response.Value.ContentType);
+            Assert.Equal(fileName, response.Value.FileName);
+            Assert.NotNull(response.Value.FileContent);
+            Assert.NotEmpty(response.Value.FileContent!);
+            Assert.Equal(contentType, response.Value.ContentType);
         }
 
         [Fact]
@@ -72,7 +74,7 @@ namespace SFA.DAS.AODP.Application.Tests.Queries.Qualifications
             var request = _fixture.Create<GetQualificationOutputFileQuery>();
 
             _apiClient
-                .Setup(a => a.Get<BaseMediatrResponse<GetQualificationOutputFileResponse>>(
+                .Setup(a => a.PostWithResponseCode<BaseMediatrResponse<GetQualificationOutputFileResponse>>(
                     It.IsAny<GetQualificationOutputFileApiRequest>()))
                 .ReturnsAsync(outerEnvelope);
 
@@ -84,7 +86,7 @@ namespace SFA.DAS.AODP.Application.Tests.Queries.Qualifications
             Assert.False(response.Success);
             Assert.Equal(OutputFileError, response.ErrorMessage);
             Assert.True(response.Value is null ||
-                        (response.Value.FileName is null && response.Value.ZipFileContent is null));
+                        (response.Value.FileName is null && response.Value.FileContent is null));
         }
 
         [Fact]
@@ -95,7 +97,7 @@ namespace SFA.DAS.AODP.Application.Tests.Queries.Qualifications
             var request = _fixture.Create<GetQualificationOutputFileQuery>();
 
             _apiClient
-                .Setup(a => a.Get<BaseMediatrResponse<GetQualificationOutputFileResponse>>(
+                .Setup(a => a.PostWithResponseCode<BaseMediatrResponse<GetQualificationOutputFileResponse>>(
                     It.IsAny<GetQualificationOutputFileApiRequest>()))
                 .ThrowsAsync(expectedException);
 
@@ -107,7 +109,7 @@ namespace SFA.DAS.AODP.Application.Tests.Queries.Qualifications
             Assert.False(response.Success);
             Assert.Equal(expectedException.Message, response.ErrorMessage);
             Assert.True(response.Value is null ||
-                        (response.Value.FileName is null && response.Value.ZipFileContent is null));
+                        (response.Value.FileName is null && response.Value.FileContent is null));
         }
     }
 }
