@@ -13,114 +13,115 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Import.Controllers;
 
 public class ImportControllerTests
 {
-    private const string IndexViewPath = "~/Areas/Import/Views/DefundingList/Index.cshtml";
-    private const string ImportedViewPath = "~/Areas/Import/Views/DefundingList/Imported.cshtml";
+    private const string DefundingListViewPath = "~/Areas/Import/Views/DefundingList/Index.cshtml";
+    private const string PldnsViewPath = "~/Areas/Import/Views/Pldns/Index.cshtml";
+    private const string ImportedViewPath = "~/Areas/Import/Views/Imported.cshtml";
 
     private readonly Fixture _fixture = new();
     private readonly Mock<IMediator> mediator = new();
     private readonly Mock<ILogger<ImportController>> logger = new();
 
     [Fact]
-    public void When_GetIndexView_ShouldReturnIndexView()
+    public void When_GetImportDefundingList_ShouldReturnIndexView()
     {
         // Arrange
         var controller = new ImportController(mediator.Object, logger.Object);
 
         // Act
-        var result = controller.Index();
+        var result = controller.ImportDefundingList();
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
-        Assert.Equal(IndexViewPath, viewResult.ViewName);
+        Assert.Equal(DefundingListViewPath, viewResult.ViewName);
     }
 
     [Fact]
-    public async Task When_Post_Index_ModelStateInvalid_Should_Return_IndexViewWithModel()
+    public async Task When_Post_ImportDefundingList_ModelStateInvalid_Should_Return_IndexViewWithModel()
     {
         // Arrange
         var controller = new ImportController(mediator.Object, logger.Object);
 
-        var model = new UploadDefundingListViewModel { File = null!};
+        var model = new UploadImportFileViewModel { File = null!};
         controller.ModelState.AddModelError("some", "some error");
 
         // Act
-        var result = await controller.Index(model);
+        var result = await controller.ImportDefundingList(model);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
-        Assert.Equal(IndexViewPath, viewResult.ViewName);
+        Assert.Equal(DefundingListViewPath, viewResult.ViewName);
         Assert.Same(model, viewResult.Model);
     }
 
     [Fact]
-    public async Task When_Post_Index_FileNull_Should_Return_IndexViewWithModelError()
+    public async Task When_Post_ImportDefundingList_FileNull_Should_Return_IndexViewWithModelError()
     {
         // Arrange
         var controller = new ImportController(mediator.Object, logger.Object);
 
-        var model = new UploadDefundingListViewModel { File = null! };
+        var model = new UploadImportFileViewModel { File = null! };
 
         // Act
-        var result = await controller.Index(model);
+        var result = await controller.ImportDefundingList(model);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
-        Assert.Equal(IndexViewPath, viewResult.ViewName);
+        Assert.Equal(DefundingListViewPath, viewResult.ViewName);
         Assert.True(controller.ModelState.ContainsKey(nameof(model.File)));
         var entry = controller.ModelState[nameof(model.File)];
         Assert.Contains(entry!.Errors, e => e.ErrorMessage.Contains(".xlsx", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
-    public async Task When_Post_Index_FileLengthZero_Should_Return_IndexViewWithModelError()
+    public async Task When_Post_ImportDefundingList_FileLengthZero_Should_Return_IndexViewWithModelError()
     {
         // Arrange
         var controller = new ImportController(mediator.Object, logger.Object);
 
         var emptyFile = CreateFormFile("test.xlsx", Array.Empty<byte>());
 
-        var model = new UploadDefundingListViewModel
+        var model = new UploadImportFileViewModel
         {
             File = emptyFile
         };
 
         // Act
-        var result = await controller.Index(model);
+        var result = await controller.ImportDefundingList(model);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
-        Assert.Equal(IndexViewPath, viewResult.ViewName);
+        Assert.Equal(DefundingListViewPath, viewResult.ViewName);
         Assert.True(controller.ModelState.ContainsKey(nameof(model.File)));
         var entry = controller.ModelState[nameof(model.File)];
         Assert.Contains(entry!.Errors, e => e.ErrorMessage.Contains(".xlsx", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
-    public async Task When_Post_Index_WrongExtension_Should_Returns_IndexViewWithModelError()
+    public async Task When_Post_ImportDefundingList_WrongExtension_Should_Returns_IndexViewWithModelError()
     {
         // Arrange
         var controller = new ImportController(mediator.Object, logger.Object);
 
         var txtFile = CreateFormFile("test.txt", new byte[] { 1, 2, 3 });
 
-        var model = new UploadDefundingListViewModel
+        var model = new UploadImportFileViewModel
         {
             File = txtFile
         };
 
         // Act
-        var result = await controller.Index(model);
+        var result = await controller.ImportDefundingList(model);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
-        Assert.Equal(IndexViewPath, viewResult.ViewName);
+        Assert.Equal(DefundingListViewPath, viewResult.ViewName);
         Assert.True(controller.ModelState.ContainsKey(nameof(model.File)));
         var entry = controller.ModelState[nameof(model.File)];
         Assert.Contains(entry!.Errors, e => e.ErrorMessage.Contains(".xlsx", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
-    public async Task When_Post_Index_ValidFile_Should_Returns_ImportedView()
+    public async Task When_Post_ImportDefundingList_ValidFile_Should_Returns_ImportedView()
     {
         // Arrange
 
@@ -137,13 +138,13 @@ public class ImportControllerTests
 
         var xlsxFile = CreateFormFile("list.xlsx", new byte[] { 1, 2, 3 });
 
-        var model = new UploadDefundingListViewModel
+        var model = new UploadImportFileViewModel
         {
             File = xlsxFile
         };
 
         // Act
-        var result = await controller.Index(model);
+        var result = await controller.ImportDefundingList(model);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -151,7 +152,7 @@ public class ImportControllerTests
     }
 
     [Fact]
-    public async Task When_Post_Index_MediatorThrows_Should_Returns_ViewWithModelError()
+    public async Task When_Post_ImportDefundingList_MediatorThrows_Should_Returns_ViewWithModelError()
     {
         // Arrange
         mediator
@@ -166,17 +167,180 @@ public class ImportControllerTests
 
         var xlsxFile = CreateFormFile("list.xlsx", new byte[] { 1, 2, 3 });
 
-        var model = new UploadDefundingListViewModel
+        var model = new UploadImportFileViewModel
         {
             File = xlsxFile
         };
 
         // Act
-        var result = await controller.Index(model);
+        var result = await controller.ImportDefundingList(model);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
-        Assert.Null(viewResult.ViewName);
+        Assert.NotNull(viewResult.ViewName);
+        Assert.Same(model, viewResult.Model);
+        Assert.True(controller.ModelState.ContainsKey(string.Empty));
+        var entry = controller.ModelState[string.Empty];
+        Assert.Contains(entry!.Errors, e => e.ErrorMessage.Contains("unexpected", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void When_GetImportPldns_ShouldReturnIndexView()
+    {
+        // Arrange
+        var controller = new ImportController(mediator.Object, logger.Object);
+
+        // Act
+        var result = controller.ImportPldns();
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.Equal(PldnsViewPath, viewResult.ViewName);
+    }
+
+    [Fact]
+    public async Task When_Post_ImportPldns_ModelStateInvalid_Should_Return_IndexViewWithModel()
+    {
+        // Arrange
+        var controller = new ImportController(mediator.Object, logger.Object);
+
+        var model = new UploadImportFileViewModel { File = null! };
+        controller.ModelState.AddModelError("some", "some error");
+
+        // Act
+        var result = await controller.ImportPldns(model);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.Equal(PldnsViewPath, viewResult.ViewName);
+        Assert.Same(model, viewResult.Model);
+    }
+
+    [Fact]
+    public async Task When_Post_ImportPldns_FileNull_Should_Return_IndexViewWithModelError()
+    {
+        // Arrange
+        var controller = new ImportController(mediator.Object, logger.Object);
+
+        var model = new UploadImportFileViewModel { File = null! };
+
+        // Act
+        var result = await controller.ImportPldns(model);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.Equal(PldnsViewPath, viewResult.ViewName);
+        Assert.True(controller.ModelState.ContainsKey(nameof(model.File)));
+        var entry = controller.ModelState[nameof(model.File)];
+        Assert.Contains(entry!.Errors, e => e.ErrorMessage.Contains(".xlsx", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task When_Post_ImportPldns_FileLengthZero_Should_Return_IndexViewWithModelError()
+    {
+        // Arrange
+        var controller = new ImportController(mediator.Object, logger.Object);
+
+        var emptyFile = CreateFormFile("test.xlsx", Array.Empty<byte>());
+
+        var model = new UploadImportFileViewModel
+        {
+            File = emptyFile
+        };
+
+        // Act
+        var result = await controller.ImportPldns(model);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.Equal(PldnsViewPath, viewResult.ViewName);
+        Assert.True(controller.ModelState.ContainsKey(nameof(model.File)));
+        var entry = controller.ModelState[nameof(model.File)];
+        Assert.Contains(entry!.Errors, e => e.ErrorMessage.Contains(".xlsx", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task When_Post_ImportPldns_WrongExtension_Should_Returns_IndexViewWithModelError()
+    {
+        // Arrange
+        var controller = new ImportController(mediator.Object, logger.Object);
+
+        var txtFile = CreateFormFile("test.txt", new byte[] { 1, 2, 3 });
+
+        var model = new UploadImportFileViewModel
+        {
+            File = txtFile
+        };
+
+        // Act
+        var result = await controller.ImportPldns(model);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.Equal(PldnsViewPath, viewResult.ViewName);
+        Assert.True(controller.ModelState.ContainsKey(nameof(model.File)));
+        var entry = controller.ModelState[nameof(model.File)];
+        Assert.Contains(entry!.Errors, e => e.ErrorMessage.Contains(".xlsx", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public async Task When_Post_ImportPldns_ValidFile_Should_Returns_ImportedView()
+    {
+        // Arrange
+
+        var msgResponse = new BaseMediatrResponse<ImportPldnsCommandResponse>()
+        {
+            Success = true,
+            Value = _fixture.Create<ImportPldnsCommandResponse>()
+        };
+        mediator
+            .Setup(m => m.Send(It.IsAny<ImportPldnsCommand>(), default))
+            .ReturnsAsync(msgResponse);
+
+        var controller = new ImportController(mediator.Object, logger.Object);
+
+        var xlsxFile = CreateFormFile("list.xlsx", new byte[] { 1, 2, 3 });
+
+        var model = new UploadImportFileViewModel
+        {
+            File = xlsxFile
+        };
+
+        // Act
+        var result = await controller.ImportPldns(model);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.Equal(ImportedViewPath, viewResult.ViewName);
+    }
+
+    [Fact]
+    public async Task When_Post_ImportPldns_MediatorThrows_Should_Returns_ViewWithModelError()
+    {
+        // Arrange
+        mediator
+            .Setup(m => m.Send(It.IsAny<IRequest<object>>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new Exception("error"));
+
+        mediator
+            .Setup(m => m.Send(It.IsAny<object>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new Exception("error"));
+
+        var controller = new ImportController(mediator.Object, logger.Object);
+
+        var xlsxFile = CreateFormFile("list.xlsx", new byte[] { 1, 2, 3 });
+
+        var model = new UploadImportFileViewModel
+        {
+            File = xlsxFile
+        };
+
+        // Act
+        var result = await controller.ImportPldns(model);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.NotNull(viewResult.ViewName);
         Assert.Same(model, viewResult.Model);
         Assert.True(controller.ModelState.ContainsKey(string.Empty));
         var entry = controller.ModelState[string.Empty];

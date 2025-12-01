@@ -6,7 +6,7 @@ using SFA.DAS.AODP.Domain.Interfaces;
 
 namespace SFA.DAS.AODP.Application.UnitTests.Commands.Import;
 
-public class WhenImportDefundingListCommand
+public class WhenImportPldnsCommand
 {
     [Fact]
     public async Task ApiClientReturnsResponse_ShouldReturnsSuccessAndValue()
@@ -14,9 +14,9 @@ public class WhenImportDefundingListCommand
         // Arrange
         var mockApiClient = new Mock<IApiClient>(MockBehavior.Strict);
         var file = CreateFormFile();
-        var command = new ImportDefundingListCommand { File = file };
+        var command = new ImportPldnsCommand { File = file };
 
-        var expectedResponse = new ImportDefundingListResponse
+        var expectedResponse = new ImportPldnsCommandResponse
         {
             ImportedCount = 42,
             Message = "Imported successfully"
@@ -25,11 +25,11 @@ public class WhenImportDefundingListCommand
         IPostApiRequest? capturedRequest = null;
 
         mockApiClient
-            .Setup(c => c.PostWithMultipartFormData<ImportDefundingListResponse>(It.IsAny<IPostApiRequest>(), default))
+            .Setup(c => c.PostWithMultipartFormData<ImportPldnsCommandResponse>(It.IsAny<IPostApiRequest>(), default))
             .Callback<IPostApiRequest, CancellationToken>((req, ct) => capturedRequest = req)
             .ReturnsAsync(expectedResponse);
 
-        var handler = new ImportDefundingListCommandHandler(mockApiClient.Object);
+        var handler = new ImportPldnsCommandHandler(mockApiClient.Object);
 
         // Act
         var result = await handler.Handle(command, CancellationToken.None);
@@ -53,15 +53,15 @@ public class WhenImportDefundingListCommand
         // Arrange
         var mockApiClient = new Mock<IApiClient>(MockBehavior.Strict);
         var file = CreateFormFile();
-        var command = new ImportDefundingListCommand { File = file };
+        var command = new ImportPldnsCommand { File = file };
 
         var ex = new InvalidOperationException("API failure");
 
         mockApiClient
-            .Setup(c => c.PostWithMultipartFormData<ImportDefundingListResponse>(It.IsAny<IPostApiRequest>(), default))
+            .Setup(c => c.PostWithMultipartFormData<ImportPldnsCommandResponse>(It.IsAny<IPostApiRequest>(), default))
             .ThrowsAsync(ex);
 
-        var handler = new ImportDefundingListCommandHandler(mockApiClient.Object);
+        var handler = new ImportPldnsCommandHandler(mockApiClient.Object);
 
         // Act
         var result = await handler.Handle(command, CancellationToken.None);

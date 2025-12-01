@@ -2,7 +2,7 @@
 
 namespace SFA.DAS.AODP.Web.Areas.Import.Models;
 
-public class UploadDefundingListViewModel
+public class UploadImportFileViewModel
 {
     [Required(ErrorMessage = "You must select an .xlsx file")]
     [Display(Name = "You must select an .xlsx file")]

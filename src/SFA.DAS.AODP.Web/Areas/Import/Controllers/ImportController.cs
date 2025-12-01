@@ -13,6 +13,10 @@ namespace SFA.DAS.AODP.Web.Areas.Import.Controllers;
 [Route("import")]
 public class ImportController : ControllerBase
 {
+    private const string DefundingListViewPath = "~/Areas/Import/Views/DefundingList/Index.cshtml";
+    private const string PldnsViewPath = "~/Areas/Import/Views/Pldns/Index.cshtml";
+    private const string ImportedViewPath = "~/Areas/Import/Views/Imported.cshtml";
+
     public ImportController(
         IMediator mediator,
         ILogger<ImportController> logger) : base(mediator, logger)
@@ -20,19 +24,19 @@ public class ImportController : ControllerBase
     }
 
     [HttpGet("defunding-list")]
-    public IActionResult Index()
+    public IActionResult ImportDefundingList()
     {
-        return View("~/Areas/Import/Views/DefundingList/Index.cshtml");
+        return View(DefundingListViewPath);
     }
 
     [HttpPost("defunding-list")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Index([FromForm] UploadDefundingListViewModel model)
+    public async Task<IActionResult> ImportDefundingList([FromForm] UploadImportFileViewModel model)
     {
 
         if (!ModelState.IsValid)
         {
-            return View("~/Areas/Import/Views/DefundingList/Index.cshtml", model);
+            return View(DefundingListViewPath, model);
         }
 
         if (model.File == null
@@ -40,7 +44,7 @@ public class ImportController : ControllerBase
                 || !Path.GetExtension(model.File.FileName ?? string.Empty).Equals(".xlsx", StringComparison.OrdinalIgnoreCase))
         {
             ModelState.AddModelError(nameof(model.File), "You must select an .xlsx file.");
-            return View("~/Areas/Import/Views/DefundingList/Index.cshtml", model);
+            return View(DefundingListViewPath, model);
         }
 
         try
@@ -52,13 +56,58 @@ public class ImportController : ControllerBase
 
             await Send(command);
 
-            return View("~/Areas/Import/Views/DefundingList/Imported.cshtml");
+            ViewBag.Heading = "Defunding list import";
+            return View(ImportedViewPath);
         }
         catch (Exception ex)
         {
             LogException(ex);
             ModelState.AddModelError(string.Empty, "An unexpected error occurred while uploading the file. Please try again.");
-            return View(model);
+            return View(DefundingListViewPath, model);
+        }
+    }
+
+    [HttpGet("pldns")]
+    public IActionResult ImportPldns()
+    {
+        return View(PldnsViewPath);
+    }
+
+    [HttpPost("pldns")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ImportPldns([FromForm] UploadImportFileViewModel model)
+    {
+
+        if (!ModelState.IsValid)
+        {
+            return View(PldnsViewPath, model);
+        }
+
+        if (model.File == null
+                || model.File.Length == 0
+                || !Path.GetExtension(model.File.FileName ?? string.Empty).Equals(".xlsx", StringComparison.OrdinalIgnoreCase))
+        {
+            ModelState.AddModelError(nameof(model.File), "You must select an .xlsx file.");
+            return View(PldnsViewPath, model);
+        }
+
+        try
+        {
+            var command = new ImportPldnsCommand
+            {
+                File = model.File
+            };
+
+            await Send(command);
+
+            ViewBag.Heading = "PLDNS data import";
+            return View(ImportedViewPath);
+        }
+        catch (Exception ex)
+        {
+            LogException(ex);
+            ModelState.AddModelError(string.Empty, "An unexpected error occurred while uploading the file. Please try again.");
+            return View(PldnsViewPath, model);
         }
     }
 }

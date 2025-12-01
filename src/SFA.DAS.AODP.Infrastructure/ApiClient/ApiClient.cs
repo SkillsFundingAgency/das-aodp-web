@@ -128,7 +128,7 @@ namespace SFA.DAS.AODP.Infrastructure.ApiClient
             response.EnsureSuccessStatusCode();
         }
 
-        public async Task<TResponse?> PostWithMultipartFormData<TResponse>(IPostApiRequest request)
+        public async Task<TResponse?> PostWithMultipartFormData<TResponse>(IPostApiRequest request, CancellationToken cancellationToken)
         {
             var requestData = request.Data as IFormFile;
             using var content = new MultipartFormDataContent();

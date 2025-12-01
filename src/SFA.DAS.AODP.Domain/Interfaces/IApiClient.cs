@@ -11,5 +11,5 @@ public interface IApiClient
     Task PostWithResponseCode(IPostApiRequest request);
     Task Delete(IDeleteApiRequest request);
     Task Put(IPutApiRequest request);
-    Task<TResponse?> PostWithMultipartFormData<TResponse>(IPostApiRequest request);
+    Task<TResponse?> PostWithMultipartFormData<TResponse>(IPostApiRequest request, CancellationToken cancellationToken);
 }

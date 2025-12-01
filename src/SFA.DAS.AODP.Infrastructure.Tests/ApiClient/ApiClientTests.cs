@@ -268,7 +268,7 @@ public class ApiClientTests
         var postRequest = new TestPostRequest("upload-endpoint", formFileMock.Object);
 
         // Act
-        var result = await client.PostWithMultipartFormData<ImportDefundingListResponse>(postRequest);
+        var result = await client.PostWithMultipartFormData<ImportDefundingListResponse>(postRequest, default);
 
 
         // Assert

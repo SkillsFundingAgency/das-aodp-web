@@ -1,6 +1,4 @@
-﻿@using Azure.Core
-@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
-@model SFA.DAS.AODP.Web.Areas.Import.Models.UploadImportFileViewModel
+﻿@model SFA.DAS.AODP.Web.Areas.Import.Models.UploadImportFileViewModel
 @{
     Layout = "_Layout";
     var allowed = ".xlsx";
@@ -12,9 +10,9 @@
 <div class="govuk-width-container">
     <a class="govuk-back-link" asp-action="Index" asp-controller="Import" asp-area="Admin">Back</a>
 
-    <h1 class="govuk-heading-xl">Import defunding list data</h1>
+    <h1 class="govuk-heading-xl">Import policy last date for new starters (PLDNS) data</h1>
 
-    <form asp-area="Import" asp-controller="Import" asp-action="ImportDefundingList" method="post" enctype="multipart/form-data" novalidate>
+    <form asp-area="Import" asp-controller="Import" asp-action="ImportPldns" method="post" enctype="multipart/form-data" novalidate>
         @Html.AntiForgeryToken()
 
         <div class="govuk-grid-row">
@@ -30,11 +28,14 @@
                             <span class="govuk-visually-hidden">Error:</span>
                             @(fileErrors![0].ErrorMessage ?? "Select a file")
                         </p>
+                        <div class="govuk-hint">
+                            This must be an @allowed file. The file may take up to 2 minutes to finish uploading.
+                        </div>
                     }
                     else
                     {
                         <div class="govuk-hint">
-                            This must be an @allowed file
+                            This must be an @allowed file. The file may take up to 2 minutes to finish uploading.
                         </div>
                     }
 

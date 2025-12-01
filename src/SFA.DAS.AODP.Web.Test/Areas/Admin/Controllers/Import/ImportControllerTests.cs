@@ -85,7 +85,7 @@ public class ImportControllerTests
 
         // Assert
         var redirect = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal("Index", redirect.ActionName);
+        Assert.Equal("ImportDefundingList", redirect.ActionName);
         Assert.Equal("Import", redirect.ControllerName);
         Assert.NotNull(redirect.RouteValues);
         Assert.True(redirect.RouteValues.ContainsKey("area"));
