@@ -7,6 +7,7 @@
     var fileErrors = ViewData.ModelState["File"]?.Errors;
     var hasFileError = fileErrors != null && fileErrors.Count > 0;
     var inputClass = hasFileError ? "govuk-file-upload govuk-file-upload--error" : "govuk-file-upload govuk-!-margin-top-2";
+    var submitCommand = "this.disabled = true; this.form.submit();";
 }
 <partial name="~/Views/Shared/_ValidationSummaryPartial.cshtml" />
 <div class="govuk-width-container">
@@ -49,7 +50,7 @@
                 </div>
 
                 <div class="govuk-form-group">
-                    <govuk-button type="submit" onclick="this.disabled = true; this.form.submit();">Continue</govuk-button>
+                    <govuk-button type="submit" onclick="@submitCommand" onkeypress="@submitCommand">Continue</govuk-button>
                 </div>
 
             </div>
