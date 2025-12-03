@@ -32,7 +32,7 @@ public class ImportController : ControllerBase
     [HttpPost("defunding-list")]
     [Consumes("multipart/form-data")]
     [ValidateAntiForgeryToken]
-    [Authorize(Roles = RoleConstants.QFAUImport)]
+    [Authorize(Roles = "qfau_admin_data_importer")]
     public async Task<IActionResult> ImportDefundingList([FromForm] UploadImportFileViewModel model)
     {
 
