@@ -30,7 +30,9 @@ public class ImportController : ControllerBase
     }
 
     [HttpPost("defunding-list")]
+    [Consumes("multipart/form-data")]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = RoleConstants.QFAUImport)]
     public async Task<IActionResult> ImportDefundingList([FromForm] UploadImportFileViewModel model)
     {
 
@@ -74,7 +76,9 @@ public class ImportController : ControllerBase
     }
 
     [HttpPost("pldns")]
+    [Consumes("multipart/form-data")]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = RoleConstants.QFAUImport)]
     public async Task<IActionResult> ImportPldns([FromForm] UploadImportFileViewModel model)
     {
 
