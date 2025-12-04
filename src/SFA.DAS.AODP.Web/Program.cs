@@ -170,6 +170,10 @@ internal class Program
                     pattern: "Admin/Forms/{action=index}/{id?}",
                     defaults: new { area = "Admin", controller = "Forms" }).RequireAuthorization(PolicyConstants.IsAdminFormsUser);
 
+        endpoints.MapAreaControllerRoute(name: "Import",
+                                       areaName: "Import",
+                                       pattern: "Import", 
+                                       defaults: new { area = "Import", controller = "Import", action = "ImportDefundingList" });
 
         endpoints.MapDefaultControllerRoute();
     }

@@ -4,7 +4,7 @@ namespace SFA.DAS.AODP.Domain.Import;
 
 public class ImportDefundingListApiRequest : IPostApiRequest
 {
-    public string PostUrl => "/aodp/api/import/defunding-list";
+    public string PostUrl => "/api/import/defunding-list";
 
     public required object Data { get; set; }
 }
