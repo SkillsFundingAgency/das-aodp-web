@@ -10,7 +10,6 @@ namespace SFA.DAS.AODP.Web.Areas.Import.Controllers;
 
 [Area("Import")]
 [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
-[Route("import")]
 public class ImportController : ControllerBase
 {
     private const string DefundingListViewPath = "~/Areas/Import/Views/DefundingList/Index.cshtml";
@@ -23,16 +22,18 @@ public class ImportController : ControllerBase
     {
     }
 
-    [HttpGet("defunding-list")]
+    [HttpGet]
+    [Route("import/defunding-list")]
     public IActionResult ImportDefundingList()
     {
         return View(DefundingListViewPath);
     }
 
-    [HttpPost("defunding-list")]
+    [HttpPost]
+    [Route("import/defunding-list")]
     [Consumes("multipart/form-data")]
     [ValidateAntiForgeryToken]
-    [Authorize(Roles = "qfau_admin_data_importer")]
+    [Authorize(Roles = RoleConstants.QFAUImport)]
     public async Task<IActionResult> ImportDefundingList([FromForm] UploadImportFileViewModel model)
     {
 
@@ -69,13 +70,15 @@ public class ImportController : ControllerBase
         }
     }
 
-    [HttpGet("pldns")]
+    [HttpGet]
+    [Route("import/pldns")]
     public IActionResult ImportPldns()
     {
         return View(PldnsViewPath);
     }
 
-    [HttpPost("pldns")]
+    [HttpPost]
+    [Route("import/pldns")]
     [Consumes("multipart/form-data")]
     [ValidateAntiForgeryToken]
     [Authorize(Roles = RoleConstants.QFAUImport)]
