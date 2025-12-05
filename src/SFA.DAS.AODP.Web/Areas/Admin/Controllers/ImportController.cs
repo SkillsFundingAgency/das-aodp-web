@@ -48,12 +48,6 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
                 return RedirectToAction("ImportDefundingList", ImportAreaName, new { area = ImportAreaName });
             }
 
-            if (!string.IsNullOrWhiteSpace(viewModel?.ImportType) &&
-                string.Equals(viewModel.ImportType.Trim(), "Pldns", StringComparison.OrdinalIgnoreCase))
-            {
-                return RedirectToAction("ImportPldns", ImportAreaName, new { area = ImportAreaName });
-            }
-
             return RedirectToAction("ConfirmImportSelection", viewModel);
         }
 

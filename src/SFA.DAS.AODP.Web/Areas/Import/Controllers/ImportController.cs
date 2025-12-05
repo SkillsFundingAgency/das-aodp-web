@@ -13,7 +13,6 @@ namespace SFA.DAS.AODP.Web.Areas.Import.Controllers;
 public class ImportController : ControllerBase
 {
     private const string DefundingListViewPath = "~/Areas/Import/Views/DefundingList/Index.cshtml";
-    private const string PldnsViewPath = "~/Areas/Import/Views/Pldns/Index.cshtml";
     private const string ImportedViewPath = "~/Areas/Import/Views/Imported.cshtml";
 
     public ImportController(
