@@ -16,6 +16,7 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
     [Authorize(Policy = PolicyConstants.IsAdminImportUser)]
     public class ImportController : ControllerBase
     {
+        private const string ImportAreaName = "Import";
         private readonly IUserHelperService _userHelperService;
         public enum SendKeys { RequestFailed, JobStatusFailed }
 
@@ -39,6 +40,12 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
             if (!ModelState.IsValid)
             {
                 return View("Index", viewModel);
+            }
+
+            if (!string.IsNullOrWhiteSpace(viewModel?.ImportType) &&
+                string.Equals(viewModel.ImportType.Trim(), "Defunding list", StringComparison.OrdinalIgnoreCase))
+            {
+                return RedirectToAction("ImportDefundingList", ImportAreaName, new { area = ImportAreaName });
             }
 
             return RedirectToAction("ConfirmImportSelection", viewModel);
