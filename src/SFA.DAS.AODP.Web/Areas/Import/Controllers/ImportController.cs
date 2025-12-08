@@ -58,7 +58,7 @@ public class ImportController : ControllerBase
 
             await Send(command);
 
-            ViewBag.Heading = "Defunding list import";
+            ViewBag.Heading = "Defunding list imported";
             return View(ImportedViewPath);
         }
         catch (Exception ex)
