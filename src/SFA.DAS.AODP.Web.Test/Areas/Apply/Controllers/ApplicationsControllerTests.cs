@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Logging;
 using Moq;
 using SFA.DAS.AODP.Application;
+using SFA.DAS.AODP.Application.Commands.Application.Application;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Web.Areas.Apply.Controllers;
 using SFA.DAS.AODP.Web.Helpers.User;
@@ -87,10 +88,12 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
 
             var result = await _controller.Create(model);
 
-            var redirect = Assert.IsType<RedirectToActionResult>(result);
+            
             Assert.Multiple(() =>
             {
+                var redirect = Assert.IsType<RedirectToActionResult>(result);
                 Assert.Equal(nameof(ApplicationsController.ViewApplication), redirect.ActionName);
+                Assert.NotNull(redirect.RouteValues);
                 Assert.Contains("organisationId", redirect.RouteValues.Keys);
                 Assert.Contains("applicationId", redirect.RouteValues.Keys);
             });
@@ -128,10 +131,12 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
 
             var result = await _controller.Submit(applicationId, organisationId);
 
-            var redirect = Assert.IsType<RedirectToActionResult>(result);
+            
             Assert.Multiple(() =>
             {
+                var redirect = Assert.IsType<RedirectToActionResult>(result);
                 Assert.Equal(nameof(ApplicationsController.SubmitConfirmation), redirect.ActionName);
+                Assert.NotNull(redirect.RouteValues);
                 Assert.Equal(applicationId, redirect.RouteValues["applicationId"]);
                 Assert.Equal(organisationId, redirect.RouteValues["organisationId"]);
             });

@@ -3,8 +3,6 @@
     public class WithdrawApplicationViewModel
     {
         public Guid ApplicationId { get; set; }
-        public string ApplicationName { get; set; }
-        public int ApplicationReference { get; set; }
         public Guid OrganisationId { get; internal set; }
         public Guid FormVersionId { get; internal set; }
     }

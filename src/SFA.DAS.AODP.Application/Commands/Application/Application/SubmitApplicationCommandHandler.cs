@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Domain.Interfaces;
-
+namespace SFA.DAS.AODP.Application.Commands.Application.Application;
 public class SubmitApplicationCommandHandler : IRequestHandler<SubmitApplicationCommand, BaseMediatrResponse<EmptyResponse>>
 {
     private readonly IApiClient _apiCLient;
