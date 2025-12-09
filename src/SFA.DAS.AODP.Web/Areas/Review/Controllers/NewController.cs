@@ -9,6 +9,7 @@ using SFA.DAS.AODP.Authentication.DfeSignInApi.Models;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
+using SFA.DAS.AODP.Web.Helpers.QanHelper;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 using System.Globalization;
@@ -26,7 +27,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         private readonly ILogger<NewController> _logger;
         private readonly IMediator _mediator;
         private readonly IUserHelperService _userHelperService;
-        private readonly IOptions<AodpConfiguration> _aodpConfiguration;
+        private readonly IQanLookupHelper _qanLookupHelper;
         private List<string> ReviewerAllowedStatuses { get; set; } = new List<string>()
         {
             "Decision Required",
@@ -34,12 +35,12 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         };
         public enum NewQualDataKeys { InvalidPageParams, CommentSaved}
 
-        public NewController(ILogger<NewController> logger, IOptions<AodpConfiguration> configuration, IMediator mediator, IUserHelperService userHelperService) : base(mediator, logger)
+        public NewController(ILogger<NewController> logger, IMediator mediator, IUserHelperService userHelperService, IQanLookupHelper qanLookupHelper) : base(mediator, logger)
         {
             _logger = logger;
             _mediator = mediator;
             _userHelperService = userHelperService;
-            _aodpConfiguration = configuration;
+            _qanLookupHelper = qanLookupHelper;
         }
 
         [Route("/Review/New/Index")]
@@ -84,7 +85,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     viewModel = NewQualificationsViewModel.Map(response, procStatuses.ProcessStatuses, organisation, qan, name);
                 }
 
-                viewModel.FindRegulatedQualificationUrl = _aodpConfiguration.Value.FindRegulatedQualificationUrl;
                 viewModel.Filter = new NewQualificationFilterViewModel()
                 {
                     Organisation = organisation,
@@ -293,6 +293,12 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 _logger.LogError(ex, "An error occurred while generating the CSV file.");
                 return Redirect("/Home/Error");
             }
+        }
+
+        [Route("/Review/New/ValidateQan")]
+        public async Task<IActionResult> ValidateQan(string area, string controller, string qan)
+        {
+            return await _qanLookupHelper.RedirectToRegisterIfQanIsValid(area, controller, qan);
         }
 
         private bool CheckUserIsAbleToSetStatus(NewQualificationDetailsViewModel model, Guid procStatusId)

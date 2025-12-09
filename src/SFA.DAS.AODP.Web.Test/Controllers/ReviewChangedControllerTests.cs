@@ -9,6 +9,7 @@ using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
+using SFA.DAS.AODP.Web.Helpers.QanHelper;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 using System.Diagnostics.CodeAnalysis;
@@ -22,11 +23,8 @@ public class ReviewChangedControllerTests
     private readonly Mock<ILogger<ChangedController>> _loggerMock;
     private readonly Mock<IUserHelperService> _userHelper;
     private readonly Mock<IMediator> _mediatorMock;
+    private readonly Mock<IQanLookupHelper> _qanLookupHelperMock;
     private readonly ChangedController _controller;
-    private readonly IOptions<AodpConfiguration> _aodpOptions = Options.Create(new AodpConfiguration
-    {
-        FindRegulatedQualificationUrl = "https://find-a-qualification.services.ofqual.gov.uk/qualifications/"
-    });
 
     public ReviewChangedControllerTests()
     {
@@ -35,8 +33,9 @@ public class ReviewChangedControllerTests
         _loggerMock = _fixture.Freeze<Mock<ILogger<ChangedController>>>();
         _userHelper = _fixture.Freeze<Mock<IUserHelperService>>();
         _mediatorMock = _fixture.Freeze<Mock<IMediator>>();
+        _qanLookupHelperMock = _fixture.Freeze<Mock<IQanLookupHelper>>();
 
-        _controller = new ChangedController(_loggerMock.Object, _aodpOptions, _mediatorMock.Object, _userHelper.Object);
+        _controller = new ChangedController(_loggerMock.Object, _mediatorMock.Object, _userHelper.Object, _qanLookupHelperMock.Object);
     }
 
     [Fact]
@@ -62,7 +61,6 @@ public class ReviewChangedControllerTests
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
         var model = Assert.IsAssignableFrom<ChangedQualificationsViewModel>(viewResult.ViewData.Model);
-        Assert.Equal(_aodpOptions.Value.FindRegulatedQualificationUrl, model.FindRegulatedQualificationUrl);
     }
 
     [Fact]
@@ -96,7 +94,6 @@ public class ReviewChangedControllerTests
         Assert.Equal(queryResponse.Value.Data[0].Status, model.ChangedQualifications[0].Status);
         Assert.Equal(queryResponse.Value.Data[0].AwardingOrganisation, model.ChangedQualifications[0].AwardingOrganisation);
         Assert.Equal(queryResponse.Value.Data[0].Status, model.ChangedQualifications[0].Status);
-        Assert.Equal(_aodpOptions.Value.FindRegulatedQualificationUrl, model.FindRegulatedQualificationUrl);
     }
 
     [Fact]
