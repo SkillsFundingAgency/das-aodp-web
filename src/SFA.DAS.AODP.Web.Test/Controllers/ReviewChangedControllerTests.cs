@@ -221,4 +221,30 @@ public class ReviewChangedControllerTests
         Assert.Equal(viewModel.Filter.QualificationName, viewResult.RouteValues["name"]);
         Assert.Equal(viewModel.Filter.QAN, viewResult.RouteValues["qan"]);
     }
+
+    [Fact]
+    public async Task ValidateQan_ForwardsCallToHelper_AndReturnsResult()
+    {
+        // Arrange
+        var qan = "12345678";
+        var area = "Review";
+        var controller = "Changed";
+        var expectedUrl = $"https://find-a-qualification.services.ofqual.gov.uk/qualifications/{qan}";
+
+        _qanLookupHelperMock.Setup(h => h.RedirectToRegisterIfQanIsValid(area, controller, qan)
+            .Result).Returns(new RedirectResult(expectedUrl));
+
+        // Act
+        var result = await _controller.ValidateQan(area, controller, qan);
+
+        // Assert
+        var redirectResult = Assert.IsType<RedirectResult>(result);
+        Assert.Equal(expectedUrl, redirectResult.Url);
+
+        _qanLookupHelperMock.Verify(h => h.RedirectToRegisterIfQanIsValid(
+            It.Is<string>(a => a == area),
+            It.Is<string>(c => c == controller),
+            It.Is<string>(q => q == qan)), Times.Once);
+
+    }
 }

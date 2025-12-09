@@ -29,11 +29,11 @@ namespace SFA.DAS.AODP.Web.Helpers.QanHelper
         /// <summary>
         /// Redirects to ofqual register if the Qan is valid.
         /// </summary>
-        /// <param name="areaName"></param>
-        /// <param name="controllerName"></param>
+        /// <param name="area"></param>
+        /// <param name="controller"></param>
         /// <param name="qan"></param>
         /// <returns>The correct ofqual register url. Otherwise returns the QanInvalid view</returns>
-        public async Task<IActionResult> RedirectToRegisterIfQanIsValid(string areaName, string controllerName, string qan)
+        public async Task<IActionResult> RedirectToRegisterIfQanIsValid(string area, string controller, string qan)
         {
             var mediatorResponse = await _mediator.Send(new GetQualificationDetailsQuery { QualificationReference = qan });
 
@@ -44,8 +44,8 @@ namespace SFA.DAS.AODP.Web.Helpers.QanHelper
                 {
                     Model = qan
                 };
-                invalidViewData["AreaName"] = areaName;
-                invalidViewData["ControllerName"] = controllerName;
+                invalidViewData["AreaName"] = area;
+                invalidViewData["ControllerName"] = controller;
 
                 return new ViewResult
                 {

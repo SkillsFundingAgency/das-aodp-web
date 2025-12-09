@@ -74,7 +74,7 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
             };
 
             _mediatorMock.Setup(m => m.Send(It.IsAny<GetApplicationsForReviewQuery>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new BaseMediatrResponse<GetApplicationsForReviewQueryResponse> { Success = true, Value = response});
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationsForReviewQueryResponse> { Success = true, Value = response });
 
             //Act
             var result = await _controller.Index(expectedModel) as ViewResult;
@@ -233,5 +233,52 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
             await Assert.ThrowsAsync<IOException>(() => _controller.DownloadAllApplicationFiles(applicationReviewId));
         }
 
+        [Fact]
+        public async Task ValidateQan_ForwardsCallToHelper_AndReturnsResult()
+        {
+            // Arrange
+            var area = "Review";
+            var controller = "ApplicationsReview";
+            var qan = "60142923";
+            var expectedUrl = $"https://find-a-qualification.services.ofqual.gov.uk/qualifications/{qan}";
+
+            _qanLookupHelperMock.Setup(h => h.RedirectToRegisterIfQanIsValid(area, controller, qan)
+            .Result).Returns(new RedirectResult(expectedUrl));
+
+            // Act
+            var result = await _controller.ValidateQan(area, controller, qan);
+
+            // Assert
+            var redirectResult = Assert.IsType<RedirectResult>(result);
+            Assert.Equal(expectedUrl, redirectResult.Url);
+
+            _qanLookupHelperMock.Verify(h => h.RedirectToRegisterIfQanIsValid(
+                It.Is<string>(a => a == area),
+                It.Is<string>(c => c == controller),
+                It.Is<string>(q => q == qan)), Times.Once);
+        }
+
+        [InlineData("invalidQan")]
+        [InlineData("")]
+        [Theory]
+        public async Task ValidateQan_InvalidQan_ReturnsQanInvalidView(string qan)
+        {
+            // Arrange
+            var area = "Review";
+            var controller = "ApplicationsReview";
+            _qanLookupHelperMock.Setup(h => h.RedirectToRegisterIfQanIsValid(area, controller, qan)
+            .Result).Returns(new ViewResult { ViewName = "QanInvalid" });
+
+            // Act
+            var result = await _controller.ValidateQan(area, controller, qan);
+
+            // Assert
+            var viewResult = Assert.IsType<ViewResult>(result);
+            Assert.Equal("QanInvalid", viewResult.ViewName);
+            _qanLookupHelperMock.Verify(h => h.RedirectToRegisterIfQanIsValid(
+                It.Is<string>(a => a == area),
+                It.Is<string>(c => c == controller),
+                It.Is<string>(q => q == qan)), Times.Once);
+        }
     }
 }
