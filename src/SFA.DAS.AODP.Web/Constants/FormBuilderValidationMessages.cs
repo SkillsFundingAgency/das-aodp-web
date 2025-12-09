@@ -18,6 +18,6 @@
         public const string MaxNumberMustBeGreaterThanOrEqualToMin = "Maximum value must be greater than or equal to minimum value";
 
         // DateInput
-        public const string MaxDateMustBeLaterThanOrEqualToMin = "Maximum date must be later than or equal tominimum date";
+        public const string MaxDateMustBeLaterThanOrEqualToMin = "Maximum date must be later than or equal to minimum date";
     }
 }
