@@ -131,9 +131,11 @@
                                                     <td>
                                                         @if (!string.IsNullOrWhiteSpace(@qualification.QualificationReference))
                                                         {
-                                                            var baseUrl = Model.FindRegulatedQualificationUrl ?? string.Empty;
-                                                            var fullUrl = $"{baseUrl}{qualification.QualificationReference}";
-                                                            <a href="@fullUrl" target="_blank">@qualification.QualificationReference</a>
+                                                            <a class="govuk-link"
+                                                               asp-area="Review"
+                                                               asp-action="ValidateQan"
+                                                               asp-route-qan="@qualification.QualificationReference"
+                                                               asp-controller="Changed">@qualification.QualificationReference</a>
                                                         }
                                                     </td>
                                                     <td class="govuk-table__cell">

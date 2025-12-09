@@ -15,7 +15,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
         public string? AwardingOrganisationSearch { get; set; }
         public List<ApplicationStatus> Status { get; set; }
         public string UserType { get; set; }
-        public string FindRegulatedQualificationUrl { get; set; } = string.Empty;
 
         public class Application
         {

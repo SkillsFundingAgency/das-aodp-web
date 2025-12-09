@@ -1,0 +1,33 @@
+﻿@model string?
+
+@{
+    ViewData["Title"] = "QanInvalid";
+    var _area = ViewBag.AreaName as string;
+    var _controller = ViewBag.ControllerName as string;
+}
+
+<h1>The QAN: '@Model' is Invalid</h1>
+
+@if (string.IsNullOrWhiteSpace(Model))
+{
+    <p>The QAN provided is empty or null.</p>
+}
+else
+{
+    @switch (_controller)
+    {
+        case "ApplicationsReview":
+            <p>Please return to the application review page, check the QAN and try again.</p>
+            break;
+        case "New":
+            <p>Please return to the new application page, check the QAN and try again.</p>
+            break;
+        case "Changed":
+            <p> Please return to the changed application page, check the QAN and try again.</p>
+            break;
+    }
+
+    <a class="govuk-button govuk-button--secondary" href='@Url.Action("Index", _controller, new { area = _area })'>
+        Back
+    </a>
+}

@@ -12,6 +12,7 @@ using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApproval;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
+using SFA.DAS.AODP.Web.Helpers.QanHelper;
 using SFA.DAS.AODP.Web.Helpers.User;
 using System.IO.Compression;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
@@ -29,21 +30,20 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         private readonly IUserHelperService _userHelperService;
         private readonly UserType UserType;
         private readonly IFileService _fileService;
-        private readonly IOptions<AodpConfiguration> _aodpConfiguration;
+        private readonly IQanLookupHelper _qanLookupHelper;
 
-        public ApplicationsReviewController(ILogger<ApplicationsReviewController> logger, IMediator mediator, IUserHelperService userHelperService, IFileService fileService, IOptions<AodpConfiguration> aodpConfiguration) : base(mediator, logger)
+        public ApplicationsReviewController(ILogger<ApplicationsReviewController> logger, IMediator mediator, IUserHelperService userHelperService, IFileService fileService, IQanLookupHelper qanLookupHelper) : base(mediator, logger)
         {
             _userHelperService = userHelperService;
             UserType = userHelperService.GetUserType();
             _fileService = fileService;
-            _aodpConfiguration = aodpConfiguration;
+            _qanLookupHelper = qanLookupHelper;
         }
 
         [Route("review/application-reviews")]
         public async Task<IActionResult> Index(ApplicationsReviewListViewModel model)
         {
             string userType = _userHelperService.GetUserType().ToString();
-            model.FindRegulatedQualificationUrl = _aodpConfiguration.Value.FindRegulatedQualificationUrl;
             var response = await Send(new GetApplicationsForReviewQuery()
             {
                 ReviewUser = userType,
@@ -532,6 +532,11 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
         }
 
+        [Route("review/application-reviews/ValidateQan")]
+        public async Task<IActionResult> ValidateQan(string area, string controller, string qan)
+        {
+            return await _qanLookupHelper.RedirectToRegisterIfQanIsValid(area, controller, qan);
+        }
         private async Task<Guid> GetApplicationIdWithAccessValidation(Guid applicationReviewId)
         {
             var shared = await Send(new GetApplicationReviewSharingStatusByIdQuery(applicationReviewId));

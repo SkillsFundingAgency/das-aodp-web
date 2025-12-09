@@ -8,6 +8,7 @@ using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
+using SFA.DAS.AODP.Web.Helpers.QanHelper;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 using System.Globalization;
@@ -23,7 +24,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         private readonly ILogger<ChangedController> _logger;
         private readonly IMediator _mediator;
         private readonly IUserHelperService _userHelperService;
-        private readonly IOptions<AodpConfiguration> _aodpConfiguration;
+        private readonly IQanLookupHelper _qanLookupHelper;
 
         private List<string> ReviewerAllowedStatuses { get; set; } = new List<string>()
         {
@@ -33,12 +34,12 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
         public enum NewQualDataKeys { InvalidPageParams, CommentSaved}
 
-        public ChangedController(ILogger<ChangedController> logger, IOptions<AodpConfiguration> configuration, IMediator mediator, IUserHelperService userHelperService) : base(mediator, logger)
+        public ChangedController(ILogger<ChangedController> logger, IMediator mediator, IUserHelperService userHelperService, IQanLookupHelper qanLookupHelper) : base(mediator, logger)
         {
             _logger = logger;
-            _aodpConfiguration = configuration;
             _mediator = mediator;
             this._userHelperService = userHelperService;
+            _qanLookupHelper = qanLookupHelper;
         }
 
         public async Task<IActionResult> Index(List<Guid>? processStatusIds, int pageNumber = 0, int recordsPerPage = 10, string name = "", string organisation = "", string qan = "")
@@ -92,7 +93,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     ProcessStatusIds = processStatusIds
                 };
                 viewModel.ProcessStatuses = [.. procStatuses.ProcessStatuses];
-                viewModel.FindRegulatedQualificationUrl = _aodpConfiguration.Value.FindRegulatedQualificationUrl;
                 return View(viewModel);
             }
             catch (Exception ex)
@@ -392,6 +392,12 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 LogException(ex);
                 return RedirectToAction(nameof(QualificationDetails), new { qualificationReference = model.Qual.Qan });
             }
+        }
+
+        [Route("/Review/Changed/ValidateQan")]
+        public async Task<IActionResult> ValidateQan(string area, string controller, string qan)
+        {
+            return await _qanLookupHelper.RedirectToRegisterIfQanIsValid(area, controller, qan);
         }
 
         private bool CheckUserIsAbleToSetStatus(ChangedQualificationDetailsViewModel model, Guid procStatusId)

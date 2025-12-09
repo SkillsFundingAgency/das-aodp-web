@@ -21,7 +21,6 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
         public JobStatusViewModel JobStatusViewModel { get; set; }
 
         public List<ProcessStatus> ProcessStatuses { get; set; } = new List<ProcessStatus>();
-        public string FindRegulatedQualificationUrl { get; set; } = string.Empty;
 
         public class ProcessStatus
         {

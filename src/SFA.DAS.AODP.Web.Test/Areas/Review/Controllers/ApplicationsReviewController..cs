@@ -17,6 +17,7 @@ using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview;
 using SFA.DAS.AODP.Web.Areas.Review.Models.Home;
+using SFA.DAS.AODP.Web.Helpers.QanHelper;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Form;
 using System.IO.Compression;
@@ -32,12 +33,9 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
         private readonly Mock<IUserHelperService> _userHelperServiceMock = new();
         private readonly Mock<IFileService> _fileServiceMock = new();
         private readonly ApplicationsReviewController _controller;
-        private readonly IOptions<AodpConfiguration> _aodpOptions = Options.Create(new AodpConfiguration
-        {
-            FindRegulatedQualificationUrl = "https://find-a-qualification.services.ofqual.gov.uk/qualifications/"
-        });
+        private readonly Mock<IQanLookupHelper> _qanLookupHelperMock = new();
 
-        public ApplicationsReviewControllerTests() => _controller = new(_loggerMock.Object, _mediatorMock.Object, _userHelperServiceMock.Object, _fileServiceMock.Object, _aodpOptions);
+        public ApplicationsReviewControllerTests() => _controller = new(_loggerMock.Object, _mediatorMock.Object, _userHelperServiceMock.Object, _fileServiceMock.Object, _qanLookupHelperMock.Object);
 
         [Fact]
         public async Task IndexMethod_PopulatesAndReturnsViewCorrectly()
@@ -66,8 +64,7 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
                 AwardingOrganisation = "Test Org",
                 Owner = "TestOwner",
                 Status = ApplicationStatus.InReview,
-                NewMessage = false,
-                FindRegulatedQualificationUrl = _aodpOptions.Value.FindRegulatedQualificationUrl
+                NewMessage = false
             };
 
             var response = new GetApplicationsForReviewQueryResponse
@@ -77,7 +74,7 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
             };
 
             _mediatorMock.Setup(m => m.Send(It.IsAny<GetApplicationsForReviewQuery>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new BaseMediatrResponse<GetApplicationsForReviewQueryResponse> { Success = true, Value = response});
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationsForReviewQueryResponse> { Success = true, Value = response });
 
             //Act
             var result = await _controller.Index(expectedModel) as ViewResult;
@@ -85,8 +82,6 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
             //Assert
             var model = Assert.IsType<ApplicationsReviewListViewModel>(Assert.IsType<ViewResult>(result).Model);
             Assert.Equal(expectedUserType.ToString(), model.UserType);
-            // Check the url is set correctly from configuration
-            Assert.Equal(_aodpOptions.Value.FindRegulatedQualificationUrl, model.FindRegulatedQualificationUrl);
             Assert.Equal(response.TotalRecordsCount, model.TotalItems);
 
             var app = Assert.Single(model.Applications);
@@ -238,5 +233,52 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
             await Assert.ThrowsAsync<IOException>(() => _controller.DownloadAllApplicationFiles(applicationReviewId));
         }
 
+        [Fact]
+        public async Task ValidateQan_ForwardsCallToHelper_AndReturnsResult()
+        {
+            // Arrange
+            var area = "Review";
+            var controller = "ApplicationsReview";
+            var qan = "60142923";
+            var expectedUrl = $"https://find-a-qualification.services.ofqual.gov.uk/qualifications/{qan}";
+
+            _qanLookupHelperMock.Setup(h => h.RedirectToRegisterIfQanIsValid(area, controller, qan)
+            .Result).Returns(new RedirectResult(expectedUrl));
+
+            // Act
+            var result = await _controller.ValidateQan(area, controller, qan);
+
+            // Assert
+            var redirectResult = Assert.IsType<RedirectResult>(result);
+            Assert.Equal(expectedUrl, redirectResult.Url);
+
+            _qanLookupHelperMock.Verify(h => h.RedirectToRegisterIfQanIsValid(
+                It.Is<string>(a => a == area),
+                It.Is<string>(c => c == controller),
+                It.Is<string>(q => q == qan)), Times.Once);
+        }
+
+        [InlineData("invalidQan")]
+        [InlineData("")]
+        [Theory]
+        public async Task ValidateQan_InvalidQan_ReturnsQanInvalidView(string qan)
+        {
+            // Arrange
+            var area = "Review";
+            var controller = "ApplicationsReview";
+            _qanLookupHelperMock.Setup(h => h.RedirectToRegisterIfQanIsValid(area, controller, qan)
+            .Result).Returns(new ViewResult { ViewName = "QanInvalid" });
+
+            // Act
+            var result = await _controller.ValidateQan(area, controller, qan);
+
+            // Assert
+            var viewResult = Assert.IsType<ViewResult>(result);
+            Assert.Equal("QanInvalid", viewResult.ViewName);
+            _qanLookupHelperMock.Verify(h => h.RedirectToRegisterIfQanIsValid(
+                It.Is<string>(a => a == area),
+                It.Is<string>(c => c == controller),
+                It.Is<string>(q => q == qan)), Times.Once);
+        }
     }
 }
