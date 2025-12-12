@@ -3,12 +3,10 @@ using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Moq;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.Application.Application;
-using SFA.DAS.AODP.Application.Commands.FormBuilder.Routes;
 using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Settings;
@@ -16,7 +14,6 @@ using SFA.DAS.AODP.Web.Areas.Apply.Controllers;
 using SFA.DAS.AODP.Web.Areas.Apply.Models;
 using SFA.DAS.AODP.Web.Helpers.File;
 using SFA.DAS.AODP.Web.Helpers.User;
-using SFA.DAS.AODP.Web.Models.FormBuilder.Routing;
 using System.Text;
 
 namespace SFA.DAS.AODP.Web.Test.Areas.Apply.Controllers
@@ -208,6 +205,84 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Apply.Controllers
             // Assert
             Assert.IsType<BadRequestResult>(result);
         }
+
+        [Fact]
+        public async Task ApplicationMessages_EmailSentTrue_SetsMessageSentBanner()
+        {
+            // Arrange
+            var applicationId = Guid.NewGuid();
+            var organisationId = Guid.NewGuid();
+            var formVersionId = Guid.NewGuid();
+
+            var msgResponse = new BaseMediatrResponse<CreateApplicationMessageCommandResponse>
+            {
+                Success = true,
+                Value = new CreateApplicationMessageCommandResponse
+                {
+                    Id = Guid.NewGuid(),
+                    EmailSent = true
+                }
+            };
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<CreateApplicationMessageCommand>(), default))
+                .ReturnsAsync(msgResponse);
+
+            var model = new ApplicationMessagesViewModel
+            {
+                AdditionalActions = new() { Send = true }
+            };
+
+            // use a real TempDataDictionary to inspect results
+            var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
+            _controller.TempData = tempData;
+
+            // Act
+            var result = await _controller.ApplicationMessages(model, applicationId, organisationId, formVersionId);
+
+            // Assert
+            Assert.IsType<RedirectToActionResult>(result);
+            Assert.True(_controller.TempData.ContainsKey(ApplicationMessagesController.NotificationKeys.MessageSentBanner.ToString()));
+        }
+
+        [Fact]
+        public async Task ApplicationMessages_EmailSentFalse_DoesNotSetMessageSentBanner()
+        {
+            // Arrange
+            var applicationId = Guid.NewGuid();
+            var organisationId = Guid.NewGuid();
+            var formVersionId = Guid.NewGuid();
+
+            var msgResponse = new BaseMediatrResponse<CreateApplicationMessageCommandResponse>
+            {
+                Success = true,
+                Value = new CreateApplicationMessageCommandResponse
+                {
+                    Id = Guid.NewGuid(),
+                    EmailSent = false
+                }
+            };
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<CreateApplicationMessageCommand>(), default))
+                .ReturnsAsync(msgResponse);
+
+            var model = new ApplicationMessagesViewModel
+            {
+                AdditionalActions = new() { Send = true }
+            };
+
+            var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
+            _controller.TempData = tempData;
+
+            // Act
+            var result = await _controller.ApplicationMessages(model, applicationId, organisationId, formVersionId);
+
+            // Assert
+            Assert.IsType<RedirectToActionResult>(result);
+            Assert.False(_controller.TempData.ContainsKey(ApplicationMessagesController.NotificationKeys.MessageSentBanner.ToString()));
+        }
+
     }
 
 }
