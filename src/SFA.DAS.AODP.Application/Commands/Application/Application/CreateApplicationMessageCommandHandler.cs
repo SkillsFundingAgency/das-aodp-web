@@ -28,6 +28,7 @@ public class CreateApplicationMessageCommandHandler : IRequestHandler<CreateAppl
             });
 
             response.Value.Id = result.Id;
+            response.Value.EmailSent = result.EmailSent;
             response.Success = true;
         }
         catch (Exception ex)
