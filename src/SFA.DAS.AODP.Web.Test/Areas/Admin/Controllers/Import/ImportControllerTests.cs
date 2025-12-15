@@ -7,6 +7,7 @@ using Moq;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.Import;
 using SFA.DAS.AODP.Application.Queries.Import;
+using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Web.Areas.Admin.Controllers;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.User;
@@ -20,6 +21,7 @@ public class ImportControllerTests
     private readonly Mock<ILogger<ImportController>> _loggerMock;
     private readonly Mock<IMediator> _mediatorMock;
     private readonly Mock<IUserHelperService> _userHelpService;
+    private readonly Mock<IFileService> _fileService;
     private readonly ImportController _controller;
 
     public ImportControllerTests()
@@ -28,7 +30,8 @@ public class ImportControllerTests
         _loggerMock = _fixture.Freeze<Mock<ILogger<ImportController>>>();
         _mediatorMock = _fixture.Freeze<Mock<IMediator>>();
         _userHelpService = _fixture.Freeze<Mock<IUserHelperService>>();
-        _controller = new ImportController(_loggerMock.Object, _mediatorMock.Object, _userHelpService.Object);
+        _fileService = _fixture.Freeze<Mock<IFileService>>();
+        _controller = new ImportController(_loggerMock.Object, _mediatorMock.Object, _userHelpService.Object, _fileService.Object);
     }
 
     [Fact]

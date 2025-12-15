@@ -63,6 +63,47 @@ namespace SFA.DAS.AODP.Infrastructure.File
             return result;
         }
 
+        public async Task UploadXlsxFileAsync(string folderName, string fileName, Stream stream, string? contentType, string fileNamePrefix)
+        {
+            // Ensure a safe file name is used
+            var safeFileName = Path.GetFileName(fileName ?? string.Empty);
+            var fileExtension = Path.GetExtension(safeFileName) ?? string.Empty;
+
+            var trimmedFolder = (folderName ?? string.Empty).Trim();
+            if (!string.IsNullOrEmpty(trimmedFolder) && trimmedFolder.EndsWith("/"))
+                trimmedFolder = trimmedFolder.TrimEnd('/');
+
+            var filePath = string.IsNullOrEmpty(trimmedFolder) ? safeFileName : $"{trimmedFolder}/{safeFileName}";
+
+            var blobClient = GetBlobClient(filePath);
+
+            // If a blob with the same path exists delete it (including snapshots) to ensure the uploaded blob uses the exact filename.
+            await blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
+
+            if (stream.CanSeek)
+            {
+                stream.Position = 0;
+            }
+
+            var headers = new BlobHttpHeaders
+            {
+                ContentDisposition = $"attachment; filename=\"{safeFileName}\""
+            };
+
+            if (!string.IsNullOrEmpty(contentType))
+            {
+                headers.ContentType = contentType;
+            }
+
+            await blobClient.UploadAsync(stream,
+                metadata: new Dictionary<string, string>()
+                {
+                    { FileNameMetadataKey, safeFileName },
+                    { FileExtensionsMetadataKey, fileExtension },
+                    { FilePrefixMetadataKey, fileNamePrefix ?? string.Empty }
+                },
+                httpHeaders: headers);
+        }
 
         public async Task<UploadedBlob> GetBlobDetails(string fileName)
         {

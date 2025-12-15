@@ -1,0 +1,10 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace SFA.DAS.AODP.Web.Areas.Admin.Models;
+
+public class UploadImportFileViewModel
+{
+    [Required(ErrorMessage = "You must select an .xlsx file")]
+    [Display(Name = "You must select an .xlsx file")]
+    public required IFormFile File { get; set; }
+}
