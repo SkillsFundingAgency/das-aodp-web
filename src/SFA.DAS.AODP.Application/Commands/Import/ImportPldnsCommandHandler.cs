@@ -8,7 +8,6 @@ namespace SFA.DAS.AODP.Application.Commands.Import;
 
 public class ImportPldnsCommandHandler : IRequestHandler<ImportPldnsCommand, BaseMediatrResponse<ImportPldnsCommandResponse>>
 {
-    private const int BatchSize = 3000;
     private const string GenericErrorMessage = "The file you provided does not match the required format for a PLDNS list.";
 
     public async Task<BaseMediatrResponse<ImportPldnsCommandResponse>> Handle(ImportPldnsCommand request, CancellationToken cancellationToken)
@@ -18,7 +17,7 @@ public class ImportPldnsCommandHandler : IRequestHandler<ImportPldnsCommand, Bas
         try
         {
             // Validate request and file type
-            var (IsValid, Success, ErrorMessage) = ValidateRequest(request);
+            var (IsValid, ErrorMessage) = ImportHelper.ValidateRequest(request.File, request.FileName);
             if (!IsValid)
             {
                 response.Success = false;
@@ -63,7 +62,15 @@ public class ImportPldnsCommandHandler : IRequestHandler<ImportPldnsCommand, Bas
                 return response;
             }
 
-            int headerIndex = FindHeaderIndex(rows, sharedStrings);
+            var headerKeywords = new[] {
+                "text qan","list updated","note",
+                "pldns 14-16","pldns 16-19","pldns local flex",
+                "legal entitlement","digital entitlement","esf l3/l4",
+                "pldns loans","lifelong learning entitlement","level 3 free courses",
+                "pldns cof","start date"
+            };
+
+            var (headerRow, headerIndex) = ImportHelper.DetectHeaderRow(rows, sharedStrings, headerKeywords, defaultRowIndex: 1, minMatches: 1);
             if (headerIndex < 0)
             {
                 response.Success = false;
@@ -71,9 +78,8 @@ public class ImportPldnsCommandHandler : IRequestHandler<ImportPldnsCommand, Bas
                 response.Value = new ImportPldnsCommandResponse { ImportedCount = 0 };
                 return response;
             }
-            var headerRow = rows[headerIndex];
 
-            var headerMap = BuildHeaderMap(headerRow, sharedStrings);
+            var headerMap = ImportHelper.BuildHeaderMap(headerRow, sharedStrings);
             var columns = MapColumns(headerMap);
 
             var missingColumns = columns.GetType()
@@ -104,69 +110,11 @@ public class ImportPldnsCommandHandler : IRequestHandler<ImportPldnsCommand, Bas
         return response;
     }
 
-    private static (bool IsValid, bool Success, string? ErrorMessage) ValidateRequest(ImportPldnsCommand request)
-    {
-        if (request.File == null || request.File.Length == 0)
-            return (false, true, null);
-
-        if (string.IsNullOrWhiteSpace(request.FileName) || !request.FileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
-            return (false, false, "Unsupported file type. Only .xlsx files are accepted.");
-
-        return (true, false, null);
-    }
-
     private static Sheet? FindSheet(WorkbookPart workbookPart, string targetSheetName)
     {
         return workbookPart.Workbook.Sheets!
             .Cast<Sheet?>()
             .FirstOrDefault(s => string.Equals((s?.Name!.Value ?? string.Empty).Trim(), targetSheetName, StringComparison.OrdinalIgnoreCase));
-    }
-
-    private static int FindHeaderIndex(List<Row> rows, SharedStringTable? sharedStrings)
-    {
-        var headerRow = rows.Count > 1 ? rows[1] : rows[0];
-        int headerListIndex = rows.IndexOf(headerRow);
-
-        var headerKeywords = new[] {
-                "text qan","list updated","note",
-                "pldns 14-16","pldns 16-19","pldns local flex",
-                "legal entitlement","digital entitlement","esf l3/l4",
-                "pldns loans","lifelong learning entitlement","level 3 free courses",
-                "pldns cof","start date"
-            };
-
-        for (int r = 0; r < Math.Min(rows.Count, 12); r++)
-        {
-            var cellTexts = rows[r].Elements<Cell>()
-                .Select(c => ImportHelper.GetCellText(c, sharedStrings).Trim())
-                .Where(t => !string.IsNullOrWhiteSpace(t))
-                .Select(t => t.ToLowerInvariant())
-                .ToList();
-
-            if (cellTexts.Count == 0) continue;
-
-            var matches = cellTexts.Count(ct => headerKeywords.Any(k => ct.Contains(k)));
-            if (matches >= 1)
-            {
-                headerListIndex = r;
-                break;
-            }
-        }
-
-        return headerListIndex;
-    }
-
-    private static Dictionary<string, string> BuildHeaderMap(Row headerRow, SharedStringTable? sharedStrings)
-    {
-        var headerMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var cell in headerRow.Elements<Cell>())
-        {
-            var col = GetColumnName(cell.CellReference?.Value);
-            var txt = ImportHelper.GetCellText(cell, sharedStrings);
-            if (!string.IsNullOrWhiteSpace(col) && !string.IsNullOrWhiteSpace(txt))
-                headerMap[col!] = txt.Trim();
-        }
-        return headerMap;
     }
 
     private sealed record ColumnNames(
@@ -231,55 +179,4 @@ public class ImportPldnsCommandHandler : IRequestHandler<ImportPldnsCommand, Bas
             ImportHelper.FindColumn(headerMap, "NOTES Start date")
         );
     }
-
-    //private static string? GetValue(Dictionary<string, string> map, string? column)
-    //{
-    //    if (string.IsNullOrWhiteSpace(column))
-    //    {
-    //        return null;
-    //    }
-
-    //    if (map.TryGetValue(column!, out var v))
-    //    {
-    //        return v;
-    //    }
-
-    //    return null;
-    //}
-
-    private static string? GetColumnName(string? cellReference)
-    {
-        if (string.IsNullOrWhiteSpace(cellReference)) return null;
-        var sb = new StringBuilder();
-        foreach (var ch in cellReference)
-        {
-            if (char.IsLetter(ch)) sb.Append(ch);
-            else break;
-        }
-        return sb.ToString();
-    }
-
-    //private static DateTime? TryParseDate(string? txt, CultureInfo culture, string[] formats)
-    //{
-    //    if (string.IsNullOrWhiteSpace(txt)) return null;
-    //    txt = txt!.Trim();
-    //    if (DateTime.TryParse(txt, culture, DateTimeStyles.None, out var dt)) return dt.Date;
-    //    if (DateTime.TryParseExact(txt, formats, culture, DateTimeStyles.None, out dt)) return dt.Date;
-    //    if (double.TryParse(txt, NumberStyles.Any, CultureInfo.InvariantCulture, out var oa))
-    //    {
-    //        return DateTime.FromOADate(oa);
-    //    }
-    //    return null;
-    //}
-
-    //private static void PopulateCellMap(IEnumerable<Cell> rowCells, SharedStringTable? sharedStrings, Dictionary<string, string> cellMap)
-    //{
-    //    foreach (var cell in rowCells)
-    //    {
-    //        var col = GetColumnName(cell.CellReference?.Value);
-    //        if (string.IsNullOrWhiteSpace(col)) continue;
-    //        var text = ImportHelper.GetCellText(cell, sharedStrings)?.Trim() ?? string.Empty;
-    //        if (!cellMap.ContainsKey(col)) cellMap[col] = text;
-    //    }
-    //}
 }

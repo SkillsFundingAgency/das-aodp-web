@@ -27,6 +27,7 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
         public enum SendKeys { RequestFailed, JobStatusFailed }
         private const string PldnsViewPath = "~/Areas/Admin/Views/Import/Pldns.cshtml";
         private const string DefundingListViewPath = "~/Areas/Admin/Views/Import/DefundingList.cshtml";
+        private const string ConfirmImportSelectionAction = nameof(ConfirmImportSelection);
 
         public ImportController(ILogger<ImportController> logger, IMediator mediator, IUserHelperService userHelperService, IFileService fileService) : base(mediator, logger)
         {
@@ -63,7 +64,7 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
                 return RedirectToAction("ImportDefundingList");
             }
 
-            return RedirectToAction("ConfirmImportSelection", viewModel);
+            return RedirectToAction(ConfirmImportSelectionAction, viewModel);
         }
 
         [HttpGet]
@@ -80,7 +81,7 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return View("ConfirmImportSelection", viewModel);
+                return View(ConfirmImportSelectionAction, viewModel);
             }
 
             var timeSubmitted = DateTime.Now;
@@ -121,7 +122,7 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
                 {
                     LogException(ex);
                     TempData[SendKeys.RequestFailed.ToString()] = true;
-                    return RedirectToAction("ConfirmImportSelection", new ImportRequestViewModel() { ImportType = viewModel.ImportType });
+                    return RedirectToAction(ConfirmImportSelectionAction, new ImportRequestViewModel() { ImportType = viewModel.ImportType });
                 }
             }
 
@@ -278,7 +279,6 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
                 await Send(command);
 
                 var folderName = JobNames.Pldns.ToString();
-                var fileName = model.File.FileName;
                 var contentType = model.File.ContentType;
                 var fileNamePrefix = _userHelperService.GetUserDisplayName() ?? string.Empty;
 
@@ -299,7 +299,7 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
             }
 
             var viewModel = new ImportRequestViewModel() { ImportType = JobNames.Pldns.ToString() };
-            return RedirectToAction("ConfirmImportSelection", viewModel);
+            return RedirectToAction(ConfirmImportSelectionAction, viewModel);
         }
 
         [HttpGet]
@@ -340,7 +340,6 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
                 await Send(command);
 
                 var folderName = JobNames.DefundingList.ToString();
-                var fileName = model.File.FileName;
                 var contentType = model.File.ContentType;
                 var fileNamePrefix = _userHelperService.GetUserDisplayName() ?? string.Empty;
 
@@ -361,7 +360,7 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
             }
 
             var viewModel = new ImportRequestViewModel() { ImportType = JobNames.DefundingList.ToString() };
-            return RedirectToAction("ConfirmImportSelection", viewModel);
+            return RedirectToAction(ConfirmImportSelectionAction, viewModel);
         }
     }
 }

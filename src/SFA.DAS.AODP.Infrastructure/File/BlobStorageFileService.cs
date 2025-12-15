@@ -70,7 +70,7 @@ namespace SFA.DAS.AODP.Infrastructure.File
             var fileExtension = Path.GetExtension(safeFileName) ?? string.Empty;
 
             var trimmedFolder = (folderName ?? string.Empty).Trim();
-            if (!string.IsNullOrEmpty(trimmedFolder) && trimmedFolder.EndsWith("/"))
+            if (!string.IsNullOrEmpty(trimmedFolder) && trimmedFolder.EndsWith('/'))
                 trimmedFolder = trimmedFolder.TrimEnd('/');
 
             var filePath = string.IsNullOrEmpty(trimmedFolder) ? safeFileName : $"{trimmedFolder}/{safeFileName}";
