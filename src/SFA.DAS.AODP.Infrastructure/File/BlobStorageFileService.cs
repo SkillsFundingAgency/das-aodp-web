@@ -24,7 +24,7 @@ namespace SFA.DAS.AODP.Infrastructure.File
         {
             string filePath = $"{folderName}/{Guid.NewGuid()}";
 
-            var blobClient = GetBlobClient(filePath);
+            var blobClient = GetBlobClient(filePath, _blobStorageSettings.FileUploadContainerName);
 
             await blobClient.UploadAsync(stream,
                 metadata: new Dictionary<string, string>()
@@ -38,13 +38,13 @@ namespace SFA.DAS.AODP.Infrastructure.File
 
         public List<UploadedBlob> ListBlobs(string folderName)
         {
-            EnsureBlobContainerClient();
+            EnsureBlobContainerClient(_blobStorageSettings.FileUploadContainerName);
             var items = _blobContainerClient.GetBlobs(prefix: folderName);
             List<UploadedBlob> result = new List<UploadedBlob>();
             foreach (var item in items)
             {
 
-                var blob = GetBlobClient(item.Name);
+                var blob = GetBlobClient(item.Name, _blobStorageSettings.FileUploadContainerName);
                 var properties = blob.GetProperties();
 
                 properties.Value.Metadata.TryGetValue(FileNameMetadataKey, out var fileName);
@@ -75,7 +75,7 @@ namespace SFA.DAS.AODP.Infrastructure.File
 
             var filePath = string.IsNullOrEmpty(trimmedFolder) ? safeFileName : $"{trimmedFolder}/{safeFileName}";
 
-            var blobClient = GetBlobClient(filePath);
+            var blobClient = GetBlobClient(filePath, _blobStorageSettings.ImportFilesContainerName);
 
             // If a blob with the same path exists delete it (including snapshots) to ensure the uploaded blob uses the exact filename.
             await blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
@@ -107,7 +107,7 @@ namespace SFA.DAS.AODP.Infrastructure.File
 
         public async Task<UploadedBlob> GetBlobDetails(string fileName)
         {
-            EnsureBlobContainerClient();
+            EnsureBlobContainerClient(_blobStorageSettings.FileUploadContainerName);
 
             var properties = await _blobContainerClient.GetBlobClient(fileName).GetPropertiesAsync();
 
@@ -122,28 +122,28 @@ namespace SFA.DAS.AODP.Infrastructure.File
 
         public async Task<Stream> OpenReadStreamAsync(string filePath)
         {
-            var blobClient = GetBlobClient(filePath);
+            var blobClient = GetBlobClient(filePath, _blobStorageSettings.FileUploadContainerName);
             var stream = await blobClient.OpenReadAsync();
             return stream;
         }
 
         public async Task DeleteFileAsync(string filePath)
         {
-            var blobClient = GetBlobClient(filePath);
+            var blobClient = GetBlobClient(filePath, _blobStorageSettings.FileUploadContainerName);
             await blobClient.DeleteAsync(DeleteSnapshotsOption.IncludeSnapshots);
         }
 
-        private BlobClient GetBlobClient(string filePath)
+        private BlobClient GetBlobClient(string filePath, string containerName)
         {
-            EnsureBlobContainerClient();
+            EnsureBlobContainerClient(containerName);
             return _blobContainerClient!.GetBlobClient(filePath);
         }
 
-        private void EnsureBlobContainerClient()
+        private void EnsureBlobContainerClient(string containerName)
         {
             if (_blobContainerClient is null)
             {
-                _blobContainerClient = _blobServiceClient.GetBlobContainerClient(_blobStorageSettings.FileUploadContainerName);
+                _blobContainerClient = _blobServiceClient.GetBlobContainerClient(containerName);
 
                 _blobContainerClient.CreateIfNotExists();
             }

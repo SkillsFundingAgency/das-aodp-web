@@ -12,7 +12,7 @@ public class WhenHandlingImportDefundingListCommand
 {
     private const string TargetSheetName = "Approval not extended";
     private const string XlsxContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-    private const string GenericErrorMessage = "The selected file must use the correct format";
+    private const string GenericErrorMessage = "The file you provided does not match the required format for a defunding list.";
 
     [Fact]
     public async Task FileNull_ReturnsFailure_WithNullErrorMessage()

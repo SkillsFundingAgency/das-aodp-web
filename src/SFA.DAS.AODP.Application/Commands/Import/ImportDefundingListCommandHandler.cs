@@ -8,7 +8,7 @@ namespace SFA.DAS.AODP.Application.Commands.Import;
 
 public class ImportDefundingListCommandHandler : IRequestHandler<ImportDefundingListCommand, BaseMediatrResponse<ImportDefundingListCommandResponse>>
 {
-    private const string GenericErrorMessage = "The selected file must use the correct format";
+    private const string GenericErrorMessage = "The file you provided does not match the required format for a defunding list.";
     public async Task<BaseMediatrResponse<ImportDefundingListCommandResponse>> Handle(ImportDefundingListCommand request, CancellationToken cancellationToken)
     {
         var response = new BaseMediatrResponse<ImportDefundingListCommandResponse>();

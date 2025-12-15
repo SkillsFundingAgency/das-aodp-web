@@ -283,7 +283,7 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
                 var fileNamePrefix = _userHelperService.GetUserDisplayName() ?? string.Empty;
 
                 using var stream = model.File.OpenReadStream();
-                await _fileService.UploadXlsxFileAsync(folderName, "Plns.xlsx", stream, contentType, fileNamePrefix);
+                await _fileService.UploadXlsxFileAsync(folderName, "Pldns.xlsx", stream, contentType, fileNamePrefix);
             }
             catch (MediatorRequestHandlingException ex)
             {

@@ -12,6 +12,7 @@ public class WhenHandlingImportPldnsCommand
 {
     private const string PldnsSheetName = "PLDNS V12F";
     private const string XlsxContentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    private const string GenericErrorMessage = "The file you provided does not match the required format for a PLDNS list.";
 
     [Fact]
     public async Task FileNull_ReturnsFailure_WithNullErrorMessage()
@@ -90,7 +91,7 @@ public class WhenHandlingImportPldnsCommand
         // Assert
         Assert.NotNull(response);
         Assert.False(response.Success);
-        Assert.Equal("The selected file must use the correct format", response.ErrorMessage);
+        Assert.Equal(GenericErrorMessage, response.ErrorMessage);
         Assert.NotNull(response.Value);
         Assert.Equal(0, response.Value.ImportedCount);
     }
@@ -122,7 +123,7 @@ public class WhenHandlingImportPldnsCommand
         // Assert
         Assert.NotNull(response);
         Assert.False(response.Success);
-        Assert.Equal("The selected file must use the correct format", response.ErrorMessage);
+        Assert.Equal(GenericErrorMessage, response.ErrorMessage);
         Assert.NotNull(response.Value);
         Assert.Equal(0, response.Value.ImportedCount);
     }
@@ -159,7 +160,7 @@ public class WhenHandlingImportPldnsCommand
         // Assert
         Assert.NotNull(response);
         Assert.False(response.Success);
-        Assert.Equal("The selected file must use the correct format", response.ErrorMessage);
+        Assert.Equal(GenericErrorMessage, response.ErrorMessage);
         Assert.NotNull(response.Value);
         Assert.Equal(0, response.Value.ImportedCount);
     }

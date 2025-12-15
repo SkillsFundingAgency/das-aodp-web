@@ -9,7 +9,7 @@ namespace SFA.DAS.AODP.Application.Commands.Import;
 public class ImportPldnsCommandHandler : IRequestHandler<ImportPldnsCommand, BaseMediatrResponse<ImportPldnsCommandResponse>>
 {
     private const int BatchSize = 3000;
-    private const string GenericErrorMessage = "The selected file must use the correct format";
+    private const string GenericErrorMessage = "The file you provided does not match the required format for a PLDNS list.";
 
     public async Task<BaseMediatrResponse<ImportPldnsCommandResponse>> Handle(ImportPldnsCommand request, CancellationToken cancellationToken)
     {
