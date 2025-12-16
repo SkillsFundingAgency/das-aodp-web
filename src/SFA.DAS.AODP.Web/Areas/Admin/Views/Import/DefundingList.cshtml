@@ -1,0 +1,59 @@
+﻿﻿@using Azure.Core
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@model SFA.DAS.AODP.Web.Areas.Admin.Models.UploadImportFileViewModel
+@{
+    Layout = "_Layout";
+    var allowed = ".xlsx";
+    var fileErrors = ViewData.ModelState["File"]?.Errors;
+    var hasFileError = fileErrors != null && fileErrors.Count > 0;
+    var inputClass = hasFileError ? "govuk-file-upload govuk-file-upload--error" : "govuk-file-upload govuk-!-margin-top-2";
+    var submitCommand = "this.disabled = true; this.form.submit();";
+}
+<partial name="~/Views/Shared/_ValidationSummaryPartial.cshtml" />
+<div class="govuk-width-container">
+    <a class="govuk-back-link" asp-action="Index" asp-controller="Import" asp-area="Admin">Back</a>
+
+    <h1 class="govuk-heading-xl">Import defunding list data</h1>
+
+    <form asp-area="Admin" asp-controller="Import" asp-action="ImportDefundingList" method="post" enctype="multipart/form-data" novalidate>
+        @Html.AntiForgeryToken()
+
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+                <div class="govuk-form-group @(hasFileError ? "govuk-form-group--error" : "")">
+                    <label class="govuk-label" for="File">
+                        Import file
+                    </label>
+
+                    @if (hasFileError)
+                    {
+                        <p id="File-error" class="govuk-error-message">
+                            <span class="govuk-visually-hidden">Error:</span>
+                            @(fileErrors![0].ErrorMessage ?? "Select a file")
+                        </p>
+                    }
+                    else
+                    {
+                        <div class="govuk-hint">
+                            This must be an @allowed file
+                        </div>
+                    }
+
+                    <input class="@inputClass"
+                           id="File"
+                           name="File"
+                           type="file"
+                           accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                           @(hasFileError ? "aria-describedby=\"File-error\"" : "") />
+
+                    <span asp-validation-for="File" class="govuk-error-message" />
+                </div>
+
+                <div class="govuk-form-group">
+                    <govuk-button type="submit" onclick="@submitCommand" onkeypress="@submitCommand">Continue</govuk-button>
+                </div>
+
+            </div>
+        </div>
+    </form>
+</div>

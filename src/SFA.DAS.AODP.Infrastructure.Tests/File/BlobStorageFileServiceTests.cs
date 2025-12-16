@@ -1,16 +1,11 @@
 ﻿using AutoFixture;
-using Azure.Data.Tables;
 using Azure;
-using Azure.Storage;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.Extensions.Options;
 using Moq;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Settings;
-using System.IO;
-using System.Net.Http.Headers;
-using System.Threading;
 
 namespace SFA.DAS.AODP.Infrastructure.UnitTests.File
 {

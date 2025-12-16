@@ -30,48 +30,5 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
             return RedirectToAction("Index", "ApplicationsReview");
         }
-
-        [HttpPost]
-        public IActionResult Index(ReviewHomeViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                model.UserRoles = _userHelperService.GetUserRoles();
-                return View(model);
-            }
-
-            if (model.SelectedOption == ReviewHomeViewModel.Options.ApplicationsReview)
-            {
-                return RedirectToAction("Index", "ApplicationsReview");
-            }
-
-            else if (model.SelectedOption == ReviewHomeViewModel.Options.NewQualifications)
-            {
-                return RedirectToAction("Index", "New");
-            }
-
-            else if (model.SelectedOption == ReviewHomeViewModel.Options.ChangedQualifications)
-            {
-                return RedirectToAction("Index", "Changed");
-            }
-
-            else if (model.SelectedOption == ReviewHomeViewModel.Options.ImportData)
-            {
-                return RedirectToAction("Index", "Import");
-            }
-
-            else if (model.SelectedOption == ReviewHomeViewModel.Options.FormsManagement)
-            {
-                return RedirectToAction("Index", "Forms");
-            }
-
-            else if (model.SelectedOption == ReviewHomeViewModel.Options.OutputFile)
-            {
-                return RedirectToAction("Index", "OutputFile");
-            }
-
-            else return NotFound();
-
-        }
     }
 }
