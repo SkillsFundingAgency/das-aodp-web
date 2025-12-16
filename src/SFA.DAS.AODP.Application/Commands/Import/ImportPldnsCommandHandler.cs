@@ -20,7 +20,6 @@ public class ImportPldnsCommandHandler : IRequestHandler<ImportPldnsCommand, Bas
             var (IsValid, ErrorMessage) = ImportHelper.ValidateRequest(request.File, request.FileName);
             if (!IsValid)
             {
-                response.Success = false;
                 response.ErrorMessage = ErrorMessage;
                 response.Value = new ImportPldnsCommandResponse { ImportedCount = 0 };
                 return response;
@@ -37,7 +36,6 @@ public class ImportPldnsCommandHandler : IRequestHandler<ImportPldnsCommand, Bas
             var sheet = FindSheet(workbookPart, "PLDNS V12F");
             if (sheet == null)
             {
-                response.Success = false;
                 response.ErrorMessage = GenericErrorMessage;
                 response.Value = new ImportPldnsCommandResponse { ImportedCount = 0 };
                 return response;
@@ -47,7 +45,6 @@ public class ImportPldnsCommandHandler : IRequestHandler<ImportPldnsCommand, Bas
             var sheetData = worksheetPart.Worksheet.Elements<SheetData>().FirstOrDefault();
             if (sheetData == null)
             {
-                response.Success = false;
                 response.ErrorMessage = GenericErrorMessage;
                 response.Value = new ImportPldnsCommandResponse { ImportedCount = 0 };
                 return response;
@@ -56,7 +53,6 @@ public class ImportPldnsCommandHandler : IRequestHandler<ImportPldnsCommand, Bas
             var rows = sheetData.Elements<Row>().ToList();
             if (rows.Count <= 1)
             {
-                response.Success = false;
                 response.ErrorMessage = GenericErrorMessage;
                 response.Value = new ImportPldnsCommandResponse { ImportedCount = 0 };
                 return response;
@@ -73,7 +69,6 @@ public class ImportPldnsCommandHandler : IRequestHandler<ImportPldnsCommand, Bas
             var (headerRow, headerIndex) = ImportHelper.DetectHeaderRow(rows, sharedStrings, headerKeywords, defaultRowIndex: 1, minMatches: 1);
             if (headerIndex < 0)
             {
-                response.Success = false;
                 response.ErrorMessage = GenericErrorMessage;
                 response.Value = new ImportPldnsCommandResponse { ImportedCount = 0 };
                 return response;
@@ -92,7 +87,6 @@ public class ImportPldnsCommandHandler : IRequestHandler<ImportPldnsCommand, Bas
 
             if (missingColumns.Count > 0)
             {
-                response.Success = false;
                 response.ErrorMessage = GenericErrorMessage;
                 response.Value = new ImportPldnsCommandResponse { ImportedCount = 0 };
                 return response;
@@ -103,7 +97,6 @@ public class ImportPldnsCommandHandler : IRequestHandler<ImportPldnsCommand, Bas
         }
         catch (Exception ex)
         {
-            response.Success = false;
             response.ErrorMessage = ex.Message;
         }
 
