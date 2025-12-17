@@ -1,11 +1,20 @@
-﻿﻿@using Azure.Core
+﻿@using Azure.Core
+@using System.Linq
 @inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 @model SFA.DAS.AODP.Web.Areas.Admin.Models.UploadImportFileViewModel
 @{
     Layout = "_Layout";
     var allowed = ".xlsx";
-    var fileErrors = ViewData.ModelState["File"]?.Errors;
-    var hasFileError = fileErrors != null && fileErrors.Count > 0;
+
+    var modelStateErrors = ViewData.ModelState
+        .SelectMany(kvp => kvp.Value?.Errors ?? Enumerable.Empty<Microsoft.AspNetCore.Mvc.ModelBinding.ModelError>())
+        .ToList();
+
+    var errorMessages = modelStateErrors
+        .Select(e => !string.IsNullOrWhiteSpace(e.ErrorMessage) ? e.ErrorMessage : (e.Exception?.Message ?? "Select a file"))
+        .ToList();
+
+    var hasFileError = errorMessages.Count > 0;
     var inputClass = hasFileError ? "govuk-file-upload govuk-file-upload--error" : "govuk-file-upload govuk-!-margin-top-2";
     var submitCommand = "this.disabled = true; this.form.submit();";
 }
@@ -29,7 +38,14 @@
                     {
                         <p id="File-error" class="govuk-error-message">
                             <span class="govuk-visually-hidden">Error:</span>
-                            @(fileErrors![0].ErrorMessage ?? "Select a file")
+                            @for (int i = 0; i < errorMessages.Count; i++)
+                            {
+                                <span>@errorMessages[i]</span>
+                                @if (i < errorMessages.Count - 1)
+                                {
+                                    <br />
+                                }
+                            }
                         </p>
                     }
                     else
