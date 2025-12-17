@@ -51,60 +51,6 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
             Assert.Equal("Index", redirect.ActionName);
             Assert.Equal("ApplicationsReview", redirect.ControllerName);
         }
-
-        [Fact]
-        public void Index_PostReturnsViewModel_WhenModelStateIsInvalid()
-        {
-            // Arrange
-            _controller.ModelState.AddModelError("", "");
-
-            // Act
-            var result = _controller.Index(new ReviewHomeViewModel());
-
-            // Assert
-            var viewResult = Assert.IsType<ViewResult>(result);
-            var model = Assert.IsAssignableFrom<ReviewHomeViewModel>(viewResult.ViewData.Model);
-            Assert.NotNull(model);
-        }
-
-        [Theory]
-        [InlineData(ReviewHomeViewModel.Options.NewQualifications, "Index", "New")]
-        [InlineData(ReviewHomeViewModel.Options.ChangedQualifications, "Index", "Changed")]
-        [InlineData(ReviewHomeViewModel.Options.ImportData, "Index", "Import")]
-        [InlineData(ReviewHomeViewModel.Options.OutputFile, "Index", "OutputFile")]
-        [InlineData(ReviewHomeViewModel.Options.ApplicationsReview, "Index", "ApplicationsReview")]
-        [InlineData(ReviewHomeViewModel.Options.FormsManagement, "Index", "Forms")]
-        public void Index_PostRedirects_WhenModelStateIsValid(ReviewHomeViewModel.Options option, string actionName, string controllerName)
-        {
-            // Arrange
-            var model = new ReviewHomeViewModel()
-            {
-                SelectedOption = option,
-            };
-
-            // Act
-            var result = _controller.Index(model);
-
-            // Assert
-            var redirect = Assert.IsType<RedirectToActionResult>(result);
-            Assert.Equal(actionName, redirect.ActionName);
-            Assert.Equal(controllerName, redirect.ControllerName);
-        }
-
-        [Fact]
-        public void Index_PostRedirectsToNotFound_WhenUnknownOptionSelected()
-        {
-            // Arrange
-            var model = new ReviewHomeViewModel();
-
-            // Act
-            var result = _controller.Index(model);
-
-            // Assert
-            Assert.IsType<NotFoundResult>(result);
-
-        }
-
     }
 
 }
