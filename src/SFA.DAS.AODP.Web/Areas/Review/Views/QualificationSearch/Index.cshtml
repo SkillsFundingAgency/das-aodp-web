@@ -1,0 +1,137 @@
+﻿@model SFA.DAS.AODP.Web.Areas.Review.Models.Qualifications.QualificationSearchViewModel
+@{
+    ViewData["Title"] = "Search for a qualification";
+}
+
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
+<div class="govuk-width-container">
+    <main class="govuk-main-wrapper">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-full">
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert" tabindex="-1" data-module="govuk-error-summary">
+                        <h2 class="govuk-error-summary__title" id="error-summary-title">There is a problem</h2>
+                        <div class="govuk-error-summary__body">
+                            <ul class="govuk-list govuk-error-summary__list">
+                                @foreach (var ms in ViewData.ModelState.Where(m => m.Value.Errors.Any()))
+                                {
+                                    var fieldId = ms.Key == nameof(Model.SearchTerm) ? "#SearchTerm" : "#" + ms.Key;
+                                    foreach (var err in ms.Value.Errors)
+                                    {
+                                        <li><a href="@fieldId">@err.ErrorMessage</a></li>
+                                    }
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                }
+                <h1 class="govuk-heading-xl">Search for a qualification</h1>
+
+                <div class="govuk-inset-text">
+                    <div>Regulated qualifications last imported: @(Model.RegulatedQualificationsLastImported?.ToString("dd MMMM yyyy") ?? "")</div>
+                    <div>Funded qualifications last imported: @(Model.FundedQualificationsLastImported?.ToString("dd MMMM yyyy") ?? "")</div>
+                    <br />
+                    <p class="govuk-body">
+                        You can <a asp-area="Admin" asp-controller="Import" asp-action="Index" class="govuk-link">import the latest data</a> before searching.
+                    </p>
+                </div>
+
+                <form asp-action="Search" asp-controller="QualificationSearch" asp-area="Review" method="post" novalidate>
+                    @{
+                        var searchHasError = ViewData.ModelState.ContainsKey(nameof(Model.SearchTerm)) && ViewData.ModelState[nameof(Model.SearchTerm)].Errors.Any();
+                        var formGroupClass = searchHasError ? "govuk-form-group govuk-form-group--error" : "govuk-form-group";
+                        var inputClass = searchHasError ? "govuk-input govuk-input--error" : "govuk-input";
+                        var topError = searchHasError ? ViewData.ModelState[nameof(Model.SearchTerm)].Errors.First().ErrorMessage : null;
+                        var termLength = Model.SearchTerm?.Length ?? 0;
+                        var remaining = 5 - termLength;
+                        var showRemaining = !string.IsNullOrWhiteSpace(Model.SearchTerm) && remaining > 0;
+                        var describedByIds = new List<string>();
+                        if (searchHasError) describedByIds.Add("SearchTerm-error");
+                        if (showRemaining) describedByIds.Add("SearchTerm-remaining");
+                        var describedBy = describedByIds.Any() ? string.Join(" ", describedByIds) : null;
+                    }
+                    <input type="hidden" id="RegulatedQualificationsLastImported" name="RegulatedQualificationsLastImported" value='@(Model.RegulatedQualificationsLastImported?.ToString("mm/dd/yyyy") ?? "")' />
+                    <input type="hidden" id="FundedQualificationsLastImported" name="FundedQualificationsLastImported" value='@(Model.FundedQualificationsLastImported?.ToString("mm/dd/yyyy") ?? "")' />
+                    <div class="@formGroupClass">
+                        <label class="govuk-label" for="SearchTerm">Search by qualification title or QAN</label>
+
+                        @if (searchHasError)
+                        {
+                            <span id="SearchTerm-error" class="govuk-error-message">
+                                <span class="govuk-visually-hidden">Error:</span> @topError
+                            </span>
+                        }
+
+                        <input class="@inputClass"
+                               id="SearchTerm"
+                               name="SearchTerm"
+                               value="@Model.SearchTerm"
+                               aria-describedby="@(describedBy)" />
+
+                        @if (showRemaining)
+                        {
+                            <span id="SearchTerm-remaining" class="govuk-error-message govuk-!-margin-top-2">
+                                You have @remaining characters too few
+                            </span>
+                        }
+                    </div>
+
+                    <div class="govuk-form-group">
+                        <button type="submit" class="govuk-button">Search</button>
+                    </div>
+                </form>
+
+                <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible" />
+
+                @if (Model.Results != null && Model.Results.Any())
+                {
+                    <h2 class="govuk-heading-m">Search results</h2>
+                    <p>Viewing @(Model.Pagination?.StartRecord ?? 1)-@(Model.Pagination?.EndRecord ?? Model.Results.Count) of @(Model.Pagination?.TotalRecords ?? Model.Results.Count) qualifications.</p>
+
+                    <table class="govuk-table">
+                        <thead class="govuk-table__head">
+                            <tr class="govuk-table__row">
+                                <th class="govuk-table__header">QAN</th>
+                                <th class="govuk-table__header">Qualification title</th>
+                                <th class="govuk-table__header">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="govuk-table__body">
+                            @foreach (var r in Model.Results)
+                            {
+                                <tr class="govuk-table__row">
+                                    <td class="govuk-table__cell">@r.Reference</td>
+                                    <td class="govuk-table__cell">
+                                        <a class="govuk-link" asp-area="Review" asp-controller="New" asp-action="QualificationDetails" asp-route-qualificationReference="@r.Reference">@r.Title</a>
+                                    </td>
+                                    <td class="govuk-table__cell">@r.Status</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                    @if (Model.Pagination != null && Model.Pagination.TotalPages > 1)
+                    {
+                        <nav class="govuk-pagination" aria-label="Pagination">
+                            @if (Model.Pagination.HasPreviousPage)
+                            {
+                                <a asp-action="Index" asp-controller="QualificationSearch" asp-area="Review" asp-route-page="@Model.Pagination.PreviousPage" asp-route-searchTerm="@Model.SearchTerm" class="govuk-link govuk-pagination__link">Previous</a>
+                            }
+                            <span> Page @Model.Pagination.CurrentPage of @Model.Pagination.TotalPages </span>
+                            @if (Model.Pagination.HasNextPage)
+                            {
+                                <a asp-action="Index" asp-controller="QualificationSearch" asp-area="Review" asp-route-page="@Model.Pagination.NextPage" asp-route-searchTerm="@Model.SearchTerm" class="govuk-link govuk-pagination__link">Next</a>
+                            }
+                        </nav>
+                    }
+                }
+                else
+                {
+                    <p class="govuk-body">Submit a search to view a qualification.</p>
+                }
+            </div>
+        </div>
+    </main>
+</div>
