@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using SFA.DAS.AODP.Application;
 
-public class SaveQanCommand : IRequest<BaseMediatrResponse<EmptyResponse>>
+public class SaveQanCommand : IRequest<BaseMediatrResponse<SaveQanCommandResponse>>
 {
     public Guid ApplicationReviewId { get; set; }
     public string? Qan { get; set; }

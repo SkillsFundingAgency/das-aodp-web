@@ -2,7 +2,7 @@
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Domain.Interfaces;
 
-public class SaveQanCommandHandler : IRequestHandler<SaveQanCommand, BaseMediatrResponse<EmptyResponse>>
+public class SaveQanCommandHandler : IRequestHandler<SaveQanCommand, BaseMediatrResponse<SaveQanCommandResponse>>
 {
     private readonly IApiClient _apiClient;
 
@@ -12,11 +12,12 @@ public class SaveQanCommandHandler : IRequestHandler<SaveQanCommand, BaseMediatr
         _apiClient = apiClient;
     }
 
-    public async Task<BaseMediatrResponse<EmptyResponse>> Handle(SaveQanCommand request, CancellationToken cancellationToken)
+    public async Task<BaseMediatrResponse<SaveQanCommandResponse>> Handle(SaveQanCommand request, CancellationToken cancellationToken)
     {
-        var response = new BaseMediatrResponse<EmptyResponse>()
+        var response = new BaseMediatrResponse<SaveQanCommandResponse>()
         {
-            Success = false
+            Success = false,
+            Value = new SaveQanCommandResponse()
         };
 
         try
@@ -25,7 +26,11 @@ public class SaveQanCommandHandler : IRequestHandler<SaveQanCommand, BaseMediatr
             {
                 Data = request
             };
-            await _apiClient.Put(apiRequest);
+            var result = await _apiClient.PutWithResponseCode<SaveQanCommandResponse>(apiRequest);
+
+            response.Value.IsQanValid = result.Body.IsQanValid;
+            response.Value.QanValidationMessage = result.Body.QanValidationMessage;
+
             response.Success = true;
         }
         catch (Exception ex)

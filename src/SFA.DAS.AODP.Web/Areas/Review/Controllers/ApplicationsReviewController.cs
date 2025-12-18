@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using Azure;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -13,6 +14,7 @@ using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApproval;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.User;
+using SFA.DAS.AODP.Web.Models.Application;
 using System.IO.Compression;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
@@ -30,6 +32,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         private readonly UserType UserType;
         private readonly IFileService _fileService;
         private readonly IOptions<AodpConfiguration> _aodpConfiguration;
+        private const string DefaultQANValidationMessage = "Invalid Qualification Number.";
 
         public ApplicationsReviewController(ILogger<ApplicationsReviewController> logger, IMediator mediator, IUserHelperService userHelperService, IFileService fileService, IOptions<AodpConfiguration> aodpConfiguration) : base(mediator, logger)
         {
@@ -304,7 +307,12 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         [Route("review/application-reviews/{applicationReviewId}/update-qan")]
         public async Task<IActionResult> UpdateQan(UpdateQanViewModel model)
         {
-            await Send(
+            if (!ModelState.IsValid)
+            {
+                return await ReturnViewApplicationWithUserInput(model.ApplicationReviewId, model.Qan);
+            }
+
+            var response = await Send(
                 new SaveQanCommand()
                 {
                     ApplicationReviewId = model.ApplicationReviewId,
@@ -312,6 +320,14 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     SentByName = _userHelperService.GetUserDisplayName(),
                     Qan = model.Qan,
                 });
+
+            if (response?.IsQanValid == false)
+            {
+                ModelState.AddModelError(nameof(model.Qan),
+                    response.QanValidationMessage ?? DefaultQANValidationMessage);
+
+                return await ReturnViewApplicationWithUserInput(model.ApplicationReviewId, model.Qan);
+            }
 
             TempData[UpdateKeys.QanUpdated.ToString()] = true;
             return RedirectToAction(nameof(ViewApplication), new { applicationReviewId = model.ApplicationReviewId });
@@ -542,6 +558,17 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 if (UserType == UserType.SkillsEngland && !shared.SharedWithSkillsEngland) throw new Exception("Application not shared with Skills England.");
             }
             return shared.ApplicationId;
+        }
+
+        private async Task<IActionResult> ReturnViewApplicationWithUserInput(Guid applicationReviewId, string? attemptedQan)
+        {
+            var userType = _userHelperService.GetUserType();
+            var review = await Send(new GetApplicationForReviewByIdQuery(applicationReviewId));
+
+            var vm = ApplicationReviewViewModel.Map(review, userType);
+            vm.Qan = attemptedQan;
+
+            return View(nameof(ViewApplication), vm);
         }
     }
 }
