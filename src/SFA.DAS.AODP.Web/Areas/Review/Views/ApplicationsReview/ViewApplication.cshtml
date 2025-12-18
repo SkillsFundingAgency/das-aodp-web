@@ -29,6 +29,7 @@
     </div>
 }
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+<partial name="~/Views/Shared/_ValidationSummaryPartial.cshtml" />
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
@@ -105,7 +106,8 @@
                         {
                             <form asp-route-applicationReviewId="@Model.ApplicationReviewId"
                                   asp-action="UpdateQan"
-                                  asp-Controller="ApplicationsReview" method="post">
+                                  asp-Controller="ApplicationsReview" method="post"
+                                  gfa-prepend-error-summary="false">
 
                                 <div class="govuk-form-group govuk-!-margin-bottom-0">
 
@@ -134,7 +136,8 @@
                     <govuk-summary-list-row-value>
                         <form asp-route-applicationReviewId="@Model.ApplicationReviewId"
                               asp-action="UpdateOwner"
-                              asp-Controller="ApplicationsReview" method="post">
+                              asp-Controller="ApplicationsReview" method="post"
+                              gfa-prepend-error-summary="false">
 
                             <div class="govuk-form-group govuk-!-margin-bottom-0">
 

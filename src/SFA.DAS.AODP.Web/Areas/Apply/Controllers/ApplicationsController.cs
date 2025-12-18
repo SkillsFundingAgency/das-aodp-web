@@ -1,6 +1,8 @@
-﻿using MediatR;
+﻿using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SFA.DAS.AODP.Application.Commands.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Application.Form;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Infrastructure.File;
@@ -10,6 +12,7 @@ using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Filters;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Application;
+using SFA.DAS.AODP.Web.Models.OutputFile;
 using SFA.DAS.AODP.Web.Validators;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
@@ -26,10 +29,17 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         }
 
         private readonly IApplicationAnswersValidator _validator;
+
         private readonly IFileService _fileService;
         private readonly IUserHelperService _userHelperService;
 
-        public ApplicationsController(IMediator mediator, IApplicationAnswersValidator validator, ILogger<ApplicationsController> logger, IFileService fileService, IUserHelperService userHelperService) : base(mediator, logger)
+        private const string DefaultQANValidationMessage = "Invalid Qualification Number.";
+
+        public ApplicationsController(IMediator mediator, 
+            IApplicationAnswersValidator validator, 
+            ILogger<ApplicationsController> logger, 
+            IFileService fileService, 
+            IUserHelperService userHelperService) : base(mediator, logger)
         {
             _validator = validator;
             _fileService = fileService;
@@ -97,6 +107,14 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
             {
                 var response = await Send(request);
 
+                if (response?.IsQanValid == false)
+                {
+                    ModelState.AddModelError(nameof(createApplicationViewModel.QualificationNumber),
+                        response.QanValidationMessage ?? DefaultQANValidationMessage);
+
+                    return View(createApplicationViewModel);
+                }
+
                 return RedirectToAction(nameof(ViewApplication), new { organisationId = createApplicationViewModel.OrganisationId, applicationId = response.Id, formVersionId = createApplicationViewModel.FormVersionId });
             }
             catch (Exception ex)
@@ -143,13 +161,20 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
                 Title = editApplicationViewModel.Name,
                 ApplicationId = editApplicationViewModel.ApplicationId,
                 Owner = editApplicationViewModel.Owner,
-                QualificationNumber = editApplicationViewModel.QualificationNumber,
-
+                QualificationNumber = editApplicationViewModel.QualificationNumber
             };
 
             try
             {
                 var response = await Send(request);
+
+                if (response?.IsQanValid == false)
+                {
+                    ModelState.AddModelError(nameof(editApplicationViewModel.QualificationNumber),
+                        response.QanValidationMessage ?? DefaultQANValidationMessage);
+
+                    return View(editApplicationViewModel);
+                }
 
                 return RedirectToAction(nameof(ViewApplication), new
                 {
@@ -382,7 +407,6 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
 
         #endregion
 
-
         #region Preview
         [ValidateApplication]
         [HttpGet]
@@ -396,6 +420,50 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
 
             return View(viewModel);
         }
+        #endregion
+
+        #region Withdraw
+
+        [ValidateApplication]
+        [HttpGet]
+        [Route("apply/organisations/{organisationId}/applications/{applicationId}/withdraw")]
+        public async Task<IActionResult> Withdraw(Guid applicationId, Guid organisationId)
+        {
+            var query = new GetApplicationMetadataByIdQuery(applicationId);
+            var response = await Send(query);
+
+            return View(new WithdrawApplicationViewModel
+            {
+                ApplicationId = applicationId,
+                OrganisationId = response.OrganisationId,
+                FormVersionId = response.FormVersionId
+            });
+        }
+
+        [ValidateApplication]
+        [HttpPost]
+        [Route("apply/organisations/{organisationId}/applications/{applicationId}/withdraw")]
+        public async Task<IActionResult> SubmitWithdraw([FromRoute] Guid applicationId, [FromRoute] Guid organisationId)
+        {
+            var command = new WithdrawApplicationCommand
+            {
+                ApplicationId = applicationId,
+                WithdrawnBy = _userHelperService.GetUserDisplayName(),
+                WithdrawnByEmail = _userHelperService.GetUserEmail()
+            };
+
+            await Send(command);
+
+            return RedirectToAction(nameof(WithdrawConfirmation));
+        }
+
+        [HttpGet]
+        [Route("apply/withdraw-confirmed")]
+        public IActionResult WithdrawConfirmation()
+        {
+            return View();
+        }
+
         #endregion
 
         private async Task HandleFileUploads(ApplicationPageViewModel viewModel, GetApplicationPageByIdQueryResponse response)
