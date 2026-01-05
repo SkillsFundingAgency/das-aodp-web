@@ -4,7 +4,5 @@
     {
         public string ConnectionString { get; set; }
         public string FileUploadContainerName { get; set; }
-
-        public string ImportFilesContainerName { get; set; }
     }
 }

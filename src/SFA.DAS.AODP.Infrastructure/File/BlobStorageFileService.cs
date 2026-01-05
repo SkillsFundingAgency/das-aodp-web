@@ -11,13 +11,20 @@ namespace SFA.DAS.AODP.Infrastructure.File
         public const string FileExtensionsMetadataKey = "Extension";
         public const string FilePrefixMetadataKey = "FileNamePrefix";
         private readonly BlobStorageSettings _blobStorageSettings;
+        private readonly ImportBlobStorageSettings _importBlobStorageSettings;
         private readonly BlobServiceClient _blobServiceClient;
+        private readonly BlobServiceClient? _importBlobServiceClient;
         private BlobContainerClient? _blobContainerClient;
 
-        public BlobStorageFileService(BlobServiceClient blobServiceClient, IOptions<BlobStorageSettings> settings)
+        public BlobStorageFileService(BlobServiceClient blobServiceClient, 
+                    IOptions<BlobStorageSettings> settings,
+                    IOptions<ImportBlobStorageSettings> importSettings,
+                    IImportBlobServiceClient? importBlobServiceClient = null)
         {
             _blobServiceClient = blobServiceClient;
             _blobStorageSettings = settings.Value ?? throw new ArgumentNullException(nameof(settings));
+            _importBlobStorageSettings = importSettings.Value ?? throw new ArgumentNullException(nameof(importSettings));
+            _importBlobServiceClient = importBlobServiceClient?.Client;
         }
 
         public async Task UploadFileAsync(string folderName, string fileName, Stream stream, string? contentType, string fileNamePrefix)
@@ -65,7 +72,6 @@ namespace SFA.DAS.AODP.Infrastructure.File
 
         public async Task UploadXlsxFileAsync(string folderName, string fileName, Stream stream, string? contentType, string fileNamePrefix)
         {
-            // Ensure a safe file name is used
             var safeFileName = Path.GetFileName(fileName ?? string.Empty);
             var fileExtension = Path.GetExtension(safeFileName) ?? string.Empty;
 
@@ -75,7 +81,12 @@ namespace SFA.DAS.AODP.Infrastructure.File
 
             var filePath = string.IsNullOrEmpty(trimmedFolder) ? safeFileName : $"{trimmedFolder}/{safeFileName}";
 
-            var blobClient = GetBlobClient(filePath, _blobStorageSettings.ImportFilesContainerName);
+            // Use the import blob service client if registered; otherwise fall back to default client
+            var serviceClient = _importBlobServiceClient ?? _blobServiceClient;
+            var importContainer = serviceClient.GetBlobContainerClient(_importBlobStorageSettings.ImportFilesContainerName);
+            await importContainer.CreateIfNotExistsAsync();
+
+            var blobClient = importContainer.GetBlobClient(filePath);
 
             // If a blob with the same path exists delete it (including snapshots) to ensure the uploaded blob uses the exact filename.
             await blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);

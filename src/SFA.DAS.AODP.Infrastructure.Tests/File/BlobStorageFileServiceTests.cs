@@ -19,7 +19,8 @@ namespace SFA.DAS.AODP.Infrastructure.UnitTests.File
         public BlobStorageFileServiceTests()
         {
             _blobStorageSettings = _fixture.Create<BlobStorageSettings>();
-            _sut = new(_blobServiceClient.Object, Options.Create(_blobStorageSettings));
+            var importBlobStorageSettings = _fixture.Create<ImportBlobStorageSettings>();
+            _sut = new(_blobServiceClient.Object, Options.Create(_blobStorageSettings), Options.Create(importBlobStorageSettings));
         }
 
         [Fact]
