@@ -1,4 +1,4 @@
-﻿﻿@using SFA.DAS.AODP.Web.Areas.Review.Models.Home
+﻿@using SFA.DAS.AODP.Web.Areas.Review.Models.Home
 @using SFA.DAS.AODP.Web.Authentication
 @using static SFA.DAS.AODP.Web.Areas.Review.Models.Home.ReviewHomeViewModel
 @model ReviewHomeViewModel
@@ -17,7 +17,39 @@
                 <hr class="govuk-section-break govuk-section-break--visible" />
             </div>
         </div>
+
         <div class="govuk-grid-row" style="margin-top:1.5rem;">
+            <div class="govuk-grid-column-one-half">
+                <h2 class="govuk-heading-s">
+                    <a asp-area="Review" asp-controller="QualificationSearch" asp-action="Index" class="govuk-link">Search for a qualification</a>
+                </h2>
+                <p class="govuk-body">Search for any funded or regulated qualification.</p>
+
+                @if (Model.UserRoles.Contains(RoleConstants.QFAUReviewer) || Model.UserRoles.Contains(RoleConstants.QFAUApprover))
+                {
+                    <h2 class="govuk-heading-s" style="margin-top:1.5rem;">
+                        <a asp-area="Review" asp-controller="ApplicationsReview" asp-action="Index" class="govuk-link">Review applications for funding</a>
+                    </h2>
+                    <p class="govuk-body">Review, assign and approve applications for funding from Awarding Organisations.</p>
+                }
+
+                @if (Model.UserRoles.Contains(RoleConstants.QFAUReviewer) || Model.UserRoles.Contains(RoleConstants.QFAUApprover))
+                {
+                    <h2 class="govuk-heading-s" style="margin-top:1.5rem;">
+                        <a asp-area="Review" asp-controller="Changed" asp-action="Index" class="govuk-link">Review qualifications with changes</a>
+                    </h2>
+                    <p class="govuk-body">Review qualifications that have had changes made to them by Ofqual.</p>
+                }
+
+                @if (Model.UserRoles.Contains(RoleConstants.QFAUImport))
+                {
+                    <h2 class="govuk-heading-s" style="margin-top:1.5rem;">
+                        <a asp-area="Admin" asp-controller="OutputFile" asp-action="Index" class="govuk-link">Download an output file</a>
+                    </h2>
+                    <p class="govuk-body">Download a record of all active and archived funding requests.</p>
+                }
+            </div>
+
             <div class="govuk-grid-column-one-half">
                 @if (Model.UserRoles.Contains(RoleConstants.QFAUImport))
                 {
@@ -26,59 +58,21 @@
                     </h2>
                     <p class="govuk-body">Import data from funded or regulated qualifications.</p>
                 }
-            </div>
 
-            <div class="govuk-grid-column-one-half">
                 @if (Model.UserRoles.Contains(RoleConstants.QFAUReviewer) || Model.UserRoles.Contains(RoleConstants.QFAUApprover))
                 {
-                    <h2 class="govuk-heading-s">
-                        <a asp-area="Review" asp-controller="ApplicationsReview" asp-action="Index" class="govuk-link">Review applications for funding</a>
-                    </h2>
-                    <p class="govuk-body">Review, assign and approve applications for funding from Awarding Organisations.</p>
-                }
-            </div>
-        </div>
-
-        <div class="govuk-grid-row">
-            <div class="govuk-grid-column-one-half">
-                @if (Model.UserRoles.Contains(RoleConstants.QFAUReviewer) || Model.UserRoles.Contains(RoleConstants.QFAUApprover))
-                {
-                    <h2 class="govuk-heading-s">
+                    <h2 class="govuk-heading-s" style="margin-top:1.5rem;">
                         <a asp-area="Review" asp-controller="New" asp-action="Index" class="govuk-link">Review newly regulated qualifications</a>
                     </h2>
                     <p class="govuk-body">Review qualifications that have been newly regulated by Ofqual.</p>
                 }
-            </div>
 
-            <div class="govuk-grid-column-one-half">
-                @if (Model.UserRoles.Contains(RoleConstants.QFAUReviewer) || Model.UserRoles.Contains(RoleConstants.QFAUApprover))
-                {
-                    <h2 class="govuk-heading-s">
-                        <a asp-area="Review" asp-controller="Changed" asp-action="Index" class="govuk-link">Review qualifications with changes</a>
-                    </h2>
-                    <p class="govuk-body">Review qualifications that have had changes made to them by Ofqual.</p>
-                }
-            </div>
-        </div>
-
-        <div class="govuk-grid-row">
-            <div class="govuk-grid-column-one-half">
                 @if (Model.UserRoles.Contains(RoleConstants.QFAUFormBuilder))
                 {
-                    <h2 class="govuk-heading-s">
+                    <h2 class="govuk-heading-s" style="margin-top:1.5rem;">
                         <a asp-area="Admin" asp-controller="Forms" asp-action="Index" class="govuk-link">Create a form</a>
                     </h2>
                     <p class="govuk-body">Create a form for an Awarding Organisation to apply for funding.</p>
-                }
-            </div>
-
-            <div class="govuk-grid-column-one-half">
-                @if (Model.UserRoles.Contains(RoleConstants.QFAUImport))
-                {
-                    <h2 class="govuk-heading-s">
-                        <a asp-area="Admin" asp-controller="OutputFile" asp-action="Index" class="govuk-link">Download an output file</a>
-                    </h2>
-                    <p class="govuk-body">Download a record of all active and archived funding requests.</p>
                 }
             </div>
         </div>
