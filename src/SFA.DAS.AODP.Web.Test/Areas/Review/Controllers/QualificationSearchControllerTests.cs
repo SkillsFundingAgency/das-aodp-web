@@ -41,6 +41,7 @@ public class QualificationSearchControllerTests
 
         var emptyJobRunsResponse = _fixture.Build <BaseMediatrResponse<GetJobRunsQueryResponse>>()
             .With(r => r.Value, body)
+            .With(r => r.Success, true)
             .Create();
 
         _mediatorMock
@@ -80,6 +81,7 @@ public class QualificationSearchControllerTests
 
         var qualificationsResponseBody = _fixture.Build<BaseMediatrResponse<GetQualificationsQueryResponse>>()
             .With(r => r.Value, qualificationBody)
+            .With(r => r.Success, true)
             .Create();
 
         _mediatorMock
@@ -93,6 +95,7 @@ public class QualificationSearchControllerTests
 
         var emptyJobRunsResponse = _fixture.Build<BaseMediatrResponse<GetJobRunsQueryResponse>>()
             .With(r => r.Value, body)
+            .With(r => r.Success, true)
             .Create();
 
         _mediatorMock
@@ -134,6 +137,7 @@ public class QualificationSearchControllerTests
 
         var regulatedResponse = _fixture.Build<BaseMediatrResponse<GetJobRunsQueryResponse>>()
             .With(r => r.Value, regulatedBody)
+            .With(r => r.Success, true)
             .Create();
 
         var fundedBody = _fixture.Build<GetJobRunsQueryResponse>()
@@ -141,6 +145,7 @@ public class QualificationSearchControllerTests
             .Create();
         var fundedResponse = _fixture.Build<BaseMediatrResponse<GetJobRunsQueryResponse>>()
             .With(r => r.Value, fundedBody)
+            .With(r => r.Success, true)
             .Create();
 
         _mediatorMock
