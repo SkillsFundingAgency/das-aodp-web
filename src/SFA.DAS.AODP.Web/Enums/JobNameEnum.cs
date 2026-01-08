@@ -3,6 +3,8 @@
     public enum JobNames
     {
         RegulatedQualifications,
-        FundedQualifications        
+        FundedQualifications        ,
+        Pldns,
+        DefundingList
     }
 }

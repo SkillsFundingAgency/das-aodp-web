@@ -11,20 +11,27 @@ namespace SFA.DAS.AODP.Infrastructure.File
         public const string FileExtensionsMetadataKey = "Extension";
         public const string FilePrefixMetadataKey = "FileNamePrefix";
         private readonly BlobStorageSettings _blobStorageSettings;
+        private readonly ImportBlobStorageSettings _importBlobStorageSettings;
         private readonly BlobServiceClient _blobServiceClient;
+        private readonly BlobServiceClient? _importBlobServiceClient;
         private BlobContainerClient? _blobContainerClient;
 
-        public BlobStorageFileService(BlobServiceClient blobServiceClient, IOptions<BlobStorageSettings> settings)
+        public BlobStorageFileService(BlobServiceClient blobServiceClient, 
+                    IOptions<BlobStorageSettings> settings,
+                    IOptions<ImportBlobStorageSettings> importSettings,
+                    IImportBlobServiceClient? importBlobServiceClient = null)
         {
             _blobServiceClient = blobServiceClient;
             _blobStorageSettings = settings.Value ?? throw new ArgumentNullException(nameof(settings));
+            _importBlobStorageSettings = importSettings.Value ?? throw new ArgumentNullException(nameof(importSettings));
+            _importBlobServiceClient = importBlobServiceClient?.Client;
         }
 
         public async Task UploadFileAsync(string folderName, string fileName, Stream stream, string? contentType, string fileNamePrefix)
         {
             string filePath = $"{folderName}/{Guid.NewGuid()}";
 
-            var blobClient = GetBlobClient(filePath);
+            var blobClient = GetBlobClient(filePath, _blobStorageSettings.FileUploadContainerName);
 
             await blobClient.UploadAsync(stream,
                 metadata: new Dictionary<string, string>()
@@ -38,13 +45,13 @@ namespace SFA.DAS.AODP.Infrastructure.File
 
         public List<UploadedBlob> ListBlobs(string folderName)
         {
-            EnsureBlobContainerClient();
+            EnsureBlobContainerClient(_blobStorageSettings.FileUploadContainerName);
             var items = _blobContainerClient.GetBlobs(prefix: folderName);
             List<UploadedBlob> result = new List<UploadedBlob>();
             foreach (var item in items)
             {
 
-                var blob = GetBlobClient(item.Name);
+                var blob = GetBlobClient(item.Name, _blobStorageSettings.FileUploadContainerName);
                 var properties = blob.GetProperties();
 
                 properties.Value.Metadata.TryGetValue(FileNameMetadataKey, out var fileName);
@@ -63,10 +70,55 @@ namespace SFA.DAS.AODP.Infrastructure.File
             return result;
         }
 
+        public async Task UploadXlsxFileAsync(string folderName, string fileName, Stream stream, string? contentType, string fileNamePrefix)
+        {
+            var safeFileName = Path.GetFileName(fileName ?? string.Empty);
+            var fileExtension = Path.GetExtension(safeFileName) ?? string.Empty;
+
+            var trimmedFolder = (folderName ?? string.Empty).Trim();
+            if (!string.IsNullOrEmpty(trimmedFolder) && trimmedFolder.EndsWith('/'))
+                trimmedFolder = trimmedFolder.TrimEnd('/');
+
+            var filePath = string.IsNullOrEmpty(trimmedFolder) ? safeFileName : $"{trimmedFolder}/{safeFileName}";
+
+            // Use the import blob service client if registered; otherwise fall back to default client
+            var serviceClient = _importBlobServiceClient ?? _blobServiceClient;
+            var importContainer = serviceClient.GetBlobContainerClient(_importBlobStorageSettings.ImportFilesContainerName);
+            await importContainer.CreateIfNotExistsAsync();
+
+            var blobClient = importContainer.GetBlobClient(filePath);
+
+            // If a blob with the same path exists delete it (including snapshots) to ensure the uploaded blob uses the exact filename.
+            await blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
+
+            if (stream.CanSeek)
+            {
+                stream.Position = 0;
+            }
+
+            var headers = new BlobHttpHeaders
+            {
+                ContentDisposition = $"attachment; filename=\"{safeFileName}\""
+            };
+
+            if (!string.IsNullOrEmpty(contentType))
+            {
+                headers.ContentType = contentType;
+            }
+
+            await blobClient.UploadAsync(stream,
+                metadata: new Dictionary<string, string>()
+                {
+                    { FileNameMetadataKey, safeFileName },
+                    { FileExtensionsMetadataKey, fileExtension },
+                    { FilePrefixMetadataKey, fileNamePrefix ?? string.Empty }
+                },
+                httpHeaders: headers);
+        }
 
         public async Task<UploadedBlob> GetBlobDetails(string fileName)
         {
-            EnsureBlobContainerClient();
+            EnsureBlobContainerClient(_blobStorageSettings.FileUploadContainerName);
 
             var properties = await _blobContainerClient.GetBlobClient(fileName).GetPropertiesAsync();
 
@@ -81,28 +133,28 @@ namespace SFA.DAS.AODP.Infrastructure.File
 
         public async Task<Stream> OpenReadStreamAsync(string filePath)
         {
-            var blobClient = GetBlobClient(filePath);
+            var blobClient = GetBlobClient(filePath, _blobStorageSettings.FileUploadContainerName);
             var stream = await blobClient.OpenReadAsync();
             return stream;
         }
 
         public async Task DeleteFileAsync(string filePath)
         {
-            var blobClient = GetBlobClient(filePath);
+            var blobClient = GetBlobClient(filePath, _blobStorageSettings.FileUploadContainerName);
             await blobClient.DeleteAsync(DeleteSnapshotsOption.IncludeSnapshots);
         }
 
-        private BlobClient GetBlobClient(string filePath)
+        private BlobClient GetBlobClient(string filePath, string containerName)
         {
-            EnsureBlobContainerClient();
+            EnsureBlobContainerClient(containerName);
             return _blobContainerClient!.GetBlobClient(filePath);
         }
 
-        private void EnsureBlobContainerClient()
+        private void EnsureBlobContainerClient(string containerName)
         {
             if (_blobContainerClient is null)
             {
-                _blobContainerClient = _blobServiceClient.GetBlobContainerClient(_blobStorageSettings.FileUploadContainerName);
+                _blobContainerClient = _blobServiceClient.GetBlobContainerClient(containerName);
 
                 _blobContainerClient.CreateIfNotExists();
             }
