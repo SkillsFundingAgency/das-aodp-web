@@ -1,7 +1,6 @@
 ﻿using MediatR;
-using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Domain.Interfaces;
-
+namespace SFA.DAS.AODP.Application.Commands.Application.Application;
 public class WithdrawApplicationCommandHandler : IRequestHandler<WithdrawApplicationCommand, BaseMediatrResponse<EmptyResponse>>
 {
     private readonly IApiClient _apiClient;

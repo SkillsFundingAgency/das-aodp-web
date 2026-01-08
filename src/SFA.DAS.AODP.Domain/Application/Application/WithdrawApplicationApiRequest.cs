@@ -6,6 +6,6 @@ public class WithdrawApplicationApiRequest : IPostApiRequest
 
     public string PostUrl => $"api/applications/{ApplicationId}/withdraw";
 
-    public object Data { get; set; }
+    public required object Data { get; set; }
 
 }
