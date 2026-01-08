@@ -263,6 +263,18 @@ public class QuestionsController : ControllerBase
                     ModelState.AddModelError($"Options-{item.Index}", "Option text cannot be empty");
                 });
         }
+        
+        if (editQuestionViewModel.Checkbox is { MinNumberOfOptions: int min, MaxNumberOfOptions: int max } && min > max)
+        {
+            ModelState.AddModelError("Checkbox.MinNumberOfOptions",
+                "Minimum number of options cannot be greater than the maximum.");
+        }
+
+        if (editQuestionViewModel.Type == AODP.Models.Forms.QuestionType.Number)
+        { 
+            
+        }
+
     }
     #endregion
 }
