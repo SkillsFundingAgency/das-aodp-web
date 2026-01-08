@@ -10,11 +10,6 @@
 	<main class="govuk-main-wrapper">
 		<div class="govuk-grid-row">
 			<div class="govuk-grid-column-two-thirds">
-                <div class="govuk-grid-row">
-                    <a class="govuk-back-link" asp-action="Index" asp-controller="Home" asp-area="Review">
-                        Back to qualifications
-                    </a>
-                </div>
 
                 <div class="govuk-grid-row">
                 <govuk-panel heading-level="2">
@@ -28,8 +23,8 @@
                         <p class="govuk-body">@Model.UserName imported @Model.ImportType at @Model.CompletedTime.ToShortDateString() @Model.CompletedTime.ToShortTimeString()</p>
                     </div>
                    
-                    <a class="govuk-button govuk-button--secondary" asp-action="Index" asp-controller="Home" asp-area="Review">
-                        Back to qualifications
+                    <a class="govuk-link" asp-action="Index" asp-controller="Home" asp-area="Review">
+                        Go to the QFAST homepage
                     </a>
                 </div>              
 			</div>

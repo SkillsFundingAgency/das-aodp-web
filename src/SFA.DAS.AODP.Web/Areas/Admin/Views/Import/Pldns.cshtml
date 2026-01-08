@@ -45,13 +45,15 @@
                             }
                         </p>
                         <div class="govuk-hint">
-                            This must be an @allowed file. The file may take up to 2 minutes to finish uploading.
+                            This must be an @allowed file <br /><br />
+                            Do not close this window, navigate away or refresh the page until it's done.
                         </div>
                     }
                     else
                     {
                         <div class="govuk-hint">
-                            This must be an @allowed file. The file may take up to 2 minutes to finish uploading.
+                            This must be an @allowed file<br /><br />
+                            Do not close this window, navigate away or refresh the page until it's done.
                         </div>
                     }
 
@@ -60,7 +62,7 @@
                            name="File"
                            type="file"
                            accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                           @(hasFileError ? "aria-describedby=\"File-error\"" : "") />
+                           @(hasFileError ? "tabindex=\"0\" aria-describedby=\"File-error\"" : "") />
 
                     <span asp-validation-for="File" class="govuk-error-message" />
                 </div>
