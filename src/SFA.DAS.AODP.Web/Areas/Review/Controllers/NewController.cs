@@ -2,9 +2,11 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using SFA.DAS.AODP.Application.Commands.Qualification;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Authentication.DfeSignInApi.Models;
+using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.User;
@@ -24,6 +26,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         private readonly ILogger<NewController> _logger;
         private readonly IMediator _mediator;
         private readonly IUserHelperService _userHelperService;
+        private readonly IOptions<AodpConfiguration> _aodpConfiguration;
         private List<string> ReviewerAllowedStatuses { get; set; } = new List<string>()
         {
             "Decision Required",
@@ -31,11 +34,12 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         };
         public enum NewQualDataKeys { InvalidPageParams, CommentSaved}
 
-        public NewController(ILogger<NewController> logger, IMediator mediator, IUserHelperService userHelperService) : base(mediator, logger)
+        public NewController(ILogger<NewController> logger, IOptions<AodpConfiguration> configuration, IMediator mediator, IUserHelperService userHelperService) : base(mediator, logger)
         {
             _logger = logger;
             _mediator = mediator;
             _userHelperService = userHelperService;
+            _aodpConfiguration = configuration;
         }
 
         [Route("/Review/New/Index")]
@@ -44,7 +48,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             var viewModel = new NewQualificationsViewModel();
             try
             {
-
                 if (!ModelState.IsValid || (recordsPerPage != 10 && recordsPerPage != 20 && recordsPerPage != 50) || pageNumber < 0)
                 {
                     ShowNotificationIfKeyExists(NewQualDataKeys.InvalidPageParams.ToString(), ViewNotificationMessageType.Error, "Invalid parameters.");
@@ -80,6 +83,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     var response = await Send(query);
                     viewModel = NewQualificationsViewModel.Map(response, procStatuses.ProcessStatuses, organisation, qan, name);
                 }
+
+                viewModel.FindRegulatedQualificationUrl = _aodpConfiguration.Value.FindRegulatedQualificationUrl;
                 viewModel.Filter = new NewQualificationFilterViewModel()
                 {
                     Organisation = organisation,
