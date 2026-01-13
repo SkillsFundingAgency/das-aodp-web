@@ -1,19 +1,14 @@
-﻿using Azure;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.Import;
 using SFA.DAS.AODP.Application.Queries.Import;
-using SFA.DAS.AODP.Common.Exceptions;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Web.Areas.Admin.Models;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Import;
-using System.Globalization;
-using System.Reflection;
-using System.Threading;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
@@ -25,8 +20,8 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
         private readonly IUserHelperService _userHelperService;
         private readonly IFileService _fileService;
         public enum SendKeys { RequestFailed, JobStatusFailed }
-        private const string PldnsViewPath = "~/Areas/Admin/Views/Import/Pldns.cshtml";
-        private const string DefundingListViewPath = "~/Areas/Admin/Views/Import/DefundingList.cshtml";
+        private const string PldnsViewPath = nameof(Pldns); //"~/Areas/Admin/Views/Import/Pldns.cshtml";
+        private const string DefundingListViewPath = nameof(DefundingList); //"~/Areas/Admin/Views/Import/DefundingList.cshtml";
         private const string ConfirmImportSelectionAction = nameof(ConfirmImportSelection);
 
         public ImportController(ILogger<ImportController> logger, IMediator mediator, IUserHelperService userHelperService, IFileService fileService) : base(mediator, logger)
@@ -55,13 +50,13 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
             if (!string.IsNullOrWhiteSpace(viewModel?.ImportType) &&
                 string.Equals(viewModel.ImportType.Trim(), "Pldns", StringComparison.OrdinalIgnoreCase))
             {
-                return RedirectToAction("ImportPldns");
+                return RedirectToAction("Pldns");
             }
 
             if (!string.IsNullOrWhiteSpace(viewModel?.ImportType) &&
                 string.Equals(viewModel.ImportType.Trim(), "Defunding list", StringComparison.OrdinalIgnoreCase))
             {
-                return RedirectToAction("ImportDefundingList");
+                return RedirectToAction("DefundingList");
             }
 
             return RedirectToAction(ConfirmImportSelectionAction, viewModel);
@@ -243,7 +238,7 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
 
         [HttpGet]
         [Route("/admin/import/pldns")]
-        public IActionResult ImportPldns()
+        public IActionResult Pldns()
         {
             return View(PldnsViewPath);
         }
@@ -252,7 +247,7 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
         [Route("/admin/import/pldns")]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = RoleConstants.QFAUImport)]
-        public async Task<IActionResult> ImportPldns([FromForm] UploadImportFileViewModel model)
+        public async Task<IActionResult> Pldns([FromForm] UploadImportFileViewModel model)
         {
 
             if (!ModelState.IsValid)
@@ -270,26 +265,12 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
 
             try
             {
-                var command = new ImportPldnsCommand
-                {
-                    File = model.File,
-                    FileName = model.File.FileName,
-                };
-
-                await Send(command);
-
                 var folderName = JobNames.Pldns.ToString();
                 var contentType = model.File.ContentType;
                 var fileNamePrefix = _userHelperService.GetUserDisplayName() ?? string.Empty;
 
                 using var stream = model.File.OpenReadStream();
                 await _fileService.UploadXlsxFileAsync(folderName, "Pldns.xlsx", stream, contentType, fileNamePrefix);
-            }
-            catch (MediatorRequestHandlingException ex)
-            {
-                LogException(ex);
-                ModelState.AddModelError(string.Empty, ex.Message);
-                return View(PldnsViewPath, model);
             }
             catch (Exception ex)
             {
@@ -304,7 +285,7 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
 
         [HttpGet]
         [Route("/admin/import/defunding-list")]
-        public IActionResult ImportDefundingList()
+        public IActionResult DefundingList()
         {
             return View(DefundingListViewPath);
         }
@@ -313,7 +294,7 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
         [Route("/admin/import/defunding-list")]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = RoleConstants.QFAUImport)]
-        public async Task<IActionResult> ImportDefundingList([FromForm] UploadImportFileViewModel model)
+        public async Task<IActionResult> DefundingList([FromForm] UploadImportFileViewModel model)
         {
 
             if (!ModelState.IsValid)
@@ -331,26 +312,12 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
 
             try
             {
-                var command = new ImportDefundingListCommand
-                {
-                    File = model.File,
-                    FileName = model.File.FileName,
-                };
-
-                await Send(command);
-
                 var folderName = JobNames.DefundingList.ToString();
                 var contentType = model.File.ContentType;
                 var fileNamePrefix = _userHelperService.GetUserDisplayName() ?? string.Empty;
 
                 using var stream = model.File.OpenReadStream();
                 await _fileService.UploadXlsxFileAsync(folderName, "DefundingList.xlsx", stream, contentType, fileNamePrefix);
-            }
-            catch (MediatorRequestHandlingException ex)
-            {
-                LogException(ex);
-                ModelState.AddModelError(string.Empty, ex.Message);
-                return View(DefundingListViewPath, model);
             }
             catch (Exception ex)
             {

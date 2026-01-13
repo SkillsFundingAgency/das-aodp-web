@@ -20,7 +20,11 @@ namespace SFA.DAS.AODP.Infrastructure.UnitTests.File
         {
             _blobStorageSettings = _fixture.Create<BlobStorageSettings>();
             var importBlobStorageSettings = _fixture.Create<ImportBlobStorageSettings>();
-            _sut = new(_blobServiceClient.Object, Options.Create(_blobStorageSettings), Options.Create(importBlobStorageSettings));
+            var clientFactoryMock = new Mock<Microsoft.Extensions.Azure.IAzureClientFactory<BlobServiceClient>>();
+            clientFactoryMock
+                .Setup(f => f.CreateClient(It.IsAny<string>()))
+                .Returns(_blobServiceClient.Object);
+            _sut = new(_blobServiceClient.Object, clientFactoryMock.Object, Options.Create(_blobStorageSettings), Options.Create(importBlobStorageSettings));
         }
 
         [Fact]

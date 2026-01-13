@@ -1,19 +1,14 @@
-﻿@model SFA.DAS.AODP.Web.Areas.Admin.Models.UploadImportFileViewModel
+﻿@using Azure.Core
+@using System.Linq
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@model SFA.DAS.AODP.Web.Areas.Admin.Models.UploadImportFileViewModel
 @{
     Layout = "_Layout";
     var allowed = ".xlsx";
 
-    var modelStateErrors = ViewData.ModelState
-        .SelectMany(kvp => kvp.Value?.Errors ?? Enumerable.Empty<Microsoft.AspNetCore.Mvc.ModelBinding.ModelError>())
-        .ToList();
-
-    var errorMessages = modelStateErrors
-        .Select(e => !string.IsNullOrWhiteSpace(e.ErrorMessage) ? e.ErrorMessage : (e.Exception?.Message ?? "Select a file"))
-        .ToList();
-
-    var hasFileError = errorMessages.Count > 0;
+    var hasFileError = ViewData.ModelState.ContainsKey(nameof(Model.File)) && ViewData.ModelState[nameof(Model.File)].Errors.Count > 0;
     var inputClass = hasFileError ? "govuk-file-upload govuk-file-upload--error" : "govuk-file-upload govuk-!-margin-top-2";
-    var submitCommand = "this.disabled = true; this.form.submit();";
+    //var submitCommand = "var form=this.form; if (form.checkValidity && !form.checkValidity()) { if (form.reportValidity) form.reportValidity(); return false; } if (window.jQuery && window.jQuery(form).validator && !window.jQuery(form).valid()) { return false; } this.disabled = true; form.submit();";
 }
 <partial name="~/Views/Shared/_ValidationSummaryPartial.cshtml" />
 <div class="govuk-width-container">
@@ -21,7 +16,7 @@
 
     <h1 class="govuk-heading-xl">Import policy last date for new starters (PLDNS) data</h1>
 
-    <form asp-area="Admin" asp-controller="Import" asp-action="ImportPldns" method="post" enctype="multipart/form-data" novalidate>
+    <form asp-area="Admin" asp-controller="Import" asp-action="Pldns" method="post" enctype="multipart/form-data">
         @Html.AntiForgeryToken()
 
         <div class="govuk-grid-row">
@@ -31,47 +26,29 @@
                         Import file
                     </label>
 
-                    @if (hasFileError)
-                    {
-                        <p id="File-error" class="govuk-error-message">
-                            <span class="govuk-visually-hidden">Error:</span>
-                            @for (int i = 0; i < errorMessages.Count; i++)
-                            {
-                                <span>@errorMessages[i]</span>
-                                @if (i < errorMessages.Count - 1)
-                                {
-                                    <br />
-                                }
-                            }
-                        </p>
-                        <div class="govuk-hint">
-                            This must be an @allowed file <br /><br />
-                            Do not close this window, navigate away or refresh the page until it's done.
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="govuk-hint">
-                            This must be an @allowed file<br /><br />
-                            Do not close this window, navigate away or refresh the page until it's done.
-                        </div>
-                    }
+                    <div class="govuk-hint">
+                        This must be an @allowed file<br /><br />
+                        Do not close this window, navigate away or refresh the page until it's done.
+                    </div>
 
-                    <input class="@inputClass"
+                    <input asp-for="File"
+                           class="@inputClass"
                            id="File"
                            name="File"
                            type="file"
                            accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                           @(hasFileError ? "tabindex=\"0\" aria-describedby=\"File-error\"" : "") />
+                           required />
 
                     <span asp-validation-for="File" class="govuk-error-message" />
                 </div>
 
                 <div class="govuk-form-group">
-                    <govuk-button type="submit" onclick="@submitCommand" onkeypress="@submitCommand">Continue</govuk-button>
+                    <govuk-button type="submit">Continue</govuk-button>
                 </div>
 
             </div>
         </div>
+
+        <input asp-for="Source" type="hidden" value="Pldns" />
     </form>
 </div>

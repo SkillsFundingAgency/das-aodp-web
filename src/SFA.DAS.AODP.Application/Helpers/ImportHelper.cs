@@ -178,4 +178,11 @@ public static class ImportHelper
         }
         return sb.ToString();
     }
+
+    public static Sheet? FindSheet(WorkbookPart workbookPart, string targetSheetName)
+    {
+        return workbookPart.Workbook.Sheets!
+            .Cast<Sheet?>()
+            .FirstOrDefault(s => string.Equals((s?.Name!.Value ?? string.Empty).Trim(), targetSheetName, StringComparison.OrdinalIgnoreCase));
+    }
 }

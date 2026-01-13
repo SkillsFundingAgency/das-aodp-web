@@ -1,5 +1,6 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Options;
 using SFA.DAS.AODP.Models.Settings;
 
@@ -13,18 +14,18 @@ namespace SFA.DAS.AODP.Infrastructure.File
         private readonly BlobStorageSettings _blobStorageSettings;
         private readonly ImportBlobStorageSettings _importBlobStorageSettings;
         private readonly BlobServiceClient _blobServiceClient;
-        private readonly BlobServiceClient? _importBlobServiceClient;
         private BlobContainerClient? _blobContainerClient;
+        private readonly IAzureClientFactory<BlobServiceClient> _clientFactory;
 
-        public BlobStorageFileService(BlobServiceClient blobServiceClient, 
+        public BlobStorageFileService(BlobServiceClient blobServiceClient,
+                    IAzureClientFactory<BlobServiceClient> clientFactory,
                     IOptions<BlobStorageSettings> settings,
-                    IOptions<ImportBlobStorageSettings> importSettings,
-                    IImportBlobServiceClient? importBlobServiceClient = null)
+                    IOptions<ImportBlobStorageSettings> importSettings)
         {
             _blobServiceClient = blobServiceClient;
             _blobStorageSettings = settings.Value ?? throw new ArgumentNullException(nameof(settings));
             _importBlobStorageSettings = importSettings.Value ?? throw new ArgumentNullException(nameof(importSettings));
-            _importBlobServiceClient = importBlobServiceClient?.Client;
+            _clientFactory = clientFactory ?? throw new ArgumentNullException(nameof(clientFactory));
         }
 
         public async Task UploadFileAsync(string folderName, string fileName, Stream stream, string? contentType, string fileNamePrefix)
@@ -81,8 +82,15 @@ namespace SFA.DAS.AODP.Infrastructure.File
 
             var filePath = string.IsNullOrEmpty(trimmedFolder) ? safeFileName : $"{trimmedFolder}/{safeFileName}";
 
-            // Use the import blob service client if registered; otherwise fall back to default client
-            var serviceClient = _importBlobServiceClient ?? _blobServiceClient;
+            BlobServiceClient serviceClient;
+            try
+            {
+                serviceClient = _clientFactory.CreateClient("import");
+            }
+            catch (InvalidOperationException)
+            {
+                throw new Exception("Import BlobServiceClient is not configured.");
+            }
             var importContainer = serviceClient.GetBlobContainerClient(_importBlobStorageSettings.ImportFilesContainerName);
             await importContainer.CreateIfNotExistsAsync();
 

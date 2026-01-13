@@ -10,20 +10,31 @@ namespace SFA.DAS.AODP.Infrastructure.Extensions
     {
         public static IServiceCollection AddFileService(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddAzureClients(clientBuilder =>
+            var primaryConnection = configuration.GetValue<string>("BlobStorageSettings:ConnectionString");
+            var importConnection = configuration.GetValue<string>("ImportBlobStorageSettings:ConnectionString");
+
+            services.AddAzureClients(builder =>
             {
-                clientBuilder.AddBlobServiceClient(configuration.GetValue<string>("BlobStorageSettings:ConnectionString"));
+                if (!string.IsNullOrWhiteSpace(primaryConnection))
+                {
+                    builder.AddBlobServiceClient(primaryConnection).WithName("default");
+                }
+
+                if (!string.IsNullOrWhiteSpace(importConnection))
+                {
+                    builder.AddBlobServiceClient(importConnection).WithName("import");
+                }
             });
 
-            var importConnection = configuration.GetValue<string>("ImportBlobStorageSettings:ConnectionString");
-            if (!string.IsNullOrWhiteSpace(importConnection))
+            // Provide the "default" client as the BlobServiceClient constructor parameter used elsewhere.
+            if (!string.IsNullOrWhiteSpace(primaryConnection))
             {
-                services.AddSingleton<IImportBlobServiceClient>(_ => new ImportBlobServiceClient(new BlobServiceClient(importConnection)));
+                services.AddSingleton(provider =>
+                    provider.GetRequiredService<IAzureClientFactory<BlobServiceClient>>().CreateClient("default"));
             }
 
-            services.AddTransient<IFileService, BlobStorageFileService>();
+            services.AddScoped<IFileService, BlobStorageFileService>();
             return services;
-
         }
     }
 }
