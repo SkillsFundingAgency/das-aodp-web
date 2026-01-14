@@ -20,8 +20,7 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
         private readonly IUserHelperService _userHelperService;
         private readonly IFileService _fileService;
         public enum SendKeys { RequestFailed, JobStatusFailed }
-        private const string PldnsViewPath = nameof(Pldns); //"~/Areas/Admin/Views/Import/Pldns.cshtml";
-        private const string DefundingListViewPath = nameof(DefundingList); //"~/Areas/Admin/Views/Import/DefundingList.cshtml";
+        private const string UploadImportListViewPath = "UploadImportFile";
         private const string ConfirmImportSelectionAction = nameof(ConfirmImportSelection);
 
         public ImportController(ILogger<ImportController> logger, IMediator mediator, IUserHelperService userHelperService, IFileService fileService) : base(mediator, logger)
@@ -240,7 +239,9 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
         [Route("/admin/import/pldns")]
         public IActionResult Pldns()
         {
-            return View(PldnsViewPath);
+            ViewBag.PageTitle = "Import policy last date for new starters (PLDNS) data";
+            ViewBag.FormAction = "Pldns";
+            return View(UploadImportListViewPath);
         }
 
         [HttpPost]
@@ -249,10 +250,11 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
         [Authorize(Roles = RoleConstants.QFAUImport)]
         public async Task<IActionResult> Pldns([FromForm] UploadImportFileViewModel model)
         {
-
+            ViewBag.PageTitle = "Import policy last date for new starters (PLDNS) data";
+            ViewBag.FormAction = "Pldns";
             if (!ModelState.IsValid)
             {
-                return View(PldnsViewPath, model);
+                return View(UploadImportListViewPath, model);
             }
 
             if (model.File == null
@@ -260,7 +262,7 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
                     || !Path.GetExtension(model.File.FileName ?? string.Empty).Equals(".xlsx", StringComparison.OrdinalIgnoreCase))
             {
                 ModelState.AddModelError(nameof(model.File), "You must select an .xlsx file.");
-                return View(PldnsViewPath, model);
+                return View(UploadImportListViewPath, model);
             }
 
             try
@@ -276,7 +278,7 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
             {
                 LogException(ex);
                 ModelState.AddModelError(string.Empty, ex.Message);
-                return View(PldnsViewPath, model);
+                return View(UploadImportListViewPath, model);
             }
 
             var viewModel = new ImportRequestViewModel() { ImportType = JobNames.Pldns.ToString() };
@@ -287,7 +289,9 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
         [Route("/admin/import/defunding-list")]
         public IActionResult DefundingList()
         {
-            return View(DefundingListViewPath);
+            ViewBag.PageTitle = "Import Defunding List";
+            ViewBag.FormAction = "DefundingList";
+            return View(UploadImportListViewPath);
         }
 
         [HttpPost]
@@ -296,10 +300,12 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
         [Authorize(Roles = RoleConstants.QFAUImport)]
         public async Task<IActionResult> DefundingList([FromForm] UploadImportFileViewModel model)
         {
+            ViewBag.PageTitle = "Import Defunding List";
+            ViewBag.FormAction = "DefundingList";
 
             if (!ModelState.IsValid)
             {
-                return View(DefundingListViewPath, model);
+                return View(UploadImportListViewPath, model);
             }
 
             if (model.File == null
@@ -307,7 +313,7 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
                     || !Path.GetExtension(model.File.FileName ?? string.Empty).Equals(".xlsx", StringComparison.OrdinalIgnoreCase))
             {
                 ModelState.AddModelError(nameof(model.File), "You must select an .xlsx file.");
-                return View(DefundingListViewPath, model);
+                return View(UploadImportListViewPath, model);
             }
 
             try
@@ -323,7 +329,7 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
             {
                 LogException(ex);
                 ModelState.AddModelError(string.Empty, ex.Message);
-                return View(DefundingListViewPath, model);
+                return View(UploadImportListViewPath, model);
             }
 
             var viewModel = new ImportRequestViewModel() { ImportType = JobNames.DefundingList.ToString() };

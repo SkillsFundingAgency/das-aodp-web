@@ -8,15 +8,16 @@
 
     var hasFileError = ViewData.ModelState.ContainsKey(nameof(Model.File)) && ViewData.ModelState[nameof(Model.File)].Errors.Count > 0;
     var inputClass = hasFileError ? "govuk-file-upload govuk-file-upload--error" : "govuk-file-upload govuk-!-margin-top-2";
-    //var submitCommand = "var form=this.form; if (form.checkValidity && !form.checkValidity()) { if (form.reportValidity) form.reportValidity(); return false; } if (window.jQuery && window.jQuery(form).validator && !window.jQuery(form).valid()) { return false; } this.disabled = true; form.submit();";
+    // Resolve action name from ViewBag with fallback
+    var formAction = (ViewBag.FormAction as string) ?? "DefundingList";
 }
 <partial name="~/Views/Shared/_ValidationSummaryPartial.cshtml" />
 <div class="govuk-width-container">
     <a class="govuk-back-link" asp-action="Index" asp-controller="Import" asp-area="Admin">Back</a>
 
-    <h1 class="govuk-heading-xl">Import defunding list data</h1>
+    <h1 class="govuk-heading-xl">@((ViewBag.PageTitle as string) ?? "Import defunding list data")</h1>
 
-    <form asp-area="Admin" asp-controller="Import" asp-action="DefundingList" method="post" enctype="multipart/form-data">
+    <form asp-area="Admin" asp-controller="Import" asp-action="@(formAction)" method="post" enctype="multipart/form-data">
         @Html.AntiForgeryToken()
 
         <div class="govuk-grid-row">
@@ -47,6 +48,6 @@
                 </div>
             </div>
         </div>
-        <input asp-for="Source" type="hidden" value="DefundingList" />
+        <input asp-for="Source" type="hidden" value="@(formAction)" />
     </form>
 </div>
