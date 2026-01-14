@@ -2,13 +2,13 @@
 @model TextInputOptions
 
 <div class="govuk-form-group">
-    <govuk-input disabled="@(!ViewBag.IsEditable)" id="TextInput.MinLength"  name="TextInput[MinLength]" type="number" asp-for="MinLength" input-class="govuk-input--width-3" inputmode="numeric" pattern="[0-9]*" spellcheck="false" autocomplete="off">
+    <govuk-input disabled="@(!ViewBag.IsEditable)" name="TextInput[MinLength]" type="number" asp-for="MinLength" input-class="govuk-input--width-3" inputmode="numeric" pattern="[0-9]*" spellcheck="false" autocomplete="off">
         <govuk-input-label is-page-heading="false" class="govuk-label--s">What is the minimum number of words? (optional)</govuk-input-label>
     </govuk-input>
 </div>
 
 <div class="govuk-form-group">
-    <govuk-input disabled="@(!ViewBag.IsEditable)" id="TextInput.MaxLength"  name="TextInput[MaxLength]" type="number" asp-for="MaxLength" input-class="govuk-input--width-3" inputmode="numeric" pattern="[0-9]*" spellcheck="false" autocomplete="off">
+    <govuk-input disabled="@(!ViewBag.IsEditable)" name="TextInput[MaxLength]" type="number" asp-for="MaxLength" input-class="govuk-input--width-3" inputmode="numeric" pattern="[0-9]*" spellcheck="false" autocomplete="off">
         <govuk-input-label is-page-heading="false" class="govuk-label--s">What is the maximum number of words? (optional)</govuk-input-label>
     </govuk-input>
 </div>

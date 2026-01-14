@@ -40,10 +40,5 @@ namespace SFA.DAS.AODP.Infrastructure.Cache
             string cacheValue = JsonConvert.SerializeObject(value);
             await _distributedCache.SetStringAsync(key, cacheValue, new DistributedCacheEntryOptions() { SlidingExpiration = CacheTimeSpan });
         }
-
-        public async Task RemoveAsync(string key)
-        {
-            await _distributedCache.RemoveAsync(key);
-        }
     }
 }

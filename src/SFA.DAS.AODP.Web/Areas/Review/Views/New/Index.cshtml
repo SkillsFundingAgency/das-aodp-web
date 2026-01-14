@@ -45,7 +45,7 @@
                                         </govuk-input>
                                     </div>
                                 </div>
-                                <div class="govuk-grid-column-three-quarters">
+                                <div class="govuk-grid-column-three-quarters">                                    
                                     <div class="govuk-form-group">
                                         <fieldset class="govuk-fieldset govuk-!-static-padding-left-5">
                                             <govuk-checkboxes name="Filter[ProcessStatusIds]" asp-for="@Model.Filter.ProcessStatusIds">
@@ -55,19 +55,19 @@
                                                     <govuk-checkboxes-fieldset-legend is-page-heading="false" class="govuk-label--s">
                                                         <div class="govuk-label govuk-label--s">Status</div>
                                                     </govuk-checkboxes-fieldset-legend>
-
+                                                    
                                                     @Html.RenderPartialAsync("Validation/_CheckboxValidationPartial", nameof(Model.Filter.ProcessStatusIds))
-
+                                                                    
                                                     @foreach (var status in Model.ProcessStatuses)
                                                     {
                                                         <govuk-checkboxes-item checked="@Model.Filter.ProcessStatusIds?.Contains(status.Id)" value="@status.Id">@status.Name</govuk-checkboxes-item>
                                                     }
-
+                                                                    
                                                 </govuk-checkboxes-fieldset>
 
                                             </govuk-checkboxes>
                                         </fieldset>
-                                    </div>
+                                    </div>                                                                                   
                                 </div>
                             </div>
                             <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
@@ -124,16 +124,8 @@
                                     <tbody class="govuk-table__body">
                                         @foreach (var qualification in Model.NewQualifications)
                                         {
-
                                             <tr class="govuk-table__row">
-                                                <td class="govuk-table__cell">
-                                                    @if (!string.IsNullOrWhiteSpace(qualification.Reference))
-                                                    {
-                                                        var baseUrl = Model.FindRegulatedQualificationUrl ?? string.Empty;
-                                                        var fullUrl = $"{baseUrl}{qualification.Reference}";
-                                                        <a href="@fullUrl" target="_blank">@qualification.Reference</a>
-                                                    }
-                                                </td>
+                                                <td class="govuk-table__cell">@qualification.Reference</td>
                                                 <td class="govuk-table__cell">
                                                     <a class="govuk-link" href="@Url.Action("QualificationDetails", "New", new { area = "Review", qualificationReference = qualification.Reference })">
                                                         @qualification.Title

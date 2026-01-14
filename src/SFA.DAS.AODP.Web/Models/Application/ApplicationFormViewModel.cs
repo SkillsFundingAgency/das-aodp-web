@@ -1,5 +1,4 @@
 using SFA.DAS.AODP.Models.Application;
-using SFA.DAS.AODP.Web.Extensions;
 
 namespace SFA.DAS.AODP.Web.Models.Application
 {
@@ -20,7 +19,6 @@ namespace SFA.DAS.AODP.Web.Models.Application
 
         public bool IsCompleted { get; set; }
         public bool IsSubmitted { get; set; }
-        public bool CanWithdraw { get; set; }
         public DateTime? SubmittedDate { get; set; }
         public string Owner { get; set; }
         public List<Section> Sections { get; set; }
@@ -48,8 +46,7 @@ namespace SFA.DAS.AODP.Web.Models.Application
                 NewMessage = statusResponse.NewMessage,
                 UpdatedDate = statusResponse.UpdatedDate,
                 VisibleToReviewers = statusResponse.ReviewExists,
-                Sections = new(),
-                CanWithdraw = statusResponse.Status.IsWithdrawable()
+                Sections = new()
             };
 
             foreach (var section in formsResponse.Sections)
