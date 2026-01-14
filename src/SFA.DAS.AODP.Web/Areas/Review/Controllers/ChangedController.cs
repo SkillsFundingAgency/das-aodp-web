@@ -2,8 +2,10 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using SFA.DAS.AODP.Application.Commands.Qualification;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.User;
@@ -21,6 +23,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         private readonly ILogger<ChangedController> _logger;
         private readonly IMediator _mediator;
         private readonly IUserHelperService _userHelperService;
+        private readonly IOptions<AodpConfiguration> _aodpConfiguration;
+
         private List<string> ReviewerAllowedStatuses { get; set; } = new List<string>()
         {
             "Decision Required",
@@ -29,9 +33,10 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
         public enum NewQualDataKeys { InvalidPageParams, CommentSaved}
 
-        public ChangedController(ILogger<ChangedController> logger, IMediator mediator, IUserHelperService userHelperService) : base(mediator, logger)
+        public ChangedController(ILogger<ChangedController> logger, IOptions<AodpConfiguration> configuration, IMediator mediator, IUserHelperService userHelperService) : base(mediator, logger)
         {
             _logger = logger;
+            _aodpConfiguration = configuration;
             _mediator = mediator;
             this._userHelperService = userHelperService;
         }
@@ -87,6 +92,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     ProcessStatusIds = processStatusIds
                 };
                 viewModel.ProcessStatuses = [.. procStatuses.ProcessStatuses];
+                viewModel.FindRegulatedQualificationUrl = _aodpConfiguration.Value.FindRegulatedQualificationUrl;
                 return View(viewModel);
             }
             catch (Exception ex)
@@ -315,9 +321,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                         break;
                     case "NineteenPlus":
                         latestVersion.KeyFieldChanges.Add(new() { Name = "Nineteen Plus", Was = previousVersion.NineteenPlus.ToString(), Now = latestVersion.NineteenPlus.ToString() });
-                        break;
-                    case "FundingInEngland":
-                        latestVersion.KeyFieldChanges.Add(new() { Name = "Nineteen Plus", Was = previousVersion.FundedInEngland.ToString(), Now = latestVersion.FundedInEngland.ToString() });
                         break;
                     case "GLH":
                         latestVersion.KeyFieldChanges.Add(new() { Name = "Guided learning hours (GLH)", Was = previousVersion.Glh.ToString(), Now = latestVersion.Glh.ToString() });

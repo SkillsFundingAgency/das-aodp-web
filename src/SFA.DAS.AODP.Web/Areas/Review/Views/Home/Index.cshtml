@@ -57,13 +57,13 @@
                                 </govuk-radios-item>
                             }
 
-                           @*  @if (Model.UserRoles.Contains(RoleConstants.QFAUImport))
+                            @if (Model.UserRoles.Contains(RoleConstants.QFAUImport))
                             {
                                 <govuk-radios-item value="@Options.OutputFile">
                                     Create an output file
                                     <govuk-radios-item-hint>Create an output file to store all funding decisions made</govuk-radios-item-hint>
                                 </govuk-radios-item>
-                            } *@
+                            }
                         </govuk-radios>
 
                         <govuk-button type="submit">Continue</govuk-button>

@@ -18,6 +18,7 @@ public class GetApplicationsForReviewQueryResponse
         public string? Owner { get; set; }
         public ApplicationStatus Status { get; set; }
         public bool NewMessage { get; set; }
+        public string FindRegulatedQualificationUrl { get; set; } = string.Empty;
 
     }
 }
