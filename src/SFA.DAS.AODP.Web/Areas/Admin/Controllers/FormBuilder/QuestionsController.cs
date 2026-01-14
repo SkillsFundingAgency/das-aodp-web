@@ -5,10 +5,8 @@ using Microsoft.Extensions.Options;
 using SFA.DAS.AODP.Application.Commands.FormBuilder.Questions;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Questions;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Routes;
-using SFA.DAS.AODP.Models.Forms;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Authentication;
-using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.Markdown;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Question;
@@ -146,6 +144,7 @@ public class QuestionsController : ControllerBase
                 }
             }
 
+
             ValidateEditQuestionViewModel(model);
             if (!ModelState.IsValid)
             {
@@ -250,8 +249,7 @@ public class QuestionsController : ControllerBase
         {
             if (editQuestionViewModel.FileUpload.NumberOfFiles > _formBuilderSettings.MaxUploadNumberOfFiles)
             {
-                ModelState.AddModelError("FileUpload.NumberOfFiles", 
-                    string.Format(FormBuilderValidationMessages.TooManyFiles, _formBuilderSettings.MaxUploadNumberOfFiles));
+                ModelState.AddModelError("FileUpload.NumberOfFiles", $"The number of files cannot be greater than {_formBuilderSettings.MaxUploadNumberOfFiles}");
             }
         }
         else if (editQuestionViewModel.Options?.Options != null)
@@ -262,56 +260,8 @@ public class QuestionsController : ControllerBase
                 .ToList()
                 .ForEach(item =>
                 {
-                    ModelState.AddModelError($"Options-{item.Index}", FormBuilderValidationMessages.OptionTextCannotBeEmpty);
+                    ModelState.AddModelError($"Options-{item.Index}", "Option text cannot be empty");
                 });
-        }
-
-        if (editQuestionViewModel.Type == QuestionType.Text ||
-            editQuestionViewModel.Type == QuestionType.TextArea)
-        {
-            var min = editQuestionViewModel.TextInput?.MinLength;
-            var max = editQuestionViewModel.TextInput?.MaxLength;
-
-            if (min.HasValue && min.Value <= 0)
-            {
-                ModelState.AddModelError("TextInput.MinLength", FormBuilderValidationMessages.MinWordsMustBeGreaterThanZero);
-            }
-
-            if (min.HasValue && max.HasValue && max.Value < min.Value)
-            {
-                ModelState.AddModelError("TextInput.MaxLength", FormBuilderValidationMessages.MaxWordsMustBeGreaterThanOrEqualToMin);
-            }
-
-            if (max.HasValue && max.Value <= 0)
-            {
-                ModelState.AddModelError("TextInput.MaxLength", FormBuilderValidationMessages.MaxWordsMustBeGreaterThanZero);
-            }
-        }
-
-        if (editQuestionViewModel.Type == QuestionType.Number)
-        {
-            var min = editQuestionViewModel.NumberInput?.GreaterThanOrEqualTo;
-            var max = editQuestionViewModel.NumberInput?.LessThanOrEqualTo;
-
-            if (min.HasValue && max.HasValue && max.Value < min.Value)
-            {
-                ModelState.AddModelError(
-                    "NumberInput.LessThanOrEqualTo",
-                    FormBuilderValidationMessages.MaxNumberMustBeGreaterThanOrEqualToMin);
-            }
-        }
-
-        if (editQuestionViewModel.Type == QuestionType.Date)
-        {
-            var min = editQuestionViewModel.DateInput?.GreaterThanOrEqualTo;
-            var max = editQuestionViewModel.DateInput?.LessThanOrEqualTo;
-
-            if (min.HasValue && max.HasValue && max.Value < min.Value)
-            {
-                ModelState.AddModelError(
-                    "DateInput.LessThanOrEqualTo",
-                    FormBuilderValidationMessages.MaxDateMustBeLaterThanOrEqualToMin);
-            }
         }
     }
     #endregion
