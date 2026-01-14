@@ -128,14 +128,7 @@
                                             @foreach (var qualification in Model.ChangedQualifications)
                                             {
                                                 <tr class="govuk-table__row">
-                                                    <td>
-                                                        @if (!string.IsNullOrWhiteSpace(@qualification.QualificationReference))
-                                                        {
-                                                            var baseUrl = Model.FindRegulatedQualificationUrl ?? string.Empty;
-                                                            var fullUrl = $"{baseUrl}{qualification.QualificationReference}";
-                                                            <a href="@fullUrl" target="_blank">@qualification.QualificationReference</a>
-                                                        }
-                                                    </td>
+                                                    <td class="govuk-table__cell">@qualification.QualificationReference</td>
                                                     <td class="govuk-table__cell">
                                                         <a class="govuk-link" asp-action="QualificationDetails" asp-controller="changed" asp-route-qualificationReference="@qualification.QualificationReference" asp-route-status="changed">
                                                             @qualification.QualificationTitle

@@ -162,12 +162,7 @@
                             @item.Reference.ToString().PadLeft(6, '0')
                         </td>
                         <td class="govuk-table__cell">
-                            @if (!string.IsNullOrWhiteSpace(item.Qan))
-                            {
-                                var baseUrl = Model.FindRegulatedQualificationUrl ?? string.Empty;
-                                var fullUrl = $"{baseUrl}{item.Qan}";
-                                <a href="@fullUrl" target="_blank">@item.Qan</a>
-                            }
+                            @(item.Qan ?? "Not provided")
                         </td>
                         <td class="govuk-table__cell">
                             <a class="govuk-link"
