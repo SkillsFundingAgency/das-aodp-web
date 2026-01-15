@@ -61,7 +61,7 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
                 return View("ConfirmImportSelection", viewModel);
             }
 
-            var timeSubmitted = DateTime.Now; // dateTime submitted
+            var timeSubmitted = DateTime.Now;
             var userName = _userHelperService.GetUserDisplayName();
             var jobName = string.Empty;
             switch (viewModel.ImportType)
