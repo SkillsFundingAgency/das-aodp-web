@@ -177,3 +177,26 @@
         text-decoration-thickness: 3px;
     }
 
+:root {
+    --picker-width: 20rem; 
+}
+
+.select-picker {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+    /* Make both <select> and <input> the same width */
+    .select-picker .govuk-select,
+    .select-picker .govuk-input {
+        width: var(--picker-width);
+        max-width: 100%;
+    }
+
+    /* Keep the button tidy */
+    .select-picker .govuk-button {
+        margin-top: 0;
+        margin-bottom: 0;
+        white-space: nowrap;
+    }
