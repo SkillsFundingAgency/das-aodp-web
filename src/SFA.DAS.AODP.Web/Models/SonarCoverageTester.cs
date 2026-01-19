@@ -4,36 +4,25 @@ public class SonarCoverageTester
 {
     public string EvaluateValue(int input, string category)
     {
-        string result = "Default";
+        string result;
 
-        // Branching logic to force SonarQube to look for multiple paths
-        if (input < 0)
-        {
-            result = "Negative";
-        }
-        else if (input >= 0 && input <= 10)
-        {
-            result = "Low Range";
-        }
-        else if (input > 10 && input < 100)
-        {
-            result = "Medium Range";
-        }
-        else
-        {
-            result = "High Range";
-        }
+        // 1. Value Range Logic
+        if (input < 0) { result = "Negative"; }
+        else if (input >= 0 && input <= 10) { result = "Low Range"; }
+        else if (input > 10 && input < 100) { result = "Medium Range"; }
+        else { result = "High Range"; }
 
-        // Additional logic to increase line count
+        // 2. Collection Logic (Line count increase)
         var items = new List<string> { "Apple", "Banana", "Cherry" };
         foreach (var item in items)
         {
-            if (category == item)
+            if (string.Equals(category, item, StringComparison.OrdinalIgnoreCase))
             {
                 result += $" - Found {item}";
             }
         }
 
+        // 3. Category Transformation Logic (Branching)
         switch (category.ToLower())
         {
             case "test":
@@ -43,7 +32,8 @@ public class SonarCoverageTester
                 result = result.ToLower();
                 break;
             default:
-                result = "Unknown Category";
+                // FIXED: Append instead of overwrite so previous logic is preserved
+                result += " (Standard)";
                 break;
         }
 
