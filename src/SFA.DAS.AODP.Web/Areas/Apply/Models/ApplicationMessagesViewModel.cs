@@ -14,7 +14,8 @@ public class ApplicationMessagesViewModel
     public Guid OrganisationId { get; set; }
     public Guid ApplicationId { get; set; }
     public Guid FormVersionId { get; set; }
-    [Required]
+
+    [Required(ErrorMessage = "Enter some text in the message field.")]
     public string MessageText { get; set; }
     [Required]
     public string SelectedMessageType => MessageType.ReplyToInformationRequest.ToString();

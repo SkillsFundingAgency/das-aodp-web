@@ -97,6 +97,7 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
             public DateOnly? LessThanOrEqualTo { get; set; }
             public RelativeDateValidation DateValidation { get; set; }
             public enum RelativeDateValidation { MustBeInFuture, MustBeInPast, NotApplicable };
+            public bool ReadOnly { get; set; } 
         }
 
         public class FileUploadOptions
@@ -172,7 +173,8 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
                 {
                     GreaterThanOrEqualTo = response.DateInput.GreaterThanOrEqualTo,
                     LessThanOrEqualTo = response.DateInput.LessThanOrEqualTo,
-                    DateValidation = DateInputOptions.RelativeDateValidation.NotApplicable
+                    DateValidation = DateInputOptions.RelativeDateValidation.NotApplicable,
+                    ReadOnly = !response.Editable,
                 };
 
                 if (response.DateInput.MustBeInFuture == true)
