@@ -253,6 +253,12 @@ public class QuestionsController : ControllerBase
                 ModelState.AddModelError("FileUpload.NumberOfFiles", 
                     string.Format(FormBuilderValidationMessages.TooManyFiles, _formBuilderSettings.MaxUploadNumberOfFiles));
             }
+
+            if (editQuestionViewModel.Required && editQuestionViewModel.FileUpload.NumberOfFiles == 0)
+            {
+                ModelState.AddModelError("FileUpload.NumberOfFiles",
+                    string.Format(FormBuilderValidationMessages.MandatoryFileUploadMaxFiles, _formBuilderSettings.MaxUploadNumberOfFiles));
+            }
         }
         else if (editQuestionViewModel.Options?.Options != null)
         {
@@ -264,6 +270,7 @@ public class QuestionsController : ControllerBase
                 {
                     ModelState.AddModelError($"Options-{item.Index}", FormBuilderValidationMessages.OptionTextCannotBeEmpty);
                 });
+            
         }
 
         if (editQuestionViewModel.Type == QuestionType.Text ||
@@ -312,6 +319,28 @@ public class QuestionsController : ControllerBase
                     "DateInput.LessThanOrEqualTo",
                     FormBuilderValidationMessages.MaxDateMustBeLaterThanOrEqualToMin);
             }
+        }
+
+        if (editQuestionViewModel.Type == QuestionType.MultiChoice)
+        {
+            var min = editQuestionViewModel.Checkbox.MinNumberOfOptions;
+            var max = editQuestionViewModel.Checkbox?.MaxNumberOfOptions;
+
+            if (min.HasValue && max.HasValue && max.Value < min.Value)
+            {
+                ModelState.AddModelError(
+                    "Checkbox.MinNumberOfOptions",
+                    FormBuilderValidationMessages.MinOptionsCannotBeGreaterThanMaxOptions);
+            }
+
+            var numberOfOptions = editQuestionViewModel.Options?.Options?.Count ?? 0;
+            if (min.HasValue && min.Value > numberOfOptions)
+            {
+                ModelState.AddModelError(
+                    "Checkbox.MinNumberOfOptions",
+                    FormBuilderValidationMessages.MinOptionsCannotBeGreaterThanAvailableOptions);
+            }
+
         }
     }
     #endregion
