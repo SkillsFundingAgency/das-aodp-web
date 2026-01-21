@@ -1,6 +1,7 @@
 ﻿using DocumentFormat.OpenXml.Packaging;
 using SFA.DAS.AODP.Application.Helpers;
 using SFA.DAS.AODP.Models.Settings;
+using SFA.DAS.AODP.Web.Models.Import;
 
 namespace SFA.DAS.AODP.Web.Helpers.File
 {
@@ -36,7 +37,7 @@ namespace SFA.DAS.AODP.Web.Helpers.File
             }
         }
 
-        public async Task<bool> ValidateImportFile(IFormFile? file, string? fileName, string[] headerKeywords, string targetSheetName, int defaultRowIndex, int minMatches, Func<IDictionary<string, string>, object> mapColumns, CancellationToken cancellationToken)
+        public async Task<bool> ValidateImportFile(IFormFile? file, string? fileName, string[] headerKeywords, ImportFileValidationOptions importFileValidationOptions, CancellationToken cancellationToken)
         {
             // Validate request and file type
             var (IsValid, ErrorMessage) = ImportHelper.ValidateRequest(file, fileName);
@@ -53,7 +54,7 @@ namespace SFA.DAS.AODP.Web.Helpers.File
             var workbookPart = document.WorkbookPart ?? throw new InvalidOperationException("Workbook part missing.");
             var sharedStrings = workbookPart.SharedStringTablePart?.SharedStringTable;
 
-            var sheet = ImportHelper.FindSheet(workbookPart, targetSheetName);
+            var sheet = ImportHelper.FindSheet(workbookPart, importFileValidationOptions.TargetSheetName);
             if (sheet == null)
             {
                 return false;
@@ -66,14 +67,14 @@ namespace SFA.DAS.AODP.Web.Helpers.File
                 return false;
             }
 
-            var (headerRow, headerIndex) = ImportHelper.DetectHeaderRow(rows, sharedStrings, headerKeywords, defaultRowIndex: defaultRowIndex, minMatches: minMatches);
+            var (headerRow, headerIndex) = ImportHelper.DetectHeaderRow(rows, sharedStrings, headerKeywords, defaultRowIndex: importFileValidationOptions.DefaultRowIndex, minMatches: importFileValidationOptions.MinMatches);
             if (headerIndex < 0)
             {
                 return false;
             }
 
             var headerMap = ImportHelper.BuildHeaderMap(headerRow, sharedStrings);
-            var columns = mapColumns(headerMap);
+            var columns = importFileValidationOptions.MapColumns(headerMap);
 
             var missingColumns = columns.GetType()
                 .GetProperties()

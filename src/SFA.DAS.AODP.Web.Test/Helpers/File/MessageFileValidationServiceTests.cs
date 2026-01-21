@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Moq;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Helpers.File;
+using SFA.DAS.AODP.Web.Models.Import;
 
 namespace SFA.DAS.AODP.Web.UnitTests.Helpers.File
 {
@@ -208,7 +209,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Helpers.File
         public async Task ValidateImportFile_ReturnsFalse_When_RequestIsInvalid()
         {
             var service = CreateService();
-            var result = await service.ValidateImportFile(null, null, Array.Empty<string>(), "Sheet1", 0, 1, _ => new { }, CancellationToken.None);
+            var result = await service.ValidateImportFile(null, null, Array.Empty<string>(), It.IsAny<ImportFileValidationOptions>(), CancellationToken.None);
             Assert.False(result);
         }
 
@@ -219,14 +220,18 @@ namespace SFA.DAS.AODP.Web.UnitTests.Helpers.File
             var bytes = CreateExcelBytes("PresentSheet", new[] { "H1", "H2" }, includeDataRow: true);
             var formFile = CreateFormFileFromBytes(bytes, "file.xlsx");
 
+            var validationOption = new ImportFileValidationOptions
+            {
+                TargetSheetName = "MissingSheet",
+                DefaultRowIndex = 0,
+                MinMatches = 1,
+                MapColumns = map => new { H1 = map.ContainsKey("H1") ? map["H1"] : string.Empty }
+            };
             var result = await service.ValidateImportFile(
                 formFile,
                 "file.xlsx",
                 new[] { "H1" },
-                targetSheetName: "MissingSheet",
-                defaultRowIndex: 0,
-                minMatches: 1,
-                mapColumns: map => new { H1 = map.ContainsKey("H1") ? map["H1"] : string.Empty },
+                validationOption,
                 cancellationToken: CancellationToken.None);
 
             Assert.False(result);
@@ -239,14 +244,18 @@ namespace SFA.DAS.AODP.Web.UnitTests.Helpers.File
             var bytes = CreateExcelBytes("Sheet1", new[] { "H1", "H2" }, includeDataRow: false);
             var formFile = CreateFormFileFromBytes(bytes, "file.xlsx");
 
+            var validationOption = new ImportFileValidationOptions
+            {
+                TargetSheetName = "Sheet1",
+                DefaultRowIndex = 0,
+                MinMatches = 1,
+                MapColumns = map => new { H1 = map.ContainsKey("H1") ? map["H1"] : string.Empty }
+            };
             var result = await service.ValidateImportFile(
                 formFile,
                 "file.xlsx",
                 new[] { "H1" },
-                targetSheetName: "Sheet1",
-                defaultRowIndex: 0,
-                minMatches: 1,
-                mapColumns: map => new { H1 = map.ContainsKey("H1") ? map["H1"] : string.Empty },
+                validationOption,
                 cancellationToken: CancellationToken.None);
 
             Assert.False(result);
@@ -269,14 +278,19 @@ namespace SFA.DAS.AODP.Web.UnitTests.Helpers.File
                 };
             }
 
+            var validationOption = new ImportFileValidationOptions
+            {
+                TargetSheetName = "Sheet1",
+                DefaultRowIndex = 0,
+                MinMatches = 1,
+                MapColumns = MapWithMissing
+            };
+
             var result = await service.ValidateImportFile(
                 formFile,
                 "file.xlsx",
                 headerKeywords: new[] { "H1", "H2" },
-                targetSheetName: "Sheet1",
-                defaultRowIndex: 0,
-                minMatches: 1,
-                mapColumns: MapWithMissing,
+                validationOption,
                 cancellationToken: CancellationToken.None);
 
             Assert.False(result);
@@ -300,14 +314,19 @@ namespace SFA.DAS.AODP.Web.UnitTests.Helpers.File
                 };
             }
 
+            var validationOption = new ImportFileValidationOptions
+            {
+                TargetSheetName = "Sheet1",
+                DefaultRowIndex = 0,
+                MinMatches = 1,
+                MapColumns = MapValid
+            };
+
             var result = await service.ValidateImportFile(
                 formFile,
                 "file.xlsx",
                 headerKeywords: new[] { "H1", "H2", "H3" },
-                targetSheetName: "Sheet1",
-                defaultRowIndex: 0,
-                minMatches: 1,
-                mapColumns: MapValid,
+                validationOption,
                 cancellationToken: CancellationToken.None);
 
             Assert.True(result);

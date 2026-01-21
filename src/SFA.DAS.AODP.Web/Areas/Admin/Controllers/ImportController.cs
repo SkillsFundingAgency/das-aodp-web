@@ -257,14 +257,6 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
                 return View(UploadImportListViewPath, model);
             }
 
-            if (model.File == null
-                    || model.File.Length == 0
-                    || !Path.GetExtension(model.File.FileName ?? string.Empty).Equals(".xlsx", StringComparison.OrdinalIgnoreCase))
-            {
-                ModelState.AddModelError(nameof(model.File), "You must select an .xlsx file.");
-                return View(UploadImportListViewPath, model);
-            }
-
             try
             {
                 var folderName = JobNames.Pldns.ToString();
@@ -305,14 +297,6 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
 
             if (!ModelState.IsValid)
             {
-                return View(UploadImportListViewPath, model);
-            }
-
-            if (model.File == null
-                    || model.File.Length == 0
-                    || !Path.GetExtension(model.File.FileName ?? string.Empty).Equals(".xlsx", StringComparison.OrdinalIgnoreCase))
-            {
-                ModelState.AddModelError(nameof(model.File), "You must select an .xlsx file.");
                 return View(UploadImportListViewPath, model);
             }
 

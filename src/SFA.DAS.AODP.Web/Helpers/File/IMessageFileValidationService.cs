@@ -1,4 +1,6 @@
 ﻿
+using SFA.DAS.AODP.Web.Models.Import;
+
 namespace SFA.DAS.AODP.Web.Helpers.File
 {
     public interface IMessageFileValidationService
@@ -9,10 +11,7 @@ namespace SFA.DAS.AODP.Web.Helpers.File
             IFormFile? file,
             string? fileName,
             string[] headerKeywords,
-            string targetSheetName,
-            int defaultRowIndex,
-            int minMatches,
-            Func<IDictionary<string, string>, object> mapColumns,
+            ImportFileValidationOptions importFileValidationOptions,
             CancellationToken cancellationToken);
     }
 }

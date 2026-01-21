@@ -1,4 +1,5 @@
-﻿using SFA.DAS.AODP.Application.Helpers;
+﻿using DocumentFormat.OpenXml.EMMA;
+using SFA.DAS.AODP.Application.Helpers;
 using SFA.DAS.AODP.Web.Helpers.File;
 using SFA.DAS.AODP.Web.Models.Import;
 using System.ComponentModel.DataAnnotations;
@@ -38,6 +39,14 @@ public class UploadImportFileViewModel : IValidatableObject
             yield break;
         }
 
+        if (File == null
+                    || File.Length == 0
+                    || !Path.GetExtension(File.FileName ?? string.Empty).Equals(".xlsx", StringComparison.OrdinalIgnoreCase))
+        {
+            yield return new ValidationResult("You must select an .xlsx file.", new[] { nameof(File) });
+            yield break;
+        }
+
         var fileValidationService = validationContext.GetService(typeof(IMessageFileValidationService)) as IMessageFileValidationService;
 
         if (fileValidationService == null)
@@ -58,10 +67,13 @@ public class UploadImportFileViewModel : IValidatableObject
                         file: File,
                         fileName: File.FileName,
                         headerKeywords: headerKeywords,
-                        targetSheetName: "Approval not extended",
-                        defaultRowIndex: 6,
-                        minMatches: 2,
-                        mapColumns: MapDefundingListColumns,
+                        importFileValidationOptions: new ImportFileValidationOptions
+                        {
+                            TargetSheetName = "Approval not extended",
+                            DefaultRowIndex = 6,
+                            MinMatches = 2,
+                            MapColumns = MapDefundingListColumns
+                        },
                         CancellationToken.None)
                     .GetAwaiter()
                     .GetResult();
@@ -81,10 +93,13 @@ public class UploadImportFileViewModel : IValidatableObject
                         file: File,
                         fileName: File.FileName,
                         headerKeywords: headerKeywords,
-                        targetSheetName: "PLDNS V12F",
-                        defaultRowIndex: 1,
-                        minMatches: 1,
-                        mapColumns: MapPldnsColumns,
+                        importFileValidationOptions: new ImportFileValidationOptions
+                        {
+                            TargetSheetName = "PLDNS V12F",
+                            DefaultRowIndex = 1,
+                            MinMatches = 1,
+                            MapColumns = MapPldnsColumns
+                        },
                         CancellationToken.None)
                     .GetAwaiter()
                     .GetResult();
