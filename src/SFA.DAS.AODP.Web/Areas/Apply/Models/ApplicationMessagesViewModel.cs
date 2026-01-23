@@ -3,6 +3,7 @@ using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationMessage;
+using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Models.TimelineComponents;
 using System.ComponentModel.DataAnnotations;
@@ -15,7 +16,7 @@ public class ApplicationMessagesViewModel
     public Guid ApplicationId { get; set; }
     public Guid FormVersionId { get; set; }
 
-    [Required(ErrorMessage = "Enter some text in the message field.")]
+    [Required(ErrorMessage = ErrorMessages.ApplicationMessages.TextRequired)]
     public string MessageText { get; set; }
     [Required]
     public string SelectedMessageType => MessageType.ReplyToInformationRequest.ToString();

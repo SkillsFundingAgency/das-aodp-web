@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Models.Users;
+using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Models.TimelineComponents;
 using System.ComponentModel;
@@ -22,7 +23,7 @@ public class ApplicationMessagesViewModel
     public string MessageText { get; set; }
 
     [DisplayName("Message type")]
-    [Required(ErrorMessage = "Select a message type.")]
+    [Required(ErrorMessage = ErrorMessages.ApplicationMessages.TextRequired)]
     public string SelectedMessageType { get; set; }
     public MessageTypeConfiguration SelectedMessageTypeConfiguration => MessageTypeConfigurationRules.GetMessageSharingSettings(SelectedMessageType);
     public string? SelectedMessageTypeDisplay => SelectedMessageTypeConfiguration.DisplayName;

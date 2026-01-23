@@ -146,7 +146,6 @@ public class QuestionsController : ControllerBase
                 }
             }
 
-            ValidateEditQuestionViewModel(model);
             if (!ModelState.IsValid)
             {
                 return View(model);
@@ -243,105 +242,4 @@ public class QuestionsController : ControllerBase
     }
     #endregion
 
-    #region Validation
-    private void ValidateEditQuestionViewModel(EditQuestionViewModel editQuestionViewModel)
-    {
-        if (editQuestionViewModel.Type == AODP.Models.Forms.QuestionType.File)
-        {
-            if (editQuestionViewModel.FileUpload.NumberOfFiles > _formBuilderSettings.MaxUploadNumberOfFiles)
-            {
-                ModelState.AddModelError("FileUpload.NumberOfFiles", 
-                    string.Format(FormBuilderValidationMessages.TooManyFiles, _formBuilderSettings.MaxUploadNumberOfFiles));
-            }
-
-            if (editQuestionViewModel.Required && editQuestionViewModel.FileUpload.NumberOfFiles == 0)
-            {
-                ModelState.AddModelError("FileUpload.NumberOfFiles",
-                    string.Format(FormBuilderValidationMessages.MandatoryFileUploadMaxFiles, _formBuilderSettings.MaxUploadNumberOfFiles));
-            }
-        }
-        else if (editQuestionViewModel.Options?.Options != null)
-        {
-            editQuestionViewModel.Options.Options
-                .Select((option, index) => new { Option = option, Index = index })
-                .Where(item => string.IsNullOrWhiteSpace(item.Option.Value))
-                .ToList()
-                .ForEach(item =>
-                {
-                    ModelState.AddModelError($"Options-{item.Index}", FormBuilderValidationMessages.OptionTextCannotBeEmpty);
-                });
-            
-        }
-
-        if (editQuestionViewModel.Type == QuestionType.Text ||
-            editQuestionViewModel.Type == QuestionType.TextArea)
-        {
-            var min = editQuestionViewModel.TextInput?.MinLength;
-            var max = editQuestionViewModel.TextInput?.MaxLength;
-
-            if (min.HasValue && min.Value <= 0)
-            {
-                ModelState.AddModelError("TextInput.MinLength", FormBuilderValidationMessages.MinWordsMustBeGreaterThanZero);
-            }
-
-            if (min.HasValue && max.HasValue && max.Value < min.Value)
-            {
-                ModelState.AddModelError("TextInput.MaxLength", FormBuilderValidationMessages.MaxWordsMustBeGreaterThanOrEqualToMin);
-            }
-
-            if (max.HasValue && max.Value <= 0)
-            {
-                ModelState.AddModelError("TextInput.MaxLength", FormBuilderValidationMessages.MaxWordsMustBeGreaterThanZero);
-            }
-        }
-
-        if (editQuestionViewModel.Type == QuestionType.Number)
-        {
-            var min = editQuestionViewModel.NumberInput?.GreaterThanOrEqualTo;
-            var max = editQuestionViewModel.NumberInput?.LessThanOrEqualTo;
-
-            if (min.HasValue && max.HasValue && max.Value < min.Value)
-            {
-                ModelState.AddModelError(
-                    "NumberInput.LessThanOrEqualTo",
-                    FormBuilderValidationMessages.MaxNumberMustBeGreaterThanOrEqualToMin);
-            }
-        }
-
-        if (editQuestionViewModel.Type == QuestionType.Date)
-        {
-            var min = editQuestionViewModel.DateInput?.GreaterThanOrEqualTo;
-            var max = editQuestionViewModel.DateInput?.LessThanOrEqualTo;
-
-            if (min.HasValue && max.HasValue && max.Value < min.Value)
-            {
-                ModelState.AddModelError(
-                    "DateInput.LessThanOrEqualTo",
-                    FormBuilderValidationMessages.MaxDateMustBeLaterThanOrEqualToMin);
-            }
-        }
-
-        if (editQuestionViewModel.Type == QuestionType.MultiChoice)
-        {
-            var min = editQuestionViewModel.Checkbox.MinNumberOfOptions;
-            var max = editQuestionViewModel.Checkbox?.MaxNumberOfOptions;
-
-            if (min.HasValue && max.HasValue && max.Value < min.Value)
-            {
-                ModelState.AddModelError(
-                    "Checkbox.MinNumberOfOptions",
-                    FormBuilderValidationMessages.MinOptionsCannotBeGreaterThanMaxOptions);
-            }
-
-            var numberOfOptions = editQuestionViewModel.Options?.Options?.Count ?? 0;
-            if (min.HasValue && min.Value > numberOfOptions)
-            {
-                ModelState.AddModelError(
-                    "Checkbox.MinNumberOfOptions",
-                    FormBuilderValidationMessages.MinOptionsCannotBeGreaterThanAvailableOptions);
-            }
-
-        }
-    }
-    #endregion
 }

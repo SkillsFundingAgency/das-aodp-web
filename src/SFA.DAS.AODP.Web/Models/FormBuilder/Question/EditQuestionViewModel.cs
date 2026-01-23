@@ -2,12 +2,13 @@
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Questions;
 using SFA.DAS.AODP.Models.Forms;
 using SFA.DAS.AODP.Models.Settings;
+using SFA.DAS.AODP.Web.Constants;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
 {
-    public class EditQuestionViewModel
+    public class EditQuestionViewModel :IValidatableObject
     {
         public Guid Id { get; set; }
         public Guid PageId { get; set; }
@@ -271,6 +272,118 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
             }
 
             return command;
+        }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            var settings = validationContext.GetService(typeof(FormBuilderSettings)) as FormBuilderSettings;
+            if (settings == null)
+            {
+                yield return new ValidationResult("FormBuilderSettings are not configured.");
+                yield break;
+            }
+
+            if (Type == AODP.Models.Forms.QuestionType.File)
+            {
+                if (FileUpload.NumberOfFiles > settings.MaxUploadNumberOfFiles)
+                {
+                    yield return new ValidationResult(
+                        string.Format(FormBuilderValidationMessages.TooManyFiles, settings.MaxUploadNumberOfFiles),
+                        new[] { $"{nameof(FileUpload)}.{nameof(FileUpload.NumberOfFiles)}" });
+                }
+
+                if (Required && FileUpload.NumberOfFiles == 0)
+                {
+                    yield return new ValidationResult(
+                        string.Format(FormBuilderValidationMessages.MandatoryFileUploadMaxFiles, settings.MaxUploadNumberOfFiles),
+                        new[] { $"{nameof(FileUpload)}.{nameof(FileUpload.NumberOfFiles)}" });
+                }
+            }
+            else if (Options?.Options != null)
+            {
+                foreach (var item in Options.Options
+                             .Select((option, index) => new { Option = option, Index = index })
+                             .Where(item => string.IsNullOrWhiteSpace(item.Option.Value)))
+                {
+                    yield return new ValidationResult(
+                        FormBuilderValidationMessages.OptionTextCannotBeEmpty,
+                        new[] { $"{nameof(Options)}.{nameof(Options.Options)}[{item.Index}].Value" });
+                }
+            }
+
+            if (Type == QuestionType.Text || Type == QuestionType.TextArea)
+            {
+                var min = TextInput?.MinLength;
+                var max = TextInput?.MaxLength;
+
+                if (min.HasValue && min.Value <= 0)
+                {
+                    yield return new ValidationResult(
+                        FormBuilderValidationMessages.MinWordsMustBeGreaterThanZero,
+                        new[] { $"{nameof(TextInput)}.{nameof(TextInput.MinLength)}" });
+                }
+
+                if (min.HasValue && max.HasValue && max.Value < min.Value)
+                {
+                    yield return new ValidationResult(
+                        FormBuilderValidationMessages.MaxWordsMustBeGreaterThanOrEqualToMin,
+                        new[] { $"{nameof(TextInput)}.{nameof(TextInput.MaxLength)}" });
+                }
+
+                if (max.HasValue && max.Value <= 0)
+                {
+                    yield return new ValidationResult(
+                        FormBuilderValidationMessages.MaxWordsMustBeGreaterThanZero,
+                        new[] { $"{nameof(TextInput)}.{nameof(TextInput.MaxLength)}" });
+                }
+            }
+
+            if (Type == QuestionType.Number)
+            {
+                var min = NumberInput?.GreaterThanOrEqualTo;
+                var max = NumberInput?.LessThanOrEqualTo;
+
+                if (min.HasValue && max.HasValue && max.Value < min.Value)
+                {
+                    yield return new ValidationResult(
+                        FormBuilderValidationMessages.MaxNumberMustBeGreaterThanOrEqualToMin,
+                        new[] { $"{nameof(NumberInput)}.{nameof(NumberInput.LessThanOrEqualTo)}" });
+                }
+            }
+
+            if (Type == QuestionType.Date)
+            {
+                var min = DateInput?.GreaterThanOrEqualTo;
+                var max = DateInput?.LessThanOrEqualTo;
+
+                if (min.HasValue && max.HasValue && max.Value < min.Value)
+                { 
+                    yield return new ValidationResult(
+                        FormBuilderValidationMessages.MaxDateMustBeLaterThanOrEqualToMin,
+                        new[] { $"{nameof(DateInput)}.{nameof(DateInput.LessThanOrEqualTo)}" });
+                }
+            }
+
+            if (Type == QuestionType.MultiChoice)
+            {
+                var min = Checkbox.MinNumberOfOptions;
+                var max = Checkbox?.MaxNumberOfOptions;
+
+                if (min.HasValue && max.HasValue && max.Value < min.Value)
+                {
+                    yield return new ValidationResult(
+                        FormBuilderValidationMessages.MinOptionsCannotBeGreaterThanMaxOptions,
+                        new[] { $"{nameof(Checkbox)}.{nameof(Checkbox.MinNumberOfOptions)}" });
+                }
+
+                var numberOfOptions = Options?.Options?.Count ?? 0;
+                if (min.HasValue && min.Value > numberOfOptions)
+                {
+                    yield return new ValidationResult(
+                        FormBuilderValidationMessages.MinOptionsCannotBeGreaterThanAvailableOptions,
+                        new[] { $"{nameof(Checkbox)}.{nameof(Checkbox.MinNumberOfOptions)}" });
+                }
+            }
         }
     }
 }
