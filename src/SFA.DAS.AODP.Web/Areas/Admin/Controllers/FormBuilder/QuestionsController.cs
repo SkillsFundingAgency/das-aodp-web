@@ -151,7 +151,6 @@ public class QuestionsController : ControllerBase
                 return View(model);
             }
 
-
             var command = EditQuestionViewModel.MapToCommand(model);
             await Send(command);
 
