@@ -399,6 +399,51 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         }
         #endregion
 
+        #region Withdraw
+
+        [ValidateApplication]
+        [HttpGet]
+        [Route("apply/organisations/{organisationId}/applications/{applicationId}/withdraw")]
+        public async Task<IActionResult> Withdraw(Guid applicationId, Guid organisationId)
+        {
+            var query = new GetApplicationMetadataByIdQuery(applicationId);
+            var response = await Send(query);
+
+            return View(new WithdrawApplicationViewModel
+            {
+                ApplicationId = applicationId,
+                OrganisationId = response.OrganisationId,
+                FormVersionId = response.FormVersionId
+            });
+        }
+
+        [ValidateApplication]
+        [HttpPost]
+        [Route("apply/organisations/{organisationId}/applications/{applicationId}/withdraw")]
+        public async Task<IActionResult> SubmitWithdraw([FromRoute] Guid applicationId, [FromRoute] Guid organisationId)
+        {
+            var command = new WithdrawApplicationCommand
+            {
+                ApplicationId = applicationId,
+                WithdrawnBy = _userHelperService.GetUserDisplayName(),
+                WithdrawnByEmail = _userHelperService.GetUserEmail()
+            };
+
+            await Send(command);
+
+            return RedirectToAction(nameof(WithdrawConfirmation));
+        }
+
+        [HttpGet]
+        [Route("apply/withdraw-confirmed")]
+        public IActionResult WithdrawConfirmation()
+        {
+            return View();
+        }
+
+        #endregion
+
+
         private async Task HandleFileUploads(ApplicationPageViewModel viewModel, GetApplicationPageByIdQueryResponse response)
         {
             foreach (var question in viewModel.Questions?.Where(q => q.Type == AODP.Models.Forms.QuestionType.File) ?? [])
