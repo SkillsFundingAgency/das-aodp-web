@@ -48,14 +48,14 @@ public class QualificationSearchControllerTests
             .Setup(m => m.Send(It.IsAny<GetJobRunsQuery>(), default))
             .ReturnsAsync(emptyJobRunsResponse);
         // Act
-        var result = await _controller.Index(model);
+        var result = await _controller.Index(string.Empty, 0,0);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
         Assert.Equal("Index", viewResult.ViewName);
         var vm = Assert.IsAssignableFrom<QualificationSearchViewModel>(viewResult.ViewData.Model);
         Assert.NotNull(vm.Pagination);
-        Assert.True(vm.Results == null || !vm.Results.Any());
+        Assert.True(vm.Qualifications == null || !vm.Qualifications.Any());
         Assert.Null(vm.RegulatedQualificationsLastImported);
         Assert.Null(vm.FundedQualificationsLastImported);
     }
@@ -71,10 +71,10 @@ public class QualificationSearchControllerTests
 
         // create a qualifications response with items
         var qualificationBody = _fixture.Build<GetQualificationsQueryResponse>()
-            .With(r => r.Data, new List<QualificationSearchResult>
+            .With(r => r.Qualifications, new List<GetMatchingQualificationsQueryItem>
             {
-                    new QualificationSearchResult { Reference = "QAN1", Title = "Title 1", Status = "Live" },
-                    new QualificationSearchResult { Reference = "QAN2", Title = "Title 2", Status = "Archived" }
+                    new GetMatchingQualificationsQueryItem { Qan = "QAN1", QualificationName = "Title 1", Status = "Live" },
+                    new GetMatchingQualificationsQueryItem { Qan = "QAN2", QualificationName = "Title 2", Status = "Archived" }
             })
             .With(r => r.TotalRecords, 2)
             .Create();
@@ -85,7 +85,7 @@ public class QualificationSearchControllerTests
             .Create();
 
         _mediatorMock
-            .Setup(m => m.Send(It.Is<GetQualificationsQuery>(q => q.Name == model.SearchTerm), It.IsAny<CancellationToken>()))
+            .Setup(m => m.Send(It.Is<GetQualificationsQuery>(q => q.SearchTerm == model.SearchTerm), It.IsAny<CancellationToken>()))
             .ReturnsAsync(qualificationsResponseBody);
 
         // job runs - empty to avoid setting dates
@@ -103,14 +103,14 @@ public class QualificationSearchControllerTests
             .ReturnsAsync(emptyJobRunsResponse);
 
         // Act
-        var result = await _controller.Index(model);
+        var result = await _controller.Index("search-term", 10, 1);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
         var vm = Assert.IsAssignableFrom<QualificationSearchViewModel>(viewResult.ViewData.Model);
-        Assert.NotNull(vm.Results);
-        Assert.Equal(2, vm.Results.Count());
-        Assert.Contains(vm.Results, r => r.Reference == "QAN1" && r.Title == "Title 1");
+        Assert.NotNull(vm.Qualifications);
+        Assert.Equal(2, vm.Qualifications.Count());
+        Assert.Contains(vm.Qualifications, r => r.Qan == "QAN1" && r.QualificationName == "Title 1");
     }
 
     [Fact]
@@ -157,7 +157,7 @@ public class QualificationSearchControllerTests
             .ReturnsAsync(fundedResponse);
 
         // Act
-        var result = await _controller.Index(model);
+        var result = await _controller.Index(string.Empty, 0, 0);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
