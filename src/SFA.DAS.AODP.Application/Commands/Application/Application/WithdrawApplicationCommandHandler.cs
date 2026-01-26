@@ -1,17 +1,16 @@
 ﻿using MediatR;
-using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Domain.Interfaces;
 namespace SFA.DAS.AODP.Application.Commands.Application.Application;
-public class SubmitApplicationCommandHandler : IRequestHandler<SubmitApplicationCommand, BaseMediatrResponse<EmptyResponse>>
+public class WithdrawApplicationCommandHandler : IRequestHandler<WithdrawApplicationCommand, BaseMediatrResponse<EmptyResponse>>
 {
-    private readonly IApiClient _apiCLient;
-    public SubmitApplicationCommandHandler(IApiClient apiCLient)
+    private readonly IApiClient _apiClient;
+    public WithdrawApplicationCommandHandler(IApiClient apiClient)
     {
-        _apiCLient = apiCLient;
+        _apiClient = apiClient;
     }
 
 
-    public async Task<BaseMediatrResponse<EmptyResponse>> Handle(SubmitApplicationCommand request, CancellationToken cancellationToken)
+    public async Task<BaseMediatrResponse<EmptyResponse>> Handle(WithdrawApplicationCommand request, CancellationToken cancellationToken)
     {
         var response = new BaseMediatrResponse<EmptyResponse>
         {
@@ -20,7 +19,7 @@ public class SubmitApplicationCommandHandler : IRequestHandler<SubmitApplication
 
         try
         {
-            await _apiCLient.Put<EmptyResponse>(new SubmitApplicationApiRequest()
+            await _apiClient.PostWithResponseCode<EmptyResponse>(new WithdrawApplicationApiRequest()
             {
                 ApplicationId = request.ApplicationId,
                 Data = request
