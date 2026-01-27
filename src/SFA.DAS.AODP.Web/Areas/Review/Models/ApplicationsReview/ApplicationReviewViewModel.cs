@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Models.Users;
+using SFA.DAS.AODP.Web.Constants;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
 {
@@ -24,9 +25,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
         public ApplicationStatus ApplicationStatus { get; set; }
         public List<Funding> FundedOffers { get; set; } = new();
         public List<Feedback> Feedbacks { get; set; } = new();
-        public SelectList UserSelectList { get; set; }
         public string? Reviewer1 { get; set; }
         public string? Reviewer2 { get; set; }
+        public List<SelectListItem> ReviewerOptions { get; set; } = new();
 
         public class Feedback
         {
@@ -48,7 +49,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
             public string? Comments { get; set; }
         }
 
-        public static ApplicationReviewViewModel Map(GetApplicationForReviewByIdQueryResponse response, UserType userType, GetUsersQueryResponse userResonse)
+        public static ApplicationReviewViewModel Map(GetApplicationForReviewByIdQueryResponse response, UserType userType)
         {
             Enum.TryParse(response.ApplicationStatus, out ApplicationStatus applicationStatus);
             ApplicationReviewViewModel model = new()
@@ -67,7 +68,26 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
                 ApplicationStatus = applicationStatus,
                 Reviewer1 = response.Reviewer1,
                 Reviewer2 = response.Reviewer2,
-                UserSelectList = new SelectList(userResonse.Users, "Id", "DisplayName")
+                ReviewerOptions =
+                    new[]
+                    {
+                        new SelectListItem 
+                        { 
+                            Value = ReviewerDropdown.Assignment.UnassignedValue, 
+                            Text = ReviewerDropdown.Assignment.UnassignedText 
+                        }
+                    }
+                    .Concat(
+                        response.AvailableReviewers
+                            .OrderBy(r => r.LastName).ThenBy(r => r.FirstName)
+                            .Select(r => new SelectListItem
+                            {
+                                Value = $"{r.FirstName} {r.LastName}",
+                                Text = $"{r.FirstName} {r.LastName}"
+                            })
+                    )
+                    .ToList()
+
             };
 
             foreach (var feedback in response.Feedbacks)

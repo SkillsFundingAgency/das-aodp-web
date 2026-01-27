@@ -1,11 +1,9 @@
-﻿using Azure;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using SFA.DAS.AODP.Application.Queries.Application.Form;
 using SFA.DAS.AODP.Application.Queries.Review;
-using SFA.DAS.AODP.Application.Queries.Users;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Models.Settings;
@@ -54,6 +52,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 ApplicationsWithNewMessages = model.Status?.Contains(ApplicationStatus.NewMessage) == true,
                 ApplicationSearch = model.ApplicationSearch,
                 AwardingOrganisationSearch = model.AwardingOrganisationSearch,
+                ReviewerSearch = model.ReviewerSearch,
+                UnassignedOnly = model.UnassignedOnly,
                 Limit = model.ItemsPerPage,
                 Offset = model.ItemsPerPage * (model.Page - 1)
             });
@@ -73,7 +73,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 ItemsPerPage = model.ItemsPerPage,
                 ApplicationSearch = model.ApplicationSearch,
                 AwardingOrganisationSearch = model.AwardingOrganisationSearch,
-                Status = model.Status
+                Status = model.Status,
+                ReviewerSelection = model.ReviewerSelection
             });
         }
 
@@ -82,7 +83,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         {
             var userType = _userHelperService.GetUserType();
             var review = await Send(new GetApplicationForReviewByIdQuery(applicationReviewId));
-            var reviewersList = await Send(new GetUsersQuery());
 
             if (userType == UserType.Ofqual && review.SharedWithOfqual == false) return NotFound();
             if (userType == UserType.SkillsEngland && review.SharedWithSkillsEngland == false) return NotFound();
@@ -91,7 +91,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             ShowNotificationIfKeyExists(UpdateKeys.QanUpdated.ToString(), ViewNotificationMessageType.Success, "The application's QAN has been updated.");
             ShowNotificationIfKeyExists(UpdateKeys.OwnerUpdated.ToString(), ViewNotificationMessageType.Success, "The application's owner has been updated.");
             ShowNotificationIfKeyExists(UpdateKeys.ReviewerUpdated.ToString(), ViewNotificationMessageType.Success, "The application's reviewer has been updated.");
-            return View(ApplicationReviewViewModel.Map(review, userType, reviewersList));
+            return View(ApplicationReviewViewModel.Map(review, userType));
         }
 
         [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
@@ -199,7 +199,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
 
             await Send(QfauFundingReviewOutcomeOfferDetailsViewModel.Map(model));
-
 
             return RedirectToAction(nameof(QfauFundingReviewSummary), new { applicationReviewId = model.ApplicationReviewId });
         }
@@ -373,9 +372,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 ModelState.AddModelError(model.ReviewerFieldName, "Reviewer 1 and 2 must be different people.");
 
                 var review = await Send(new GetApplicationForReviewByIdQuery(model.ApplicationReviewId));
-                var reviewers = await Send(new GetUsersQuery());
 
-                var vm = ApplicationReviewViewModel.Map(review, UserType.Qfau, reviewers);
+                var vm = ApplicationReviewViewModel.Map(review, UserType.Qfau);
                 switch (model.ReviewerFieldName)
                 {
                     case nameof(vm.Reviewer1):
@@ -605,9 +603,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         {
             var userType = _userHelperService.GetUserType();
             var review = await Send(new GetApplicationForReviewByIdQuery(applicationReviewId));
-            var users = await Send(new GetUsersQuery());
 
-            var vm = ApplicationReviewViewModel.Map(review, userType, users);
+            var vm = ApplicationReviewViewModel.Map(review, userType);
             vm.Qan = attemptedQan;
 
             return View(nameof(ViewApplication), vm);
