@@ -407,6 +407,7 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
 
         #endregion
 
+
         #region Preview
         [ValidateApplication]
         [HttpGet]
@@ -465,6 +466,7 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         }
 
         #endregion
+
 
         private async Task HandleFileUploads(ApplicationPageViewModel viewModel, GetApplicationPageByIdQueryResponse response)
         {
