@@ -1,0 +1,31 @@
+﻿namespace SFA.DAS.AODP.Web.Models.Import;
+
+public sealed record PldnsColumnNames(
+        string? Qan,
+        string? ListUpdated,
+        string? Note,
+        string? P14To16,
+        string? P14To16Note,
+        string? P16To19,
+        string? P16To19Note,
+        string? LocalFlex,
+        string? LocalFlexNote,
+        string? LegalL2L3,
+        string? LegalL2L3Note,
+        string? LegalEngMaths,
+        string? LegalEngMathsNote,
+        string? Digital,
+        string? DigitalNote,
+        string? Esf,
+        string? EsfNote,
+        string? Loans,
+        string? LoansNote,
+        string? Lle,
+        string? LleNote,
+        string? Fcfj,
+        string? FcfjNote,
+        string? Cof,
+        string? CofNote,
+        string? StartDate,
+        string? StartDateNote
+    );
