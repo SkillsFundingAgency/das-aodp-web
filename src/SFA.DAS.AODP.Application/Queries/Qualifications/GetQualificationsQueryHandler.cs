@@ -26,13 +26,21 @@ public class GetQualificationsQueryHandler : IRequestHandler<GetQualificationsQu
                 request.Take
             );
 
+            var result = await _apiClient.Get<GetQualificationsQueryResponse>(apiRequest);
 
+            if (result?.Qualifications != null)
             {
-                }
-            };
+                response.Value.Qualifications = result.Qualifications;
+                response.Value.TotalRecords = result.TotalRecords;
+                response.Value.Skip = result.Skip;
+                response.Value.Take = result.Take;
+                response.Success = true;
+                return response;
+            }
 
-            await Task.CompletedTask;
-
+            response.ErrorMessage = "No matching qualifications found.";
+            response.Value.Qualifications = new List<GetMatchingQualificationsQueryItem>();
+            return response;
         }
         catch (Exception ex)
         {
