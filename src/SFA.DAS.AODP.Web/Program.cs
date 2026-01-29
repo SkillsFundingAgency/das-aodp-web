@@ -6,11 +6,13 @@ using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Extensions.Startup;
 using SFA.DAS.AODP.Web.Validators;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using FluentValidation.Validators;
 using FluentValidation;
 using SFA.DAS.AODP.Web.Models.OutputFile;
 
+[ExcludeFromCodeCoverage]
 internal class Program
 {
     private static void Main(string[] args)

@@ -104,6 +104,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
 
             var result = await _controller.Create(model);
 
+            
             Assert.Multiple(() =>
             {
                 var redirect = Assert.IsType<RedirectToActionResult>(result);
@@ -353,6 +354,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
 
             var result = await _controller.Submit(applicationId, organisationId);
 
+            
             Assert.Multiple(() =>
             {
                 var redirect = Assert.IsType<RedirectToActionResult>(result);

@@ -35,7 +35,13 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
 
         public ApplicationMessagesControllerTests()
         {
-            _controller = new(_mediatorMock.Object, _loggerMock.Object, _userHelperServiceMock.Object, _formBuilderSettings, _messageFileValidationService.Object, _fileService.Object);
+            _controller = new(
+                _mediatorMock.Object,
+                _loggerMock.Object,
+                _userHelperServiceMock.Object,
+                _formBuilderSettings,
+                _messageFileValidationService.Object,
+                _fileService.Object);
         }
 
         [Fact]
@@ -65,8 +71,6 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
                 }
             };
             var applicationId = Guid.NewGuid();
-            var organisationId = Guid.NewGuid();
-            var formVersionId = Guid.NewGuid();
 
             var msgResponse = new BaseMediatrResponse<CreateApplicationMessageCommandResponse>()
             {
@@ -127,11 +131,9 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
                     formFile.Object
                 }
             };
-            var applicationId = Guid.NewGuid();
-            var organisationId = Guid.NewGuid();
-            var formVersionId = Guid.NewGuid();
-            _controller.TempData = new Mock<ITempDataDictionary>().Object;
 
+            var applicationId = Guid.NewGuid();
+            _controller.TempData = new Mock<ITempDataDictionary>().Object;
 
             var applicationSharingResponse = new BaseMediatrResponse<GetApplicationReviewSharingStatusByIdQueryResponse>()
             {
@@ -174,7 +176,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
 
             _fileService.Setup(f => f.GetBlobDetails(file)).ReturnsAsync(blob);
             _fileService.Setup(fs => fs.OpenReadStreamAsync(It.IsAny<string>()))
-              .ReturnsAsync(new MemoryStream(Encoding.UTF8.GetBytes(content)));
+                .ReturnsAsync(new MemoryStream(Encoding.UTF8.GetBytes(content)));
 
             BaseMediatrResponse<GetApplicationMessageByIdQueryResponse> messageByIdResponse = new()
             {
@@ -259,7 +261,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
         }
 
 
-            [Fact]
+        [Fact]
         public async Task ApplicationMessageFileDownload_InvalidFilePath_ReturnsBadRequest()
         {
             // Arrange
@@ -284,6 +286,107 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
             // Assert
             Assert.IsType<BadRequestResult>(result);
         }
-    }
 
+        [Fact]
+        public async Task ApplicationMessages_EmailSentTrue_SetsMessageSentBanner()
+        {
+            // Arrange
+            var applicationReviewId = Guid.NewGuid();
+            var applicationId = Guid.NewGuid();
+
+            var msgResponse = new BaseMediatrResponse<CreateApplicationMessageCommandResponse>
+            {
+                Success = true,
+                Value = new CreateApplicationMessageCommandResponse
+                {
+                    Id = Guid.NewGuid(),
+                    EmailSent = true
+                }
+            };
+
+            var applicationSharingResponse = new BaseMediatrResponse<GetApplicationReviewSharingStatusByIdQueryResponse>
+            {
+                Success = true,
+                Value = new GetApplicationReviewSharingStatusByIdQueryResponse
+                {
+                    ApplicationId = applicationId
+                }
+            };
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationReviewSharingStatusByIdQuery>(), default))
+                .ReturnsAsync(applicationSharingResponse);
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<CreateApplicationMessageCommand>(), default))
+                .ReturnsAsync(msgResponse);
+
+            var model = new ApplicationMessagesViewModel
+            {
+                ApplicationReviewId = applicationReviewId,
+                AdditionalActions = new() { Send = true }
+            };
+
+            var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
+            _controller.TempData = tempData;
+
+            // Act
+            var result = await _controller.ApplicationMessages(model);
+
+            // Assert
+            Assert.IsType<RedirectToActionResult>(result);
+            Assert.True(_controller.TempData.ContainsKey(ApplicationMessagesController.NotificationKeys.MessageSentBanner.ToString()));
+        }
+
+        [Fact]
+        public async Task ApplicationMessages_EmailSentFalse_DoesNotSetMessageSentBanner()
+        {
+            // Arrange
+            var applicationReviewId = Guid.NewGuid();
+            var applicationId = Guid.NewGuid();
+
+            var msgResponse = new BaseMediatrResponse<CreateApplicationMessageCommandResponse>
+            {
+                Success = true,
+                Value = new CreateApplicationMessageCommandResponse
+                {
+                    Id = Guid.NewGuid(),
+                    EmailSent = false
+                }
+            };
+
+            var applicationSharingResponse = new BaseMediatrResponse<GetApplicationReviewSharingStatusByIdQueryResponse>
+            {
+                Success = true,
+                Value = new GetApplicationReviewSharingStatusByIdQueryResponse
+                {
+                    ApplicationId = applicationId
+                }
+            };
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationReviewSharingStatusByIdQuery>(), default))
+                .ReturnsAsync(applicationSharingResponse);
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<CreateApplicationMessageCommand>(), default))
+                .ReturnsAsync(msgResponse);
+
+            var model = new ApplicationMessagesViewModel
+            {
+                ApplicationReviewId = applicationReviewId,
+                AdditionalActions = new() { Send = true }
+            };
+
+            var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
+            _controller.TempData = tempData;
+
+            // Act
+            var result = await _controller.ApplicationMessages(model);
+
+            // Assert
+            Assert.IsType<RedirectToActionResult>(result);
+            Assert.False(_controller.TempData.ContainsKey(ApplicationMessagesController.NotificationKeys.MessageSentBanner.ToString()));
+        }
+    }
 }
