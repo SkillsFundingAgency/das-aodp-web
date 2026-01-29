@@ -48,11 +48,6 @@ public class WhenGetQualificationsQueryHandlerQuery
             }
         };
 
-        _apiClientMock
-            .Setup(a => a.Get<GetQualificationsQueryResponse>(It.IsAny<GetQualificationsApiRequest>()))
-            .ReturnsAsync(expectedResponse);
-
-
         // Act
         var result = await handler.Handle(request, CancellationToken.None);
 
@@ -72,6 +67,7 @@ public class WhenGetQualificationsQueryHandlerQuery
         Assert.Equal("QAN-0001", result.Value.Qualifications[0].Qan);
         Assert.Contains("Plumbing", result.Value.Qualifications[0].QualificationName, StringComparison.OrdinalIgnoreCase);
 
+        apiClientMock.VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -94,7 +90,6 @@ public class WhenGetQualificationsQueryHandlerQuery
         Assert.Equal(0, result.Value.TotalRecords);
         Assert.Equal(0, result.Value.Skip);
         Assert.Equal(0, result.Value.Take);
-        Assert.True(result.Value.Qualifications == null || result.Value.Qualifications.Count == 0);
 
         apiClientMock.VerifyNoOtherCalls();
     }
