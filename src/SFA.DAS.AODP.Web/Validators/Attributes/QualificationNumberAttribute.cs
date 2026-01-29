@@ -8,7 +8,8 @@ public sealed class QualificationNumberAttribute : ValidationAttribute
 
     private static readonly Regex QanRegex =
         new(@"^(?:\s*|\d{8}|\d{7}[A-Za-z]|\d{3}\/\d{4}\/(?:\d|[A-Za-z]))$",
-            RegexOptions.Compiled);
+            RegexOptions.Compiled,
+            TimeSpan.FromMilliseconds(100));
 
     public QualificationNumberAttribute() : base(DefaultErrorMessage) { }
 

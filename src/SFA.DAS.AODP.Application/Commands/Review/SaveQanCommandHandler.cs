@@ -1,7 +1,6 @@
 ﻿using MediatR;
-using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Domain.Interfaces;
-
+namespace SFA.DAS.AODP.Application.Commands.Application.Review;
 public class SaveQanCommandHandler : IRequestHandler<SaveQanCommand, BaseMediatrResponse<SaveQanCommandResponse>>
 {
     private readonly IApiClient _apiClient;

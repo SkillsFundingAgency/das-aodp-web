@@ -1,6 +1,6 @@
 ﻿using MediatR;
 using SFA.DAS.AODP.Application;
-
+namespace SFA.DAS.AODP.Application.Commands.Application.Review;
 public class SaveQanCommand : IRequest<BaseMediatrResponse<SaveQanCommandResponse>>
 {
     public Guid ApplicationReviewId { get; set; }
