@@ -157,22 +157,6 @@
             }
 
         }
-
-        @if (Model.CanWithdraw)
-        {
-            <div class="govuk-inset-text">
-                <p class="govuk-body">
-                    <a class="govuk-link"
-                        asp-action="Withdraw" 
-                        asp-controller="Applications"  
-                        asp-route-applicationId="@Model.ApplicationId"
-                        asp-route-organisationId="@Model.OrganisationId">
-                        Withdraw this application
-                    </a>
-                </p>
-            </div>
-        }
-
     </div>
 
     @if (Model.VisibleToReviewers)
