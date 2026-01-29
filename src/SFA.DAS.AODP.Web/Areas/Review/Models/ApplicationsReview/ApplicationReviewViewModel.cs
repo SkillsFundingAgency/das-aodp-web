@@ -1,4 +1,6 @@
-﻿using SFA.DAS.AODP.Models.Users;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using SFA.DAS.AODP.Models.Application;
+using SFA.DAS.AODP.Models.Users;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
 {
@@ -7,7 +9,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
         public UserType UserType { get; set; }
         public Guid Id { get; set; }
         public Guid ApplicationReviewId { get; set; }
-
+       
         public string Name { get; set; }
         public DateTime LastUpdated { get; set; }
         public int Reference { get; set; }
@@ -19,8 +21,12 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
 
         public string FormTitle { get; set; }
 
+        public ApplicationStatus ApplicationStatus { get; set; }
         public List<Funding> FundedOffers { get; set; } = new();
         public List<Feedback> Feedbacks { get; set; } = new();
+        public SelectList UserSelectList { get; set; }
+        public string? Reviewer1 { get; set; }
+        public string? Reviewer2 { get; set; }
 
         public class Feedback
         {
@@ -42,9 +48,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
             public string? Comments { get; set; }
         }
 
-
-        public static ApplicationReviewViewModel Map(GetApplicationForReviewByIdQueryResponse response, UserType userType)
+        public static ApplicationReviewViewModel Map(GetApplicationForReviewByIdQueryResponse response, UserType userType, GetUsersQueryResponse userResonse)
         {
+            Enum.TryParse(response.ApplicationStatus, out ApplicationStatus applicationStatus);
             ApplicationReviewViewModel model = new()
             {
                 Id = response.Id,
@@ -58,6 +64,10 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
                 SharedWithSkillsEngland = response.SharedWithSkillsEngland,
                 UserType = userType,
                 FormTitle = response.FormTitle,
+                ApplicationStatus = applicationStatus,
+                Reviewer1 = response.Reviewer1,
+                Reviewer2 = response.Reviewer2,
+                UserSelectList = new SelectList(userResonse.Users, "Id", "DisplayName")
             };
 
             foreach (var feedback in response.Feedbacks)

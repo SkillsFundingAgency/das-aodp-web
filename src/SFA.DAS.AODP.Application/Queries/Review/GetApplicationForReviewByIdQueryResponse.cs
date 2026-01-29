@@ -14,8 +14,12 @@
 
     public string FormTitle { get; set; }
 
+    public string ApplicationStatus { get; set; }
+
     public List<Funding> FundedOffers { get; set; } = new();
     public List<Feedback> Feedbacks { get; set; } = new();
+    public string? Reviewer1 { get; set; }
+    public string? Reviewer2 { get; set; }
 
     public class Feedback
     {

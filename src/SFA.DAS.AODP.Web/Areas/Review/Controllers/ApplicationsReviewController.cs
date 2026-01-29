@@ -1,9 +1,11 @@
-﻿using MediatR;
+﻿using Azure;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using SFA.DAS.AODP.Application.Queries.Application.Form;
 using SFA.DAS.AODP.Application.Queries.Review;
+using SFA.DAS.AODP.Application.Queries.Users;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Models.Settings;
@@ -24,12 +26,13 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
     {
         enum UpdateKeys
         {
-            SharingStatusUpdated, QanUpdated, OwnerUpdated
+            SharingStatusUpdated, QanUpdated, OwnerUpdated, ReviewerUpdated
         }
         private readonly IUserHelperService _userHelperService;
         private readonly UserType UserType;
         private readonly IFileService _fileService;
         private readonly IOptions<AodpConfiguration> _aodpConfiguration;
+        private const string DefaultQANValidationMessage = "Invalid Qualification Number.";
 
         public ApplicationsReviewController(ILogger<ApplicationsReviewController> logger, IMediator mediator, IUserHelperService userHelperService, IFileService fileService, IOptions<AodpConfiguration> aodpConfiguration) : base(mediator, logger)
         {
@@ -79,6 +82,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         {
             var userType = _userHelperService.GetUserType();
             var review = await Send(new GetApplicationForReviewByIdQuery(applicationReviewId));
+            var reviewersList = await Send(new GetUsersQuery());
 
             if (userType == UserType.Ofqual && review.SharedWithOfqual == false) return NotFound();
             if (userType == UserType.SkillsEngland && review.SharedWithSkillsEngland == false) return NotFound();
@@ -86,7 +90,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             ShowNotificationIfKeyExists(UpdateKeys.SharingStatusUpdated.ToString(), ViewNotificationMessageType.Success, "The application's sharing status has been updated.");
             ShowNotificationIfKeyExists(UpdateKeys.QanUpdated.ToString(), ViewNotificationMessageType.Success, "The application's QAN has been updated.");
             ShowNotificationIfKeyExists(UpdateKeys.OwnerUpdated.ToString(), ViewNotificationMessageType.Success, "The application's owner has been updated.");
-            return View(ApplicationReviewViewModel.Map(review, userType));
+            ShowNotificationIfKeyExists(UpdateKeys.ReviewerUpdated.ToString(), ViewNotificationMessageType.Success, "The application's reviewer has been updated.");
+            return View(ApplicationReviewViewModel.Map(review, userType, reviewersList));
         }
 
         [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
@@ -304,7 +309,12 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         [Route("review/application-reviews/{applicationReviewId}/update-qan")]
         public async Task<IActionResult> UpdateQan(UpdateQanViewModel model)
         {
-            await Send(
+            if (!ModelState.IsValid)
+            {
+                return await ReturnViewApplicationWithUserInput(model.ApplicationReviewId, model.Qan);
+            }
+
+            var response = await Send(
                 new SaveQanCommand()
                 {
                     ApplicationReviewId = model.ApplicationReviewId,
@@ -312,6 +322,14 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     SentByName = _userHelperService.GetUserDisplayName(),
                     Qan = model.Qan,
                 });
+
+            if (response?.IsQanValid == false)
+            {
+                ModelState.AddModelError(nameof(model.Qan),
+                    response.QanValidationMessage ?? DefaultQANValidationMessage);
+
+                return await ReturnViewApplicationWithUserInput(model.ApplicationReviewId, model.Qan);
+            }
 
             TempData[UpdateKeys.QanUpdated.ToString()] = true;
             return RedirectToAction(nameof(ViewApplication), new { applicationReviewId = model.ApplicationReviewId });
@@ -332,6 +350,45 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 });
 
             TempData[UpdateKeys.OwnerUpdated.ToString()] = true;
+            return RedirectToAction(nameof(ViewApplication), new { applicationReviewId = model.ApplicationReviewId });
+        }
+
+        [HttpPost]
+        [Route("review/application-reviews/{applicationReviewId}/update-reviewer")]
+        public async Task<IActionResult> UpdateReviewer(UpdateReviewerViewModel model)
+        {
+            var reviewerUpdateResult = await Send(
+                new SaveReviewerCommand()
+                {
+                    ApplicationId = model.ApplicationId,
+                    SentByEmail = _userHelperService.GetUserEmail(),
+                    SentByName = _userHelperService.GetUserDisplayName(),
+                    ReviewerFieldName = model.ReviewerFieldName,
+                    ReviewerValue = model.ReviewerValue,
+                    UserType = _userHelperService.GetUserType().ToString()
+                });
+
+            if (reviewerUpdateResult.DuplicateReviewerError)
+            {
+                ModelState.AddModelError(model.ReviewerFieldName, "Reviewer 1 and 2 must be different people.");
+
+                var review = await Send(new GetApplicationForReviewByIdQuery(model.ApplicationReviewId));
+                var reviewers = await Send(new GetUsersQuery());
+
+                var vm = ApplicationReviewViewModel.Map(review, UserType.Qfau, reviewers);
+                switch (model.ReviewerFieldName)
+                {
+                    case nameof(vm.Reviewer1):
+                        vm.Reviewer1 = model.ReviewerValue;
+                        break;
+                    case nameof(vm.Reviewer2):
+                        vm.Reviewer2 = model.ReviewerValue;
+                        break;
+                }
+                return View(nameof(ViewApplication), vm);
+            }
+
+            TempData[UpdateKeys.ReviewerUpdated.ToString()] = true;
             return RedirectToAction(nameof(ViewApplication), new { applicationReviewId = model.ApplicationReviewId });
         }
 
@@ -542,6 +599,18 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 if (UserType == UserType.SkillsEngland && !shared.SharedWithSkillsEngland) throw new Exception("Application not shared with Skills England.");
             }
             return shared.ApplicationId;
+        }
+
+        private async Task<IActionResult> ReturnViewApplicationWithUserInput(Guid applicationReviewId, string? attemptedQan)
+        {
+            var userType = _userHelperService.GetUserType();
+            var review = await Send(new GetApplicationForReviewByIdQuery(applicationReviewId));
+            var users = await Send(new GetUsersQuery());
+
+            var vm = ApplicationReviewViewModel.Map(review, userType, users);
+            vm.Qan = attemptedQan;
+
+            return View(nameof(ViewApplication), vm);
         }
     }
 }
