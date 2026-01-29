@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using SFA.DAS.AODP.Domain.Interfaces;
+using SFA.DAS.AODP.Domain.Qualifications.Requests;
 
 namespace SFA.DAS.AODP.Application.Queries.Qualifications;
 
@@ -19,73 +20,27 @@ public class GetQualificationsQueryHandler : IRequestHandler<GetQualificationsQu
 
         try
         {
-            //var apiRequest = new GetQualificationsApiRequest()
-            //{
-            //    Skip = request.Skip,
-            //    Take = request.Take,
-            //    Name = request.Name,
-            //    Organisation = request.Organisation,
-            //    QAN = request.QAN,
-            //    Status = request.Status
-            //};
+            var apiRequest = new GetQualificationsApiRequest(
+                request.SearchTerm!,
+                request.Skip,
+                request.Take
+            );
 
-            //var result = await _apiClient.Get<GetQualificationsQueryResponse>(apiRequest);
+            var result = await _apiClient.Get<GetQualificationsQueryResponse>(apiRequest);
 
-            // Build dummy response instead of calling the API.
-            var dummyResponse = new GetQualificationsQueryResponse
+            if (result?.Qualifications != null)
             {
-                TotalRecords = 5,
-                Skip = request.Skip,
-                Take = request.Take,
-                Data = new List<QualificationSearchResult>
-                {
-                    new QualificationSearchResult
-                    {
-                        Reference = "QAN-0001",
-                        Title = "Level 1 - Introductory Qualification for Plumbing",
-                        AwardingOrganisation = "Awarding Org A",
-                        Status = "Active",
-                        AgeGroup = "16-18"
-                    },
-                    new QualificationSearchResult
-                    {
-                        Reference = "QAN-0002",
-                        Title = "Level 2 - Intermediate Qualification for Plumbing",
-                        AwardingOrganisation = "Awarding Org B",
-                        Status = "Active",
-                        AgeGroup = "19-24"
-                    },
-                    new QualificationSearchResult
-                    {
-                        Reference = "QAN-0003",
-                        Title = "Level 3 - Advanced Qualification for Plumbing",
-                        AwardingOrganisation = "Awarding Org C",
-                        Status = "Retired",
-                        AgeGroup = "25+"
-                    },
-                    new QualificationSearchResult
-                    {
-                        Reference = "QAN-0004",
-                        Title = "Specialist Certificate for Plumbing",
-                        AwardingOrganisation = "Awarding Org D",
-                        Status = "Active",
-                        AgeGroup = "19-24"
-                    },
-                    new QualificationSearchResult
-                    {
-                        Reference = "QAN-0005",
-                        Title = "Foundation Diploma for Plumbing",
-                        AwardingOrganisation = "Awarding Org E",
-                        Status = "Inactive",
-                        AgeGroup = "16-18"
-                    }
-                }
-            };
+                response.Value.Qualifications = result.Qualifications;
+                response.Value.TotalRecords = result.TotalRecords;
+                response.Value.Skip = result.Skip;
+                response.Value.Take = result.Take;
+                response.Success = true;
+                return response;
+            }
 
-            await Task.CompletedTask;
-
-            response.Value = dummyResponse;
-            response.Success = true;
+            response.ErrorMessage = "No matching qualifications found.";
+            response.Value.Qualifications = new List<GetMatchingQualificationsQueryItem>();
+            return response;
         }
         catch (Exception ex)
         {

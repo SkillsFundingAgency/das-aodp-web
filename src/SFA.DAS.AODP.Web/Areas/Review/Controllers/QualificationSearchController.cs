@@ -19,44 +19,41 @@ public class QualificationSearchController : ControllerBase
     {
     }
 
-    [Route("review/qualifications")]
-    public async Task<IActionResult> Index(QualificationSearchViewModel model)
+    [Route("/Review/Qualifications")]
+    public async Task<IActionResult> Index(string searchTerm = "", int pageNumber = 0, int recordsPerPage = 10)
     {
-        model ??= new QualificationSearchViewModel();
-
         var vm = new QualificationSearchViewModel()
         {
-            SearchTerm = model.SearchTerm,
-            QAN = model.QAN,
-            Pagination = model.Pagination ?? new PaginationViewModel()
+            SearchTerm = searchTerm,
+            Pagination = new PaginationViewModel()
         };
+        var procStatuses = await Send(new GetProcessStatusesQuery());
 
-        var hasSearchCriteria = !string.IsNullOrWhiteSpace(model.SearchTerm)
-                        || !string.IsNullOrWhiteSpace(model.QAN)
-                        || (model.Pagination != null && model.Pagination.CurrentPage > 1);
-
-        if (hasSearchCriteria)
+        if (pageNumber > 0)
         {
-            // default paging
-            var take = model.Pagination?.RecordsPerPage ?? 10;
-            var page = model.Pagination?.CurrentPage ?? 1;
-            var skip = (page - 1) * take;
+            var take = recordsPerPage;
+            var skip = (pageNumber - 1) * take;
 
             var response = await Send(new GetQualificationsQuery
             {
-                Name = string.IsNullOrWhiteSpace(model.SearchTerm) ? null : model.SearchTerm,
-                QAN = string.IsNullOrWhiteSpace(model.QAN) ? null : model.QAN,
-                Status = string.IsNullOrWhiteSpace(model.Status) ? null : model.Status,
+                SearchTerm = string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm,
                 Skip = skip,
                 Take = take
             });
 
-            vm = QualificationSearchViewModel.Map(response!, model.SearchTerm, model.QAN, model.Status);
+            vm = QualificationSearchViewModel.Map(response!, procStatuses.ProcessStatuses, searchTerm);
+
+            // Ensure pagination is set from response so view can render page links exactly like NewController
+            vm.Pagination = new PaginationViewModel(response!.TotalRecords, response.Skip, response.Take)
+            {
+                CurrentPage = pageNumber,
+                RecordsPerPage = recordsPerPage
+            };
         }
         else
         {
             ModelState.Clear();
-            vm.Results = [];
+            vm.Qualifications = [];
             vm.Pagination = vm.Pagination ?? new PaginationViewModel();
         }
 
@@ -91,10 +88,10 @@ public class QualificationSearchController : ControllerBase
     }
 
     [HttpPost]
-    [Route("review/qualifications")]
+    [Route("/Review/Qualifications")]
     public IActionResult Search(QualificationSearchViewModel model)
     {
-        if (string.IsNullOrWhiteSpace(model.SearchTerm) || model.SearchTerm.Length < 5)
+        if (!ModelState.IsValid)
         {
             return View("Index", model);
         }
@@ -102,11 +99,35 @@ public class QualificationSearchController : ControllerBase
         return RedirectToAction(nameof(Index), new
         {
             searchTerm = model.SearchTerm,
-            qan = model.QAN,
-            status = model.Status,
-            // reset page to first
-            page = 1,
+            pageNumber = 1,
             recordsPerPage = model.Pagination?.RecordsPerPage ?? 10
         });
+    }
+
+    [HttpGet]
+    [Route("/Review/Qualifications/ChangePage")]
+    public IActionResult ChangePage(int newPage = 1, int recordsPerPage = 10, string searchTerm = "")
+    {
+        try
+        {
+            if (ModelState.IsValid)
+            {
+                return RedirectToAction(nameof(Index), new
+                {
+                    pageNumber = newPage,
+                    recordsPerPage = recordsPerPage,
+                    searchTerm = searchTerm
+                });
+            }
+            else
+            {
+                return View("Index");
+            }
+        }
+        catch (Exception ex)
+        {
+            LogException(ex);
+            return View("Index");
+        }
     }
 }
