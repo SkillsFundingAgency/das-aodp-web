@@ -1,59 +1,72 @@
-﻿using SFA.DAS.AODP.Application.Queries.Qualifications;
+﻿using Microsoft.AspNetCore.Mvc;
+using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 using System.ComponentModel.DataAnnotations;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Models.Qualifications;
 
-public class QualificationSearchViewModel
+public class QualificationSearchViewModel : IValidatableObject
 {
     public QualificationSearchViewModel()
     {
-        Results = new List<QualificationSearchResultViewModel>();
+        Qualifications = new List<QualificationSearchResultViewModel>();
         Pagination = new PaginationViewModel();
     }
 
     [Display(Name = "Qualification title or QAN")]
-    [MinLength(5, ErrorMessage = "Qualification title or QAN must be 5 characters or more")]
+    [Required(ErrorMessage = "Enter a search term")]
     public string SearchTerm { get; set; } = string.Empty; 
-    public string QAN { get; set; } = string.Empty;
-    public string Status { get; set; } = string.Empty; 
 
     // paging
     public PaginationViewModel Pagination { get; set; }
 
-    // results
-    public List<QualificationSearchResultViewModel> Results { get; set; }
+    public List<QualificationSearchResultViewModel> Qualifications { get; set; }
 
     public DateTime? RegulatedQualificationsLastImported { get; set; }
     public DateTime? FundedQualificationsLastImported { get; set; }
 
-    public static QualificationSearchViewModel Map(GetQualificationsQueryResponse response, string searchTerm = "", string qan = "", string status = "")
+    public static QualificationSearchViewModel Map(GetQualificationsQueryResponse response, List<GetProcessStatusesQueryResponse.ProcessStatus> processStatuses, string searchTerm = "")
     {
         var vm = new QualificationSearchViewModel()
         {
             SearchTerm = searchTerm,
-            QAN = qan,
-            Status = status,
             Pagination = new PaginationViewModel(response.TotalRecords, response.Skip, response.Take),
-            Results = response.Data.Select(d => new QualificationSearchResultViewModel
+            Qualifications = response.Qualifications.Select(d => new QualificationSearchResultViewModel
             {
-                Reference = d.Reference,
-                Title = d.Title,
-                AwardingOrganisation = d.AwardingOrganisation,
-                Status = d.Status,
-                AgeGroup = d.AgeGroup
+                Qan = d.Qan,
+                QualificationName = d.QualificationName,
+                Status = processStatuses.FirstOrDefault(ps => ps.Id == d.Status)?.Name
+
             }).ToList()
         };
 
         return vm;
     }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        var term = SearchTerm?.Trim() ?? string.Empty;
+
+        if (string.IsNullOrEmpty(term))
+        {
+            yield break;
+        }
+
+        const int MinLength = 5;
+        if (term.Length < MinLength)
+        {
+            var shortBy = MinLength - term.Length;
+            yield return new ValidationResult(
+                $"Search term is {shortBy} character(s) too short.",
+                new[] { nameof(SearchTerm) }
+            );
+        }
+    }
 }
 
 public class QualificationSearchResultViewModel
 {
-    public string? Reference { get; set; }
-    public string? Title { get; set; }
-    public string? AwardingOrganisation { get; set; }
+    public string? Qan { get; set; }
+    public string? QualificationName { get; set; }
     public string? Status { get; set; }
-    public string? AgeGroup { get; set; }
 }
