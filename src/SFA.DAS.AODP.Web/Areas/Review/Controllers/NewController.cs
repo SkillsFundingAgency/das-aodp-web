@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using SFA.DAS.AODP.Application.Commands.Qualification;
+using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Authentication.DfeSignInApi.Models;
 using SFA.DAS.AODP.Models.Settings;
@@ -200,6 +201,11 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     model.MapFundedOffers(feedbackForQualificationFunding);
                     model.FundingsOffersOutcomeStatus = feedbackForQualificationFunding.Approved;
                 }
+
+                var applications = await Send(new GetApplicationsByQanQuery(model.Qual.Qan));
+                if (applications != null)
+                    model.MapApplications(applications);
+
                 return View(model);
             }
             catch (Exception ex)
