@@ -3,6 +3,8 @@ using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Http;
 using Moq;
+using SFA.DAS.AODP.Models.Common;
+using SFA.DAS.AODP.Models.Exceptions;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Helpers.File;
 using SFA.DAS.AODP.Web.Models.Import;
@@ -17,56 +19,89 @@ namespace SFA.DAS.AODP.Web.UnitTests.Helpers.File
         public MessageFileValidationServiceTests() => _sut = new(_formBuilderSettings);
 
         [Fact]
+        public void ValidateFiles_NullList_NoErrorThrown()
+        {
+            // Act
+            _sut.ValidateFiles(null);
+        }
+
+        [Fact]
+        public void ValidateFiles_EmptyList_NoErrorThrown()
+        {
+            // Arrange
+            var files = new List<IFormFile>();
+
+            // Act
+            _sut.ValidateFiles(files);
+
+        }
+
+        [Fact]
+        public void ValidateFiles_EmptyFile_ErrorThrown()
+        {
+            // Arrange
+            _formBuilderSettings.MaxUploadNumberOfFiles = 5;
+
+            var mockFile = new Mock<IFormFile>();
+            mockFile.SetupGet(f => f.Length).Returns(0);
+
+            var files = new List<IFormFile> { mockFile.Object };
+
+            // Act
+            var ex = Assert.Throws<FileUploadPolicyException>(() => _sut.ValidateFiles(files));
+
+            // Assert
+            Assert.Equal(FileUploadRejectionReason.EmptyFile, ex.Reason);
+        }
+
+        [Fact]
+        public void ValidateFiles_MixedValidAndEmpty_ErrorThrown()
+        {
+            // Arrange
+            var valid = new Mock<IFormFile>();
+            valid.SetupGet(f => f.Length).Returns(10);
+
+            var empty = new Mock<IFormFile>();
+            empty.SetupGet(f => f.Length).Returns(0);
+
+            var files = new List<IFormFile> { valid.Object, empty.Object };
+
+            // Act
+            var ex = Assert.Throws<FileUploadPolicyException>(() => _sut.ValidateFiles(files));
+
+            // Assert
+            Assert.Equal(FileUploadRejectionReason.EmptyFile, ex.Reason);
+        }
+
+        [Fact]
+        public void ValidateFiles_NullFileInList_ErrorThrown()
+        {
+            // Arrange
+            var files = new List<IFormFile> { null! };
+
+            // Act
+            var ex = Assert.Throws<FileUploadPolicyException>(() => _sut.ValidateFiles(files));
+
+            // Assert
+            Assert.Equal(FileUploadRejectionReason.MissingFile, ex.Reason);
+        }
+
+        [Fact]
         public void ValidateFiles_TooManyFiles_ErrorThrown()
         {
             // Arrange
             _formBuilderSettings.MaxUploadNumberOfFiles = 1;
-            List<IFormFile> files = [Mock.Of<IFormFile>(), Mock.Of<IFormFile>()];
+
+            var file1 = Mock.Of<IFormFile>(f => f.Length == 1);
+            var file2 = Mock.Of<IFormFile>(f => f.Length == 1);
+
+            var files = new List<IFormFile> { file1, file2 };
 
             // Act
-            var ex = Assert.Throws<Exception>(() => _sut.ValidateFiles(files));
+            var ex = Assert.Throws<FileUploadPolicyException>(() => _sut.ValidateFiles(files));
 
             // Assert
-            Assert.Equal($"Cannot upload more than {_formBuilderSettings.MaxUploadNumberOfFiles} files", ex.Message);
-        }
-
-        [Fact]
-        public void ValidateFiles_FileTooBig_ErrorThrown()
-        {
-            // Arrange
-            _formBuilderSettings.MaxUploadNumberOfFiles = 1;
-            _formBuilderSettings.MaxUploadFileSize = 1;
-            Mock<IFormFile> file = new();
-            List<IFormFile> files = [file.Object];
-
-            file.SetupGet(f => f.Length).Returns(2 * 1024 * 1024);
-
-            // Act
-            var ex = Assert.Throws<Exception>(() => _sut.ValidateFiles(files));
-
-            // Assert
-            Assert.Equal($"File size exceeds max allowed size of {_formBuilderSettings.MaxUploadFileSize}mb.", ex.Message);
-        }
-
-        [Fact]
-        public void ValidateFiles_FileWrongExtension_ErrorThrown()
-        {
-            // Arrange
-            _formBuilderSettings.MaxUploadNumberOfFiles = 1;
-            _formBuilderSettings.MaxUploadFileSize = 1;
-            _formBuilderSettings.UploadFileTypesAllowed = [".DOCX"];
-
-            Mock<IFormFile> file = new();
-            List<IFormFile> files = [file.Object];
-
-            file.SetupGet(f => f.Length).Returns(1);
-            file.SetupGet(f => f.FileName).Returns("Test.pdf"); 
-
-            // Act
-            var ex = Assert.Throws<Exception>(() => _sut.ValidateFiles(files));
-
-            // Assert
-            Assert.Equal($"File type is not included in the allowed file types: {string.Join(",", _formBuilderSettings.UploadFileTypesAllowed)}", ex.Message);
+            Assert.Equal(FileUploadRejectionReason.TooManyFiles, ex.Reason);
         }
 
         [Fact]
@@ -77,15 +112,32 @@ namespace SFA.DAS.AODP.Web.UnitTests.Helpers.File
             _formBuilderSettings.MaxUploadFileSize = 1;
             _formBuilderSettings.UploadFileTypesAllowed = [".DOCX"];
 
-            Mock<IFormFile> file = new();
-            List<IFormFile> files = [file.Object];
-
+            var file = new Mock<IFormFile>();
             file.SetupGet(f => f.Length).Returns(1);
             file.SetupGet(f => f.FileName).Returns("Test.docx");
 
-            // Act
-            _sut.ValidateFiles(files);
+            var files = new List<IFormFile> { file.Object };
 
+            // Act
+            _sut.ValidateFiles(files); 
+        }
+
+        [Fact]
+        public void ValidateFiles_ValidFile_LowerCaseExtensionAllowed_WhenConfiguredUppercase()
+        {
+            // Arrange
+            _formBuilderSettings.MaxUploadNumberOfFiles = 1;
+            _formBuilderSettings.MaxUploadFileSize = 1;
+            _formBuilderSettings.UploadFileTypesAllowed = [".DOCX"];
+
+            var file = new Mock<IFormFile>();
+            file.SetupGet(f => f.Length).Returns(1);
+            file.SetupGet(f => f.FileName).Returns("file.docx");
+
+            var files = new List<IFormFile> { file.Object };
+
+            // Act
+            _sut.ValidateFiles(files); 
         }
 
         private MessageFileValidationService CreateService(FormBuilderSettings? settings = null)
