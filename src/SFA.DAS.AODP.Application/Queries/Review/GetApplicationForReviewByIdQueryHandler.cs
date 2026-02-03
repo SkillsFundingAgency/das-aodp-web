@@ -1,6 +1,6 @@
 ﻿using MediatR;
-using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Domain.Interfaces;
+namespace SFA.DAS.AODP.Application.Queries.Review;
 
 public class GetApplicationForReviewByIdQueryHandler : IRequestHandler<GetApplicationForReviewByIdQuery, BaseMediatrResponse<GetApplicationForReviewByIdQueryResponse>>
 {

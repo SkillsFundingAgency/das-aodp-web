@@ -1,5 +1,5 @@
 ﻿@using SFA.DAS.AODP.Web.Models.Application
-@model WithdrawApplicationViewModel 
+@model WithdrawApplicationViewModel
 
 @{
     ViewData["Title"] = "Withdraw application";
@@ -32,7 +32,7 @@
                             Continue
                         </button>
                     </form>
-                    <a class="govuk-link govuk-link--inverse" 
+                    <a class="govuk-link govuk-link--inverse"
                        asp-action="ViewApplication" asp-controller="Applications"
                        asp-route-organisationId="@Model.OrganisationId"
                        asp-route-applicationId="@Model.ApplicationId"

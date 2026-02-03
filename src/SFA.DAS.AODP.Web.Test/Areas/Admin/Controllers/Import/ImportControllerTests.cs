@@ -1,13 +1,16 @@
 ﻿using AutoFixture;
 using AutoFixture.AutoMoq;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.Import;
 using SFA.DAS.AODP.Application.Queries.Import;
+using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Web.Areas.Admin.Controllers;
+using SFA.DAS.AODP.Web.Areas.Admin.Models;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Import;
@@ -20,6 +23,7 @@ public class ImportControllerTests
     private readonly Mock<ILogger<ImportController>> _loggerMock;
     private readonly Mock<IMediator> _mediatorMock;
     private readonly Mock<IUserHelperService> _userHelpService;
+    private readonly Mock<IFileService> _fileService;
     private readonly ImportController _controller;
 
     public ImportControllerTests()
@@ -28,7 +32,8 @@ public class ImportControllerTests
         _loggerMock = _fixture.Freeze<Mock<ILogger<ImportController>>>();
         _mediatorMock = _fixture.Freeze<Mock<IMediator>>();
         _userHelpService = _fixture.Freeze<Mock<IUserHelperService>>();
-        _controller = new ImportController(_loggerMock.Object, _mediatorMock.Object, _userHelpService.Object);
+        _fileService = _fixture.Freeze<Mock<IFileService>>();
+        _controller = new ImportController(_loggerMock.Object, _mediatorMock.Object, _userHelpService.Object, _fileService.Object);
     }
 
     [Fact]
@@ -321,5 +326,93 @@ public class ImportControllerTests
         Assert.Equal(currentRun.User, model.UserName);
         Assert.Equal(currentRun.Status, model.Status);
         Assert.Equal(currentRun.EndTime, model.CompletedTime);
+    }
+
+    [Fact]
+    public void Pldns_Get_ReturnsUploadViewAndSetsViewBag()
+    {
+        // Act
+        var result = _controller.Pldns();
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.Equal("UploadImportFile", viewResult.ViewName);
+        Assert.Equal("Import policy last date for new starters (PLDNS) data", _controller.ViewBag.PageTitle);
+        Assert.Equal("Pldns", _controller.ViewBag.FormAction);
+    }
+
+    [Fact]
+    public async Task Pldns_Post_UploadsFile_ThenRedirectsToConfirmImportSelection()
+    {
+        // Arrange
+        var userName = "TestUser";
+        _userHelpService.Setup(s => s.GetUserDisplayName()).Returns(userName);
+
+        var mockFile = new Mock<IFormFile>();
+        var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+        mockFile.Setup(f => f.ContentType).Returns(contentType);
+        mockFile.Setup(f => f.FileName).Returns("Pldns.xlsx");
+        var stream = new MemoryStream(new byte[] { 1, 2, 3 });
+        mockFile.Setup(f => f.OpenReadStream()).Returns(stream);
+
+        var model = _fixture.Build<UploadImportFileViewModel>()
+                            .With(m => m.File, mockFile.Object)
+                            .Create();
+
+        _fileService.Setup(f => f.UploadXlsxFileAsync(JobNames.Pldns.ToString(), "Pldns.xlsx", It.IsAny<Stream>(), contentType, userName))
+                    .Returns(Task.CompletedTask)
+                    .Verifiable();
+
+        // Act
+        var result = await _controller.Pldns(model);
+
+        // Assert
+        _fileService.Verify();
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal("ConfirmImportSelection", redirect.ActionName);
+    }
+
+    [Fact]
+    public void DefundingList_Get_ReturnsUploadViewAndSetsViewBag()
+    {
+        // Act
+        var result = _controller.DefundingList();
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.Equal("UploadImportFile", viewResult.ViewName);
+        Assert.Equal("Import Defunding List", _controller.ViewBag.PageTitle);
+        Assert.Equal("DefundingList", _controller.ViewBag.FormAction);
+    }
+
+    [Fact]
+    public async Task DefundingList_Post_UploadsFile_ThenRedirectsToConfirmImportSelection()
+    {
+        // Arrange
+        var userName = "TestUser";
+        _userHelpService.Setup(s => s.GetUserDisplayName()).Returns(userName);
+
+        var mockFile = new Mock<IFormFile>();
+        var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+        mockFile.Setup(f => f.ContentType).Returns(contentType);
+        mockFile.Setup(f => f.FileName).Returns("DefundingList.xlsx");
+        var stream = new MemoryStream(new byte[] { 4, 5, 6 });
+        mockFile.Setup(f => f.OpenReadStream()).Returns(stream);
+
+        var model = _fixture.Build<UploadImportFileViewModel>()
+                            .With(m => m.File, mockFile.Object)
+                            .Create();
+
+        _fileService.Setup(f => f.UploadXlsxFileAsync(JobNames.DefundingList.ToString(), "DefundingList.xlsx", It.IsAny<Stream>(), contentType, userName))
+                    .Returns(Task.CompletedTask)
+                    .Verifiable();
+
+        // Act
+        var result = await _controller.DefundingList(model);
+
+        // Assert
+        _fileService.Verify();
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal("ConfirmImportSelection", redirect.ActionName);
     }
 }

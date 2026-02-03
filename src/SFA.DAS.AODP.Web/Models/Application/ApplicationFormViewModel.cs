@@ -15,12 +15,12 @@ namespace SFA.DAS.AODP.Web.Models.Application
         public string? QualificationNumber { get; set; }
         public DateTime? UpdatedDate { get; set; }
         public ApplicationStatus Status { get; set; }
+        public bool CanWithdraw { get; set; }
         public bool NewMessage { get; set; }
         public bool VisibleToReviewers { get; set; }
 
         public bool IsCompleted { get; set; }
         public bool IsSubmitted { get; set; }
-        public bool CanWithdraw { get; set; }
         public DateTime? SubmittedDate { get; set; }
         public string Owner { get; set; }
         public List<Section> Sections { get; set; }
@@ -50,6 +50,7 @@ namespace SFA.DAS.AODP.Web.Models.Application
                 VisibleToReviewers = statusResponse.ReviewExists,
                 Sections = new(),
                 CanWithdraw = statusResponse.Status.IsWithdrawable()
+
             };
 
             foreach (var section in formsResponse.Sections)

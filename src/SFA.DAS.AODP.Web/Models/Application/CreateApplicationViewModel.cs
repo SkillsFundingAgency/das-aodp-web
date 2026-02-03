@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using SFA.DAS.AODP.Web.Validators.Attributes;
+using System.ComponentModel.DataAnnotations;
 
 namespace SFA.DAS.AODP.Web.Models.Application
 {
@@ -15,6 +16,7 @@ namespace SFA.DAS.AODP.Web.Models.Application
         [Required(ErrorMessage = "Enter an application owner.")]
         public string Owner { get; set; }
 
+        [QualificationNumber]
         public string? QualificationNumber { get; set; }
 
     }
