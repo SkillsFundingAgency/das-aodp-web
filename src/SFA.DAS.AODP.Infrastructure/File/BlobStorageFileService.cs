@@ -207,7 +207,7 @@ namespace SFA.DAS.AODP.Infrastructure.File
                 _blobContainerClient.CreateIfNotExists();
             }
         }
-        private MalwareScanStatus TryGetScanStatus(BlobClient blobClient)
+        internal virtual MalwareScanStatus TryGetScanStatus(BlobClient blobClient)
         {
             try
             {
@@ -223,7 +223,7 @@ namespace SFA.DAS.AODP.Infrastructure.File
                 return MalwareScanStatus.Unknown;
             }
         }
-        private static MalwareScanStatus MapScanStatus(string? raw)
+        internal static MalwareScanStatus MapScanStatus(string? raw)
         {
             if (string.IsNullOrWhiteSpace(raw)) return MalwareScanStatus.Unknown;
 

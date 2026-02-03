@@ -22,4 +22,9 @@
 		<ProjectReference Include="..\SFA.DAS.AODP.Domain\SFA.DAS.AODP.Domain.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<InternalsVisibleTo Include="SFA.DAS.AODP.Infrastructure.UnitTests" />
+	</ItemGroup>
+
+
 </Project>
