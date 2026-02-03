@@ -17,7 +17,8 @@ public class CreateApplicationCommandHandler : IRequestHandler<CreateApplication
     {
         var response = new BaseMediatrResponse<CreateApplicationCommandResponse>
         {
-            Success = false
+            Success = false,
+            Value = new CreateApplicationCommandResponse()
         };
 
         try
@@ -28,6 +29,9 @@ public class CreateApplicationCommandHandler : IRequestHandler<CreateApplication
             });
 
             response.Value.Id = result.Id;
+            response.Value.IsQanValid = result.IsQanValid;
+            response.Value.QanValidationMessage = result.QanValidationMessage;
+
             response.Success = true;
         }
         catch (Exception ex)

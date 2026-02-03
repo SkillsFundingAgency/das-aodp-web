@@ -6,6 +6,8 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.Application.Application;
+using SFA.DAS.AODP.Application.Queries.Application.Form;
+using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Web.Areas.Apply.Controllers;
 using SFA.DAS.AODP.Web.Helpers.User;
@@ -27,6 +29,8 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
         private const string OrgId = "00000000-0000-0000-0000-000000000001";
         private const string UserDisplayName = "Test User";
         private const string UserEmail = "user@test.com";
+        private const string QanErrorMessage = "Bad QAN";
+        private const string ExceptionMessage = "Exception";
 
         public ApplicationsControllerTests()
         {
@@ -76,19 +80,33 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
         public async Task Create_Post_ValidModel_RedirectsToViewApplication()
         {
             var organisationId = Guid.Parse(OrgId);
+            var applicationId = Guid.NewGuid();
+            var formVersionId = Guid.NewGuid();
+
             var model = _fixture.Build<CreateApplicationViewModel>()
                 .With(m => m.Name, "Test App")
                 .With(m => m.OrganisationId, organisationId)
+                .With(m => m.FormVersionId, formVersionId)
                 .Create();
 
-            var commandResponse = _fixture.Create<BaseMediatrResponse<CreateApplicationCommandResponse>>();
+            var value = _fixture
+                .Build<CreateApplicationCommandResponse>()
+                .With(v => v.IsQanValid, true)
+                .With(v => v.Id, applicationId)
+                .Create();
+
+            var commandResponse = _fixture
+                .Build<BaseMediatrResponse<CreateApplicationCommandResponse>>()
+                .With(r => r.Value, value)
+                .Create();
+
             _mediatorMock
                 .Setup(m => m.Send(It.IsAny<CreateApplicationCommand>(), default))
                 .ReturnsAsync(commandResponse);
 
             var result = await _controller.Create(model);
 
-            
+
             Assert.Multiple(() =>
             {
                 var redirect = Assert.IsType<RedirectToActionResult>(result);
@@ -96,6 +114,10 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
                 Assert.NotNull(redirect.RouteValues);
                 Assert.Contains("organisationId", redirect.RouteValues.Keys);
                 Assert.Contains("applicationId", redirect.RouteValues.Keys);
+                Assert.Contains("formVersionId", redirect.RouteValues.Keys);
+                Assert.Equal(organisationId, redirect.RouteValues["organisationId"]);
+                Assert.Equal(applicationId, redirect.RouteValues["applicationId"]);
+                Assert.Equal(formVersionId, redirect.RouteValues["formVersionId"]);
             });
         }
 
@@ -118,6 +140,209 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
         }
 
         [Fact]
+        public async Task Create_Post_QanInvalid_ReturnsView_WithModelError()
+        {
+            var organisationId = Guid.Parse(OrgId);
+
+            var model = _fixture.Build<CreateApplicationViewModel>()
+                .With(m => m.Name, "Test App")
+                .With(m => m.OrganisationId, organisationId)
+                .With(m => m.QualificationNumber, "12345678")
+                .Create();
+
+            var value = _fixture
+                .Build<CreateApplicationCommandResponse>()
+                .With(v => v.IsQanValid, false)
+                .With(v => v.QanValidationMessage, QanErrorMessage)
+                .With(v => v.Id, Guid.NewGuid())
+                .Create();
+
+            var commandResponse = _fixture
+                .Build<BaseMediatrResponse<CreateApplicationCommandResponse>>()
+                .With(r => r.Value, value)
+                .Create();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<CreateApplicationCommand>(), default))
+                .ReturnsAsync(commandResponse);
+
+            var result = await _controller.Create(model);
+
+            var view = Assert.IsType<ViewResult>(result);
+            var returnedModel = Assert.IsAssignableFrom<CreateApplicationViewModel>(view.ViewData.Model);
+
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(model, returnedModel);
+                Assert.False(_controller.ModelState.IsValid);
+                Assert.True(_controller.ModelState.ContainsKey(nameof(model.QualificationNumber)));
+                Assert.Equal(QanErrorMessage, _controller.ModelState[nameof(model.QualificationNumber)]!.Errors.First().ErrorMessage);
+            });
+        }
+
+        [Fact]
+        public async Task Create_Post_MediatorThrows_ReturnsView()
+        {
+            var organisationId = Guid.Parse(OrgId);
+
+            var model = _fixture.Build<CreateApplicationViewModel>()
+                .With(m => m.Name, "Test App")
+                .With(m => m.OrganisationId, organisationId)
+                .Create();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<CreateApplicationCommand>(), default))
+                .ThrowsAsync(new Exception(ExceptionMessage));
+
+            var result = await _controller.Create(model);
+
+            var view = Assert.IsType<ViewResult>(result);
+            var returnedModel = Assert.IsAssignableFrom<CreateApplicationViewModel>(view.ViewData.Model);
+
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(model, returnedModel);
+            });
+        }
+
+        [Fact]
+        public async Task Edit_Post_ValidModel_RedirectsToViewApplication()
+        {
+            var organisationId = Guid.Parse(OrgId);
+            var applicationId = Guid.NewGuid();
+            var formVersionId = Guid.NewGuid();
+
+            var model = _fixture.Build<EditApplicationViewModel>()
+                .With(m => m.Name, "Test App")
+                .With(m => m.FormVersionId, formVersionId)
+                .Create();
+
+            var value = _fixture
+                .Build<EditApplicationCommandResponse>()
+                .With(v => v.IsQanValid, true)
+                .Create();
+
+            var commandResponse = _fixture
+                .Build<BaseMediatrResponse<EditApplicationCommandResponse>>()
+                .With(r => r.Value, value)
+                .Create();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<EditApplicationCommand>(), default))
+                .ReturnsAsync(commandResponse);
+
+            var result = await _controller.Edit(model, applicationId, organisationId);
+
+            Assert.Multiple(() =>
+            {
+                var redirect = Assert.IsType<RedirectToActionResult>(result);
+                Assert.Equal(nameof(ApplicationsController.ViewApplication), redirect.ActionName);
+                Assert.NotNull(redirect.RouteValues);
+                Assert.Contains("organisationId", redirect.RouteValues.Keys);
+                Assert.Contains("applicationId", redirect.RouteValues.Keys);
+                Assert.Contains("formVersionId", redirect.RouteValues.Keys);
+                Assert.Equal(organisationId, redirect.RouteValues["organisationId"]);
+                Assert.Equal(applicationId, redirect.RouteValues["applicationId"]);
+                Assert.Equal(formVersionId, redirect.RouteValues["formVersionId"]);
+            });
+        }
+
+        [Fact]
+        public async Task Edit_Post_InvalidModel_ReturnsView()
+        {
+            var organisationId = Guid.Parse(OrgId);
+            var applicationId = Guid.NewGuid();
+
+            var model = _fixture.Build<EditApplicationViewModel>()
+                .With(m => m.Name, "Test App")
+                .Create();
+
+            _controller.ModelState.AddModelError("Name", "Required");
+
+            var result = await _controller.Edit(model, applicationId, organisationId);
+
+            var view = Assert.IsType<ViewResult>(result);
+            var returnedModel = Assert.IsAssignableFrom<EditApplicationViewModel>(view.ViewData.Model);
+
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(model, returnedModel);
+                Assert.False(_controller.ModelState.IsValid);
+                Assert.Equal(organisationId, returnedModel.OrganisationId);
+                Assert.Equal(applicationId, returnedModel.ApplicationId);
+            });
+        }
+
+        [Fact]
+        public async Task Edit_Post_QanInvalid_ReturnsView_WithModelError()
+        {
+            var organisationId = Guid.Parse(OrgId);
+            var applicationId = Guid.NewGuid();
+
+            var model = _fixture.Build<EditApplicationViewModel>()
+                .With(m => m.Name, "Test App")
+                .With(m => m.QualificationNumber, "12345678")
+                .Create();
+
+            var value = _fixture
+                .Build<EditApplicationCommandResponse>()
+                .With(v => v.IsQanValid, false)
+                .With(v => v.QanValidationMessage, QanErrorMessage)
+                .Create();
+
+            var commandResponse = _fixture
+                .Build<BaseMediatrResponse<EditApplicationCommandResponse>>()
+                .With(r => r.Value, value)
+                .Create();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<EditApplicationCommand>(), default))
+                .ReturnsAsync(commandResponse);
+
+            var result = await _controller.Edit(model, applicationId, organisationId);
+
+            var view = Assert.IsType<ViewResult>(result);
+            var returnedModel = Assert.IsAssignableFrom<EditApplicationViewModel>(view.ViewData.Model);
+
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(model, returnedModel);
+                Assert.False(_controller.ModelState.IsValid);
+                Assert.Equal(organisationId, returnedModel.OrganisationId);
+                Assert.Equal(applicationId, returnedModel.ApplicationId);
+                Assert.True(_controller.ModelState.ContainsKey(nameof(model.QualificationNumber)));
+                Assert.Equal(QanErrorMessage, _controller.ModelState[nameof(model.QualificationNumber)]!.Errors.First().ErrorMessage);
+            });
+        }
+
+        [Fact]
+        public async Task Edit_Post_MediatorThrows_ReturnsView()
+        {
+            var organisationId = Guid.Parse(OrgId);
+            var applicationId = Guid.NewGuid();
+
+            var model = _fixture.Build<EditApplicationViewModel>()
+                .With(m => m.Name, "Test App")
+                .Create();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<EditApplicationCommand>(), default))
+                .ThrowsAsync(new Exception(ExceptionMessage));
+
+            var result = await _controller.Edit(model, applicationId, organisationId);
+
+            var view = Assert.IsType<ViewResult>(result);
+            var returnedModel = Assert.IsAssignableFrom<EditApplicationViewModel>(view.ViewData.Model);
+
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(model, returnedModel);
+                Assert.Equal(organisationId, returnedModel.OrganisationId);
+                Assert.Equal(applicationId, returnedModel.ApplicationId);
+            });
+        }
+
+        [Fact]
         public async Task Submit_Post_Success_RedirectsToConfirmation()
         {
             var applicationId = Guid.NewGuid();
@@ -131,7 +356,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
 
             var result = await _controller.Submit(applicationId, organisationId);
 
-            
+
             Assert.Multiple(() =>
             {
                 var redirect = Assert.IsType<RedirectToActionResult>(result);
@@ -197,5 +422,131 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
             var result = _controller.WithdrawConfirmation();
             Assert.IsType<ViewResult>(result);
         }
+
+        [Fact]
+        public async Task AvailableFormsAsync_ReturnsView_WithModel()
+        {
+            var organisationId = Guid.NewGuid();
+
+            var formsResponse = _fixture.Create<GetApplicationFormsQueryResponse>();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationFormsQuery>(), default))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationFormsQueryResponse>
+                {
+                    Success = true,
+                    Value = formsResponse
+                });
+
+            var result = await _controller.AvailableFormsAsync(organisationId);
+
+            var view = Assert.IsType<ViewResult>(result);
+            Assert.IsType<ListAvailableFormsViewModel>(view.Model);
+        }
+
+        [Fact]
+        public async Task Create_Get_ReturnsView_WithModel()
+        {
+            var organisationId = Guid.NewGuid();
+            var formVersionId = Guid.NewGuid();
+
+            var formVersion = _fixture.Create<GetFormVersionByIdQueryResponse>();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetFormVersionByIdQuery>(), default))
+                .ReturnsAsync(new BaseMediatrResponse<GetFormVersionByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = formVersion
+                });
+
+            var result = await _controller.Create(organisationId, formVersionId);
+
+            var view = Assert.IsType<ViewResult>(result);
+            var model = Assert.IsType<CreateApplicationViewModel>(view.Model);
+
+            Assert.Equal(formVersionId, model.FormVersionId);
+        }
+
+        [Fact]
+        public async Task Edit_Get_ReturnsView_WithModel()
+        {
+            var organisationId = Guid.NewGuid();
+            var applicationId = Guid.NewGuid();
+
+            var application = _fixture.Create<GetApplicationByIdQueryResponse>();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationByIdQuery>(), default))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = application
+                });
+
+            var result = await _controller.Edit(organisationId, applicationId);
+
+            var view = Assert.IsType<ViewResult>(result);
+            Assert.IsType<EditApplicationViewModel>(view.Model);
+        }
+
+        [Fact]
+        public async Task Submit_Get_ReturnsView()
+        {
+            var applicationId = Guid.NewGuid();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationByIdQuery>(), default))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = _fixture.Create<GetApplicationByIdQueryResponse>()
+                });
+
+            var result = await _controller.Submit(applicationId);
+
+            Assert.IsType<ViewResult>(result);
+        }
+
+        [Fact]
+        public async Task SubmitConfirmation_ReturnsView()
+        {
+            var applicationId = Guid.NewGuid();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationByIdQuery>(), default))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = _fixture.Create<GetApplicationByIdQueryResponse>()
+                });
+
+            var result = await _controller.SubmitConfirmation(applicationId);
+
+            Assert.IsType<ViewResult>(result);
+        }
+
+        [Fact]
+        public async Task ApplicationFormPreview_ReturnsView()
+        {
+            var organisationId = Guid.NewGuid();
+            var applicationId = Guid.NewGuid();
+            var formVersionId = Guid.NewGuid();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetFormPreviewByIdQuery>(), default))
+                .ReturnsAsync(new BaseMediatrResponse<GetFormPreviewByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = _fixture.Create<GetFormPreviewByIdQueryResponse>()
+                });
+
+            var result = await _controller.ApplicationFormPreview(organisationId, applicationId, formVersionId);
+
+            var view = Assert.IsType<ViewResult>(result);
+            Assert.IsType<ApplicationFormPreviewViewModel>(view.Model);
+        }
+
+
     }
 }
