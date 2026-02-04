@@ -19,11 +19,11 @@ public class ApplicationMessagesViewModel
         : "Leave messages, comments and recommendations to DfE or the AO applicant owner. You will be able to upload files when you are previewing the message.";
     
     [DisplayName("Message")]
-    [Required(ErrorMessage = "Enter some text in the message field.")]
+    [Required(ErrorMessage = ErrorMessages.ApplicationMessages.TextRequired)]
     public string MessageText { get; set; }
 
     [DisplayName("Message type")]
-    [Required(ErrorMessage = ErrorMessages.ApplicationMessages.TextRequired)]
+    [Required(ErrorMessage = ErrorMessages.ApplicationMessages.MessageTypeRequired)]
     public string SelectedMessageType { get; set; }
     public MessageTypeConfiguration SelectedMessageTypeConfiguration => MessageTypeConfigurationRules.GetMessageSharingSettings(SelectedMessageType);
     public string? SelectedMessageTypeDisplay => SelectedMessageTypeConfiguration.DisplayName;
