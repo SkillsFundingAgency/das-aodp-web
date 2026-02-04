@@ -66,27 +66,30 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
                 UserType = userType,
                 FormTitle = response.FormTitle,
                 ApplicationStatus = applicationStatus,
-                Reviewer1 = response.Reviewer1,
-                Reviewer2 = response.Reviewer2,
+                Reviewer1 = string.IsNullOrWhiteSpace(response.Reviewer1)
+                    ? ReviewerDropdown.Assignment.UnassignedValue
+                    : response.Reviewer1,
+                Reviewer2 = string.IsNullOrWhiteSpace(response.Reviewer2)
+                    ? ReviewerDropdown.Assignment.UnassignedValue
+                    : response.Reviewer2,
                 ReviewerOptions =
-                    new[]
-                    {
-                        new SelectListItem 
-                        { 
-                            Value = ReviewerDropdown.Assignment.UnassignedValue, 
-                            Text = ReviewerDropdown.Assignment.UnassignedText 
-                        }
-                    }
-                    .Concat(
-                        response.AvailableReviewers
-                            .OrderBy(r => r.LastName).ThenBy(r => r.FirstName)
-                            .Select(r => new SelectListItem
+                    response.AvailableReviewers
+                        .OrderBy(r => r.LastName).ThenBy(r => r.FirstName)
+                        .Select(r => new SelectListItem
+                        {
+                            Value = $"{r.FirstName} {r.LastName}",
+                            Text = $"{r.FirstName} {r.LastName}"
+                        })
+                        .Concat(new[]
+                        {
+                            new SelectListItem
                             {
-                                Value = $"{r.FirstName} {r.LastName}",
-                                Text = $"{r.FirstName} {r.LastName}"
-                            })
-                    )
-                    .ToList()
+                                Value = ReviewerDropdown.Assignment.UnassignedValue,
+                                Text  = ReviewerDropdown.Assignment.UnassignedText
+                            }
+                        })
+                        .ToList(),
+
 
             };
 

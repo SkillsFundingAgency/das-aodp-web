@@ -363,7 +363,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     SentByEmail = _userHelperService.GetUserEmail(),
                     SentByName = _userHelperService.GetUserDisplayName(),
                     ReviewerFieldName = model.ReviewerFieldName,
-                    ReviewerValue = model.ReviewerValue,
+                    ReviewerValue = string.IsNullOrWhiteSpace(model.ReviewerValue) 
+                        ? null : model.ReviewerValue,
                     UserType = _userHelperService.GetUserType().ToString()
                 });
 
