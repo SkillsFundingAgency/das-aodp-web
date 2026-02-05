@@ -4,12 +4,11 @@ using SFA.DAS.AODP.Web.Models.RelatedLinks;
 
 namespace SFA.DAS.AODP.Web.Models.Application
 {
-    public class ApplicationFormViewModel
+    public class ApplicationFormViewModel : IHasRelatedLinks
     {
         public Guid OrganisationId { get; set; }
         public Guid FormVersionId { get; set; }
         public Guid ApplicationId { get; set; }
-
         public string ApplicationName { get; set; }
         public string FormTitle { get; set; }
         public string Reference { get; set; }

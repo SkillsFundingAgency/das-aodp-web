@@ -5,7 +5,7 @@ using SFA.DAS.AODP.Web.Models.RelatedLinks;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
 {
-    public class ApplicationReviewViewModel
+    public class ApplicationReviewViewModel : IHasRelatedLinks
     {
         public UserType UserType { get; set; }
         public Guid Id { get; set; }

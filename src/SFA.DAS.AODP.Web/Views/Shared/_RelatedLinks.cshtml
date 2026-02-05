@@ -34,7 +34,7 @@
                 <li class="govuk-!-margin-bottom-1">
                     <a class="govuk-link"
                        href="@link.Url"
-                       target="_blank"
+                       target="@(string.IsNullOrWhiteSpace(link.TargetName) ? "_blank" : link.TargetName)"
                        rel="noopener noreferrer">
                         @link.Text
                         <span class="govuk-visually-hidden">(opens in new tab)</span>

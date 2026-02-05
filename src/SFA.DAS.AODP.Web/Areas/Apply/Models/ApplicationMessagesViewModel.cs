@@ -10,7 +10,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 
 namespace SFA.DAS.AODP.Web.Areas.Apply.Models;
-public class ApplicationMessagesViewModel
+public class ApplicationMessagesViewModel : IHasRelatedLinks
 {
     public Guid OrganisationId { get; set; }
     public Guid ApplicationId { get; set; }

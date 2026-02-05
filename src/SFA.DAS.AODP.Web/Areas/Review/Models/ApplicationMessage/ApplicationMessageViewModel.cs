@@ -11,7 +11,7 @@ using System.Globalization;
 namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationMessage;
 
 
-public class ApplicationMessagesViewModel
+public class ApplicationMessagesViewModel : IHasRelatedLinks
 {
     public Guid ApplicationReviewId { get; set; }
     public string Hint => (UserType == UserType.Qfau) ?
