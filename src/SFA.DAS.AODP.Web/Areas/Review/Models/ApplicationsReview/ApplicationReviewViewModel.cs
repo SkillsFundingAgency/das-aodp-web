@@ -1,4 +1,5 @@
-﻿using SFA.DAS.AODP.Models.Users;
+﻿using SFA.DAS.AODP.Models.Application;
+using SFA.DAS.AODP.Models.Users;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
 {
@@ -63,8 +64,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
 
             foreach (var feedback in response.Feedbacks)
             {
-                model.SetPageReadOnly |= (feedback.Status is "Approved" or "NotApproved")
-                                         && (feedback.LatestCommunicatedToAwardingOrganisation == true);
+                if (!model.SetPageReadOnly)
+                    model.SetPageReadOnly |= (feedback.Status is nameof(ApplicationStatus.Approved) or nameof(ApplicationStatus.NotApproved))
+                                             && (feedback.LatestCommunicatedToAwardingOrganisation == true);
 
                 model.Feedbacks.Add(new()
                 {
