@@ -294,22 +294,7 @@
             </div>
         </div>
         <div class="govuk-grid-column-one-third">
-
-            <h2 class="govuk-heading-m">Related links</h2>
-            <p class="govuk-body">
-                <a class="govuk-link" asp-action="ApplicationMessages"
-                   asp-area="Review"
-                   asp-controller="ApplicationMessages"
-                   asp-route-applicationReviewId="@Model.ApplicationReviewId">
-                    View messages
-                </a>
-            </p>
-            <p class="govuk-body">
-                <a class="govuk-link" rel="noreferrer noopener" target="_blank"
-                   asp-action="ViewApplicationReadOnlyDetails"
-                   asp-controller="ApplicationsReview"
-                   asp-route-applicationReviewId="@Model.ApplicationReviewId">View application (opens in new tab)</a>
-            </p>
+            @await Html.PartialAsync("_RelatedLinks", Model.RelatedLinks)
         </div>
     </div>
 

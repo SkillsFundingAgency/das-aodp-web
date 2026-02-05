@@ -16,6 +16,7 @@ using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Application;
+using SFA.DAS.AODP.Web.Models.RelatedLinks;
 using System.IO.Compression;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
@@ -90,7 +91,18 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             ShowNotificationIfKeyExists(UpdateKeys.SharingStatusUpdated.ToString(), ViewNotificationMessageType.Success, "The application's sharing status has been updated.");
             ShowNotificationIfKeyExists(UpdateKeys.QanUpdated.ToString(), ViewNotificationMessageType.Success, "The application's QAN has been updated.");
             ShowNotificationIfKeyExists(UpdateKeys.OwnerUpdated.ToString(), ViewNotificationMessageType.Success, "The application's owner has been updated.");
-            return View(ApplicationReviewViewModel.Map(review, userType));
+
+            var model = ApplicationReviewViewModel.Map(review, userType);
+            model.RelatedLinks = RelatedLinksBuilder.Build(
+                Url,
+                RelatedLinksPage.ReviewApplicationDetails,
+                UserType,
+                new RelatedLinksContext
+                {
+                    ApplicationReviewId = applicationReviewId
+                });
+
+            return View(model);
         }
 
         [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]

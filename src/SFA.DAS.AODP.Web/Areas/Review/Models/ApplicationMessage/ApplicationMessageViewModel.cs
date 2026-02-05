@@ -2,6 +2,7 @@
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Enums;
+using SFA.DAS.AODP.Web.Models.RelatedLinks;
 using SFA.DAS.AODP.Web.Models.TimelineComponents;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -34,6 +35,8 @@ public class ApplicationMessagesViewModel
 
     public FileUploadSetting? FileSettings { get; set; }
     public List<IFormFile> Files { get; set; } = new();
+
+    public IReadOnlyList<RelatedLink> RelatedLinks { get; set; } = [];
 
     public class MessageActions
     {

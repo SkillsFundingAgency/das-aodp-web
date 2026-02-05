@@ -4,6 +4,7 @@ using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationMessage;
 using SFA.DAS.AODP.Web.Enums;
+using SFA.DAS.AODP.Web.Models.RelatedLinks;
 using SFA.DAS.AODP.Web.Models.TimelineComponents;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
@@ -27,7 +28,7 @@ public class ApplicationMessagesViewModel
     public List<ApplicationMessageViewModel>? TimelineMessages { get; set; } = new();
     public MessageActions AdditionalActions { get; set; } = new();
     public FileUploadSetting? FileSettings { get; set; }
-
+    public IReadOnlyList<RelatedLink> RelatedLinks { get; set; } = [];
     public class MessageActions
     {
         public bool Preview { get; set; }

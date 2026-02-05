@@ -1,5 +1,6 @@
 using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Web.Extensions;
+using SFA.DAS.AODP.Web.Models.RelatedLinks;
 
 namespace SFA.DAS.AODP.Web.Models.Application
 {
@@ -24,6 +25,8 @@ namespace SFA.DAS.AODP.Web.Models.Application
         public DateTime? SubmittedDate { get; set; }
         public string Owner { get; set; }
         public List<Section> Sections { get; set; }
+
+        public IReadOnlyList<RelatedLink> RelatedLinks { get; set; } = [];
 
         public static ApplicationFormViewModel Map(GetApplicationFormByIdQueryResponse formsResponse,
             GetApplicationFormStatusByApplicationIdQueryResponse statusResponse,
@@ -50,7 +53,6 @@ namespace SFA.DAS.AODP.Web.Models.Application
                 VisibleToReviewers = statusResponse.ReviewExists,
                 Sections = new(),
                 CanWithdraw = statusResponse.Status.IsWithdrawable()
-
             };
 
             foreach (var section in formsResponse.Sections)
