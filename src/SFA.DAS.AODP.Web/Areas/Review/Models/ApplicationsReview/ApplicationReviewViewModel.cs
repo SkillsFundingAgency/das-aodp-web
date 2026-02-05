@@ -1,4 +1,5 @@
-﻿using SFA.DAS.AODP.Models.Application;
+﻿using SFA.DAS.AODP.Application.Queries.Review;
+using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Models.Users;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
@@ -24,6 +25,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
         public List<Funding> FundedOffers { get; set; } = new();
         public List<Feedback> Feedbacks { get; set; } = new();
 
+        public ApplicationStatus ApplicationStatus { get; set; }
+
         public class Feedback
         {
             public string? Owner { get; set; }
@@ -47,6 +50,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
 
         public static ApplicationReviewViewModel Map(GetApplicationForReviewByIdQueryResponse response, UserType userType)
         {
+            Enum.TryParse(response.ApplicationStatus, out ApplicationStatus applicationStatus);
             ApplicationReviewViewModel model = new()
             {
                 Id = response.Id,
@@ -60,6 +64,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
                 SharedWithSkillsEngland = response.SharedWithSkillsEngland,
                 UserType = userType,
                 FormTitle = response.FormTitle,
+                ApplicationStatus = applicationStatus,
             };
 
             foreach (var feedback in response.Feedbacks)
