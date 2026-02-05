@@ -20,7 +20,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
         public bool SharedWithOfqual { get; set; }
 
         public string FormTitle { get; set; }
-        public bool SetPageReadOnly { get; set; }
 
         public List<Funding> FundedOffers { get; set; } = new();
         public List<Feedback> Feedbacks { get; set; } = new();
@@ -69,10 +68,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
 
             foreach (var feedback in response.Feedbacks)
             {
-                if (!model.SetPageReadOnly)
-                    model.SetPageReadOnly |= (feedback.Status is nameof(ApplicationStatus.Approved) or nameof(ApplicationStatus.NotApproved))
-                                             && (feedback.LatestCommunicatedToAwardingOrganisation == true);
-
                 model.Feedbacks.Add(new()
                 {
                     Comments = feedback.Comments,

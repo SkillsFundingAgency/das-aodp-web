@@ -7,8 +7,6 @@
     ViewData["Title"] = Model.Name;
 
     var currentUserReview = Model.Feedbacks.Where(f => f.UserType == Model.UserType.ToString()).First();
-
-    var pageCaption = Model.SetPageReadOnly ? "Completed application" : "Request for funding";
 }
 
 <govuk-back-link class="govuk-link govuk-task-list__link"
@@ -39,7 +37,7 @@
         <div class="govuk-grid-row">
             <h1 class="govuk-heading-xl">
                 Application details
-                <span class="govuk-caption-l">@pageCaption</span>
+                <span class="govuk-caption-l">Request for funding</span>
             </h1>
         </div>
 
@@ -102,32 +100,25 @@
                         QAN
                     </govuk-summary-list-row-key>
                     <govuk-summary-list-row-value>
-                        @if (Model.SetPageReadOnly)
+                        @if (Model.UserType == UserType.Qfau)
                         {
-                            @Model.Qan
+                            <form asp-route-applicationReviewId="@Model.ApplicationReviewId"
+                                  asp-action="UpdateQan"
+                                  asp-Controller="ApplicationsReview" method="post"
+                                  gfa-prepend-error-summary="false">
+
+                                <div class="govuk-form-group govuk-!-margin-bottom-0">
+                                    <govuk-input asp-for="Qan" value="@Html.Encode(Model.Qan)" autocomplete="off">
+                                        <govuk-input-label class="govuk-visually-hidden">Update QAN</govuk-input-label>
+                                    </govuk-input>
+                                    <govuk-button class="govuk-button govuk-!-margin-top-1" type="submit">Update</govuk-button>
+                                </div>
+
+                            </form>
                         }
                         else
                         {
-                            if (Model.UserType == UserType.Qfau)
-                            {
-                                <form asp-route-applicationReviewId="@Model.ApplicationReviewId"
-                                      asp-action="UpdateQan"
-                                      asp-Controller="ApplicationsReview" method="post"
-                                      gfa-prepend-error-summary="false">
-
-                                    <div class="govuk-form-group govuk-!-margin-bottom-0">
-                                        <govuk-input asp-for="Qan" value="@Html.Encode(Model.Qan)" autocomplete="off">
-                                            <govuk-input-label class="govuk-visually-hidden">Update QAN</govuk-input-label>
-                                        </govuk-input>
-                                        <govuk-button class="govuk-button govuk-!-margin-top-1" type="submit">Update</govuk-button>
-                                    </div>
-
-                                </form>
-                            }
-                            else
-                            {
-                                @Model.Qan
-                            }
+                            @Model.Qan
                         }
                     </govuk-summary-list-row-value>
                 </govuk-summary-list-row>
@@ -137,26 +128,19 @@
                         Assigned to
                     </govuk-summary-list-row-key>
                     <govuk-summary-list-row-value>
-                        @if (Model.SetPageReadOnly)
-                        {
-                            @(!string.IsNullOrWhiteSpace(currentUserReview.Owner) ? currentUserReview.Owner : "In review")
-                        }
-                        else
-                        {
-                            <form asp-route-applicationReviewId="@Model.ApplicationReviewId"
-                                  asp-action="UpdateOwner"
-                                  asp-Controller="ApplicationsReview" method="post"
-                                  gfa-prepend-error-summary="false">
+                        <form asp-route-applicationReviewId="@Model.ApplicationReviewId"
+                              asp-action="UpdateOwner"
+                              asp-Controller="ApplicationsReview" method="post"
+                              gfa-prepend-error-summary="false">
 
-                                <div class="govuk-form-group govuk-!-margin-bottom-0">
-                                    <govuk-input asp-for="@currentUserReview.Owner" value="@Html.Encode(currentUserReview.Owner)" name="Owner" autocomplete="off">
-                                        <govuk-input-label class="govuk-visually-hidden">Update owner</govuk-input-label>
-                                    </govuk-input>
-                                    <govuk-button class="govuk-button govuk-!-margin-top-1" type="submit">Update</govuk-button>
-                                </div>
+                            <div class="govuk-form-group govuk-!-margin-bottom-0">
+                                <govuk-input asp-for="@currentUserReview.Owner" value="@Html.Encode(currentUserReview.Owner)" name="Owner" autocomplete="off">
+                                    <govuk-input-label class="govuk-visually-hidden">Update owner</govuk-input-label>
+                                </govuk-input>
+                                <govuk-button class="govuk-button govuk-!-margin-top-1" type="submit">Update</govuk-button>
+                            </div>
 
-                            </form>
-                        }
+                        </form>
                     </govuk-summary-list-row-value>
                 </govuk-summary-list-row>
 
@@ -191,137 +175,136 @@
                     </govuk-summary-list-row>
                 }
             </govuk-summary-list>
+            </<div>
+
+                @if (Model.UserType == SFA.DAS.AODP.Models.Users.UserType.Qfau)
+                {
+                    <div class="govuk-grid-row">
+                        <h2 class="govuk-heading-m">DfE funding review</h2>
+                        <p class="govuk-body">Review application, make decision on approval and funding options.</p>
+
+                        @if (currentUserReview.Status == ApplicationStatus.Approved.ToString() || currentUserReview.Status == ApplicationStatus.NotApproved.ToString())
+                        {
+                            <a class="govuk-button" asp-action="QfauFundingReviewSummary" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId">
+                                DfE funding review
+                            </a>
+                        }
+                        else
+                        {
+                            <a class="govuk-button" asp-action="QfauFundingReviewOutcome" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId">
+                                DfE funding review
+                            </a>
+                        }
+
+                    </div>
+
+
+                    <div class="govuk-grid-row">
+                        <h2 class="govuk-heading-m">Skills England review</h2>
+
+                        @{
+                            var seMessage = $"{(!Model.SharedWithSkillsEngland ? "Share with Skills England" : "Unshare with Skills England")}";
+                        }
+                        @{
+                            await RenderSkillsEnglandReview();
+                        }
+
+                        <a class="govuk-button govuk-button--secondary" asp-action="ShareApplicationConfirmation"
+                           asp-controller="ApplicationsReview"
+                           asp-route-applicationReviewId="@Model.ApplicationReviewId"
+                           asp-route-share="@(!Model.SharedWithSkillsEngland)"
+                           asp-route-userType="@UserType.SkillsEngland">
+                            @seMessage
+                        </a>
+
+                    </div>
+
+                    <div class="govuk-grid-row">
+                        <h2 class="govuk-heading-m">Ofqual review</h2>
+
+                        @{
+                            var ofqualMessage = $"{(!Model.SharedWithOfqual ? "Share with Ofqual" : "Unshare with Ofqual")}";
+                        }
+                        @{
+                            await RenderOfqualReview();
+                        }
+                        <a class="govuk-button govuk-button--secondary" asp-action="ShareApplicationConfirmation"
+                           asp-controller="ApplicationsReview"
+                           asp-route-applicationReviewId="@Model.ApplicationReviewId"
+                           asp-route-share="@(!Model.SharedWithOfqual)"
+                           asp-route-userType="@UserType.Ofqual">
+                            @ofqualMessage
+                        </a>
+
+                    </div>
+
+                    <div class="govuk-grid-row">
+                        <h2 class="govuk-heading-m">Application funding decision</h2>
+                        <p class="govuk-body">Inform the AO of the decision regarding approval and funding options.</p>
+
+                        <a class="govuk-button" asp-action="QfauFundingReviewDecision" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId">
+                            Application funding decision
+                        </a>
+                    </div>
+
+                }
+
+                @if (Model.UserType == SFA.DAS.AODP.Models.Users.UserType.Ofqual)
+                {
+                    <div class="govuk-grid-row">
+                        <h2 class="govuk-heading-m">Ofqual review</h2>
+                        @{
+                            await RenderOfqualReview();
+                        }
+
+                        <a class="govuk-button" asp-action="OfqualReview"
+                           asp-controller="ApplicationsReview"
+                           asp-route-applicationReviewId="@Model.ApplicationReviewId">
+                            Review
+                        </a>
+
+                    </div>
+                }
+
+                @if (Model.UserType == SFA.DAS.AODP.Models.Users.UserType.SkillsEngland)
+                {
+                    <div class="govuk-grid-row">
+                        <h2 class="govuk-heading-m">Skills England review</h2>
+
+                        @{
+                            await RenderSkillsEnglandReview();
+                        }
+
+                        <a class="govuk-button" asp-action="SkillsEnglandReview"
+                           asp-controller="ApplicationsReview"
+                           asp-route-applicationReviewId="@Model.ApplicationReviewId">
+                            Review
+                        </a>
+
+                    </div>
+                }
+            </div>
         </div>
+        <div class="govuk-grid-column-one-third">
 
-        @* Actions are hidden when page is read-only *@
-        @if (!Model.SetPageReadOnly)
-        {
-            @if (Model.UserType == SFA.DAS.AODP.Models.Users.UserType.Qfau)
-            {
-                <div class="govuk-grid-row">
-                    <h2 class="govuk-heading-m">DfE funding review</h2>
-                    <p class="govuk-body">Review application, make decision on approval and funding options.</p>
-
-                    @if (currentUserReview.Status == ApplicationStatus.Approved.ToString() || currentUserReview.Status == ApplicationStatus.NotApproved.ToString())
-                    {
-                        <a class="govuk-button" asp-action="QfauFundingReviewSummary" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId">
-                            DfE funding review
-                        </a>
-                    }
-                    else
-                    {
-                        <a class="govuk-button" asp-action="QfauFundingReviewOutcome" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId">
-                            DfE funding review
-                        </a>
-                    }
-
-                </div>
-
-
-                <div class="govuk-grid-row">
-                    <h2 class="govuk-heading-m">Skills England review</h2>
-
-                    @{
-                        var seMessage = $"{(!Model.SharedWithSkillsEngland ? "Share with Skills England" : "Unshare with Skills England")}";
-                    }
-                    @{
-                        await RenderSkillsEnglandReview();
-                    }
-
-                    <a class="govuk-button govuk-button--secondary" asp-action="ShareApplicationConfirmation"
-                       asp-controller="ApplicationsReview"
-                       asp-route-applicationReviewId="@Model.ApplicationReviewId"
-                       asp-route-share="@(!Model.SharedWithSkillsEngland)"
-                       asp-route-userType="@UserType.SkillsEngland">
-                        @seMessage
-                    </a>
-
-                </div>
-
-                <div class="govuk-grid-row">
-                    <h2 class="govuk-heading-m">Ofqual review</h2>
-
-                    @{
-                        var ofqualMessage = $"{(!Model.SharedWithOfqual ? "Share with Ofqual" : "Unshare with Ofqual")}";
-                    }
-                    @{
-                        await RenderOfqualReview();
-                    }
-                    <a class="govuk-button govuk-button--secondary" asp-action="ShareApplicationConfirmation"
-                       asp-controller="ApplicationsReview"
-                       asp-route-applicationReviewId="@Model.ApplicationReviewId"
-                       asp-route-share="@(!Model.SharedWithOfqual)"
-                       asp-route-userType="@UserType.Ofqual">
-                        @ofqualMessage
-                    </a>
-
-                </div>
-
-                <div class="govuk-grid-row">
-                    <h2 class="govuk-heading-m">Application funding decision</h2>
-                    <p class="govuk-body">Inform the AO of the decision regarding approval and funding options.</p>
-
-                    <a class="govuk-button" asp-action="QfauFundingReviewDecision" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId">
-                        Application funding decision
-                    </a>
-                </div>
-
-            }
-
-            @if (Model.UserType == SFA.DAS.AODP.Models.Users.UserType.Ofqual)
-            {
-                <div class="govuk-grid-row">
-                    <h2 class="govuk-heading-m">Ofqual review</h2>
-                    @{
-                        await RenderOfqualReview();
-                    }
-
-                    <a class="govuk-button" asp-action="OfqualReview"
-                       asp-controller="ApplicationsReview"
-                       asp-route-applicationReviewId="@Model.ApplicationReviewId">
-                        Review
-                    </a>
-
-                </div>
-            }
-
-            @if (Model.UserType == SFA.DAS.AODP.Models.Users.UserType.SkillsEngland)
-            {
-                <div class="govuk-grid-row">
-                    <h2 class="govuk-heading-m">Skills England review</h2>
-
-                    @{
-                        await RenderSkillsEnglandReview();
-                    }
-
-                    <a class="govuk-button" asp-action="SkillsEnglandReview"
-                       asp-controller="ApplicationsReview"
-                       asp-route-applicationReviewId="@Model.ApplicationReviewId">
-                        Review
-                    </a>
-
-                </div>
-            }
-        }
+            <h2 class="govuk-heading-m">Related links</h2>
+            <p class="govuk-body">
+                <a class="govuk-link" asp-action="ApplicationMessages"
+                   asp-area="Review"
+                   asp-controller="ApplicationMessages"
+                   asp-route-applicationReviewId="@Model.ApplicationReviewId">
+                    View messages
+                </a>
+            </p>
+            <p class="govuk-body">
+                <a class="govuk-link" rel="noreferrer noopener" target="_blank"
+                   asp-action="ViewApplicationReadOnlyDetails"
+                   asp-controller="ApplicationsReview"
+                   asp-route-applicationReviewId="@Model.ApplicationReviewId">View application (opens in new tab)</a>
+            </p>
+        </div>
     </div>
-    <div class="govuk-grid-column-one-third">
 
-        <h2 class="govuk-heading-m">Related links</h2>
-        <p class="govuk-body">
-            <a class="govuk-link" asp-action="ApplicationMessages"
-               asp-area="Review"
-               asp-controller="ApplicationMessages"
-               asp-route-applicationReviewId="@Model.ApplicationReviewId">
-                View messages
-            </a>
-        </p>
-        <p class="govuk-body">
-            <a class="govuk-link" rel="noreferrer noopener" target="_blank"
-               asp-action="ViewApplicationReadOnlyDetails"
-               asp-controller="ApplicationsReview"
-               asp-route-applicationReviewId="@Model.ApplicationReviewId">View application (opens in new tab)</a>
-        </p>
-    </div>
 </div>
 
 @{
