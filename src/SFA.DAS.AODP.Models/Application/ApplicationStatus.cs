@@ -10,7 +10,7 @@ public static class ApplicationStatusDisplay
 {
     public static Dictionary<ApplicationStatus, string> Dictionary { get; } = new()
     {
-        {ApplicationStatus.NewMessage, "New message" },
+        { ApplicationStatus.NewMessage, "New message" },
         { ApplicationStatus.Draft, "Draft" },
         { ApplicationStatus.InReview, "In review" },
         { ApplicationStatus.Approved, "Approved" },

@@ -6,6 +6,8 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.Application.Application;
+using SFA.DAS.AODP.Application.Queries.Application.Form;
+using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Web.Areas.Apply.Controllers;
 using SFA.DAS.AODP.Web.Helpers.User;
@@ -104,7 +106,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
 
             var result = await _controller.Create(model);
 
-            
+
             Assert.Multiple(() =>
             {
                 var redirect = Assert.IsType<RedirectToActionResult>(result);
@@ -354,7 +356,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
 
             var result = await _controller.Submit(applicationId, organisationId);
 
-            
+
             Assert.Multiple(() =>
             {
                 var redirect = Assert.IsType<RedirectToActionResult>(result);
@@ -420,5 +422,131 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
             var result = _controller.WithdrawConfirmation();
             Assert.IsType<ViewResult>(result);
         }
+
+        [Fact]
+        public async Task AvailableFormsAsync_ReturnsView_WithModel()
+        {
+            var organisationId = Guid.NewGuid();
+
+            var formsResponse = _fixture.Create<GetApplicationFormsQueryResponse>();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationFormsQuery>(), default))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationFormsQueryResponse>
+                {
+                    Success = true,
+                    Value = formsResponse
+                });
+
+            var result = await _controller.AvailableFormsAsync(organisationId);
+
+            var view = Assert.IsType<ViewResult>(result);
+            Assert.IsType<ListAvailableFormsViewModel>(view.Model);
+        }
+
+        [Fact]
+        public async Task Create_Get_ReturnsView_WithModel()
+        {
+            var organisationId = Guid.NewGuid();
+            var formVersionId = Guid.NewGuid();
+
+            var formVersion = _fixture.Create<GetFormVersionByIdQueryResponse>();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetFormVersionByIdQuery>(), default))
+                .ReturnsAsync(new BaseMediatrResponse<GetFormVersionByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = formVersion
+                });
+
+            var result = await _controller.Create(organisationId, formVersionId);
+
+            var view = Assert.IsType<ViewResult>(result);
+            var model = Assert.IsType<CreateApplicationViewModel>(view.Model);
+
+            Assert.Equal(formVersionId, model.FormVersionId);
+        }
+
+        [Fact]
+        public async Task Edit_Get_ReturnsView_WithModel()
+        {
+            var organisationId = Guid.NewGuid();
+            var applicationId = Guid.NewGuid();
+
+            var application = _fixture.Create<GetApplicationByIdQueryResponse>();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationByIdQuery>(), default))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = application
+                });
+
+            var result = await _controller.Edit(organisationId, applicationId);
+
+            var view = Assert.IsType<ViewResult>(result);
+            Assert.IsType<EditApplicationViewModel>(view.Model);
+        }
+
+        [Fact]
+        public async Task Submit_Get_ReturnsView()
+        {
+            var applicationId = Guid.NewGuid();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationByIdQuery>(), default))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = _fixture.Create<GetApplicationByIdQueryResponse>()
+                });
+
+            var result = await _controller.Submit(applicationId);
+
+            Assert.IsType<ViewResult>(result);
+        }
+
+        [Fact]
+        public async Task SubmitConfirmation_ReturnsView()
+        {
+            var applicationId = Guid.NewGuid();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationByIdQuery>(), default))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = _fixture.Create<GetApplicationByIdQueryResponse>()
+                });
+
+            var result = await _controller.SubmitConfirmation(applicationId);
+
+            Assert.IsType<ViewResult>(result);
+        }
+
+        [Fact]
+        public async Task ApplicationFormPreview_ReturnsView()
+        {
+            var organisationId = Guid.NewGuid();
+            var applicationId = Guid.NewGuid();
+            var formVersionId = Guid.NewGuid();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetFormPreviewByIdQuery>(), default))
+                .ReturnsAsync(new BaseMediatrResponse<GetFormPreviewByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = _fixture.Create<GetFormPreviewByIdQueryResponse>()
+                });
+
+            var result = await _controller.ApplicationFormPreview(organisationId, applicationId, formVersionId);
+
+            var view = Assert.IsType<ViewResult>(result);
+            Assert.IsType<ApplicationFormPreviewViewModel>(view.Model);
+        }
+
+
     }
 }

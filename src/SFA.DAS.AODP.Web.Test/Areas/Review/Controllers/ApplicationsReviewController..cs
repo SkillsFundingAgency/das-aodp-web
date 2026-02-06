@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using SFA.DAS.AODP.Application;
+using SFA.DAS.AODP.Application.Queries.Review;
 using SFA.DAS.AODP.Application.Queries.Users;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Application;

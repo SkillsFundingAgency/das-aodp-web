@@ -107,6 +107,11 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
             {
                 var response = await Send(request);
 
+                if (response is null)
+                {
+                    throw new InvalidOperationException("Unexpected null response from mediator.");
+                }
+
                 if (response?.IsQanValid == false)
                 {
                     ModelState.AddModelError(nameof(createApplicationViewModel.QualificationNumber),

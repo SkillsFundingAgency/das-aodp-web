@@ -3,11 +3,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.Import;
 using SFA.DAS.AODP.Application.Queries.Import;
+using SFA.DAS.AODP.Infrastructure.File;
+using SFA.DAS.AODP.Web.Areas.Admin.Models;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Import;
-using System.Reflection;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
@@ -17,11 +18,15 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
     public class ImportController : ControllerBase
     {
         private readonly IUserHelperService _userHelperService;
+        private readonly IFileService _fileService;
         public enum SendKeys { RequestFailed, JobStatusFailed }
+        private const string UploadImportListViewPath = "UploadImportFile";
+        private const string ConfirmImportSelectionAction = nameof(ConfirmImportSelection);
 
-        public ImportController(ILogger<ImportController> logger, IMediator mediator, IUserHelperService userHelperService) : base(mediator, logger)
+        public ImportController(ILogger<ImportController> logger, IMediator mediator, IUserHelperService userHelperService, IFileService fileService) : base(mediator, logger)
         {
             _userHelperService = userHelperService;
+            _fileService = fileService;
         }
 
         [HttpGet]
@@ -41,7 +46,19 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
                 return View("Index", viewModel);
             }
 
-            return RedirectToAction("ConfirmImportSelection", viewModel);
+            if (!string.IsNullOrWhiteSpace(viewModel?.ImportType) &&
+                string.Equals(viewModel.ImportType.Trim(), "Pldns", StringComparison.OrdinalIgnoreCase))
+            {
+                return RedirectToAction("Pldns");
+            }
+
+            if (!string.IsNullOrWhiteSpace(viewModel?.ImportType) &&
+                string.Equals(viewModel.ImportType.Trim(), "Defunding list", StringComparison.OrdinalIgnoreCase))
+            {
+                return RedirectToAction("DefundingList");
+            }
+
+            return RedirectToAction(ConfirmImportSelectionAction, viewModel);
         }
 
         [HttpGet]
@@ -58,7 +75,7 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return View("ConfirmImportSelection", viewModel);
+                return View(ConfirmImportSelectionAction, viewModel);
             }
 
             var timeSubmitted = DateTime.Now;
@@ -68,6 +85,8 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
             {
                 case "Regulated Qualifications": jobName = JobNames.RegulatedQualifications.ToString(); break;
                 case "Funded Qualifications": jobName = JobNames.FundedQualifications.ToString(); break;
+                case "Pldns": jobName = JobNames.Pldns.ToString(); break;
+                case "DefundingList": jobName = JobNames.DefundingList.ToString(); break;
                 default: break;
             }
 
@@ -97,7 +116,7 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
                 {
                     LogException(ex);
                     TempData[SendKeys.RequestFailed.ToString()] = true;
-                    return RedirectToAction("ConfirmImportSelection", new ImportRequestViewModel() { ImportType = viewModel.ImportType });
+                    return RedirectToAction(ConfirmImportSelectionAction, new ImportRequestViewModel() { ImportType = viewModel.ImportType });
                 }
             }
 
@@ -213,6 +232,92 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
             }
 
             return View(viewModel);
+        }
+
+
+        [HttpGet]
+        [Route("/admin/import/pldns")]
+        public IActionResult Pldns()
+        {
+            ViewBag.PageTitle = "Import policy last date for new starters (PLDNS) data";
+            ViewBag.FormAction = "Pldns";
+            return View(UploadImportListViewPath);
+        }
+
+        [HttpPost]
+        [Route("/admin/import/pldns")]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = RoleConstants.QFAUImport)]
+        public async Task<IActionResult> Pldns([FromForm] UploadImportFileViewModel model)
+        {
+            ViewBag.PageTitle = "Import policy last date for new starters (PLDNS) data";
+            ViewBag.FormAction = "Pldns";
+            if (!ModelState.IsValid)
+            {
+                return View(UploadImportListViewPath, model);
+            }
+
+            try
+            {
+                var folderName = JobNames.Pldns.ToString();
+                var contentType = model.File.ContentType;
+                var fileNamePrefix = _userHelperService.GetUserDisplayName() ?? string.Empty;
+
+                using var stream = model.File.OpenReadStream();
+                await _fileService.UploadXlsxFileAsync(folderName, "Pldns.xlsx", stream, contentType, fileNamePrefix);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return View(UploadImportListViewPath, model);
+            }
+
+            var viewModel = new ImportRequestViewModel() { ImportType = JobNames.Pldns.ToString() };
+            return RedirectToAction(ConfirmImportSelectionAction, viewModel);
+        }
+
+        [HttpGet]
+        [Route("/admin/import/defunding-list")]
+        public IActionResult DefundingList()
+        {
+            ViewBag.PageTitle = "Import Defunding List";
+            ViewBag.FormAction = "DefundingList";
+            return View(UploadImportListViewPath);
+        }
+
+        [HttpPost]
+        [Route("/admin/import/defunding-list")]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = RoleConstants.QFAUImport)]
+        public async Task<IActionResult> DefundingList([FromForm] UploadImportFileViewModel model)
+        {
+            ViewBag.PageTitle = "Import Defunding List";
+            ViewBag.FormAction = "DefundingList";
+
+            if (!ModelState.IsValid)
+            {
+                return View(UploadImportListViewPath, model);
+            }
+
+            try
+            {
+                var folderName = JobNames.DefundingList.ToString();
+                var contentType = model.File.ContentType;
+                var fileNamePrefix = _userHelperService.GetUserDisplayName() ?? string.Empty;
+
+                using var stream = model.File.OpenReadStream();
+                await _fileService.UploadXlsxFileAsync(folderName, "DefundingList.xlsx", stream, contentType, fileNamePrefix);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return View(UploadImportListViewPath, model);
+            }
+
+            var viewModel = new ImportRequestViewModel() { ImportType = JobNames.DefundingList.ToString() };
+            return RedirectToAction(ConfirmImportSelectionAction, viewModel);
         }
     }
 }
