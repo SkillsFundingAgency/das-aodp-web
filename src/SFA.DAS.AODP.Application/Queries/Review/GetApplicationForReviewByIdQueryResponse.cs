@@ -1,4 +1,5 @@
 ﻿namespace SFA.DAS.AODP.Application.Queries.Review;
+using SFA.DAS.AODP.Models.Users;
 public class GetApplicationForReviewByIdQueryResponse
 {
 public Guid Id { get; set; }
@@ -15,20 +16,22 @@ public bool SharedWithOfqual { get; set; }
 
 public string FormTitle { get; set; }
 
-public string ApplicationStatus { get; set; }
+    public string ApplicationStatus { get; set; }
 
-public List<Funding> FundedOffers { get; set; } = new();
-public List<Feedback> Feedbacks { get; set; } = new();
-
-public class Feedback
-{
-    public string? Owner { get; set; }
-    public string Status { get; set; }
-    public bool NewMessage { get; set; }
-    public string UserType { get; set; }
-    public string? Comments { get; set; }
-    public bool LatestCommunicatedToAwardingOrganisation { get; set; }
-}
+    public List<Funding> FundedOffers { get; set; } = new();
+    public List<Feedback> Feedbacks { get; set; } = new();
+    public string? Reviewer1 { get; set; }
+    public string? Reviewer2 { get; set; }
+    public List<UserOption> AvailableReviewers { get; set; } = new();
+    public class Feedback
+    {
+        public string? Owner { get; set; }
+        public string Status { get; set; }
+        public bool NewMessage { get; set; }
+        public string UserType { get; set; }
+        public string? Comments { get; set; }
+        public bool LatestCommunicatedToAwardingOrganisation { get; set; }
+    }
 
 public class Funding
 {
