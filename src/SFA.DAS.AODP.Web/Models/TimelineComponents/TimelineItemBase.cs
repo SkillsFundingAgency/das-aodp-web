@@ -18,5 +18,7 @@ public abstract class TimelineItemBase
         public required string FileDisplayName { get; init; }
         public required string FullPath { get; init; }
         public required string FormUrl { get; init; }
+        public bool CanDownload { get; set; }
+        public required string StatusText { get; set; } 
     }
 }

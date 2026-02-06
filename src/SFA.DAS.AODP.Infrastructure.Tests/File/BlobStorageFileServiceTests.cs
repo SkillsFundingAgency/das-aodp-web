@@ -5,6 +5,7 @@ using Azure.Storage.Blobs.Models;
 using Microsoft.Extensions.Options;
 using Moq;
 using SFA.DAS.AODP.Infrastructure.File;
+using SFA.DAS.AODP.Infrastructure.UnitTests.TestHelpers;
 using SFA.DAS.AODP.Models.Settings;
 
 namespace SFA.DAS.AODP.Infrastructure.UnitTests.File
@@ -13,18 +14,24 @@ namespace SFA.DAS.AODP.Infrastructure.UnitTests.File
     {
         private readonly Fixture _fixture = new();
         private readonly BlobStorageSettings _blobStorageSettings;
+        private readonly FormBuilderSettings _formBuilderSettings;
         private readonly Mock<BlobServiceClient> _blobServiceClient = new();
         private BlobStorageFileService _sut;
 
         public BlobStorageFileServiceTests()
         {
             _blobStorageSettings = _fixture.Create<BlobStorageSettings>();
+            _formBuilderSettings = _formBuilderSettings = new FormBuilderSettings
+            {
+                MaxUploadFileSize = 10,
+                UploadFileTypesAllowed = new List<string> { ".docx" }
+            };
             var importBlobStorageSettings = _fixture.Create<ImportBlobStorageSettings>();
             var clientFactoryMock = new Mock<Microsoft.Extensions.Azure.IAzureClientFactory<BlobServiceClient>>();
             clientFactoryMock
                 .Setup(f => f.CreateClient(It.IsAny<string>()))
                 .Returns(_blobServiceClient.Object);
-            _sut = new(_blobServiceClient.Object, clientFactoryMock.Object, Options.Create(_blobStorageSettings), Options.Create(importBlobStorageSettings));
+            _sut = new(_blobServiceClient.Object, clientFactoryMock.Object, Options.Create(_blobStorageSettings), Options.Create(importBlobStorageSettings), _formBuilderSettings);
         }
 
         [Fact]
@@ -106,49 +113,43 @@ namespace SFA.DAS.AODP.Infrastructure.UnitTests.File
             ), Times.Once());
         }
 
-
-
         [Fact]
         public async Task ListBlobs_ReturnsFiles()
         {
-            // Arrange
             string folderName = _fixture.Create<string>();
             string fileName = "Test.docx";
             string extension = ".docx";
             string fileNamePrefix = _fixture.Create<string>();
 
-            var responseMock = new Mock<Response>();
-
-            Mock<BlobContainerClient> blobContainerClient = new();
-            Mock<BlobClient> blobClient = new();
-
-            var blobItem = BlobsModelFactory.BlobItem(name: fileName);
-
-            var blobItemProperties = BlobsModelFactory.BlobProperties(metadata: new Dictionary<string, string>()
-            {
-                { BlobStorageFileService.FileNameMetadataKey, fileName },
-                { BlobStorageFileService.FileExtensionsMetadataKey, Path.GetExtension(fileName) },
-                { BlobStorageFileService.FilePrefixMetadataKey, fileNamePrefix }
-            });
-
+            var blobItem = BlobsModelFactory.BlobItem(
+                name: fileName,
+                metadata: new Dictionary<string, string>
+                {
+                    { BlobStorageFileService.FileNameMetadataKey, fileName },
+                    { BlobStorageFileService.FileExtensionsMetadataKey, extension },
+                    { BlobStorageFileService.FilePrefixMetadataKey, fileNamePrefix }
+                });
 
             var page = Page<BlobItem>.FromValues(
-            [
-                blobItem
-            ], continuationToken: null, new Mock<Response>().Object);
+                [blobItem],
+                continuationToken: null,
+                new Mock<Response>().Object);
+
             var pages = Pageable<BlobItem>.FromPages([page]);
 
-            _blobServiceClient.Setup(b => b.GetBlobContainerClient(_blobStorageSettings.FileUploadContainerName)).Returns(blobContainerClient.Object);
+            Mock<BlobContainerClient> blobContainerClient = BlobTestFactory.CreateContainer(pages);
+            Mock<BlobClient> blobClient = BlobTestFactory.CreateBlob();
 
-            blobContainerClient.Setup(b => b.GetBlobs(default, default, folderName, default)).Returns(pages);
-            blobContainerClient.Setup(b => b.GetBlobClient(fileName)).Returns(blobClient.Object);
+            _blobServiceClient
+                .Setup(b => b.GetBlobContainerClient(_blobStorageSettings.FileUploadContainerName))
+                .Returns(blobContainerClient.Object);
 
-            blobClient.Setup(b => b.GetProperties(null, default)).Returns(Response.FromValue(blobItemProperties, responseMock.Object));
+            blobContainerClient
+                .Setup(b => b.GetBlobClient(fileName))
+                .Returns(blobClient.Object);
 
-            // Act
             var result = _sut.ListBlobs(folderName);
 
-            // Assert
             Assert.NotEmpty(result);
             Assert.Single(result);
 
@@ -159,8 +160,6 @@ namespace SFA.DAS.AODP.Infrastructure.UnitTests.File
             Assert.Equal(extension, resultBlobItem.Extension);
             Assert.Equal(fileNamePrefix, resultBlobItem.FileNamePrefix);
         }
-
-
 
         [Fact]
         public async Task GetBlobDetails_ReturnsBlobDetails()
@@ -199,7 +198,6 @@ namespace SFA.DAS.AODP.Infrastructure.UnitTests.File
             Assert.Equal(extension, result.Extension);
             Assert.Equal(fileNamePrefix, result.FileNamePrefix);
         }
-
 
         [Fact]
         public async Task OpenReadStreamAsync_ReturnsStream()
