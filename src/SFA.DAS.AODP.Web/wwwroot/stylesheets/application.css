@@ -116,3 +116,64 @@
     margin-top: 20px;
     margin-bottom: 0;
 }
+
+
+/*Interruption card*/
+.app-interruption-card {
+    background-color: #1d70b8;
+    color: #ffffff;
+    padding: 24px;
+    margin-bottom: 30px;
+}
+
+.app-interruption-card__content {
+    max-width: 40rem;
+}
+
+.app-interruption-card__heading {
+    margin: 0 0 16px 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.app-interruption-card__body {
+    margin-bottom: 24px;
+    font-size: 1.125rem;
+}
+
+.app-interruption-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+}
+
+.app-interruption-card .govuk-button--inverse {
+    background-color: #ffffff;
+    color: #1d70b8;
+    box-shadow: 0 2px 0 #003078;
+}
+
+    .app-interruption-card .govuk-button--inverse:hover {
+        background-color: #f3f2f1;
+        color: #1d70b8;
+    }
+
+    .app-interruption-card .govuk-button--inverse:focus-visible,
+    .app-interruption-card .govuk-button--inverse:focus {
+        outline: 3px solid #ffdd00;
+        outline-offset: 0;
+    }
+
+.app-interruption-card .govuk-link--inverse {
+    color: #ffffff;
+}
+
+    .app-interruption-card .govuk-link--inverse:visited {
+        color: #f3f2f1;
+    }
+
+    .app-interruption-card .govuk-link--inverse:hover {
+        color: #ffffff;
+        text-decoration-thickness: 3px;
+    }

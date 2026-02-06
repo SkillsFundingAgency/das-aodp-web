@@ -1,0 +1,47 @@
+﻿@using SFA.DAS.AODP.Web.Models.Application
+@model WithdrawApplicationViewModel
+
+@{
+    ViewData["Title"] = "Withdraw application";
+}
+
+<a class="govuk-back-link" asp-action="ViewApplication" asp-controller="Applications"
+   asp-route-organisationId="@Model.OrganisationId"
+   asp-route-applicationId="@Model.ApplicationId"
+   asp-route-formVersionId="@Model.FormVersionId">
+    Back
+</a>
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <div class="app-interruption-card">
+            <div class="app-interruption-card__content">
+                <h1 class="app-interruption-card__heading">
+                    Are you sure you want to withdraw this application?
+                </h1>
+                <div class="app-interruption-card__body">
+                    <p>You cannot undo this.</p>
+                </div>
+                <div class="govuk-button-group app-interruption-card__actions">
+                    <form asp-action="SubmitWithdraw"
+                          asp-controller="Applications"
+                          asp-route-applicationId="@Model.ApplicationId"
+                          asp-route-organisationId="@Model.OrganisationId"
+                          method="post">
+                        <button class="govuk-button govuk-button--inverse"
+                                data-module="govuk-button">
+                            Continue
+                        </button>
+                    </form>
+                    <a class="govuk-link govuk-link--inverse"
+                       asp-action="ViewApplication" asp-controller="Applications"
+                       asp-route-organisationId="@Model.OrganisationId"
+                       asp-route-applicationId="@Model.ApplicationId"
+                       asp-route-formVersionId="@Model.FormVersionId">
+                        Go back to Application overview
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
