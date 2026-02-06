@@ -1,5 +1,6 @@
 ﻿@using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationMessage
 @using SFA.DAS.AODP.Web.Models.Application;
+@using SFA.DAS.AODP.Web.Models.RelatedLinks
 @using SFA.DAS.AODP.Web.Models.TimelineComponents;
 @model ApplicationMessagesViewModel
 
@@ -181,12 +182,6 @@
     </div>
 
     <div class="govuk-grid-column-one-third">
-        <h5 class="govuk-heading-m govuk-!-margin-bottom-2">Related links</h5>
-        <p class="govuk-body">
-            <a class="govuk-link" rel="noreferrer noopener" target="_blank"
-               asp-action="ViewApplication"
-               asp-controller="ApplicationsReview"
-               asp-route-applicationReviewId="@Model.ApplicationReviewId">View application (opens in new tab)</a>
-        </p>
+        @await Html.PartialAsync("_RelatedLinks", Model.RelatedLinks)
     </div>
 </div>

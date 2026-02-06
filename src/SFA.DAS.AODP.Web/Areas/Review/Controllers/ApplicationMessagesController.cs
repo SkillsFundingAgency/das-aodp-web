@@ -1,4 +1,5 @@
 ﻿using Azure;
+using DocumentFormat.OpenXml.EMMA;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,8 +14,7 @@ using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.File;
 using SFA.DAS.AODP.Web.Helpers.User;
-using StackExchange.Redis;
-using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
+using SFA.DAS.AODP.Web.Models.RelatedLinks;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers;
@@ -75,7 +75,15 @@ public class ApplicationMessagesController : ControllerBase
         {
             ApplicationReviewId = applicationReviewId,
             TimelineMessages = timelineMessages,
-            UserType = UserType
+            UserType = UserType,
+            RelatedLinks = RelatedLinksBuilder.Build(
+                Url,
+                RelatedLinksPage.ReviewApplicationMessages,
+                UserType,
+                new RelatedLinksContext
+                {
+                    ApplicationReviewId = applicationReviewId
+                })
         };
 
         if (TempData.ContainsKey("EditMessage"))

@@ -13,6 +13,7 @@ using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Filters;
 using SFA.DAS.AODP.Web.Helpers.File;
 using SFA.DAS.AODP.Web.Helpers.User;
+using SFA.DAS.AODP.Web.Models.RelatedLinks;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers;
@@ -77,6 +78,16 @@ public class ApplicationMessagesController : ControllerBase
             FormVersionId = formVersionId,
             TimelineMessages = timelineMessages,
             UserType = UserType,
+            RelatedLinks = RelatedLinksBuilder.Build(
+                Url,
+                RelatedLinksPage.ApplyApplicationMessages,
+                UserType,
+                new RelatedLinksContext
+                {
+                    OrganisationId = organisationId,
+                    ApplicationId = applicationId,
+                    FormVersionId = formVersionId
+                })
         };
 
         if (TempData.ContainsKey("EditMessage"))
