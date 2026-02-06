@@ -9,9 +9,10 @@ namespace SFA.DAS.AODP.Web.Models.Application
         public Guid FormVersionId { get; set; }
         public Guid ApplicationId { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Enter a qualification title.")]
         public string Name { get; set; }
-        [Required]
+
+        [Required(ErrorMessage = "Enter an application owner.")]
         public string Owner { get; set; }
 
         [QualificationNumber]

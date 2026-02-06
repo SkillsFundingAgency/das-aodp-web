@@ -2,8 +2,11 @@
 using AutoFixture.AutoMoq;
 using AutoFixture.Kernel;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -16,6 +19,7 @@ using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Areas.Admin.Controllers.FormBuilder;
 using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Question;
+using System.ComponentModel.DataAnnotations;
 
 namespace SFA.DAS.AODP.Web.Test.Controllers;
 
@@ -35,6 +39,12 @@ public class QuestionsControllerTests
         _formBuilderSettingsMock = _fixture.Freeze<Mock<IOptions<FormBuilderSettings>>>();
         _controller = new QuestionsController(_mediatorMock.Object, _loggerMock.Object, _formBuilderSettingsMock.Object);
         _fixture.Customizations.Add(new DateOnlySpecimenBuilder());
+
+        SetupValidationServices(new FormBuilderSettings
+        {
+            MaxUploadNumberOfFiles = 3,
+            UploadFileTypesAllowed = new List<string>() { "pdf", "doc"}
+        });
     }
 
     public class DateOnlySpecimenBuilder : ISpecimenBuilder
@@ -117,8 +127,6 @@ public class QuestionsControllerTests
         _mediatorMock.Setup(m => m.Send(It.IsAny<DeleteQuestionCommand>(), default))
                      .ReturnsAsync(queryResponse);
 
-        _controller.TempData = new Mock<ITempDataDictionary>().Object;
-
         // Act
         var result = await _controller.Delete(model.FormVersionId, model.SectionId, model.PageId, model.QuestionId, model);
 
@@ -198,8 +206,7 @@ public class QuestionsControllerTests
             .Setup(m => m.Send(It.IsAny<UpdateQuestionCommand>(), default))
             .ReturnsAsync(response);
 
-        _controller.TempData = new Mock<ITempDataDictionary>().Object;
-
+        ValidateAndPopulateModelState(model);
         var result = await _controller.Edit(model);
 
         Assert.Multiple(() =>
@@ -228,8 +235,8 @@ public class QuestionsControllerTests
             .With(m => m.Type, QuestionType.Text)
             .With(m => m.TextInput, new EditQuestionViewModel.TextInputOptions
             {
-                MinLength = min,
-                MaxLength = max
+                MinLength = max,
+                MaxLength = min
             })
             .With(m => m.AdditionalActions, new EditQuestionViewModel.AdditionalFormActions())
             .With(m => m.Options, new EditQuestionViewModel.Option
@@ -240,8 +247,7 @@ public class QuestionsControllerTests
             .With(m => m.FileUpload, null as EditQuestionViewModel.FileUploadOptions)
             .Create();
 
-        _controller.ModelState.AddModelError("TestKey", "Test error");
-
+        ValidateAndPopulateModelState(model);
         var result = await _controller.Edit(model);
 
         Assert.Multiple(() =>
@@ -286,6 +292,7 @@ public class QuestionsControllerTests
             .With(m => m.FileUpload, null as EditQuestionViewModel.FileUploadOptions)
             .Create();
 
+        ValidateAndPopulateModelState(model);
         var result = await _controller.Edit(model);
 
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -348,6 +355,7 @@ public class QuestionsControllerTests
             .With(m => m.FileUpload, null as EditQuestionViewModel.FileUploadOptions)
             .Create();
 
+        ValidateAndPopulateModelState(model);
         var result = await _controller.Edit(model);
 
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -400,6 +408,8 @@ public class QuestionsControllerTests
             .With(m => m.FileUpload, null as EditQuestionViewModel.FileUploadOptions)
             .Create();
 
+        ValidateAndPopulateModelState(model);
+
         var result = await _controller.Edit(model);
 
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -422,5 +432,51 @@ public class QuestionsControllerTests
             _mediatorMock.Verify(m => m.Send(It.IsAny<UpdateQuestionCommand>(), default), Times.Never);
         }
     }
+
+    #region Validation Setup
+    private void SetupValidationServices(FormBuilderSettings settings)
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton(settings);
+
+        var sp = services.BuildServiceProvider();
+
+        _controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext
+            {
+                RequestServices = sp
+            }
+        };
+
+        _controller.TempData = new TempDataDictionary(
+            _controller.HttpContext,
+            Mock.Of<ITempDataProvider>());
+
+        _controller.Url = Mock.Of<IUrlHelper>(u =>
+        u.Action(It.IsAny<UrlActionContext>()) == "/");
+    }
+
+    private void ValidateAndPopulateModelState(object model)
+    {
+        _controller.ModelState.Clear();
+        var results = new List<ValidationResult>();
+        var ctx = new ValidationContext(
+            model,
+            _controller.HttpContext?.RequestServices, 
+            items: null);
+
+        Validator.TryValidateObject(model, ctx, results, validateAllProperties: true);
+
+        foreach (var vr in results)
+        {
+            var keys = vr.MemberNames?.Any() == true ? vr.MemberNames : new[] { string.Empty };
+            foreach (var key in keys)
+            {
+                _controller.ModelState.AddModelError(key, vr.ErrorMessage);
+            }
+        }
+    }
+    #endregion
 
 }
