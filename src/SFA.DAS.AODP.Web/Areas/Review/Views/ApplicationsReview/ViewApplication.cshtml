@@ -154,9 +154,10 @@
                     <govuk-summary-list-row-value>
                         @if (!IsReadOnly)
                         {
-                            <form asp-route-applicationReviewId="@Model.ApplicationReviewId"
-                                  asp-action="UpdateOwner"
-                                  asp-Controller="ApplicationsReview" method="post">
+                        <form asp-route-applicationReviewId="@Model.ApplicationReviewId"
+                              asp-action="UpdateOwner"
+                              asp-Controller="ApplicationsReview" method="post"
+                              gfa-prepend-error-summary="false">
 
                                 <div class="govuk-form-group govuk-!-margin-bottom-0">
                                     <div class="select-picker">

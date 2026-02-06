@@ -1,0 +1,225 @@
+﻿@model SFA.DAS.AODP.Web.Areas.Review.Models.Qualifications.QualificationSearchViewModel
+@{
+    ViewData["Title"] = "Search for a qualification";
+
+}
+
+<partial name="~/Views/Shared/_ValidationSummaryPartial.cshtml" />
+
+<div class="govuk-width-container">
+    <main class="govuk-main-wrapper">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-full">
+                <a class="govuk-back-link" asp-action="Index" asp-controller="Home" asp-area="Review">Back</a>
+
+                <h1 class="govuk-heading-xl">Search for a qualification</h1>
+
+                <div class="govuk-inset-text">
+                    <div>Regulated qualifications last imported: @(Model.RegulatedQualificationsLastImported?.ToString("dd MMMM yyyy") ?? "")</div>
+                    <div>Funded qualifications last imported: @(Model.FundedQualificationsLastImported?.ToString("dd MMMM yyyy") ?? "")</div>
+                    <br />
+                    <p class="govuk-body">
+                        You can <a asp-area="Admin" asp-controller="Import" asp-action="Index" class="govuk-link">import the latest data</a> before searching.
+                    </p>
+                </div>
+
+                <form asp-action="Search" asp-controller="QualificationSearch" asp-area="Review" method="post" novalidate>
+                    @{
+                        var hasFileError = ViewData.ModelState.ContainsKey(nameof(Model.SearchTerm)) && ViewData.ModelState[nameof(Model.SearchTerm)].Errors.Count > 0;
+                        var inputClass = hasFileError ? "govuk-file-upload govuk-file-upload--error" : "govuk-file-upload govuk-!-margin-top-2";
+                    }
+                    <input type="hidden" id="RegulatedQualificationsLastImported" name="RegulatedQualificationsLastImported" value='@(Model.RegulatedQualificationsLastImported?.ToString("mm/dd/yyyy") ?? "")' />
+                    <input type="hidden" id="FundedQualificationsLastImported" name="FundedQualificationsLastImported" value='@(Model.FundedQualificationsLastImported?.ToString("mm/dd/yyyy") ?? "")' />
+                    <div class="govuk-form-group">
+                        <input asp-for="SearchTerm" class="govuk-input" />
+                        <span asp-validation-for="SearchTerm" class="govuk-error-message"></span>
+                    </div>
+
+                    <div class="govuk-form-group">
+                        <govuk-button type="submit">Search</govuk-button>
+                    </div>
+                </form>
+
+                    @if (Model.Pagination.CurrentPage > 0)
+                    {
+                        <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+                        @if (Model.Qualifications.Any())
+                        {
+                            <div class="govuk-grid-row" id="New_Qual_Pagination_Header_Section">
+                                <div class="govuk-grid-column-full">
+                                    <p class="">Viewing @(Model.Pagination.StartRecord) - @(Model.Pagination.EndRecord) of @(Model.Pagination.TotalRecords) Qualifications</p>
+                                </div>
+                            </div>
+                            <div class="govuk-grid-row" id="New_Qual_Data_Section">
+                                <div class="govuk-grid-column-full">
+                                    <table class="govuk-table">
+                                        <thead class="govuk-table__head">
+                                            <tr class="govuk-table__row">
+                                                <th class="govuk-table__header">QAN</th>
+                                                <th class="govuk-table__header">Qualification title</th>
+                                                <th class="govuk-table__header">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="govuk-table__body">
+                                            @foreach (var qualification in Model.Qualifications)
+                                            {
+
+                                                <tr class="govuk-table__row">
+                                                    <td class="govuk-table__cell">@qualification.Qan</td>
+                                                    <td class="govuk-table__cell">
+                                                        <a class="govuk-link" href="@Url.Action("QualificationDetails", "New", new { area = "Review", qualificationReference = qualification.Qan })">
+                                                            @qualification.QualificationName
+                                                        </a>
+                                                    </td>
+                                                    <td class="govuk-table__cell">@qualification.Status</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                                @if (Model.Pagination.TotalPages > 0)
+                                {
+                                    <div class="govuk-grid-row" id="New_Qual_Pagination_Footer_Section">
+                                        <div class="govuk-grid-column-three-quarters">
+                                            <nav class="govuk-pagination" aria-label="Pagination">
+                                                @if (Model.Pagination.HasPreviousPage)
+                                                {
+                                                    <div class="govuk-pagination__prev">
+                                                        <a class="govuk-link govuk-pagination__link" rel="prev"
+                                                           asp-controller="QualificationSearch"
+                                                           asp-action="ChangePage"
+                                                           asp-route-area="Review"
+                                                           asp-route-newPage="@Model.Pagination.PreviousPage"
+                                                           asp-route-recordsPerPAge="@Model.Pagination.RecordsPerPage"
+                                                           asp-route-searchTerm="@Model.SearchTerm">
+                                                            <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+                                                                <path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z"></path>
+                                                            </svg>
+                                                            <span class="govuk-pagination__link-title">
+                                                                Previous<span class="govuk-visually-hidden"> page</span>
+                                                            </span>
+                                                        </a>
+                                                    </div>
+                                                }
+                                                <ul class="govuk-pagination__list">
+                                                    @if (Model.Pagination.ShowExtendedPreviousNavigation)
+                                                    {
+                                                        <li class="govuk-pagination__item">
+                                                            <a class="govuk-link govuk-pagination__link" aria-label="Page @Model.Pagination.FirstPage"
+                                                               asp-controller="QualificationSearch"
+                                                               asp-action="ChangePage"
+                                                               asp-route-area="Review"
+                                                               asp-route-newPage="@Model.Pagination.FirstPage"
+                                                               asp-route-recordsPerPAge="@Model.Pagination.RecordsPerPage"
+                                                               asp-route-searchTerm="@Model.SearchTerm">
+                                                                @Model.Pagination.FirstPage
+                                                            </a>
+                                                        </li>
+                                                        <li class="govuk-pagination__item govuk-pagination__item--ellipses">
+                                                            &ctdot;
+                                                        </li>
+                                                    }
+                                                    @if (Model.Pagination.HasPreviousPage)
+                                                    {
+                                                        <li class="govuk-pagination__item">
+                                                            <a class="govuk-link govuk-pagination__link" aria-label="Page @(Model.Pagination.PreviousPage)"
+                                                               asp-controller="QualificationSearch"
+                                                               asp-action="ChangePage"
+                                                               asp-route-area="Review"
+                                                               asp-route-newPage="@Model.Pagination.PreviousPage"
+                                                               asp-route-recordsPerPAge="@Model.Pagination.RecordsPerPage"
+                                                               asp-route-searchTerm="@Model.SearchTerm">
+                                                                @(Model.Pagination.PreviousPage)
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                    <li class="govuk-pagination__item govuk-pagination__item--current">
+                                                        <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page @Model.Pagination.CurrentPage" aria-current="true">
+                                                            @Model.Pagination.CurrentPage
+                                                        </a>
+                                                    </li>
+                                                    @if (Model.Pagination.HasNextPage)
+                                                    {
+                                                        <li class="govuk-pagination__item">
+                                                            <a class="govuk-link govuk-pagination__link" aria-label="Page @(Model.Pagination.NextPage)"
+                                                               asp-controller="QualificationSearch"
+                                                               asp-action="ChangePage"
+                                                               asp-route-area="Review"
+                                                               asp-route-newPage="@Model.Pagination.NextPage"
+                                                               asp-route-recordsPerPAge="@Model.Pagination.RecordsPerPage"
+                                                               asp-route-searchTerm="@Model.SearchTerm">
+                                                                @(Model.Pagination.NextPage)
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                    @if (Model.Pagination.ShowExtendedNextNavigation)
+                                                    {
+                                                        <li class="govuk-pagination__item govuk-pagination__item--ellipses">
+                                                            &ctdot;
+                                                        </li>
+                                                        <li class="govuk-pagination__item">
+                                                            <a class="govuk-link govuk-pagination__link" aria-label="Page @Model.Pagination.TotalPages"
+                                                               asp-controller="QualificationSearch"
+                                                               asp-action="ChangePage"
+                                                               asp-route-area="Review"
+                                                               asp-route-newPage="@Model.Pagination.TotalPages"
+                                                               asp-route-recordsPerPAge="@Model.Pagination.RecordsPerPage"
+                                                               asp-route-searchTerm="@Model.SearchTerm">
+                                                                @Model.Pagination.TotalPages
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                </ul>
+                                                @if (Model.Pagination.HasNextPage)
+                                                {
+                                                    <div class="govuk-pagination__next">
+                                                        <a class="govuk-link govuk-pagination__link" rel="next"
+                                                           asp-controller="QualificationSearch"
+                                                           asp-action="ChangePage"
+                                                           asp-route-area="Review"
+                                                           asp-route-newPage="@Model.Pagination.NextPage"
+                                                           asp-route-recordsPerPAge="@Model.Pagination.RecordsPerPage"
+                                                           asp-route-searchTerm="@Model.SearchTerm">
+                                                            <span class="govuk-pagination__link-title">
+                                                                Next<span class="govuk-visually-hidden"> page</span>
+                                                            </span>
+                                                            <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
+                                                                <path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path>
+                                                            </svg>
+                                                        </a>
+                                                    </div>
+                                                }
+                                            </nav>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="govuk-grid-row" id="Empty_Data_Section">
+                                <div class="govuk-grid-column-full">
+                                    <table class="govuk-table">
+                                        <thead class="govuk-table__head">
+                                            <tr class="govuk-table__row">
+                                                <th class="govuk-table__header">QAN</th>
+                                                <th class="govuk-table__header">Qualification Title</th>
+                                                <th class="govuk-table__header">Age Group</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="govuk-table__body">
+                                            <tr class="govuk-table__row">
+                                                <td class="govuk-table__cell">No qualifications match your search criteria</td>
+                                                <td class="govuk-table__cell"></td>
+                                                <td class="govuk-table__cell"></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        }
+                    }
+            </div>
+        </div>
+    </main>
+</div>

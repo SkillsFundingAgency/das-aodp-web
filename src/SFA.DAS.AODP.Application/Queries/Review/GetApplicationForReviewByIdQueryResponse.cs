@@ -1,19 +1,20 @@
-﻿using SFA.DAS.AODP.Models.Users;
+﻿namespace SFA.DAS.AODP.Application.Queries.Review;
+using SFA.DAS.AODP.Models.Users;
 public class GetApplicationForReviewByIdQueryResponse
 {
-    public Guid Id { get; set; }
-    public Guid ApplicationReviewId { get; set; }
+public Guid Id { get; set; }
+public Guid ApplicationReviewId { get; set; }
 
-    public string Name { get; set; }
-    public DateTime LastUpdated { get; set; }
-    public int Reference { get; set; }
-    public string? Qan { get; set; }
-    public string? AwardingOrganisation { get; set; }
+public string Name { get; set; }
+public DateTime LastUpdated { get; set; }
+public int Reference { get; set; }
+public string? Qan { get; set; }
+public string? AwardingOrganisation { get; set; }
 
-    public bool SharedWithSkillsEngland { get; set; }
-    public bool SharedWithOfqual { get; set; }
+public bool SharedWithSkillsEngland { get; set; }
+public bool SharedWithOfqual { get; set; }
 
-    public string FormTitle { get; set; }
+public string FormTitle { get; set; }
 
     public string ApplicationStatus { get; set; }
 
@@ -32,13 +33,13 @@ public class GetApplicationForReviewByIdQueryResponse
         public bool LatestCommunicatedToAwardingOrganisation { get; set; }
     }
 
-    public class Funding
-    {
-        public Guid Id { get; set; }
-        public Guid FundingOfferId { get; set; }
-        public string FundedOfferName { get; set; }
-        public DateOnly? StartDate { get; set; }
-        public DateOnly? EndDate { get; set; }
-        public string? Comments { get; set; }
-    }
+public class Funding
+{
+    public Guid Id { get; set; }
+    public Guid FundingOfferId { get; set; }
+    public string FundedOfferName { get; set; }
+    public DateOnly? StartDate { get; set; }
+    public DateOnly? EndDate { get; set; }
+    public string? Comments { get; set; }
+}
 }
