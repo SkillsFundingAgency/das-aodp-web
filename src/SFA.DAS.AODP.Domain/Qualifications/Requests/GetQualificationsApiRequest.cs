@@ -6,55 +6,43 @@ namespace SFA.DAS.AODP.Domain.Qualifications.Requests;
 
 public class GetQualificationsApiRequest : IGetApiRequest
 {
-    public int Skip { get; set; }
-    public int Take { get; set; }
-    public string? Name { get; set; }
-    public string? Organisation { get; set; }
-    public string? QAN { get; set; }
+    public string SearchTerm { get; set; }
 
-    public string? Status { get; set; }
+    // Pagination
+    public int? Skip { get; set; } = 0;
+    public int? Take { get; set; } = 25;
 
-    public string BaseUrl { get; set; } = "api/qualifications";
+    public string BaseUrl = "api/qualifications/GetMatchingQualifications";
+
+    public GetQualificationsApiRequest(string searchTerm, int? skip, int? take)
+    {
+        SearchTerm = searchTerm;
+        Skip = skip;
+        Take = take;
+    }
 
     public string GetUrl
     {
         get
         {
-            var queryParams = new NameValueCollection();
+            var queryParams = new NameValueCollection()
+                {
+                    { "SearchTerm", SearchTerm },
+                };
 
-            if (!string.IsNullOrWhiteSpace(Status))
-            {
-                queryParams.Add("Status", Status);
-            }
-
-            if (Skip >= 0)
+            if (Skip.HasValue)
             {
                 queryParams.Add("Skip", Skip.ToString());
             }
 
-            if (Take > 0)
+            if (Take.HasValue)
             {
                 queryParams.Add("Take", Take.ToString());
             }
 
-            if (!string.IsNullOrWhiteSpace(Name))
-            {
-                queryParams.Add("Name", Name);
-            }
+            var url = BaseUrl.AttachParameters(queryParams);
 
-            if (!string.IsNullOrWhiteSpace(Organisation))
-            {
-                queryParams.Add("Organisation", Organisation);
-            }
-
-            if (!string.IsNullOrWhiteSpace(QAN))
-            {
-                queryParams.Add("QAN", QAN);
-            }
-
-            var uri = BaseUrl.AttachParameters(queryParams);
-
-            return uri.ToString();
+            return url;
         }
     }
 }
