@@ -82,7 +82,7 @@ public class NewQualificationDetailsViewModel
         [DisplayName("End date")]
         public DateOnly? EndDate { get; set; }
     }
-    internal void MapFundedOffers(GetFeedbackForQualificationFundingByIdQueryResponse feedbackForQualificationFunding)
+    public void MapFundedOffers(GetFeedbackForQualificationFundingByIdQueryResponse feedbackForQualificationFunding)
     {
         foreach (var offer in feedbackForQualificationFunding.QualificationFundedOffers)
         {
@@ -249,7 +249,7 @@ public class NewQualificationDetailsViewModel
         };
     }
 
-    internal void MapApplications(GetApplicationsByQanQueryResponse applications)
+    public void MapApplications(GetApplicationsByQanQueryResponse applications)
     {
         foreach (var application in applications.Applications)
         {

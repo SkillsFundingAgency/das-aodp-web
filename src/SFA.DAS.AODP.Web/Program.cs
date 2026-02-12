@@ -10,7 +10,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using FluentValidation.Validators;
 using FluentValidation;
+using Microsoft.FeatureManagement;
 using SFA.DAS.AODP.Web.Models.OutputFile;
+using FeatureManagementOptions = SFA.DAS.AODP.Web.FeatureManagement.FeatureManagementOptions;
 
 [ExcludeFromCodeCoverage]
 internal class Program
@@ -22,6 +24,9 @@ internal class Program
         Debug.WriteLine($"Environment: {builder.Environment.EnvironmentName}");
 
         var configuration = builder.Configuration.LoadConfiguration(builder.Services, builder.Environment.IsDevelopment());
+
+        builder.Services.AddOptions<FeatureManagementOptions>(nameof(FeatureManagementOptions.SectionName));
+        builder.Services.AddFeatureManagement();
 
         builder.Services
             .AddServiceRegistrations(configuration)
