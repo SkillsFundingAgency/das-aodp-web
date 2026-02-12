@@ -84,6 +84,6 @@ public class RolloverController : ControllerBase
             return View("EnterRolloverEligibilityDates", model);
         }
 
-        return RedirectToAction(nameof(EnterRolloverEligibilityDates));
+        return View("EnterMaximumFundingApprovalEndDate", model);
     }
 }
