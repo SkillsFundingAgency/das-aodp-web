@@ -7,9 +7,8 @@
 <h1 class="govuk-heading-l">Give feedback on this service</h1>
 
 <h2 class="govuk-heading-m">Satisfaction survey</h2>
-<partial name="_ValidationSummaryPartial" />
 
-<form asp-action="SurveyFeedback" asp-controller="Survey" method="post" gfa-prepend-error-summary="false">
+<form asp-action="SurveyFeedback" asp-controller="Survey" method="post">
     @Html.HiddenFor(m => m.Page)
     @Html.AntiForgeryToken()
     <div class="govuk-form-group @(ViewData.ModelState["SatisfactionScore"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
@@ -41,18 +40,7 @@
         <label class="govuk-label govuk-label--m" for="Comments">
             How could we improve this service?
         </label>
-        @if (ViewData.ModelState["Comments"]?.Errors.Count > 0)
-        {
-            <p id="CommentsText-error" class="govuk-error-message">
-                <span class="govuk-visually-hidden">Error:</span> @ViewData.ModelState["Comments"]?.Errors[0].ErrorMessage
-            </p>
-        }
-        <textarea asp-for="Comments"
-                  class="govuk-textarea @(ViewData.ModelState["Comments"]?.Errors.Count > 0 ? "govuk-textarea--error" : "")"
-                  id="Comments"
-                  rows="5"
-                  maxlength="1200"
-                  aria-describedby="Comments-info @(ViewData.ModelState["Comments"]?.Errors.Count > 0 ? "CommentsText-error" : "")"></textarea>
+        <govuk-textarea rows="5" maxlength="1200" asp-for="@Model.Comments"></govuk-textarea>
         <div id="Comments-info" class="govuk-hint">
             You can enter up to 1200 characters.
         </div>
