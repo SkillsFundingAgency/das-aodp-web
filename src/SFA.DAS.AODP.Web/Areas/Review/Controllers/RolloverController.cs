@@ -1,8 +1,10 @@
-﻿using MediatR;
+﻿using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 using SFA.DAS.AODP.Web.Authentication;
+using SFA.DAS.AODP.Web.Extensions;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers;
@@ -13,10 +15,12 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers;
 public class RolloverController : ControllerBase
 {
     private readonly ILogger<RolloverController> _logger;
+    private readonly IValidator<RolloverEligibilityDatesViewModel> _rolloverEligibilityDatesViewModeValidator;
 
-    public RolloverController(ILogger<RolloverController> logger, IMediator mediator) : base(mediator, logger)
+    public RolloverController(ILogger<RolloverController> logger, IMediator mediator, IValidator<RolloverEligibilityDatesViewModel> validator) : base(mediator, logger)
     {
         _logger = logger;
+        _rolloverEligibilityDatesViewModeValidator = validator;
     }
 
     [HttpGet]
@@ -58,5 +62,28 @@ public class RolloverController : ControllerBase
     {
         ViewData["Title"] = "Upload qualifications to RollOver";
         return View();
+    }
+
+    [HttpGet]
+    [Route("/Review/Rollover/EnterRolloverEligibilityDates")]
+    public IActionResult EnterRolloverEligibilityDates()
+    {
+        ViewData["Title"] = "Enter rollover eligibility dates";
+        return View();
+    }
+
+    [HttpPost]
+    [Route("/Review/Rollover/EnterRolloverEligibilityDates")]
+    public async Task<IActionResult> EnterRolloverEligibilityDates(RolloverEligibilityDatesViewModel model)
+    {
+        var validation = await _rolloverEligibilityDatesViewModeValidator.ValidateAsync(model);
+        validation.AddToModelState(ModelState);
+
+        if (!ModelState.IsValid)
+        {
+            return View("EnterRolloverEligibilityDates", model);
+        }
+
+        return RedirectToAction(nameof(EnterRolloverEligibilityDates));
     }
 }

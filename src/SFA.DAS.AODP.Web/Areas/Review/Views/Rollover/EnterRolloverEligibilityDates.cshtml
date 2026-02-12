@@ -1,0 +1,161 @@
+﻿@model SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.RolloverEligibilityDatesViewModel
+
+@{
+    ViewData["Title"] = "Enter dates to be used in calculating eligibility for rollover";
+
+    var fundingEndDateDayError = ViewData.ModelState.ContainsKey("FundingEndDate.Day") && ViewData.ModelState["FundingEndDate.Day"].Errors.Any();
+    var fundingEndDateMonthError = ViewData.ModelState.ContainsKey("FundingEndDate.Month") && ViewData.ModelState["FundingEndDate.Month"].Errors.Any();
+    var fundingEndDateYearError = ViewData.ModelState.ContainsKey("FundingEndDate.Year") && ViewData.ModelState["FundingEndDate.Year"].Errors.Any();
+    var fundingEndDateGroupError = fundingEndDateDayError || fundingEndDateMonthError || fundingEndDateYearError;
+
+    var operationalEndDateDayError = ViewData.ModelState.ContainsKey("OperationalEndDate.Day") && ViewData.ModelState["OperationalEndDate.Day"].Errors.Any();
+    var operationalEndDateMonthError = ViewData.ModelState.ContainsKey("OperationalEndDate.Month") && ViewData.ModelState["OperationalEndDate.Month"].Errors.Any();
+    var operationalEndDateYearError = ViewData.ModelState.ContainsKey("OperationalEndDate.Year") && ViewData.ModelState["OperationalEndDate.Year"].Errors.Any();
+    var operationalEndDateGroupError = operationalEndDateDayError || operationalEndDateMonthError || operationalEndDateYearError;
+}
+
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
+<div class="govuk-width-container">
+    <main class="govuk-main-wrapper">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds" id="guide-contents">
+
+                <a asp-area="Review" asp-controller="Rollover" asp-action="Index" class="govuk-link govuk-!-margin-bottom-6">&lt; Back</a>
+
+                <div class="govuk-grid-row govuk-!-margin-0">
+                    <h1 class="govuk-heading-xl">@ViewData["Title"]</h1>
+                </div>
+
+                <form asp-area="Review" asp-controller="Rollover" asp-action="EnterRolloverEligibilityDates" method="post" novalidate>
+
+                    <!-- Funding End Date -->
+                    <div class="govuk-form-group" @(fundingEndDateGroupError || operationalEndDateGroupError ? "govuk-form-group--error" : "")">
+                        <fieldset class="govuk-fieldset" role="group" aria-describedby="funding-end-date-hint">
+                            <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                                <h2 class="govuk-fieldset__heading">Funding end date</h2>
+                            </legend>
+
+                            <div id="funding-end-date-hint" class="govuk-hint">
+                                Qualifications with a funding end date before this date will not be included in this rollover process
+                            </div>
+
+                            @if (fundingEndDateGroupError)
+                            {
+                                <span id="funding-end-date-error" class="govuk-error-message">
+                                    <span class="govuk-visually-hidden">Error:</span>
+                                    @if (ViewData.ModelState["FundingEndDate"].Errors.Any())
+                                    {
+                                        @ViewData.ModelState["FundingEndDate"].Errors[0].ErrorMessage
+                                    }
+                                    else if (ViewData.ModelState["FundingEndDate.Day"].Errors.Any())
+                                    {
+                                        @ViewData.ModelState["FundingEndDate.Day"].Errors[0].ErrorMessage
+                                    }
+                                    else if (ViewData.ModelState["FundingEndDate.Month"].Errors.Any())
+                                    {
+                                        @ViewData.ModelState["FundingEndDate.Month"].Errors[0].ErrorMessage
+                                    }
+                                    else if (ViewData.ModelState["FundingEndDate.Year"].Errors.Any())
+                                    {
+                                        @ViewData.ModelState["FundingEndDate.Year"].Errors[0].ErrorMessage
+                                    }
+                                </span>
+                            }
+
+                            <div class="govuk-date-input">
+                                <div class="govuk-date-input__item">
+                                    <div class="govuk-form-group">
+                                        <label class="govuk-label govuk-date-input__label" for="FundingEndDate_Day">Day</label>
+                                        <input class="govuk-input govuk-date-input__input govuk-input--width-2 @(fundingEndDateDayError ? "govuk-input--error" : "")"
+                                               asp-for="FundingEndDate.Day" maxlength="2" type="text" autocomplete="off" />
+                                    </div>
+                                </div>
+                                <div class="govuk-date-input__item">
+                                    <div class="govuk-form-group">
+                                        <label class="govuk-label govuk-date-input__label" for="FundingEndDate_Month">Month</label>
+                                        <input class="govuk-input govuk-date-input__input govuk-input--width-2 @(fundingEndDateMonthError ? "govuk-input--error" : "")"
+                                               asp-for="FundingEndDate.Month" maxlength="2" type="text" autocomplete="off" />
+                                    </div>
+                                </div>
+                                <div class="govuk-date-input__item">
+                                    <div class="govuk-form-group">
+                                        <label class="govuk-label govuk-date-input__label" for="FundingEndDate_Year">Year</label>
+                                        <input class="govuk-input govuk-date-input__input govuk-input--width-4 @(fundingEndDateYearError ? "govuk-input--error" : "")"
+                                               asp-for="FundingEndDate.Year" maxlength="4" type="text" autocomplete="off" />
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+
+                    <!-- Operational End Date -->
+                    <div class="govuk-form-group">
+                        <fieldset class="govuk-fieldset" role="group" aria-describedby="operational-end-date-hint">
+                            <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                                <h2 class="govuk-fieldset__heading">Operational end date</h2>
+                            </legend>
+
+                            <div id="operational-end-date-hint" class="govuk-hint">
+                                Qualifications with an operational end date before this date will not be included as candidates for rollover.
+                            </div>
+
+                            @if (operationalEndDateGroupError)
+                            {
+                                <span id="operational-end-date-error" class="govuk-error-message">
+                                    <span class="govuk-visually-hidden">Error:</span>
+                                    @if (ViewData.ModelState["OperationalEndDate"].Errors.Any())
+                                    {
+                                        @ViewData.ModelState["OperationalEndDate"].Errors[0].ErrorMessage
+                                    }
+                                    else if (ViewData.ModelState["OperationalEndDate.Day"].Errors.Any())
+                                    {
+                                        @ViewData.ModelState["OperationalEndDate.Day"].Errors[0].ErrorMessage
+                                    }
+                                    else if (ViewData.ModelState["OperationalEndDate.Month"].Errors.Any())
+                                    {
+                                        @ViewData.ModelState["OperationalEndDate.Month"].Errors[0].ErrorMessage
+                                    }
+                                    else if (ViewData.ModelState["OperationalEndDate.Year"].Errors.Any())
+                                    {
+                                        @ViewData.ModelState["OperationalEndDate.Year"].Errors[0].ErrorMessage
+                                    }
+                                </span>
+                            }
+
+                            <div class="govuk-date-input">
+                                <div class="govuk-date-input__item">
+                                    <div class="govuk-form-group">
+                                        <label class="govuk-label govuk-date-input__label" for="OperationalEndDate_Day">Day</label>
+                                        <input class="govuk-input govuk-date-input__input govuk-input--width-2 @(operationalEndDateDayError ? "govuk-input--error" : "")"
+                                               asp-for="OperationalEndDate.Day" maxlength="2" type="text" autocomplete="off" />
+                                    </div>
+                                </div>
+                                <div class="govuk-date-input__item">
+                                    <div class="govuk-form-group">
+                                        <label class="govuk-label govuk-date-input__label" for="OperationalEndDate_Month">Month</label>
+                                        <input class="govuk-input govuk-date-input__input govuk-input--width-2 @(operationalEndDateMonthError ? "govuk-input--error" : "")"
+                                               asp-for="OperationalEndDate.Month" maxlength="2" type="text" autocomplete="off" />
+                                    </div>
+                                </div>
+                                <div class="govuk-date-input__item">
+                                    <div class="govuk-form-group">
+                                        <label class="govuk-label govuk-date-input__label" for="OperationalEndDate_Year">Year</label>
+                                        <input class="govuk-input govuk-date-input__input govuk-input--width-4 @(operationalEndDateYearError ? "govuk-input--error" : "")"
+                                               asp-for="OperationalEndDate.Year" maxlength="4" type="text" autocomplete="off" />
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+
+                    <p class="govuk-hint">This will export a CSV file to your device.</p>
+
+                    <govuk-button type="submit">Continue</govuk-button>
+
+                </form>
+
+            </div>
+        </div>
+    </main>
+</div>

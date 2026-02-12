@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -9,15 +10,17 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers;
 
 public class RolloverControllerTests
 {
-    private readonly Mock<ILogger<RolloverController>> _loggerMock;
+    private readonly Mock<IValidator<RolloverEligibilityDatesViewModel>> _validatorMock;
     private readonly Mock<IMediator> _mediatorMock;
+    private readonly Mock<ILogger<RolloverController>> _loggerMock;
     private readonly RolloverController _controller;
 
     public RolloverControllerTests()
     {
         _loggerMock = new Mock<ILogger<RolloverController>>();
         _mediatorMock = new Mock<IMediator>();
-        _controller = new RolloverController(_loggerMock.Object, _mediatorMock.Object);
+        _validatorMock = new Mock<IValidator<RolloverEligibilityDatesViewModel>>();
+        _controller = new RolloverController(_loggerMock.Object, _mediatorMock.Object, _validatorMock.Object);
     }
 
     [Fact]
@@ -102,5 +105,16 @@ public class RolloverControllerTests
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
         Assert.Equal("Upload qualifications to RollOver", viewResult.ViewData["Title"]);
+    }
+
+    [Fact]
+    public void EnterRolloverEligibilityDates_Get_ReturnsViewAndSetsTitle()
+    {
+        // Act
+        var result = _controller.EnterRolloverEligibilityDates();
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.Equal("Enter rollover eligibility dates", viewResult.ViewData["Title"]);
     }
 }
