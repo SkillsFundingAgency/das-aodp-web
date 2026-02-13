@@ -1,10 +1,12 @@
-﻿using MediatR;
+﻿using DocumentFormat.OpenXml.Wordprocessing;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Queries.Import;
 using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
+using SFA.DAS.AODP.Web.Extensions;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers;
@@ -15,6 +17,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers;
 public class RolloverController : ControllerBase
 {
     private readonly ILogger<RolloverController> _logger;
+    private const string SessionKey = "RolloverSession";
 
     public RolloverController(ILogger<RolloverController> logger, IMediator mediator) : base(mediator, logger)
     {
@@ -25,7 +28,9 @@ public class RolloverController : ControllerBase
     [Route("/Review/Rollover")]
     public IActionResult Index()
     {
-        var model = new RolloverStartViewModel();
+        var session = GetSessionModel();
+        var model = session.Start ?? new RolloverStartViewModel();
+
         return View("RolloverStart", model);
     }
 
@@ -37,6 +42,10 @@ public class RolloverController : ControllerBase
         {
             return View("RolloverStart", model);
         }
+
+        var session = GetSessionModel();
+        session.Start = model;
+        SaveSessionModel(session);
 
         return model.SelectedProcess switch
         {
@@ -51,6 +60,13 @@ public class RolloverController : ControllerBase
     public IActionResult InitialSelection()
     {
         ViewData["Title"] = "Initial selection of qualificaton";
+
+        var session = GetSessionModel();
+        if (session.ImportStatus != null)
+        {
+            ViewData["ImportStatus"] = session.ImportStatus;
+        }
+
         return View();
     }
 
@@ -66,6 +82,13 @@ public class RolloverController : ControllerBase
     [Route("/Review/Rollover/CheckData")]
     public async Task<IActionResult> CheckData()
     {
+        var session = GetSessionModel();
+        if (session.ImportStatus != null)
+        {
+            ViewData["Title"] = "Do you need to update any data before starting?";
+            return View("CheckData", session.ImportStatus);
+        }
+
         var model = new RolloverImportStatusViewModel();
 
         try
@@ -105,6 +128,9 @@ public class RolloverController : ControllerBase
                     .FirstOrDefault();
                 model.PldnsListLastImported = latest?.EndTime ?? latest?.StartTime;
             }
+
+            session.ImportStatus = model;
+            SaveSessionModel(session);
         }
         catch (Exception ex)
         {
@@ -122,9 +148,41 @@ public class RolloverController : ControllerBase
     {
         if (!ModelState.IsValid)
         {
-            return View("CheckData", model);
+            var session = GetSessionModel();
+            return View("CheckData", session.ImportStatus ?? model);
         }
 
+        var sessionToSave = GetSessionModel();
+        sessionToSave.ImportStatus = model;
+        SaveSessionModel(sessionToSave);
+
         return RedirectToAction(nameof(InitialSelection));
+    }
+
+    private RolloverSessionModel GetSessionModel()
+    {
+        try
+        {
+            var model = HttpContext.Session.GetObject<RolloverSessionModel>(SessionKey);
+            if (model == null) model = new RolloverSessionModel();
+            return model;
+        }
+        catch (Exception ex)
+        {
+            LogException(ex);
+            return new RolloverSessionModel();
+        }
+    }
+
+    private void SaveSessionModel(RolloverSessionModel model)
+    {
+        try
+        {
+            HttpContext.Session.SetObject(SessionKey, model);
+        }
+        catch (Exception ex)
+        {
+            LogException(ex);
+        }
     }
 }
