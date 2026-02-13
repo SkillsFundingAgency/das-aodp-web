@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Razor.TagHelpers;
+using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using System.ComponentModel;
 
@@ -70,6 +71,7 @@ public class NewQualificationDetailsViewModel
     public AdditionalFormActions AdditionalActions { get; set; } = new AdditionalFormActions();
     public List<ProcessStatus> ProcessStatuses { get; set; } = new List<ProcessStatus>();
     public List<OfferFundingDetails> FundingDetails { get; set; } = new();
+    public List<Application> Applications { get; set; } = new();
     public bool? FundingsOffersOutcomeStatus { get; set; }
 
     public class OfferFundingDetails
@@ -145,6 +147,14 @@ public class NewQualificationDetailsViewModel
         [HtmlAttributeName("comment")]
         public string Note { get; set; } = string.Empty;
         public Guid? ProcessStatusId { get; set; }
+    }
+
+    public class Application
+    {
+        public Guid Id { get; set; }
+        public string? Name { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public DateTime? SubmittedDate { get; set; }
     }
 
     public static implicit operator NewQualificationDetailsViewModel(GetQualificationDetailsQueryResponse entity)
@@ -237,6 +247,20 @@ public class NewQualificationDetailsViewModel
                 IsOutcomeDecision = entity.ProcStatus.IsOutcomeDecision,
             }
         };
+    }
+
+    internal void MapApplications(GetApplicationsByQanQueryResponse applications)
+    {
+        foreach (var application in applications.Applications)
+        {
+            Applications.Add(new()
+            {
+                Id = application.Id,
+                Name = application.Name,
+                CreatedDate = application.CreatedDate,
+                SubmittedDate = application.SubmittedDate
+            });
+        }
     }
 }
 
