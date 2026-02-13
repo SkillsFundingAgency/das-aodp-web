@@ -13,6 +13,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers;
 
 [Area("Review")]
 [Authorize(Policy = PolicyConstants.IsReviewUser)]
+[Authorize(Policy = PolicyConstants.IsAdminFormsUser)]
+[Authorize(Policy = PolicyConstants.IsAdminImportUser)]
 public class QualificationSearchController : ControllerBase
 {
     public QualificationSearchController(ILogger<QualificationSearchController> logger, IMediator mediator) : base(mediator, logger)
