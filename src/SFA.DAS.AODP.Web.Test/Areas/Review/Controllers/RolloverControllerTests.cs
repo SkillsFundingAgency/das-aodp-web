@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -11,13 +12,15 @@ public class RolloverControllerTests
 {
     private readonly Mock<ILogger<RolloverController>> _loggerMock;
     private readonly Mock<IMediator> _mediatorMock;
+    private readonly Mock<IValidator<RolloverFundingApprovalEndDateViewModel>> _validatorMock;
     private readonly RolloverController _controller;
 
     public RolloverControllerTests()
     {
         _loggerMock = new Mock<ILogger<RolloverController>>();
         _mediatorMock = new Mock<IMediator>();
-        _controller = new RolloverController(_loggerMock.Object, _mediatorMock.Object);
+        _validatorMock = new();
+        _controller = new RolloverController(_loggerMock.Object, _mediatorMock.Object, _validatorMock.Object);
     }
 
     [Fact]
@@ -102,5 +105,17 @@ public class RolloverControllerTests
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
         Assert.Equal("Upload qualifications to RollOver", viewResult.ViewData["Title"]);
+    }
+
+    [Fact]
+    public void EnterRolloverFundingApprovalEndDate_Get_SetsCorrectTitle()
+    {
+        // Act
+        var result = _controller.EnterRolloverFundingApprovalEndDate();
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.True(viewResult.ViewData.ContainsKey("Title"));
+        Assert.Equal("Set the end date for funding extension", viewResult.ViewData["Title"]);
     }
 }

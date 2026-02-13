@@ -1,17 +1,18 @@
+using FluentValidation;
+using FluentValidation.Validators;
 using GovUk.Frontend.AspNetCore;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement;
 using SFA.DAS.AODP.Authentication.Extensions;
+using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Extensions.Startup;
+using SFA.DAS.AODP.Web.Models.OutputFile;
 using SFA.DAS.AODP.Web.Validators;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using FluentValidation.Validators;
-using FluentValidation;
-using Microsoft.FeatureManagement;
-using SFA.DAS.AODP.Web.Models.OutputFile;
 using FeatureManagementOptions = SFA.DAS.AODP.Web.FeatureManagement.FeatureManagementOptions;
 
 [ExcludeFromCodeCoverage]
@@ -64,6 +65,7 @@ internal class Program
              });
 
         builder.Services.AddScoped<IValidator<OutputFileViewModel>, OutputFileViewModelValidator>();
+        builder.Services.AddScoped<IValidator<RolloverFundingApprovalEndDateViewModel>, RolloverFundingApprovalEndDateViewModelValidator>();
 
         builder.Services.AddMediatR(config =>
         {

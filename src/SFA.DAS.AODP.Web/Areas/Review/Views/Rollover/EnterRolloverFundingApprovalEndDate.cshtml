@@ -1,0 +1,96 @@
+﻿@model SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.RolloverFundingApprovalEndDateViewModel
+
+@{
+    ViewData["Title"] = "Set the end date for funding extension";
+
+    var maxApprovalEndDateDayError = ViewData.ModelState.ContainsKey("MaxApprovalEndDate.Day") && ViewData.ModelState["MaxApprovalEndDate.Day"].Errors.Any();
+    var maxApprovalEndDateMonthError = ViewData.ModelState.ContainsKey("MaxApprovalEndDate.Month") && ViewData.ModelState["MaxApprovalEndDate.Month"].Errors.Any();
+    var maxApprovalEndDateYearError = ViewData.ModelState.ContainsKey("MaxApprovalEndDate.Year") && ViewData.ModelState["MaxApprovalEndDate.Year"].Errors.Any();
+    var maxApprovalEndDateGroupError = maxApprovalEndDateDayError || maxApprovalEndDateMonthError || maxApprovalEndDateYearError;
+}
+
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
+<div class="govuk-width-container">
+    <main class="govuk-main-wrapper">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds" id="guide-contents">
+
+                <a asp-area="Review" asp-controller="Rollover" asp-action="Index" class="govuk-link govuk-!-margin-bottom-6">&lt; Back</a>
+
+                <div class="govuk-grid-row govuk-!-margin-0">
+                    <h1 class="govuk-heading-xl">@ViewData["Title"]</h1>
+                </div>
+                
+                <form asp-area="Review" asp-controller="Rollover" asp-action="EnterRolloverFundingApprovalEndDate" method="post" novalidate>
+
+                    <!-- Max Approval End Date -->
+                    <div class="govuk-form-group" @(maxApprovalEndDateGroupError ? "govuk-form-group--error" : "")">
+                        <fieldset class="govuk-fieldset" role="group" aria-describedby="max-approval-end-date-hint">
+                            <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                                <h2 class="govuk-fieldset__heading">Maximum approval end date</h2>
+                            </legend>
+
+                            <div id="max-approval-end-date-hint" class="govuk-hint">
+                                For example, 31 8 2027
+                            </div>
+
+                            @if (maxApprovalEndDateGroupError)
+                            {
+                                <span id="max-approval-end-date-error" class="govuk-error-message">
+                                    <span class="govuk-visually-hidden">Error:</span>
+                                    @if (ViewData.ModelState["MaxApprovalEndDate"].Errors.Any())
+                                    {
+                                        @ViewData.ModelState["MaxApprovalEndDate"].Errors[0].ErrorMessage
+                                    }
+                                    else if (ViewData.ModelState["MaxApprovalEndDate.Day"].Errors.Any())
+                                    {
+                                        @ViewData.ModelState["MaxApprovalEndDate.Day"].Errors[0].ErrorMessage
+                                    }
+                                    else if (ViewData.ModelState["MaxApprovalEndDate.Month"].Errors.Any())
+                                    {
+                                        @ViewData.ModelState["MaxApprovalEndDate.Month"].Errors[0].ErrorMessage
+                                    }
+                                    else if (ViewData.ModelState["MaxApprovalEndDate.Year"].Errors.Any())
+                                    {
+                                        @ViewData.ModelState["MaxApprovalEndDate.Year"].Errors[0].ErrorMessage
+                                    }
+                                </span>
+                            }
+
+                            <div class="govuk-date-input">
+                                <div class="govuk-date-input__item">
+                                    <div class="govuk-form-group">
+                                        <label class="govuk-label govuk-date-input__label" for="MaxApprovalEndDate_Day">Day</label>
+                                        <input class="govuk-input govuk-date-input__input govuk-input--width-2 @(maxApprovalEndDateDayError ? "govuk-input--error" : "")"
+                                               asp-for="MaxApprovalEndDate.Day" maxlength="2" type="text" autocomplete="off" />
+                                    </div>
+                                </div>
+                                <div class="govuk-date-input__item">
+                                    <div class="govuk-form-group">
+                                        <label class="govuk-label govuk-date-input__label" for="MaxApprovalEndDate_Month">Month</label>
+                                        <input class="govuk-input govuk-date-input__input govuk-input--width-2 @(maxApprovalEndDateMonthError ? "govuk-input--error" : "")"
+                                               asp-for="MaxApprovalEndDate.Month" maxlength="2" type="text" autocomplete="off" />
+                                    </div>
+                                </div>
+                                <div class="govuk-date-input__item">
+                                    <div class="govuk-form-group">
+                                        <label class="govuk-label govuk-date-input__label" for="MaxApprovalEndDate_Year">Year</label>
+                                        <input class="govuk-input govuk-date-input__input govuk-input--width-4 @(maxApprovalEndDateYearError ? "govuk-input--error" : "")"
+                                               asp-for="MaxApprovalEndDate.Year" maxlength="4" type="text" autocomplete="off" />
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>                    
+
+                    <p class="govuk-hint">This will export a CSV file to your device.</p>
+
+                    <govuk-button type="submit">Continue</govuk-button>
+
+                </form>
+
+            </div>
+        </div>
+    </main>
+</div>

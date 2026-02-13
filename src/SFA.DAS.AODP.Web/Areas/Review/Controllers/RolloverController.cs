@@ -1,8 +1,10 @@
-﻿using MediatR;
+﻿using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 using SFA.DAS.AODP.Web.Authentication;
+using SFA.DAS.AODP.Web.Extensions;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers;
@@ -13,10 +15,12 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers;
 public class RolloverController : ControllerBase
 {
     private readonly ILogger<RolloverController> _logger;
+    private readonly IValidator<RolloverFundingApprovalEndDateViewModel> _rolloverFundingApprovalEndDateViewModelViewModeValidator;
 
-    public RolloverController(ILogger<RolloverController> logger, IMediator mediator) : base(mediator, logger)
+    public RolloverController(ILogger<RolloverController> logger, IMediator mediator, IValidator<RolloverFundingApprovalEndDateViewModel> validator) : base(mediator, logger)
     {
         _logger = logger;
+        _rolloverFundingApprovalEndDateViewModelViewModeValidator = validator;
     }
 
     [HttpGet]
@@ -58,5 +62,29 @@ public class RolloverController : ControllerBase
     {
         ViewData["Title"] = "Upload qualifications to RollOver";
         return View();
+    }
+
+    [HttpGet]
+    [Route("/Review/Rollover/EnterRolloverFundingApprovalEndDate")]
+    public IActionResult EnterRolloverFundingApprovalEndDate()
+    {
+        ViewData["Title"] = "Set the end date for funding extension";
+        return View();
+    }
+
+    [HttpPost]
+    [Route("/Review/Rollover/EnterRolloverFundingApprovalEndDate")]
+    public async Task<IActionResult> EnterRolloverFundingApprovalEndDate(RolloverFundingApprovalEndDateViewModel model)
+    {
+        var validation = await _rolloverFundingApprovalEndDateViewModelViewModeValidator.ValidateAsync(model);
+
+        validation.AddToModelState(ModelState);
+
+        if (!ModelState.IsValid)
+        {
+            return View("EnterRolloverFundingApprovalEndDate", model);
+        }
+
+        return RedirectToAction(nameof(EnterRolloverFundingApprovalEndDate));
     }
 }
