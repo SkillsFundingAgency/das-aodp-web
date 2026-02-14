@@ -13,6 +13,7 @@ using SFA.DAS.AODP.Web.Filters;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Application;
 using SFA.DAS.AODP.Web.Models.OutputFile;
+using SFA.DAS.AODP.Web.Models.RelatedLinks;
 using SFA.DAS.AODP.Web.Validators;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
@@ -206,6 +207,17 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
             var statusResponse = await Send(new GetApplicationFormStatusByApplicationIdQuery(formVersionId, applicationId));
 
             ApplicationFormViewModel model = ApplicationFormViewModel.Map(formsResponse, statusResponse, formVersionId, organisationId, applicationId);
+
+            model.RelatedLinks = RelatedLinksBuilder.Build(
+                Url,
+                RelatedLinksPage.ApplyApplicationDetails,
+                _userHelperService.GetUserType(),
+                new RelatedLinksContext
+                {
+                    OrganisationId = organisationId,
+                    ApplicationId = applicationId,
+                    FormVersionId = formVersionId
+                });
 
             return View(model);
         }
@@ -411,7 +423,6 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         }
 
         #endregion
-
 
         #region Preview
         [ValidateApplication]

@@ -1,10 +1,11 @@
 ﻿using SFA.DAS.AODP.Application.Queries.Review;
 using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Models.Users;
+using SFA.DAS.AODP.Web.Models.RelatedLinks;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
 {
-    public class ApplicationReviewViewModel
+    public class ApplicationReviewViewModel : IHasRelatedLinks
     {
         public UserType UserType { get; set; }
         public Guid Id { get; set; }
@@ -25,6 +26,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
         public List<Feedback> Feedbacks { get; set; } = new();
 
         public ApplicationStatus ApplicationStatus { get; set; }
+        public IReadOnlyList<RelatedLink> RelatedLinks { get; set; } = [];
 
         public class Feedback
         {
@@ -64,6 +66,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
                 UserType = userType,
                 FormTitle = response.FormTitle,
                 ApplicationStatus = applicationStatus,
+                RelatedLinks = RelatedLinksConfiguration.ForUser(userType)
             };
 
             foreach (var feedback in response.Feedbacks)
