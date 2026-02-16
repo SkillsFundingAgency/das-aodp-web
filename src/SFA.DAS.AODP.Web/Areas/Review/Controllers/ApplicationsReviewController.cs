@@ -13,6 +13,7 @@ using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApproval;
 using SFA.DAS.AODP.Web.Authentication;
+using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Application;
@@ -79,7 +80,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             });
         }
 
-        [Route("review/application-reviews/{applicationReviewId}")]
+        [Route("review/application-reviews/{applicationReviewId}", Name = RouteNames.Review_ViewApplication)]
         public async Task<IActionResult> ViewApplication(Guid applicationReviewId)
         {
             var userType = _userHelperService.GetUserType();
@@ -93,9 +94,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             ShowNotificationIfKeyExists(UpdateKeys.OwnerUpdated.ToString(), ViewNotificationMessageType.Success, "The application's owner has been updated.");
 
             var model = ApplicationReviewViewModel.Map(review, userType);
-            model.RelatedLinks = RelatedLinksBuilder.Build(
+            model.SetLinks(
                 Url,
-                RelatedLinksPage.ReviewApplicationDetails,
                 UserType,
                 new RelatedLinksContext
                 {
@@ -483,7 +483,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
         [Authorize(Policy = PolicyConstants.IsReviewUser)]
         [HttpGet]
-        [Route("review/application-reviews/{applicationReviewId}/details")]
+        [Route("review/application-reviews/{applicationReviewId}/details", Name = RouteNames.Review_ViewApplicationReadOnlyDetails)]
         public async Task<IActionResult> ViewApplicationReadOnlyDetails(Guid applicationReviewId)
         {
             var applicationId = await GetApplicationIdWithAccessValidation(applicationReviewId);
@@ -580,6 +580,11 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
             var vm = ApplicationReviewViewModel.Map(review, userType);
             vm.Qan = attemptedQan;
+
+            vm.SetLinks(
+                Url,
+                UserType,
+                new RelatedLinksContext { ApplicationReviewId = applicationReviewId });
 
             return View(nameof(ViewApplication), vm);
         }

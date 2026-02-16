@@ -8,11 +8,11 @@ using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Web.Authentication;
+using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Filters;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Application;
-using SFA.DAS.AODP.Web.Models.OutputFile;
 using SFA.DAS.AODP.Web.Models.RelatedLinks;
 using SFA.DAS.AODP.Web.Validators;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
@@ -199,7 +199,7 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
 
         [ValidateApplication]
         [HttpGet]
-        [Route("apply/organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}")]
+        [Route("apply/organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}", Name = RouteNames.Apply_ViewApplication)]
         public async Task<IActionResult> ViewApplication(Guid organisationId, Guid applicationId, Guid formVersionId)
         {
             var formsResponse = await Send(new GetApplicationFormByIdQuery(formVersionId));
@@ -208,9 +208,8 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
 
             ApplicationFormViewModel model = ApplicationFormViewModel.Map(formsResponse, statusResponse, formVersionId, organisationId, applicationId);
 
-            model.RelatedLinks = RelatedLinksBuilder.Build(
+            model.SetLinks(
                 Url,
-                RelatedLinksPage.ApplyApplicationDetails,
                 _userHelperService.GetUserType(),
                 new RelatedLinksContext
                 {

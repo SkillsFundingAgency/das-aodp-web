@@ -1,4 +1,5 @@
-﻿using SFA.DAS.AODP.Application.Queries.Review;
+﻿using Microsoft.AspNetCore.Mvc;
+using SFA.DAS.AODP.Application.Queries.Review;
 using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Models.RelatedLinks;
@@ -26,7 +27,11 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
         public List<Feedback> Feedbacks { get; set; } = new();
 
         public ApplicationStatus ApplicationStatus { get; set; }
-        public IReadOnlyList<RelatedLink> RelatedLinks { get; set; } = [];
+        public IReadOnlyList<RelatedLink> RelatedLinks { get; private set; } = [];
+
+        public void SetLinks(IUrlHelper url, UserType userType, RelatedLinksContext ctx)
+            => RelatedLinks = RelatedLinksBuilder.Build(url, RelatedLinksPage.ReviewApplicationDetails, userType, ctx);
+
 
         public class Feedback
         {

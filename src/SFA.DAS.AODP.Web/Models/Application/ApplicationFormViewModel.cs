@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Models.Application;
+using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Extensions;
 using SFA.DAS.AODP.Web.Models.RelatedLinks;
 
@@ -25,7 +27,10 @@ namespace SFA.DAS.AODP.Web.Models.Application
         public string Owner { get; set; }
         public List<Section> Sections { get; set; }
 
-        public IReadOnlyList<RelatedLink> RelatedLinks { get; set; } = [];
+        public IReadOnlyList<RelatedLink> RelatedLinks { get; private set; } = Array.Empty<RelatedLink>();
+
+        public void SetLinks(IUrlHelper url, UserType userType, RelatedLinksContext ctx)
+            => RelatedLinks = RelatedLinksBuilder.Build(url, RelatedLinksPage.ApplyApplicationDetails, userType, ctx);
 
         public static ApplicationFormViewModel Map(GetApplicationFormByIdQueryResponse formsResponse,
             GetApplicationFormStatusByApplicationIdQueryResponse statusResponse,

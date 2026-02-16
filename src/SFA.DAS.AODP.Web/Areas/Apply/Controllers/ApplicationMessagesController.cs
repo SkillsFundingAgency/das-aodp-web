@@ -9,6 +9,7 @@ using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Areas.Apply.Models;
 using SFA.DAS.AODP.Web.Authentication;
+using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Filters;
 using SFA.DAS.AODP.Web.Helpers.File;
@@ -41,7 +42,7 @@ public class ApplicationMessagesController : ControllerBase
     }
 
     [HttpGet]
-    [Route("apply/organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/messages")]
+    [Route("apply/organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/messages", Name = RouteNames.Apply_ApplicationMessages)]
     public async Task<IActionResult> ApplicationMessages(Guid organisationId, Guid applicationId, Guid formVersionId)
     {
         var response = await Send(new GetApplicationMessagesByApplicationIdQuery(applicationId, UserType.ToString()));
@@ -77,18 +78,18 @@ public class ApplicationMessagesController : ControllerBase
             ApplicationId = applicationId,
             FormVersionId = formVersionId,
             TimelineMessages = timelineMessages,
-            UserType = UserType,
-            RelatedLinks = RelatedLinksBuilder.Build(
-                Url,
-                RelatedLinksPage.ApplyApplicationMessages,
-                UserType,
-                new RelatedLinksContext
-                {
-                    OrganisationId = organisationId,
-                    ApplicationId = applicationId,
-                    FormVersionId = formVersionId
-                })
+            UserType = UserType
         };
+
+        model.SetLinks(
+            Url,
+            UserType,
+            new RelatedLinksContext
+            {
+                OrganisationId = organisationId,
+                ApplicationId = applicationId,
+                FormVersionId = formVersionId
+            });
 
         if (TempData.ContainsKey("EditMessage"))
         {
@@ -119,6 +120,16 @@ public class ApplicationMessagesController : ControllerBase
         model.ApplicationId = applicationId;
         model.OrganisationId = organisationId;
         model.FormVersionId = formVersionId;
+
+        model.SetLinks(
+            Url,
+            UserType,
+            new RelatedLinksContext
+            {
+                OrganisationId = organisationId,
+                ApplicationId = applicationId,
+                FormVersionId = formVersionId
+            });
 
         model.FileSettings = _formBuilderSettings;
         if (!ModelState.IsValid)

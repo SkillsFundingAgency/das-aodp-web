@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Enums;
@@ -36,7 +37,12 @@ public class ApplicationMessagesViewModel : IHasRelatedLinks
     public FileUploadSetting? FileSettings { get; set; }
     public List<IFormFile> Files { get; set; } = new();
 
-    public IReadOnlyList<RelatedLink> RelatedLinks { get; set; } = [];
+    public IReadOnlyList<RelatedLink> RelatedLinks { get; private set; } = [];
+
+    public void SetLinks(IUrlHelper url, UserType userType, RelatedLinksContext ctx)
+        => RelatedLinks =
+        RelatedLinksBuilder.Build
+            (url, RelatedLinksPage.ReviewApplicationMessages, userType, ctx);
 
     public class MessageActions
     {

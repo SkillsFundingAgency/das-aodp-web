@@ -17,10 +17,9 @@ namespace SFA.DAS.AODP.Web.Models.RelatedLinks
                 RelatedLinksPage.ApplyApplicationMessages => new List<RelatedLink>
                 {
                     new RelatedLink(
-                        RelatedLinkText.ViewApplication,
-                        url.Action(
-                            LinkRoute.Actions.ViewApplication,
-                            LinkRoute.Controllers.Applications,
+                        RelatedLinkConstants.Text.ViewApplication,
+                        url.RouteUrl(
+                            RouteNames.Apply_ViewApplication,
                             new
                             {
                                 organisationId = ctx.OrganisationId,
@@ -33,13 +32,11 @@ namespace SFA.DAS.AODP.Web.Models.RelatedLinks
                 RelatedLinksPage.ApplyApplicationDetails => new List<RelatedLink>
                 {
                     new RelatedLink(
-                        RelatedLinkText.ViewMessages,
-                        url.Action(
-                            LinkRoute.Actions.ApplyMessages,
-                            LinkRoute.Controllers.ApplicationMessages,
+                        RelatedLinkConstants.Text.ViewMessages,
+                        url.RouteUrl(
+                            RouteNames.Apply_ApplicationMessages,
                             new
                             {
-                                area = LinkRoute.Areas.Apply,
                                 organisationId = ctx.OrganisationId,
                                 applicationId = ctx.ApplicationId,
                                 formVersionId = ctx.FormVersionId
@@ -50,10 +47,9 @@ namespace SFA.DAS.AODP.Web.Models.RelatedLinks
                 RelatedLinksPage.ReviewApplicationMessages => new List<RelatedLink>
                 {
                     new RelatedLink(
-                        RelatedLinkText.ViewApplication,
-                        url.Action(
-                            LinkRoute.Actions.ViewApplicationReview,
-                            LinkRoute.Controllers.ApplicationsReview,
+                        RelatedLinkConstants.Text.ViewApplication,
+                        url.RouteUrl(
+                            RouteNames.Review_ViewApplication,
                             new { applicationReviewId = ctx.ApplicationReviewId })!,
                         openInNewTab: true)
                 },
@@ -61,18 +57,16 @@ namespace SFA.DAS.AODP.Web.Models.RelatedLinks
                 RelatedLinksPage.ReviewApplicationDetails => new List<RelatedLink>
                 {
                     new RelatedLink(
-                        RelatedLinkText.ViewMessages,
-                        url.Action(
-                            LinkRoute.Actions.ReviewMessages,
-                            LinkRoute.Controllers.ApplicationMessages,
-                            new { area = LinkRoute.Areas.Review, applicationReviewId = ctx.ApplicationReviewId })!,
+                        RelatedLinkConstants.Text.ViewMessages,
+                        url.RouteUrl(
+                            RouteNames.Review_ApplicationMessages,
+                            new { applicationReviewId = ctx.ApplicationReviewId })!,
                         openInNewTab: false),
 
                     new RelatedLink(
-                        RelatedLinkText.ViewApplication,
-                        url.Action(
-                            LinkRoute.Actions.ViewApplicationReadOnlyDetails,
-                            LinkRoute.Controllers.ApplicationsReview,
+                        RelatedLinkConstants.Text.ViewApplication,
+                        url.RouteUrl(
+                            RouteNames.Review_ViewApplicationReadOnlyDetails,
                             new { applicationReviewId = ctx.ApplicationReviewId })!,
                         openInNewTab: true)
                 },
