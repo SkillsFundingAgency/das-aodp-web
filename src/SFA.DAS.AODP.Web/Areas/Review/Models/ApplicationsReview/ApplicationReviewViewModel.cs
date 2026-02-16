@@ -26,9 +26,11 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
         public ApplicationStatus ApplicationStatus { get; set; }
         public List<Funding> FundedOffers { get; set; } = new();
         public List<Feedback> Feedbacks { get; set; } = new();
+
         public string? Reviewer1 { get; set; }
         public string? Reviewer2 { get; set; }
         public List<SelectListItem> ReviewerOptions { get; set; } = new();
+
 
         public class Feedback
         {
@@ -51,6 +53,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
         }
 
         public static ApplicationReviewViewModel Map(GetApplicationForReviewByIdQueryResponse response, UserType userType)
+
         {
             Enum.TryParse(response.ApplicationStatus, out ApplicationStatus applicationStatus);
             ApplicationReviewViewModel model = new()
@@ -90,7 +93,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
                             }
                         })
                         .ToList(),
-
 
             };
 

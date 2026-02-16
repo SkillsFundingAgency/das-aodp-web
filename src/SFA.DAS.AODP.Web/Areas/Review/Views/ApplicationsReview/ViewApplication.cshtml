@@ -25,7 +25,7 @@
         </div>
         <div class="govuk-notification-banner__content">
             <p class="govuk-notification-banner__heading">
-                This  application has been withdrawn. It can only be used for reference purposes.
+                This application has been withdrawn. It can only be used for reference purposes.
             </p>
         </div>
     </div>
@@ -154,10 +154,12 @@
                     <govuk-summary-list-row-value>
                         @if (!IsReadOnly)
                         {
+
                         <form asp-route-applicationReviewId="@Model.ApplicationReviewId"
                               asp-action="UpdateOwner"
                               asp-Controller="ApplicationsReview" method="post"
                               gfa-prepend-error-summary="false">
+
 
                                 <div class="govuk-form-group govuk-!-margin-bottom-0">
                                     <div class="select-picker">
@@ -222,7 +224,7 @@
                         {
                             <span asp-validation-for="Reviewer2" class="govuk-error-message"></span>
                             <form asp-route-applicationReviewId="@Model.ApplicationReviewId"
-                                    asp-action="UpdateReviewer"
+                                 asp-action="UpdateReviewer"
                                     asp-Controller="ApplicationsReview" method="post">
                                     <input type="hidden" name="ReviewerFieldName" value="@nameof(Model.Reviewer2)" />
                                 <input type="hidden" name="ApplicationId" value="@Model.Id" />
@@ -238,6 +240,7 @@
                                     </div>
                                 </div>
                             </form>
+
                         }
                         else
                         {

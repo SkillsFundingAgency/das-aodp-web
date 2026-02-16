@@ -8,6 +8,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Queries.Review;
+using SFA.DAS.AODP.Application.Queries.Users;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Models.Settings;
@@ -306,6 +307,8 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
 
                 _mediatorMock.Verify(m => m.Send(It.IsAny<SaveReviewerCommand>(), It.IsAny<CancellationToken>()), Times.Once);
                 _mediatorMock.Verify(m => m.Send(It.IsAny<GetApplicationForReviewByIdQuery>(), It.IsAny<CancellationToken>()), Times.Never);
+                _mediatorMock.Verify(m => m.Send(It.IsAny<GetUsersQuery>(), It.IsAny<CancellationToken>()), Times.Never);
+
             });
         }
 
@@ -337,11 +340,22 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
                 Value = _fixture.Create<GetApplicationForReviewByIdQueryResponse>()
             };
 
+
+            var usersResponse = new BaseMediatrResponse<GetUsersQueryResponse>
+            {
+                Success = true,
+                Value = _fixture.Create<GetUsersQueryResponse>()
+            };
+
             _mediatorMock.Setup(m => m.Send(It.IsAny<SaveReviewerCommand>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(reviewerResponse);
 
             _mediatorMock.Setup(m => m.Send(It.IsAny<GetApplicationForReviewByIdQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(reviewResponse);
+
+
+            _mediatorMock.Setup(m => m.Send(It.IsAny<GetUsersQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(usersResponse);
 
             var model = new UpdateReviewerViewModel
             {
@@ -373,6 +387,8 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
                 _mediatorMock.Verify(m => m.Send(It.Is<GetApplicationForReviewByIdQuery>(q =>
                     q.ApplicationReviewId == applicationReviewId
                 ), It.IsAny<CancellationToken>()), Times.Once);
+
+                _mediatorMock.Verify(m => m.Send(It.IsAny<GetUsersQuery>(), It.IsAny<CancellationToken>()), Times.Once);
 
             });
         }

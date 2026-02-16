@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using SFA.DAS.AODP.Application.Commands.Application.Review;
 using SFA.DAS.AODP.Application.Queries.Application.Form;
 using SFA.DAS.AODP.Application.Queries.Review;
+using SFA.DAS.AODP.Application.Queries.Users;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Models.Settings;
@@ -86,6 +87,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         {
             var userType = _userHelperService.GetUserType();
             var review = await Send(new GetApplicationForReviewByIdQuery(applicationReviewId));
+            var reviewersList = await Send(new GetUsersQuery());
 
             if (userType == UserType.Ofqual && review.SharedWithOfqual == false) return NotFound();
             if (userType == UserType.SkillsEngland && review.SharedWithSkillsEngland == false) return NotFound();
@@ -94,7 +96,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             ShowNotificationIfKeyExists(UpdateKeys.QanUpdated.ToString(), ViewNotificationMessageType.Success, "The application's QAN has been updated.");
             ShowNotificationIfKeyExists(UpdateKeys.OwnerUpdated.ToString(), ViewNotificationMessageType.Success, "The application's owner has been updated.");
             ShowNotificationIfKeyExists(UpdateKeys.ReviewerUpdated.ToString(), ViewNotificationMessageType.Success, "The application's reviewer has been updated.");
+
             return View(ApplicationReviewViewModel.Map(review, userType));
+
         }
 
         [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
@@ -366,8 +370,10 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     SentByEmail = _userHelperService.GetUserEmail(),
                     SentByName = _userHelperService.GetUserDisplayName(),
                     ReviewerFieldName = model.ReviewerFieldName,
+
                     ReviewerValue = string.IsNullOrWhiteSpace(model.ReviewerValue) 
                         ? null : model.ReviewerValue,
+
                     UserType = _userHelperService.GetUserType().ToString()
                 });
 
@@ -378,6 +384,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 var review = await Send(new GetApplicationForReviewByIdQuery(model.ApplicationReviewId));
 
                 var vm = ApplicationReviewViewModel.Map(review, UserType.Qfau);
+
                 switch (model.ReviewerFieldName)
                 {
                     case nameof(vm.Reviewer1):
@@ -607,8 +614,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         {
             var userType = _userHelperService.GetUserType();
             var review = await Send(new GetApplicationForReviewByIdQuery(applicationReviewId));
+            var users = await Send(new GetUsersQuery());
 
-            var vm = ApplicationReviewViewModel.Map(review, userType);
+            var vm = ApplicationReviewViewModel.Map(review, userType, users);
             vm.Qan = attemptedQan;
 
             return View(nameof(ViewApplication), vm);
