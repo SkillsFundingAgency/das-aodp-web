@@ -1,6 +1,8 @@
 ﻿using SFA.DAS.AODP.Application.Queries.Review;
 using SFA.DAS.AODP.Models.Application;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using SFA.DAS.AODP.Models.Users;
+using SFA.DAS.AODP.Web.Constants;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
 {
@@ -9,7 +11,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
         public UserType UserType { get; set; }
         public Guid Id { get; set; }
         public Guid ApplicationReviewId { get; set; }
-
+       
         public string Name { get; set; }
         public DateTime LastUpdated { get; set; }
         public int Reference { get; set; }
@@ -21,10 +23,14 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
 
         public string FormTitle { get; set; }
 
+        public ApplicationStatus ApplicationStatus { get; set; }
         public List<Funding> FundedOffers { get; set; } = new();
         public List<Feedback> Feedbacks { get; set; } = new();
 
-        public ApplicationStatus ApplicationStatus { get; set; }
+        public string? Reviewer1 { get; set; }
+        public string? Reviewer2 { get; set; }
+        public List<SelectListItem> ReviewerOptions { get; set; } = new();
+
 
         public class Feedback
         {
@@ -46,8 +52,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
             public string? Comments { get; set; }
         }
 
-
         public static ApplicationReviewViewModel Map(GetApplicationForReviewByIdQueryResponse response, UserType userType)
+
         {
             Enum.TryParse(response.ApplicationStatus, out ApplicationStatus applicationStatus);
             ApplicationReviewViewModel model = new()
@@ -64,6 +70,30 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
                 UserType = userType,
                 FormTitle = response.FormTitle,
                 ApplicationStatus = applicationStatus,
+                Reviewer1 = string.IsNullOrWhiteSpace(response.Reviewer1)
+                    ? ReviewerDropdown.Assignment.UnassignedValue
+                    : response.Reviewer1,
+                Reviewer2 = string.IsNullOrWhiteSpace(response.Reviewer2)
+                    ? ReviewerDropdown.Assignment.UnassignedValue
+                    : response.Reviewer2,
+                ReviewerOptions =
+                    response.AvailableReviewers
+                        .OrderBy(r => r.LastName).ThenBy(r => r.FirstName)
+                        .Select(r => new SelectListItem
+                        {
+                            Value = $"{r.FirstName} {r.LastName}",
+                            Text = $"{r.FirstName} {r.LastName}"
+                        })
+                        .Concat(new[]
+                        {
+                            new SelectListItem
+                            {
+                                Value = ReviewerDropdown.Assignment.UnassignedValue,
+                                Text  = ReviewerDropdown.Assignment.UnassignedText
+                            }
+                        })
+                        .ToList(),
+
             };
 
             foreach (var feedback in response.Feedbacks)
