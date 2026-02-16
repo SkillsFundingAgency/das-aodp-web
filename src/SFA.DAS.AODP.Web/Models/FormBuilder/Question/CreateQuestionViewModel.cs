@@ -9,7 +9,7 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
         public Guid SectionId { get; set; }
         public Guid FormVersionId { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Enter a title.")]
         public string Title { get; set; } = string.Empty;
 
         [Required]
