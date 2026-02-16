@@ -182,7 +182,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         }
 
         [Route("/Review/New/QualificationDetails")]
-        public async Task<IActionResult> QualificationDetails([FromQuery] string qualificationReference)
+        public async Task<IActionResult> QualificationDetails([FromQuery] string qualificationReference, [FromQuery] string? returnTo = null)
         {            
             if (string.IsNullOrWhiteSpace(qualificationReference))
             {
@@ -205,6 +205,18 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 var applications = await Send(new GetApplicationsByQanQuery(model.Qual.Qan));
                 if (applications != null)
                     model.MapApplications(applications);
+
+                ViewData["BackArea"] = "Review";
+                ViewData["BackController"] = "New";
+                ViewData["BackAction"] = "Index";
+
+                if (!string.IsNullOrWhiteSpace(returnTo) &&
+                    string.Equals(returnTo, "QualificationSearch", StringComparison.OrdinalIgnoreCase))
+                {
+                    ViewData["BackController"] = "QualificationSearch";
+                    ViewData["BackAction"] = "Index";
+                    ViewData["BackArea"] = "Review";
+                }
 
                 return View(model);
             }

@@ -10,6 +10,8 @@ public class GetApplicationsByQanQueryResponse
         public string? Name { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? SubmittedDate { get; set; }
+        public string? Status { get; set; }
+        public int ReferenceId { get; set; }
     }
 }
 

@@ -73,6 +73,7 @@ public class NewQualificationDetailsViewModel
     public List<OfferFundingDetails> FundingDetails { get; set; } = new();
     public List<Application> Applications { get; set; } = new();
     public bool? FundingsOffersOutcomeStatus { get; set; }
+    public bool IsApplicationCompleted => string.Equals(Stage?.Name, "Completed", System.StringComparison.OrdinalIgnoreCase);
 
     public class OfferFundingDetails
     {
@@ -155,6 +156,9 @@ public class NewQualificationDetailsViewModel
         public string? Name { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? SubmittedDate { get; set; }
+        public string? Status { get; set; }
+        public int ReferenceId { get; set; }
+        public DateTime? ApplicationDate => SubmittedDate ?? CreatedDate;
     }
 
     public static implicit operator NewQualificationDetailsViewModel(GetQualificationDetailsQueryResponse entity)
@@ -251,14 +255,16 @@ public class NewQualificationDetailsViewModel
 
     public void MapApplications(GetApplicationsByQanQueryResponse applications)
     {
-        foreach (var application in applications.Applications)
+        foreach (var application in applications.Applications.OrderByDescending(x => x.SubmittedDate))
         {
             Applications.Add(new()
             {
                 Id = application.Id,
                 Name = application.Name,
                 CreatedDate = application.CreatedDate,
-                SubmittedDate = application.SubmittedDate
+                SubmittedDate = application.SubmittedDate,
+                Status = application.Status,
+                ReferenceId = application.ReferenceId
             });
         }
     }
