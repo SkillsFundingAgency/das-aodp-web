@@ -1,5 +1,4 @@
-﻿using DocumentFormat.OpenXml.Wordprocessing;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Queries.Import;
@@ -29,7 +28,9 @@ public class RolloverController : ControllerBase
     public IActionResult Index()
     {
         var session = GetSessionModel();
-        var model = session.Start ?? new RolloverStartViewModel();
+        var model = session.Start != null
+            ? new RolloverStartViewModel { SelectedProcess = session.Start.SelectedProcess }
+            : new RolloverStartViewModel();
 
         return View("RolloverStart", model);
     }
@@ -44,7 +45,11 @@ public class RolloverController : ControllerBase
         }
 
         var session = GetSessionModel();
-        session.Start = model;
+        session.Start = new RolloverStartSession
+        {
+            SelectedProcess = model.SelectedProcess
+        };
+
         SaveSessionModel(session);
 
         return model.SelectedProcess switch
@@ -85,8 +90,10 @@ public class RolloverController : ControllerBase
         var session = GetSessionModel();
         if (session.ImportStatus != null)
         {
+            var vm = RolloverImportStatusViewModel.MapFromSession(session.ImportStatus);
+
             ViewData["Title"] = "Do you need to update any data before starting?";
-            return View("CheckData", session.ImportStatus);
+            return View("CheckData", vm);
         }
 
         var model = new RolloverImportStatusViewModel();
@@ -129,7 +136,8 @@ public class RolloverController : ControllerBase
                 model.PldnsListLastImported = latest?.EndTime ?? latest?.StartTime;
             }
 
-            session.ImportStatus = model;
+            session.ImportStatus = RolloverImportStatusViewModel.MapToSession(model);
+
             SaveSessionModel(session);
         }
         catch (Exception ex)
@@ -149,11 +157,17 @@ public class RolloverController : ControllerBase
         if (!ModelState.IsValid)
         {
             var session = GetSessionModel();
-            return View("CheckData", session.ImportStatus ?? model);
+
+            var vm = session.ImportStatus != null
+                ? RolloverImportStatusViewModel.MapFromSession(session.ImportStatus)
+                : model;
+
+            return View("CheckData", vm);
         }
 
         var sessionToSave = GetSessionModel();
-        sessionToSave.ImportStatus = model;
+        sessionToSave.ImportStatus = RolloverImportStatusViewModel.MapToSession(model);
+
         SaveSessionModel(sessionToSave);
 
         return RedirectToAction(nameof(InitialSelection));
