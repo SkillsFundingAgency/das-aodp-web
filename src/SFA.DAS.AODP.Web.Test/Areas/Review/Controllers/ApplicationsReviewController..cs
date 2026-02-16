@@ -52,7 +52,8 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
                 ItemsPerPage = 10,
                 ApplicationSearch = "Test Search",
                 AwardingOrganisationSearch = "Test AO",
-                Status = new List<ApplicationStatus> { ApplicationStatus.InReview, ApplicationStatus.Approved }
+                Status = new List<ApplicationStatus> { ApplicationStatus.InReview, ApplicationStatus.Approved },
+                ReviewerSelection = "Bob Smith"
             };
 
             var expectedApplication = new GetApplicationsForReviewQueryResponse.Application
@@ -67,7 +68,9 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
                 Owner = "TestOwner",
                 Status = ApplicationStatus.InReview,
                 NewMessage = false,
-                FindRegulatedQualificationUrl = _aodpOptions.Value.FindRegulatedQualificationUrl
+                FindRegulatedQualificationUrl = _aodpOptions.Value.FindRegulatedQualificationUrl,
+                Reviewer1 = "Bob Smith",
+                Reviewer2 = "Alice Jones"
             };
 
             var response = new GetApplicationsForReviewQueryResponse
@@ -94,6 +97,22 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
             Assert.Equal(expectedApplication.Name, app.Name);
             Assert.Equal(expectedApplication.Reference, app.Reference);
             Assert.Equal(expectedApplication.Qan, app.Qan);
+            Assert.Contains("Bob Smith", app.ReviewersSummary);
+            Assert.Contains("Alice Jones", app.ReviewersSummary);
+
+            _mediatorMock.Verify(m => m.Send(
+                It.Is<GetApplicationsForReviewQuery>(q =>
+                    q.ReviewUser == expectedUserType.ToString() &&
+                    q.ApplicationSearch == expectedModel.ApplicationSearch &&
+                    q.AwardingOrganisationSearch == expectedModel.AwardingOrganisationSearch &&
+                    q.ApplicationStatuses.SequenceEqual(expectedModel.Status.Select(s => s.ToString())) &&
+                    q.ApplicationsWithNewMessages == expectedModel.Status.Contains(ApplicationStatus.NewMessage) &&
+                    q.Limit == expectedModel.ItemsPerPage &&
+                    q.Offset == expectedModel.ItemsPerPage * (expectedModel.Page - 1) &&
+                    q.ReviewerSearch == "Bob Smith" &&
+                    q.UnassignedOnly == false),
+                It.IsAny<CancellationToken>()),
+                Times.Once);
 
         }
 
@@ -289,6 +308,7 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
                 _mediatorMock.Verify(m => m.Send(It.IsAny<SaveReviewerCommand>(), It.IsAny<CancellationToken>()), Times.Once);
                 _mediatorMock.Verify(m => m.Send(It.IsAny<GetApplicationForReviewByIdQuery>(), It.IsAny<CancellationToken>()), Times.Never);
                 _mediatorMock.Verify(m => m.Send(It.IsAny<GetUsersQuery>(), It.IsAny<CancellationToken>()), Times.Never);
+
             });
         }
 
@@ -320,6 +340,7 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
                 Value = _fixture.Create<GetApplicationForReviewByIdQueryResponse>()
             };
 
+
             var usersResponse = new BaseMediatrResponse<GetUsersQueryResponse>
             {
                 Success = true,
@@ -331,6 +352,7 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
 
             _mediatorMock.Setup(m => m.Send(It.IsAny<GetApplicationForReviewByIdQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(reviewResponse);
+
 
             _mediatorMock.Setup(m => m.Send(It.IsAny<GetUsersQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(usersResponse);
@@ -365,8 +387,6 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
                 _mediatorMock.Verify(m => m.Send(It.Is<GetApplicationForReviewByIdQuery>(q =>
                     q.ApplicationReviewId == applicationReviewId
                 ), It.IsAny<CancellationToken>()), Times.Once);
-
-                _mediatorMock.Verify(m => m.Send(It.IsAny<GetUsersQuery>(), It.IsAny<CancellationToken>()), Times.Once);
             });
         }
 

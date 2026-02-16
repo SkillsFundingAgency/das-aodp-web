@@ -1,7 +1,7 @@
 ﻿@using SFA.DAS.AODP.Models.Application
 @using SFA.DAS.AODP.Models.Users
 @using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
-@model ApplicationReviewViewModel;
+@model ApplicationReviewViewModel
 
 @{
     ViewData["Title"] = Model.Name;
@@ -154,9 +154,12 @@
                     <govuk-summary-list-row-value>
                         @if (!IsReadOnly)
                         {
-                            <form asp-route-applicationReviewId="@Model.ApplicationReviewId"
-                                  asp-action="UpdateOwner"
-                                  asp-Controller="ApplicationsReview" method="post">
+
+                        <form asp-route-applicationReviewId="@Model.ApplicationReviewId"
+                              asp-action="UpdateOwner"
+                              asp-Controller="ApplicationsReview" method="post"
+                              gfa-prepend-error-summary="false">
+
 
                                 <div class="govuk-form-group govuk-!-margin-bottom-0">
                                     <div class="select-picker">
@@ -195,8 +198,10 @@
 
                                     <div class="govuk-form-group govuk-!-margin-bottom-0">                                       
                                         <div class="select-picker">
-                                            <select asp-for="@Model.Reviewer1" id="Reviewer1" name="ReviewerValue" class="govuk-select" asp-items="Model.UserSelectList">
-                                                <option value="">Choose reviewer</option>
+                                            <select asp-for="Reviewer1"
+                                                    name="ReviewerValue"
+                                                    class="govuk-select"
+                                                    asp-items="Model.ReviewerOptions">
                                             </select>
                                             <govuk-button type="submit" class="govuk-button  govuk-button--secondary">Change</govuk-button>
                                         </div>
@@ -219,20 +224,23 @@
                         {
                             <span asp-validation-for="Reviewer2" class="govuk-error-message"></span>
                             <form asp-route-applicationReviewId="@Model.ApplicationReviewId"
-                                      asp-action="UpdateReviewer"
-                                      asp-Controller="ApplicationsReview" method="post">
+                                 asp-action="UpdateReviewer"
+                                    asp-Controller="ApplicationsReview" method="post">
                                     <input type="hidden" name="ReviewerFieldName" value="@nameof(Model.Reviewer2)" />
-                                    <input type="hidden" name="ApplicationId" value="@Model.Id" />
+                                <input type="hidden" name="ApplicationId" value="@Model.Id" />
 
-                                    <div class="govuk-form-group govuk-!-margin-bottom-0">
-                                        <div class="select-picker">
-                                            <select asp-for="@Model.Reviewer2" id="Reviewer2" name="ReviewerValue" class="govuk-select" asp-items="Model.UserSelectList">
-                                                <option value="">Choose reviewer</option>
+                                <div class="govuk-form-group govuk-!-margin-bottom-0">
+                                    <div class="select-picker">
+                                            <select asp-for="Reviewer2"
+                                                    name="ReviewerValue"
+                                                    class="govuk-select"
+                                                    asp-items="Model.ReviewerOptions">
                                             </select>
-                                            <govuk-button type="submit" class="govuk-button govuk-button--secondary">Change</govuk-button>
-                                        </div>
+                                        <govuk-button type="submit" class="govuk-button govuk-button--secondary">Change</govuk-button>
                                     </div>
-                                </form>
+                                </div>
+                            </form>
+
                         }
                         else
                         {
