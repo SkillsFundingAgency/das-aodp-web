@@ -27,7 +27,7 @@
                     <h1 class="govuk-heading-xl">@ViewData["Title"]</h1>
                 </div>
 
-                <form asp-area="Review" asp-controller="Rollover" asp-action="EnterRolloverEligibilityDates" method="post" novalidate>
+                <form asp-area="Review" asp-controller="Rollover" asp-action="EnterRolloverEligibilityDates" method="post" novalidate="novalidate">
 
                     <!-- Funding End Date -->
                     <div class="govuk-form-group" @(fundingEndDateGroupError || operationalEndDateGroupError ? "govuk-form-group--error" : "")">
