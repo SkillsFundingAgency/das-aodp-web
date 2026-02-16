@@ -387,9 +387,6 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
                 _mediatorMock.Verify(m => m.Send(It.Is<GetApplicationForReviewByIdQuery>(q =>
                     q.ApplicationReviewId == applicationReviewId
                 ), It.IsAny<CancellationToken>()), Times.Once);
-
-                _mediatorMock.Verify(m => m.Send(It.IsAny<GetUsersQuery>(), It.IsAny<CancellationToken>()), Times.Once);
-
             });
         }
 

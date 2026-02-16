@@ -87,7 +87,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         {
             var userType = _userHelperService.GetUserType();
             var review = await Send(new GetApplicationForReviewByIdQuery(applicationReviewId));
-            var reviewersList = await Send(new GetUsersQuery());
 
             if (userType == UserType.Ofqual && review.SharedWithOfqual == false) return NotFound();
             if (userType == UserType.SkillsEngland && review.SharedWithSkillsEngland == false) return NotFound();
@@ -614,9 +613,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         {
             var userType = _userHelperService.GetUserType();
             var review = await Send(new GetApplicationForReviewByIdQuery(applicationReviewId));
-            var users = await Send(new GetUsersQuery());
 
-            var vm = ApplicationReviewViewModel.Map(review, userType, users);
+            var vm = ApplicationReviewViewModel.Map(review, userType);
             vm.Qan = attemptedQan;
 
             return View(nameof(ViewApplication), vm);
