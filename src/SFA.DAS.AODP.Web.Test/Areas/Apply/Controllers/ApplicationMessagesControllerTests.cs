@@ -9,6 +9,8 @@ using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Infrastructure.File;
+using SFA.DAS.AODP.Models.Common;
+using SFA.DAS.AODP.Models.Exceptions;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Areas.Apply.Controllers;
 using SFA.DAS.AODP.Web.Areas.Apply.Models;
@@ -97,7 +99,6 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Apply.Controllers
 
         }
 
-
         [Fact]
         public async Task ApplicationMessages_InvalidFiles_ErrorViewModelReturned()
         {
@@ -120,7 +121,9 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Apply.Controllers
             var formVersionId = Guid.NewGuid();
             _controller.TempData = new Mock<ITempDataDictionary>().Object;
 
-            _messageFileValidationService.Setup(f => f.ValidateFiles(model.Files)).Throws(new Exception("error"));
+            _messageFileValidationService
+                .Setup(f => f.ValidateFiles(model.Files))
+                .Throws(new FileUploadPolicyException(FileUploadRejectionReason.InvalidFileName));
 
             // Act
             var result = await _controller.ApplicationMessages(model, applicationId, organisationId, formVersionId);

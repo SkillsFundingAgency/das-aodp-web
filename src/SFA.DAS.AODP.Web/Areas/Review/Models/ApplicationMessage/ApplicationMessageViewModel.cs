@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Models.Users;
+using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Models.TimelineComponents;
 using System.ComponentModel;
@@ -18,11 +19,11 @@ public class ApplicationMessagesViewModel
         : "Leave messages, comments and recommendations to DfE or the AO applicant owner. You will be able to upload files when you are previewing the message.";
     
     [DisplayName("Message")]
-    [Required]
+    [Required(ErrorMessage = ErrorMessages.ApplicationMessages.TextRequired)]
     public string MessageText { get; set; }
 
     [DisplayName("Message type")]
-    [Required]
+    [Required(ErrorMessage = ErrorMessages.ApplicationMessages.MessageTypeRequired)]
     public string SelectedMessageType { get; set; }
     public MessageTypeConfiguration SelectedMessageTypeConfiguration => MessageTypeConfigurationRules.GetMessageSharingSettings(SelectedMessageType);
     public string? SelectedMessageTypeDisplay => SelectedMessageTypeConfiguration.DisplayName;
