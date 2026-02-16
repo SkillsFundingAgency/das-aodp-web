@@ -1,7 +1,10 @@
 ﻿@using SFA.DAS.AODP.Web.Models.Import
 @model ImportRequestViewModel
+@inject IFeatureManager FeatureManager
 
 @using System.Security.Claims
+@using Microsoft.FeatureManagement
+@using SFA.DAS.AODP.Web.FeatureManagement
 @{
 	ViewData["Title"] = "Import Data";
 }
@@ -46,12 +49,19 @@
                                         This includes both currently approved and archived qualifications
                                     </govuk-radios-hint>
                                 </govuk-radios-item>
-                                <govuk-radios-item value="Defunding list">
-                                    Defunding list
-                                </govuk-radios-item>
-                                <govuk-radios-item value="Pldns">
-                                    Policy last date for new starters (PLDNS) list
-                                </govuk-radios-item>
+                                @if (await FeatureManager.IsEnabledAsync(nameof(Feature.DefundingListImport)))
+                                {
+                                    <govuk-radios-item value="Defunding list">
+                                        Defunding list
+                                    </govuk-radios-item>
+                                }
+                                @if (await FeatureManager.IsEnabledAsync(nameof(Feature.PldnsImport)))
+                                {
+                                    <govuk-radios-item value="Pldns">
+                                        Policy last date for new starters (PLDNS) list
+                                    </govuk-radios-item>
+                                }
+               
                             </govuk-radios-fieldset>
                         </govuk-radios>
                     </div>
