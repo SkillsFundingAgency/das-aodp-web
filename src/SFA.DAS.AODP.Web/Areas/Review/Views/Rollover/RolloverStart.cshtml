@@ -1,0 +1,37 @@
+﻿@model SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.RolloverStartViewModel
+@{
+    ViewData["Title"] = "Which stage of the rollover process do you need to do?";
+}
+
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
+<div class="govuk-width-container">
+    <main class="govuk-main-wrapper">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds" id="guide-contents">
+                <a asp-area="Review" asp-controller="Home" asp-action="Index" class="govuk-link govuk-!-margin-bottom-6">&lt; Back</a>
+
+                <div class="govuk-grid-row">
+                    <h1 class="govuk-heading-xl">@ViewData["Title"]</h1>
+                </div>
+
+                <form asp-area="Review" asp-controller="Rollover" asp-action="Index" method="post">
+                    <div class="govuk-form-group">
+                        <govuk-radios asp-for="@Model.SelectedProcess">
+                            <govuk-radios-fieldset>
+                                <govuk-radios-fieldset-legend is-page-heading="false" class="govuk-fieldset__legend--s"></govuk-radios-fieldset-legend>
+
+                                @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.SelectedProcess))
+
+                                <govuk-radios-item value="InitialSelection">Initial selection of qualifications to be checked for rollover</govuk-radios-item>
+                                <govuk-radios-item value="FinalUpload">Final upload of a file with the QA'd decision for rollover</govuk-radios-item>
+                            </govuk-radios-fieldset>
+                        </govuk-radios>
+                    </div>
+
+                    <govuk-button type="submit">Continue</govuk-button>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>

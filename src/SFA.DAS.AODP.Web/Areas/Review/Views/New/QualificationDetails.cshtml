@@ -3,111 +3,112 @@
 
 @{
     ViewData["Title"] = "Qualification Details";
+    var isCompleted = string.Equals(Model.Stage?.Name, "Completed", System.StringComparison.OrdinalIgnoreCase);
 }
 <a class="govuk-back-link"
-asp-controller="New"
-asp-action="Index">
+   asp-controller="New"
+   asp-action="Index">
     Return to qualifications
 </a>
 
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
 <span class="govuk-caption-xl">
-    Newly regulated qualification
+    @(isCompleted ? "Completed qualification" : "Newly regulated qualification")
 </span>
 <h1 class="govuk-heading-xl">Qualification Details</h1>
 
-<form asp-controller="New" asp-action="QualificationDetails" method="post">
-    @Html.HiddenFor(m => m.Qual.Qan)
+<div class="govuk-tabs" data-module="govuk-tabs">
+    <ul class="govuk-tabs__list">
+        <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+            <a class="govuk-link" href="/Review/New/QualificationDetails?qualificationReference=@Model.Qual.Qan">
+                Overview
+            </a>
+        </li>
+        <li class="govuk-tabs__list-item govuk-tabs__list-item">
+            <a class="govuk-link" href="/Review/New/QualificationDetails/Timeline?qualificationReference=@Model.Qual.Qan">
+                History
+            </a>
+        </li>
+    </ul>
 
-    <div class="govuk-tabs" data-module="govuk-tabs">
-        <ul class="govuk-tabs__list">
-            <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
-                <a class="govuk-link" href="/Review/New/QualificationDetails?qualificationReference=@Model.Qual.Qan">
-                    Overview
-                </a>
-            </li>
-            <li class="govuk-tabs__list-item govuk-tabs__list-item">
-                <a class="govuk-link" href="/Review/New/QualificationDetails/Timeline?qualificationReference=@Model.Qual.Qan">
-                    History
-                </a>
-            </li>
-        </ul>
-        <div class="govuk-tabs__panel" id="details">
-            <govuk-summary-list>
-                <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>Status</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.ProcStatus.Name</govuk-summary-list-row-value>
-                </govuk-summary-list-row>
-                <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>QAN</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.Qual.Qan</govuk-summary-list-row-value>
-                </govuk-summary-list-row>
-                <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>Qualification title</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.Qual.QualificationName</govuk-summary-list-row-value>
-                </govuk-summary-list-row>
-                <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>Awarding organisation</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.Organisation.NameOfqual</govuk-summary-list-row-value>
-                </govuk-summary-list-row>
-                <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>Qualification type</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.Type</govuk-summary-list-row-value>
-                </govuk-summary-list-row>
-                <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>Level</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.Level</govuk-summary-list-row-value>
-                </govuk-summary-list-row>
-                <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>Sector subject area</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.Ssa</govuk-summary-list-row-value>
-                </govuk-summary-list-row>
-                <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>Age group(s)</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>
-                        @{
-                            var ageGroups = new List<string>();
+    <div class="govuk-tabs__panel" id="details">
+        <govuk-summary-list>
+            <govuk-summary-list-row>
+                <govuk-summary-list-row-key>Status</govuk-summary-list-row-key>
+                <govuk-summary-list-row-value>@Model.ProcStatus.Name</govuk-summary-list-row-value>
+            </govuk-summary-list-row>
+            <govuk-summary-list-row>
+                <govuk-summary-list-row-key>QAN</govuk-summary-list-row-key>
+                <govuk-summary-list-row-value>@Model.Qual.Qan</govuk-summary-list-row-value>
+            </govuk-summary-list-row>
+            <govuk-summary-list-row>
+                <govuk-summary-list-row-key>Qualification title</govuk-summary-list-row-key>
+                <govuk-summary-list-row-value>@Model.Qual.QualificationName</govuk-summary-list-row-value>
+            </govuk-summary-list-row>
+            <govuk-summary-list-row>
+                <govuk-summary-list-row-key>Awarding organisation</govuk-summary-list-row-key>
+                <govuk-summary-list-row-value>@Model.Organisation.NameOfqual</govuk-summary-list-row-value>
+            </govuk-summary-list-row>
+            <govuk-summary-list-row>
+                <govuk-summary-list-row-key>Qualification type</govuk-summary-list-row-key>
+                <govuk-summary-list-row-value>@Model.Type</govuk-summary-list-row-value>
+            </govuk-summary-list-row>
+            <govuk-summary-list-row>
+                <govuk-summary-list-row-key>Level</govuk-summary-list-row-key>
+                <govuk-summary-list-row-value>@Model.Level</govuk-summary-list-row-value>
+            </govuk-summary-list-row>
+            <govuk-summary-list-row>
+                <govuk-summary-list-row-key>Sector subject area</govuk-summary-list-row-key>
+                <govuk-summary-list-row-value>@Model.Ssa</govuk-summary-list-row-value>
+            </govuk-summary-list-row>
+            <govuk-summary-list-row>
+                <govuk-summary-list-row-key>Age group(s)</govuk-summary-list-row-key>
+                <govuk-summary-list-row-value>
+                    @{
+                        var ageGroups = new List<string>();
 
-                            if (Model.PreSixteen ?? false)
-                            {
-                                ageGroups.Add("Pre 16");
-                            }
-                            if (Model.SixteenToEighteen ?? false)
-                            {
-                                ageGroups.Add("16-18");
-                            }
-                            if (Model.EighteenPlus ?? false)
-                            {
-                                ageGroups.Add("18+");
-                            }
-                            if (Model.NineteenPlus ?? false)
-                            {
-                                ageGroups.Add("19+");
-                            }
-                        }
-                        @foreach (var ageGroup in ageGroups)
+                        if (Model.PreSixteen ?? false)
                         {
-                            <p>@ageGroup</p>
+                            ageGroups.Add("Pre 16");
                         }
-                    </govuk-summary-list-row-value>
-                </govuk-summary-list-row>
-                <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>Guided learning hours (GLH)</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.Glh</govuk-summary-list-row-value>
-                </govuk-summary-list-row>
-                <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>Total qualification time (TQT)</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.Tqt</govuk-summary-list-row-value>
-                </govuk-summary-list-row>
-                <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>Regulation start date</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.RegulationStartDate.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)</govuk-summary-list-row-value>
-                </govuk-summary-list-row>
-                <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>Operational start date</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.OperationalStartDate.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)</govuk-summary-list-row-value>
-                </govuk-summary-list-row>
+                        if (Model.SixteenToEighteen ?? false)
+                        {
+                            ageGroups.Add("16-18");
+                        }
+                        if (Model.EighteenPlus ?? false)
+                        {
+                            ageGroups.Add("18+");
+                        }
+                        if (Model.NineteenPlus ?? false)
+                        {
+                            ageGroups.Add("19+");
+                        }
+                    }
+                    @foreach (var ageGroup in ageGroups)
+                    {
+                        <p>@ageGroup</p>
+                    }
+                </govuk-summary-list-row-value>
+            </govuk-summary-list-row>
+            <govuk-summary-list-row>
+                <govuk-summary-list-row-key>Guided learning hours (GLH)</govuk-summary-list-row-key>
+                <govuk-summary-list-row-value>@Model.Glh</govuk-summary-list-row-value>
+            </govuk-summary-list-row>
+            <govuk-summary-list-row>
+                <govuk-summary-list-row-key>Total qualification time (TQT)</govuk-summary-list-row-key>
+                <govuk-summary-list-row-value>@Model.Tqt</govuk-summary-list-row-value>
+            </govuk-summary-list-row>
+            <govuk-summary-list-row>
+                <govuk-summary-list-row-key>Regulation start date</govuk-summary-list-row-key>
+                <govuk-summary-list-row-value>@Model.RegulationStartDate.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)</govuk-summary-list-row-value>
+            </govuk-summary-list-row>
+            <govuk-summary-list-row>
+                <govuk-summary-list-row-key>Operational start date</govuk-summary-list-row-key>
+                <govuk-summary-list-row-value>@Model.OperationalStartDate.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)</govuk-summary-list-row-value>
+            </govuk-summary-list-row>
+            @if (!isCompleted)
+            {
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key>Operational end date</govuk-summary-list-row-key>
                     @if (Model.OperationalEndDate.HasValue)
@@ -119,52 +120,87 @@ asp-action="Index">
                         <govuk-summary-list-row-value></govuk-summary-list-row-value>
                     }
                 </govuk-summary-list-row>
-            </govuk-summary-list>
-            <div class="govuk-form-group">
-                <govuk-textarea asp-for="@Model.AdditionalActions.Note" autocomplete="false">
-                    <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Comments</govuk-textarea-label>
-                    <govuk-textarea-hint>Leave comments and recommendations. Give as much detail as you can. </govuk-textarea-hint>
-                </govuk-textarea>
-            </div>
-            <div class="govuk-form-group">
-                <govuk-select asp-for="@Model.AdditionalActions.ProcessStatusId">
-                    <govuk-select-label is-page-heading="false" class="govuk-label--s">Status</govuk-select-label>
-                    <govuk-select-item value="@null">Choose status</govuk-select-item>
-                    @foreach (var item in Model.ProcessStatuses)
-                    {
-                        <govuk-select-item value="@item.Id">@item.Name</govuk-select-item>
-                    }
-                </govuk-select>
-            </div>
-            <button
-                    type="submit"
-                    class="govuk-button"
-                    data-module="govuk-button"
-                    data-prevent-double-click="true">
-                Save
-            </button>
-            <div class="govuk-form-group">
-                @if (Model.FundingsOffersOutcomeStatus.HasValue)
+            }
+            @if (Model.Applications?.Any() ?? false)
+            {
+                var idx = 1;
+                @foreach (var app in Model.Applications)
                 {
-                    <a class="govuk-button" asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersSummary"
-                       asp-route-qualificationReference="@Model.Qual.Qan"
-                       asp-route-qualificationVersionId="@Model.Id"
-                       asp-route-qualificationId="@Model.QualificationId"
-                       asp-route-mode="New">
-                        DfE funding review
-                    </a>
-                    
+                    <govuk-summary-list-row>
+                        <govuk-summary-list-row-key>Application @idx</govuk-summary-list-row-key>
+                        <govuk-summary-list-row-value>
+                            <a class="govuk-link"
+                               asp-area="Review"
+                               asp-controller="ApplicationsReview"
+                               asp-action="ViewApplicationReadOnlyDetails"
+                               asp-route-applicationReviewId="@app.Id">
+                                View application @app.Name
+                            </a>
+                            @if (app.SubmittedDate.HasValue)
+                            {
+                                <div class="govuk-body">Submission date: @app.SubmittedDate.Value.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)</div>
+                            }
+                            else if (app.CreatedDate.HasValue)
+                            {
+                                <div class="govuk-body">Created date: @app.CreatedDate.Value.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)</div>
+                            }
+                        </govuk-summary-list-row-value>
+                    </govuk-summary-list-row>
+                     idx++; 
                 }
-                else
-                {
-                    <a class="govuk-button" asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersOutcome"
-                       asp-route-qualificationReference="@Model.Qual.Qan"
-                       asp-route-mode="New">
-                        DfE funding review
-                    </a>
-                }
-            </div>
-        </div>
-    </div>
-</form>
+            }
+        </govuk-summary-list>
 
+        @* Actions (editable) are only shown when not completed *@
+        @if (!isCompleted)
+        {
+            <form asp-controller="New" asp-action="QualificationDetails" method="post">
+                @Html.HiddenFor(m => m.Qual.Qan)
+
+                <div class="govuk-form-group">
+                    <govuk-textarea asp-for="@Model.AdditionalActions.Note" autocomplete="false">
+                        <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Comments</govuk-textarea-label>
+                        <govuk-textarea-hint>Leave comments and recommendations. Give as much detail as you can. </govuk-textarea-hint>
+                    </govuk-textarea>
+                </div>
+                <div class="govuk-form-group">
+                    <govuk-select asp-for="@Model.AdditionalActions.ProcessStatusId">
+                        <govuk-select-label is-page-heading="false" class="govuk-label--s">Status</govuk-select-label>
+                        <govuk-select-item value="@null">Choose status</govuk-select-item>
+                        @foreach (var item in Model.ProcessStatuses)
+                        {
+                            <govuk-select-item value="@item.Id">@item.Name</govuk-select-item>
+                        }
+                    </govuk-select>
+                </div>
+                <button type="submit"
+                        class="govuk-button"
+                        data-module="govuk-button"
+                        data-prevent-double-click="true">
+                    Save
+                </button>
+                <div class="govuk-form-group">
+                    @if (Model.FundingsOffersOutcomeStatus.HasValue)
+                    {
+                        <a class="govuk-button" asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersSummary"
+                           asp-route-qualificationReference="@Model.Qual.Qan"
+                           asp-route-qualificationVersionId="@Model.Id"
+                           asp-route-qualificationId="@Model.QualificationId"
+                           asp-route-mode="New">
+                            DfE funding review
+                        </a>
+
+                    }
+                    else
+                    {
+                        <a class="govuk-button" asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersOutcome"
+                           asp-route-qualificationReference="@Model.Qual.Qan"
+                           asp-route-mode="New">
+                            DfE funding review
+                        </a>
+                    }
+                </div>
+            </form>
+        }
+    </div>
+</div>
