@@ -30,7 +30,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
         public List<Funding> FundedOffers { get; set; } = new();
         public List<Feedback> Feedbacks { get; set; } = new();
 
-        public ApplicationStatus ApplicationStatus { get; set; }
         public IReadOnlyList<RelatedLink> RelatedLinks { get; private set; } = [];
 
         public void SetLinks(IUrlHelper url, UserType userType, RelatedLinksContext ctx)
