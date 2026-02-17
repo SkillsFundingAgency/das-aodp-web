@@ -39,24 +39,18 @@
 
 
                 <h1 class="govuk-label-wrapper">
-                    <label class="govuk-label govuk-label--m" for="messageText">Message</label>
+                    <label class="govuk-label govuk-label--m" asp-for="MessageText">Message</label>
                 </h1>
                 <div id="" class="govuk-hint">
                     Reply to information requests. You will be able to upload files when you are previewing the message.
                 </div>
 
                 <div class="govuk-form-group @(ViewData.ModelState["MessageText"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
+                    <span asp-validation-for="MessageText" class="govuk-error-message"></span>
                     <textarea class="govuk-textarea @(ViewData.ModelState["MessageText"]?.Errors.Count > 0 ? "govuk-textarea--error" : "")"
-                              id="messageText"
-                              name="MessageText"
+                              asp-for="MessageText"
                               rows="5"
-                              aria-describedby="more-detail-hint @(ViewData.ModelState["MessageText"]?.Errors.Count > 0 ? "messageText-error" : "")">@Model.MessageText</textarea>
-                    @if (ViewData.ModelState["MessageText"]?.Errors.Count > 0)
-                    {
-                        <p id="messageText-error" class="govuk-error-message">
-                            <span class="govuk-visually-hidden">Error:</span> Type a message
-                        </p>
-                    }
+                              aria-describedby="more-detail-hint @(ViewData.ModelState["MessageText"]?.Errors.Count > 0 ? "messageText-error" : "")"></textarea>
                 </div>
 
                 <button type="submit" name="AdditionalActions.Preview" value="true" class="govuk-button">Preview</button>

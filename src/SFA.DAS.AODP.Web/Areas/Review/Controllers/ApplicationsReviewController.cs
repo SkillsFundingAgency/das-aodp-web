@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using SFA.DAS.AODP.Application.Commands.Application.Review;
 using SFA.DAS.AODP.Application.Queries.Application.Form;
 using SFA.DAS.AODP.Application.Queries.Review;
+using SFA.DAS.AODP.Application.Queries.Users;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Models.Settings;
@@ -29,7 +30,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
     {
         enum UpdateKeys
         {
-            SharingStatusUpdated, QanUpdated, OwnerUpdated
+            SharingStatusUpdated, QanUpdated, OwnerUpdated, ReviewerUpdated
         }
         private readonly IUserHelperService _userHelperService;
         private readonly UserType UserType;
@@ -57,6 +58,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 ApplicationsWithNewMessages = model.Status?.Contains(ApplicationStatus.NewMessage) == true,
                 ApplicationSearch = model.ApplicationSearch,
                 AwardingOrganisationSearch = model.AwardingOrganisationSearch,
+                ReviewerSearch = model.ReviewerSearch,
+                UnassignedOnly = model.UnassignedOnly,
                 Limit = model.ItemsPerPage,
                 Offset = model.ItemsPerPage * (model.Page - 1)
             });
@@ -76,7 +79,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 ItemsPerPage = model.ItemsPerPage,
                 ApplicationSearch = model.ApplicationSearch,
                 AwardingOrganisationSearch = model.AwardingOrganisationSearch,
-                Status = model.Status
+                Status = model.Status,
+                ReviewerSelection = model.ReviewerSelection
             });
         }
 
@@ -92,6 +96,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             ShowNotificationIfKeyExists(UpdateKeys.SharingStatusUpdated.ToString(), ViewNotificationMessageType.Success, "The application's sharing status has been updated.");
             ShowNotificationIfKeyExists(UpdateKeys.QanUpdated.ToString(), ViewNotificationMessageType.Success, "The application's QAN has been updated.");
             ShowNotificationIfKeyExists(UpdateKeys.OwnerUpdated.ToString(), ViewNotificationMessageType.Success, "The application's owner has been updated.");
+             ShowNotificationIfKeyExists(UpdateKeys.ReviewerUpdated.ToString(), ViewNotificationMessageType.Success, "The application's reviewer has been updated.");
 
             var model = ApplicationReviewViewModel.Map(review, userType);
             model.SetLinks(
@@ -210,7 +215,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
 
             await Send(QfauFundingReviewOutcomeOfferDetailsViewModel.Map(model));
-
 
             return RedirectToAction(nameof(QfauFundingReviewSummary), new { applicationReviewId = model.ApplicationReviewId });
         }
@@ -361,6 +365,48 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 });
 
             TempData[UpdateKeys.OwnerUpdated.ToString()] = true;
+            return RedirectToAction(nameof(ViewApplication), new { applicationReviewId = model.ApplicationReviewId });
+        }
+
+        [HttpPost]
+        [Route("review/application-reviews/{applicationReviewId}/update-reviewer")]
+        public async Task<IActionResult> UpdateReviewer(UpdateReviewerViewModel model)
+        {
+            var reviewerUpdateResult = await Send(
+                new SaveReviewerCommand()
+                {
+                    ApplicationId = model.ApplicationId,
+                    SentByEmail = _userHelperService.GetUserEmail(),
+                    SentByName = _userHelperService.GetUserDisplayName(),
+                    ReviewerFieldName = model.ReviewerFieldName,
+
+                    ReviewerValue = string.IsNullOrWhiteSpace(model.ReviewerValue) 
+                        ? null : model.ReviewerValue,
+
+                    UserType = _userHelperService.GetUserType().ToString()
+                });
+
+            if (reviewerUpdateResult.DuplicateReviewerError)
+            {
+                ModelState.AddModelError(model.ReviewerFieldName, "Reviewer 1 and 2 must be different people.");
+
+                var review = await Send(new GetApplicationForReviewByIdQuery(model.ApplicationReviewId));
+
+                var vm = ApplicationReviewViewModel.Map(review, UserType.Qfau);
+
+                switch (model.ReviewerFieldName)
+                {
+                    case nameof(vm.Reviewer1):
+                        vm.Reviewer1 = model.ReviewerValue;
+                        break;
+                    case nameof(vm.Reviewer2):
+                        vm.Reviewer2 = model.ReviewerValue;
+                        break;
+                }
+                return View(nameof(ViewApplication), vm);
+            }
+
+            TempData[UpdateKeys.ReviewerUpdated.ToString()] = true;
             return RedirectToAction(nameof(ViewApplication), new { applicationReviewId = model.ApplicationReviewId });
         }
 

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationMessage;
+using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Models.RelatedLinks;
 using SFA.DAS.AODP.Web.Models.TimelineComponents;
@@ -16,8 +17,7 @@ public class ApplicationMessagesViewModel : IHasRelatedLinks
     public Guid OrganisationId { get; set; }
     public Guid ApplicationId { get; set; }
     public Guid FormVersionId { get; set; }
-    [Required]
-    [DisplayName("Message")]
+    [Required(ErrorMessage = ErrorMessages.ApplicationMessages.TextRequired)]
     public string MessageText { get; set; }
     [Required]
     public string SelectedMessageType => MessageType.ReplyToInformationRequest.ToString();

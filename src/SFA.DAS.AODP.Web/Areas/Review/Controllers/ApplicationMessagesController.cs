@@ -6,12 +6,14 @@ using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Infrastructure.File;
+using SFA.DAS.AODP.Models.Exceptions;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationMessage;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Enums;
+using SFA.DAS.AODP.Web.Extensions;
 using SFA.DAS.AODP.Web.Helpers.File;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.RelatedLinks;
@@ -66,7 +68,9 @@ public class ApplicationMessagesController : ControllerBase
                 {
                     FileDisplayName = a.FileNameWithPrefix,
                     FullPath = a.FullPath,
-                    FormUrl = Url.Action(nameof(ApplicationReviewMessageFileDownload), "ApplicationMessages", new { applicationReviewId })
+                    FormUrl = Url.Action(nameof(ApplicationReviewMessageFileDownload), "ApplicationMessages", new { applicationReviewId }),
+                    CanDownload = a.ScanStatus.IsDownloadAllowed(),
+                    StatusText = a.ScanStatus.ToUserFacingText(),
                 }).ToList()
             });
         }
@@ -134,16 +138,16 @@ public class ApplicationMessagesController : ControllerBase
                     break;
 
                 case var _ when model.AdditionalActions.Send:
-                    if (model.Files != null && model.Files.Count != 0)
+                    if (model.Files.Count != 0)
                     {
                         try
                         {
                             _messageFileValidationService.ValidateFiles(model.Files);
                         }
-                        catch (Exception ex)
+                        catch (FileUploadPolicyException ex)
                         {
-                            _logger.LogError(ex, "Error validating message files");
-                            ModelState.AddModelError("Files", $"The files validation was not successful: {ex.Message}");
+                            _logger.LogError(ex, ex.Reason.ToUserMessage());
+                            ModelState.AddModelError("Files", ex.Reason.ToUserMessage());
                             model.AdditionalActions.Preview = true;
                             return View(model);
                         }
@@ -152,9 +156,19 @@ public class ApplicationMessagesController : ControllerBase
                     string userName = _userHelperService.GetUserDisplayName();
                     var response = await Send(new CreateApplicationMessageCommand(applicationId, model.MessageText, model.SelectedMessageType, UserType.ToString(), userEmail, userName));
 
-                    if (model.Files != null && model.Files.Count != 0)
+                    if (model.Files.Count != 0)
                     {
-                        await HandleFileUploadsAsync(applicationId, response.Id, model.Files);
+                        try
+                        {
+                            await HandleFileUploadsAsync(applicationId, response.Id, model.Files);
+                        }
+                        catch (FileUploadPolicyException ex)
+                        {
+                            _logger.LogError(ex, ex.Reason.ToUserMessage());
+                            ModelState.AddModelError("Files", ex.Reason.ToUserMessage());
+                            model.AdditionalActions.Preview = true;
+                            return View(model);
+                        }
                     }
 
                     if (response?.EmailSent ?? false)
