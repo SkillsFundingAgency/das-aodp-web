@@ -12,6 +12,7 @@ public class GetApplicationsByQanQueryResponse
         public DateTime? SubmittedDate { get; set; }
         public string? Status { get; set; }
         public int ReferenceId { get; set; }
+        public Guid? ApplicationReviewId { get; set; }
     }
 }
 

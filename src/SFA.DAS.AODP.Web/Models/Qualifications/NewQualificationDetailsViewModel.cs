@@ -159,6 +159,7 @@ public class NewQualificationDetailsViewModel
         public string? Status { get; set; }
         public int ReferenceId { get; set; }
         public DateTime? ApplicationDate => SubmittedDate ?? CreatedDate;
+        public Guid? ApplicationReviewId { get; set; }
     }
 
     public static implicit operator NewQualificationDetailsViewModel(GetQualificationDetailsQueryResponse entity)
@@ -264,7 +265,8 @@ public class NewQualificationDetailsViewModel
                 CreatedDate = application.CreatedDate,
                 SubmittedDate = application.SubmittedDate,
                 Status = application.Status,
-                ReferenceId = application.ReferenceId
+                ReferenceId = application.ReferenceId,
+                ApplicationReviewId = application.ApplicationReviewId
             });
         }
     }
