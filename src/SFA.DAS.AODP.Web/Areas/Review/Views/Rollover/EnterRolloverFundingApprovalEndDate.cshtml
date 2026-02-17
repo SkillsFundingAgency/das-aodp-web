@@ -22,7 +22,7 @@
                     <h1 class="govuk-heading-xl">@ViewData["Title"]</h1>
                 </div>
                 
-                <form asp-area="Review" asp-controller="Rollover" asp-action="EnterRolloverFundingApprovalEndDate" method="post" novalidate>
+                <form asp-area="Review" asp-controller="Rollover" asp-action="EnterRolloverFundingApprovalEndDate" method="post" novalidate="novalidate">
 
                     <!-- Max Approval End Date -->
                     <div class="govuk-form-group" @(maxApprovalEndDateGroupError ? "govuk-form-group--error" : "")">
