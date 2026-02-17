@@ -1,3 +1,10 @@
 ﻿@{
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    if (ViewData["UseNewLayout"] != null && (bool)ViewData["UseNewLayout"])
+    {
+        Layout = "GdsWrapperLayout";
+    }
+    else
+    {
+        Layout = "_Layout";
+    }
 }
