@@ -59,4 +59,69 @@ public class RolloverController : ControllerBase
         ViewData["Title"] = "Upload qualifications to RollOver";
         return View();
     }
+
+    [HttpGet]
+    [Route("/Review/Rollover/FundingStreamInclusionExclusion")]
+    public IActionResult FundingStreamInclusionExclusion()
+    {
+        ViewData["Title"] = "Select funding stream(s)";
+
+        var vm = new FundingStreamInclusionExclusionViewModel
+        {
+            FundingStreams = GetFundingStreams()
+        };
+
+        return View(vm);
+    }
+
+    [HttpPost]
+    [Route("/Review/Rollover/FundingStreamInclusionExclusion")]
+    public IActionResult FundingStreamInclusionExclusion(FundingStreamInclusionExclusionViewModel vm, string action)
+    {
+        var fundingStreams = GetFundingStreams();
+        var validIds = fundingStreams.Select(x => x.Id).ToHashSet();
+
+        vm.FundingStreams = fundingStreams;
+
+        if (action == "selectAll")
+        {
+            vm.SelectedIds = validIds.ToList();
+            ModelState.Clear();
+            return View(vm);
+        }
+
+        if (vm.SelectedIds == null || !vm.SelectedIds.Any())
+        {
+            ModelState.AddModelError(nameof(vm.SelectedIds), "Select at least one funding stream");
+            return View(vm);
+        }
+
+        if (!vm.SelectedIds.All(id => validIds.Contains(id)))
+        {
+            ModelState.AddModelError(string.Empty, "Invalid selection");
+            return View(vm);
+        }
+
+        return RedirectToAction(nameof(EnterRolloverEligibilityDates));
+    }
+
+    [HttpGet]
+    [Route("/Review/Rollover/EnterRolloverEligibilityDates")]
+    public IActionResult EnterRolloverEligibilityDates() => View();
+
+    private List<FundingStream> GetFundingStreams()
+    {
+        return new List<FundingStream>
+        {
+            new FundingStream { Id = 1, Label = "Age 14-16" },
+            new FundingStream { Id = 2, Label = "Age 16-19" },
+            new FundingStream { Id =3, Label = "Local flexibilities" },
+            new FundingStream { Id = 4, Label = "Legal entitlement L2 L3" },
+            new FundingStream { Id = 5, Label = "Legal entitlement English and Maths" },
+            new FundingStream { Id = 6, Label = "Digital entitlement" },
+            new FundingStream { Id = 7, Label = "Lifelong learning entitlement" },
+            new FundingStream { Id = 8, Label = "Advanced learner loans" },
+            new FundingStream { Id = 9, Label = "Free courses for jobs" }
+        };
+    }
 }
