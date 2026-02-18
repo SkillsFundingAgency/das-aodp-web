@@ -1,10 +1,12 @@
 ﻿using SFA.DAS.AODP.Application.Queries.FormBuilder.Pages;
+using System.ComponentModel.DataAnnotations;
 
 namespace SFA.DAS.AODP.Web.Models.FormBuilder.Page
 {
     public class EditPageViewModel
     {
         public int Order { get; set; }
+        [Required]
         public string Title { get; set; }
         public Guid FormVersionId { get; set; }
         public Guid SectionId { get; set; }
