@@ -207,16 +207,17 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 if (applications != null)
                     model.Applications = ApplicationMapper.Map(applications);
 
-                ViewData["BackArea"] = "Review";
-                ViewData["BackController"] = "New";
-                ViewData["BackAction"] = "Index";
+                model.BackArea = "Review";
+                model.BackController = "New";
+                model.BackAction = "Index";
 
                 if (!string.IsNullOrWhiteSpace(returnTo) &&
                     string.Equals(returnTo, "QualificationSearch", StringComparison.OrdinalIgnoreCase))
                 {
-                    ViewData["BackController"] = "QualificationSearch";
-                    ViewData["BackAction"] = "Index";
-                    ViewData["BackArea"] = "Review";
+                    model.BackArea = "Review";
+                    model.BackController = "QualificationSearch";
+                    model.BackAction = "Index";
+                    model.ReturnTo = "QualificationSearch";
                 }
 
                 return View(model);

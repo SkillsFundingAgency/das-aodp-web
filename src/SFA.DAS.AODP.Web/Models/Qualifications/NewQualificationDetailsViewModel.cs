@@ -76,6 +76,10 @@ public class NewQualificationDetailsViewModel
     public bool? FundingsOffersOutcomeStatus { get; set; }
     public bool IsApplicationCompleted => string.Equals(Stage?.Name, "Completed", System.StringComparison.OrdinalIgnoreCase);
 
+    public string BackArea { get; set; } = "Review";
+    public string BackController { get; set; } = "New";
+    public string BackAction { get; set; } = "Index";
+    public string? ReturnTo { get; set; } = null;
     public class OfferFundingDetails
     {
         public string FundingOfferName { get; set; }

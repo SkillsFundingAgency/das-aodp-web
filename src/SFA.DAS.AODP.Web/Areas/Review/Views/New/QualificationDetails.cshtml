@@ -6,9 +6,9 @@
     ViewData["Title"] = "Qualification Details";
 }
 <a class="govuk-back-link"
-   asp-area="@(ViewData["BackArea"] as string ?? "Review")"
-   asp-controller="@(ViewData["BackController"] as string ?? "New")"
-   asp-action="@(ViewData["BackAction"] as string ?? "Index")">
+   asp-area="@Model.BackArea"
+   asp-controller="@Model.BackController"
+   asp-action="@Model.BackAction">
     Return to qualifications
 </a>
 
@@ -135,7 +135,7 @@
                                asp-controller="ApplicationsReview"
                                asp-action="ViewApplication"
                                asp-route-applicationReviewId="@app.ApplicationReviewId"
-                               asp-route-returnUrl="@Url.Action("QualificationDetails", "New", new { area = "Review", qualificationReference = Model.Qual.Qan, returnTo = "QualificationSearch" })">
+                               asp-route-returnUrl="@Url.Action("QualificationDetails", "New", new { area = "Review", qualificationReference = Model.Qual.Qan, returnTo = Model.ReturnTo })">
                                 View application @app.Name
                             </a>
                             <p class="govuk-body govuk-!-margin-bottom-0">Submission date: @app.ApplicationDate!.Value.ToDateDisplayFormat()</p>
