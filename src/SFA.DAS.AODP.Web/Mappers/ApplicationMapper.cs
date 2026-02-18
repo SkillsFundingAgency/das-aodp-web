@@ -9,7 +9,7 @@ public static class ApplicationMapper
     public static List<ApplicationModel> Map(GetApplicationsByQanQueryResponse response)
     {
         List<ApplicationModel> applications = new();
-        foreach (var application in response.Applications.OrderByDescending(x => x.SubmittedDate))
+        foreach (var application in response.Applications.OrderByDescending(x => x.SubmittedDate).ThenByDescending(x => x.ReferenceId))
         {
             applications.Add(new()
             {
