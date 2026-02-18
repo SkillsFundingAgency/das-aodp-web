@@ -265,30 +265,30 @@ public class NewControllerTests
         var feedbackResponse = new GetFeedbackForQualificationFundingByIdQueryResponse
         {
             QualificationFundedOffers = new List<GetFeedbackForQualificationFundingByIdQueryResponse.QualificationFunding>()
+            {
+                new GetFeedbackForQualificationFundingByIdQueryResponse.QualificationFunding
                 {
-                    new GetFeedbackForQualificationFundingByIdQueryResponse.QualificationFunding
-                    {
-                        Id = Guid.NewGuid(),
-                        FundedOfferName = "Offer 1",
-                        StartDate = DateOnly.FromDateTime(DateTime.UtcNow.Date),
-                        EndDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(10))
-                    }
+                    Id = Guid.NewGuid(),
+                    FundedOfferName = "Offer 1",
+                    StartDate = DateOnly.FromDateTime(DateTime.UtcNow.Date),
+                    EndDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(10))
                 }
+            }
         };
 
         var appsResponse = new GetApplicationsByQanQueryResponse
         {
             Applications = new List<GetApplicationsByQanQueryResponse.Application>()
+            {
+                new GetApplicationsByQanQueryResponse.Application
                 {
-                    new GetApplicationsByQanQueryResponse.Application
-                    {
-                        Id = Guid.NewGuid(),
-                        ReferenceId = 1,
-                        CreatedDate = DateTime.UtcNow.AddDays(-2),
-                        SubmittedDate = DateTime.UtcNow.AddDays(-1),
-                        Status = SFA.DAS.AODP.Models.Application.ApplicationStatus.Draft
-                    }
+                    Id = Guid.NewGuid(),
+                    ReferenceId = 1,
+                    CreatedDate = DateTime.UtcNow.AddDays(-2),
+                    SubmittedDate = DateTime.UtcNow.AddDays(-1),
+                    Status = SFA.DAS.AODP.Models.Application.ApplicationStatus.Draft
                 }
+            }
         };
 
         _userHelper.Setup(u => u.GetUserRoles()).Returns(new List<string>());
@@ -320,10 +320,9 @@ public class NewControllerTests
         Assert.NotNull(model.FundingDetails);
         Assert.NotEmpty(model.FundingDetails);
 
-        // Default back data set via ViewData
-        Assert.Equal("Review", controller.ViewData["BackArea"]);
-        Assert.Equal("New", controller.ViewData["BackController"]);
-        Assert.Equal("Index", controller.ViewData["BackAction"]);
+        Assert.Equal("Review", model.BackArea);
+        Assert.Equal("New", model.BackController);
+        Assert.Equal("Index", model.BackAction);
     }
 
     [Fact]
@@ -389,9 +388,9 @@ public class NewControllerTests
         var model = Assert.IsType<NewQualificationDetailsViewModel>(view.Model);
         Assert.Equal(qan, model.Qual.Qan);
 
-        Assert.Equal("Review", controller.ViewData["BackArea"]);
-        Assert.Equal("QualificationSearch", controller.ViewData["BackController"]);
-        Assert.Equal("Index", controller.ViewData["BackAction"]);
+        Assert.Equal("Review", model.BackArea);
+        Assert.Equal("QualificationSearch", model.BackController);
+        Assert.Equal("Index", model.BackAction);
     }
 
     [Fact]
