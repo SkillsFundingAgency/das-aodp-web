@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Queries.Import;
+using SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
@@ -45,7 +46,7 @@ public class RolloverController : ControllerBase
         }
 
         var session = GetSessionModel();
-        session.Start = new RolloverStartSession
+        session.Start = new RolloverStart
         {
             SelectedProcess = model.SelectedProcess
         };
@@ -173,22 +174,22 @@ public class RolloverController : ControllerBase
         return RedirectToAction(nameof(InitialSelection));
     }
 
-    private RolloverSessionModel GetSessionModel()
+    private Rollover GetSessionModel()
     {
         try
         {
-            var model = HttpContext.Session.GetObject<RolloverSessionModel>(SessionKey);
-            if (model == null) model = new RolloverSessionModel();
+            var model = HttpContext.Session.GetObject<Rollover>(SessionKey);
+            if (model == null) model = new Rollover();
             return model;
         }
         catch (Exception ex)
         {
             LogException(ex);
-            return new RolloverSessionModel();
+            return new Rollover();
         }
     }
 
-    private void SaveSessionModel(RolloverSessionModel model)
+    private void SaveSessionModel(Rollover model)
     {
         try
         {

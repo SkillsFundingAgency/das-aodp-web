@@ -1,4 +1,5 @@
-﻿@model SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.RolloverImportStatusViewModel
+﻿@using SFA.DAS.AODP.Web.Extensions
+@model SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.RolloverImportStatusViewModel
 @{
     ViewData["Title"] = "Do you need to update any data before starting?";
 }
@@ -8,10 +9,10 @@
 <h1 class="govuk-heading-xl">Do you need to update any data before starting?</h1>
 
 <div class="govuk-inset-text govuk-inset-text--l">
-    <div>Ofqual regulated qualifications last imported: <strong>@(Model.RegulatedQualificationsLastImported?.ToString("dd MMMM yyyy") ?? "")</strong></div>
-    <div>Funded qualifications last imported: <strong>@(Model.FundedQualificationsLastImported?.ToString("dd MMMM yyyy") ?? "")</strong></div>
-    <div>Defunding list last imported: <strong>@(Model.DefundingListLastImported?.ToString("dd MMMM yyyy") ?? "")</strong></div>
-    <div>PLDNS list last imported: <strong>@(Model.PldnsListLastImported?.ToString("dd MMMM yyyy") ?? "")</strong></div>
+    <div>Ofqual regulated qualifications last imported: <strong>@(Model.RegulatedQualificationsLastImported?.ToDateDisplayFormat() ?? "")</strong></div>
+    <div>Funded qualifications last imported: <strong>@(Model.FundedQualificationsLastImported?.ToDateDisplayFormat() ?? "")</strong></div>
+    <div>Defunding list last imported: <strong>@(Model.DefundingListLastImported?.ToDateDisplayFormat() ?? "")</strong></div>
+    <div>PLDNS list last imported: <strong>@(Model.PldnsListLastImported?.ToDateDisplayFormat() ?? "")</strong></div>
 
     <br />
     <p class="govuk-body">

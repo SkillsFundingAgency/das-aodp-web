@@ -1,18 +1,20 @@
-﻿namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
+﻿using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 
-public class RolloverSessionModel
+namespace SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
+
+public class Rollover
 {
-    public RolloverStartSession? Start { get; set; }
+    public RolloverStart? Start { get; set; }
 
-    public RolloverImportStatusSession? ImportStatus { get; set; }
+    public RolloverImportStatus? ImportStatus { get; set; }
 }
 
-public class RolloverStartSession
+public class RolloverStart
 {
     public RolloverProcess? SelectedProcess { get; set; }
 }
 
-public class RolloverImportStatusSession
+public class RolloverImportStatus
 {
     public DateTime? RegulatedQualificationsLastImported { get; set; }
     public DateTime? FundedQualificationsLastImported { get; set; }

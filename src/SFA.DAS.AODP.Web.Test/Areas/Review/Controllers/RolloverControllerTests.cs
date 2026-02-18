@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Queries.Import;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
+using SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 using SFA.DAS.AODP.Web.Enums;
 
@@ -95,7 +96,7 @@ public class RolloverControllerTests
         // session should contain Start with SelectedProcess
         var json = session.GetString("RolloverSession");
         Assert.NotNull(json);
-        var sessionModel = JsonConvert.DeserializeObject<RolloverSessionModel>(json!);
+        var sessionModel = JsonConvert.DeserializeObject<Rollover>(json!);
         Assert.NotNull(sessionModel?.Start);
         Assert.Equal(RolloverProcess.InitialSelection, sessionModel!.Start!.SelectedProcess);
     }
@@ -115,7 +116,7 @@ public class RolloverControllerTests
 
         var json = session.GetString("RolloverSession");
         Assert.NotNull(json);
-        var sessionModel = JsonConvert.DeserializeObject<RolloverSessionModel>(json!);
+        var sessionModel = JsonConvert.DeserializeObject<Rollover>(json!);
         Assert.NotNull(sessionModel?.Start);
         Assert.Equal(RolloverProcess.FinalUpload, sessionModel!.Start!.SelectedProcess);
     }
@@ -141,9 +142,9 @@ public class RolloverControllerTests
         var session = CreateEmptySession();
 
         // prepare a session model with ImportStatus (session DTO)
-        var sessionModel = new RolloverSessionModel
+        var sessionModel = new Rollover
         {
-            ImportStatus = new RolloverImportStatusSession
+            ImportStatus = new RolloverImportStatus
             {
                 RegulatedQualificationsLastImported = new DateTime(2025, 1, 1)
             }
@@ -159,7 +160,7 @@ public class RolloverControllerTests
         Assert.Equal("Initial selection of qualificaton", viewResult.ViewData["Title"]);
         // ImportStatus should be present in ViewData
         Assert.NotNull(viewResult.ViewData["ImportStatus"]);
-        var importStatus = Assert.IsType<RolloverImportStatusSession>(viewResult.ViewData["ImportStatus"]);
+        var importStatus = Assert.IsType<RolloverImportStatus>(viewResult.ViewData["ImportStatus"]);
         Assert.Equal(sessionModel.ImportStatus.RegulatedQualificationsLastImported, importStatus.RegulatedQualificationsLastImported);
     }
 
@@ -178,9 +179,9 @@ public class RolloverControllerTests
     public async Task CheckData_Get_WhenSessionHasImportStatus_MapsFromSession_AndReturnsView()
     {
         var session = CreateEmptySession();
-        var sessionModel = new RolloverSessionModel
+        var sessionModel = new Rollover
         {
-            ImportStatus = new RolloverImportStatusSession
+            ImportStatus = new RolloverImportStatus
             {
                 RegulatedQualificationsLastImported = new DateTime(2025, 2, 2),
                 FundedQualificationsLastImported = new DateTime(2025, 2, 3),
@@ -265,7 +266,7 @@ public class RolloverControllerTests
         // session should have been saved with same values
         var json = session.GetString("RolloverSession");
         Assert.NotNull(json);
-        var saved = JsonConvert.DeserializeObject<RolloverSessionModel>(json!);
+        var saved = JsonConvert.DeserializeObject<Rollover>(json!);
         Assert.NotNull(saved?.ImportStatus);
         Assert.Equal(regulatedDate, saved!.ImportStatus!.RegulatedQualificationsLastImported);
         Assert.Equal(fundedDate, saved.ImportStatus.FundedQualificationsLastImported);
@@ -292,9 +293,9 @@ public class RolloverControllerTests
     public void CheckData_Post_InvalidModelState_ReturnsViewUsingSessionOrModel()
     {
         var session = CreateEmptySession();
-        var sessionModel = new RolloverSessionModel
+        var sessionModel = new Rollover
         {
-            ImportStatus = new RolloverImportStatusSession
+            ImportStatus = new RolloverImportStatus
             {
                 RegulatedQualificationsLastImported = new DateTime(2025, 3, 3)
             }
@@ -335,7 +336,7 @@ public class RolloverControllerTests
 
         var json = session.GetString("RolloverSession");
         Assert.NotNull(json);
-        var saved = JsonConvert.DeserializeObject<RolloverSessionModel>(json!);
+        var saved = JsonConvert.DeserializeObject<Rollover>(json!);
         Assert.NotNull(saved?.ImportStatus);
         Assert.Equal(posted.RegulatedQualificationsLastImported, saved!.ImportStatus!.RegulatedQualificationsLastImported);
     }
