@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.Qualification;
+using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
@@ -228,6 +229,169 @@ public class NewControllerTests
 
         var redirect = Assert.IsType<RedirectResult>(result);
         Assert.Equal("/Home/Error", redirect.Url);
+    }
+
+    [Fact]
+    public async Task QualificationDetails_Get_ReturnsView_WithModel_And_DefaultBackData()
+    {
+        // Arrange
+        var controller = CreateController();
+        var qan = "61054902";
+
+        var qualificationResponse = new GetQualificationDetailsQueryResponse
+        {
+            Id = Guid.NewGuid(),
+            QualificationId = Guid.NewGuid(),
+            VersionFieldChangesId = Guid.NewGuid(),
+            Qual = new GetQualificationDetailsQueryResponse.Qualification
+            {
+                Id = Guid.NewGuid(),
+                Qan = qan,
+                QualificationName = "Test Qualification",
+                Versions = new List<GetQualificationDetailsQueryResponse>()
+            },
+            ProcStatus = new GetQualificationDetailsQueryResponse.ProcessStatus { Id = Guid.NewGuid(), Name = "Decision Required" },
+            Stage = new GetQualificationDetailsQueryResponse.LifecycleStage { Id = Guid.NewGuid(), Name = "Draft" },
+            Organisation = new GetQualificationDetailsQueryResponse.AwardingOrganisation { Id = Guid.NewGuid(), NameOfqual = "AO" },
+            Version = 1,
+            LastUpdatedDate = DateTime.UtcNow,
+            UiLastUpdatedDate = DateTime.UtcNow,
+            InsertedDate = DateTime.UtcNow
+        };
+
+        var procStatusesResponse = new GetProcessStatusesQueryResponse();
+        procStatusesResponse.ProcessStatuses.Add(new GetProcessStatusesQueryResponse.ProcessStatus { Id = Guid.NewGuid(), Name = "Decision Required" });
+
+        var feedbackResponse = new GetFeedbackForQualificationFundingByIdQueryResponse
+        {
+            QualificationFundedOffers = new List<GetFeedbackForQualificationFundingByIdQueryResponse.QualificationFunding>()
+                {
+                    new GetFeedbackForQualificationFundingByIdQueryResponse.QualificationFunding
+                    {
+                        Id = Guid.NewGuid(),
+                        FundedOfferName = "Offer 1",
+                        StartDate = DateOnly.FromDateTime(DateTime.UtcNow.Date),
+                        EndDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(10))
+                    }
+                }
+        };
+
+        var appsResponse = new GetApplicationsByQanQueryResponse
+        {
+            Applications = new List<GetApplicationsByQanQueryResponse.Application>()
+                {
+                    new GetApplicationsByQanQueryResponse.Application
+                    {
+                        Id = Guid.NewGuid(),
+                        ReferenceId = 1,
+                        CreatedDate = DateTime.UtcNow.AddDays(-2),
+                        SubmittedDate = DateTime.UtcNow.AddDays(-1),
+                        Status = SFA.DAS.AODP.Models.Application.ApplicationStatus.Draft
+                    }
+                }
+        };
+
+        _userHelper.Setup(u => u.GetUserRoles()).Returns(new List<string>());
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetQualificationDetailsQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetQualificationDetailsQueryResponse> { Success = true, Value = qualificationResponse });
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetProcessStatusesQueryResponse> { Success = true, Value = procStatusesResponse });
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetFeedbackForQualificationFundingByIdQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetFeedbackForQualificationFundingByIdQueryResponse> { Success = true, Value = feedbackResponse });
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetApplicationsByQanQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetApplicationsByQanQueryResponse> { Success = true, Value = appsResponse });
+
+        // Act
+        var result = await controller.QualificationDetails(qan);
+
+        // Assert
+        var view = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<NewQualificationDetailsViewModel>(view.Model);
+        Assert.Equal(qan, model.Qual.Qan);
+
+        Assert.NotNull(model.ProcessStatuses);
+        Assert.NotEmpty(model.ProcessStatuses);
+        Assert.NotNull(model.Applications);
+        Assert.NotEmpty(model.Applications);
+        Assert.NotNull(model.FundingDetails);
+        Assert.NotEmpty(model.FundingDetails);
+
+        // Default back data set via ViewData
+        Assert.Equal("Review", controller.ViewData["BackArea"]);
+        Assert.Equal("New", controller.ViewData["BackController"]);
+        Assert.Equal("Index", controller.ViewData["BackAction"]);
+    }
+
+    [Fact]
+    public async Task QualificationDetails_Get_WithReturnToQualificationSearch_SetsBackToQualificationSearch()
+    {
+        // Arrange
+        var controller = CreateController();
+        var qan = "61054902";
+
+        var qualificationResponse = new GetQualificationDetailsQueryResponse
+        {
+            Id = Guid.NewGuid(),
+            QualificationId = Guid.NewGuid(),
+            VersionFieldChangesId = Guid.NewGuid(),
+            Qual = new GetQualificationDetailsQueryResponse.Qualification
+            {
+                Id = Guid.NewGuid(),
+                Qan = qan,
+                QualificationName = "Test Qualification",
+                Versions = new List<GetQualificationDetailsQueryResponse>()
+            },
+            ProcStatus = new GetQualificationDetailsQueryResponse.ProcessStatus { Id = Guid.NewGuid(), Name = "Decision Required" },
+            Stage = new GetQualificationDetailsQueryResponse.LifecycleStage { Id = Guid.NewGuid(), Name = "Draft" },
+            Organisation = new GetQualificationDetailsQueryResponse.AwardingOrganisation { Id = Guid.NewGuid(), NameOfqual = "AO" },
+            Version = 1,
+            LastUpdatedDate = DateTime.UtcNow,
+            UiLastUpdatedDate = DateTime.UtcNow,
+            InsertedDate = DateTime.UtcNow
+        };
+
+        var procStatusesResponse = new GetProcessStatusesQueryResponse();
+        procStatusesResponse.ProcessStatuses.Add(new GetProcessStatusesQueryResponse.ProcessStatus { Id = Guid.NewGuid(), Name = "Decision Required" });
+
+        var feedbackResponse = new GetFeedbackForQualificationFundingByIdQueryResponse
+        {
+            QualificationFundedOffers = new List<GetFeedbackForQualificationFundingByIdQueryResponse.QualificationFunding>()
+        };
+
+        var appsResponse = new GetApplicationsByQanQueryResponse
+        {
+            Applications = new List<GetApplicationsByQanQueryResponse.Application>()
+        };
+
+        _userHelper.Setup(u => u.GetUserRoles()).Returns(new List<string>());
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetQualificationDetailsQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetQualificationDetailsQueryResponse> { Success = true, Value = qualificationResponse });
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetProcessStatusesQueryResponse> { Success = true, Value = procStatusesResponse });
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetFeedbackForQualificationFundingByIdQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetFeedbackForQualificationFundingByIdQueryResponse> { Success = true, Value = feedbackResponse });
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetApplicationsByQanQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetApplicationsByQanQueryResponse> { Success = true, Value = appsResponse });
+
+        // Act
+        var result = await controller.QualificationDetails(qan, "QualificationSearch");
+
+        // Assert
+        var view = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<NewQualificationDetailsViewModel>(view.Model);
+        Assert.Equal(qan, model.Qual.Qan);
+
+        Assert.Equal("Review", controller.ViewData["BackArea"]);
+        Assert.Equal("QualificationSearch", controller.ViewData["BackController"]);
+        Assert.Equal("Index", controller.ViewData["BackAction"]);
     }
 
     [Fact]
