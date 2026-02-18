@@ -11,6 +11,7 @@ using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.User;
+using SFA.DAS.AODP.Web.Mappers;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 using System.Globalization;
 using System.Linq;
@@ -204,7 +205,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
                 var applications = await Send(new GetApplicationsByQanQuery(model.Qual.Qan));
                 if (applications != null)
-                    model.MapApplications(applications);
+                    model.Applications = ApplicationMapper.Map(applications);
 
                 ViewData["BackArea"] = "Review";
                 ViewData["BackController"] = "New";

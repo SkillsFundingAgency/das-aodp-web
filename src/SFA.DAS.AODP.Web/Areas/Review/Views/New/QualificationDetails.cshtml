@@ -134,12 +134,12 @@
                                asp-area="Review"
                                asp-controller="ApplicationsReview"
                                asp-action="ViewApplication"
-                               asp-route-applicationReviewId="@app.ApplicationReviewId">
+                               asp-route-applicationReviewId="@app.ApplicationReviewId"
+                               asp-route-returnUrl="@Url.Action("QualificationDetails", "New", new { area = "Review", qualificationReference = Model.Qual.Qan, returnTo = "QualificationSearch" })">
                                 View application @app.Name
                             </a>
-                            <div class="govuk-body">Submission Id: @app.ReferenceId</div>
-                            <div class="govuk-body">Submission date: @app.ApplicationDate!.Value.ToDateDisplayFormat()</div>
-                            <div class="govuk-body">Status: @app.Status</div>
+                            <p class="govuk-body govuk-!-margin-bottom-0">Submission date: @app.ApplicationDate!.Value.ToDateDisplayFormat()</p>
+                            <p class="govuk-body govuk-!-margin-top-0">Status: @app.Status</p>
                         </govuk-summary-list-row-value>
                     </govuk-summary-list-row>
                      idx++; 

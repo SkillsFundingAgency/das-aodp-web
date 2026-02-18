@@ -1,4 +1,5 @@
-﻿@model SFA.DAS.AODP.Web.Models.Qualifications.ChangedQualificationDetailsViewModel
+﻿@using SFA.DAS.AODP.Web.Extensions
+@model SFA.DAS.AODP.Web.Models.Qualifications.ChangedQualificationDetailsViewModel
 
 @{
     ViewData["Title"] = "Qualification Details";
@@ -12,201 +13,237 @@
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
 <span class="govuk-caption-xl">
-    Qualification with changes
+    @(Model.IsApplicationCompleted ? "Completed qualification" : "Qualification with changes")
 </span>
 <h1 class="govuk-heading-xl">Qualification Details</h1>
 
-<form asp-controller="Changed" asp-action="QualificationDetails" method="post">
-    @Html.HiddenFor(m => m.Version)
-    @Html.HiddenFor(m => m.Qual.Qan)
-    @Html.HiddenFor(m => m.ChangedFieldNames)
-    <div class="govuk-tabs" data-module="govuk-tabs">
-        <ul class="govuk-tabs__list">
-            <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
-                <a class="govuk-link" href="/Review/changed/QualificationDetails?qualificationReference=@Model.Qual.Qan">
-                    Overview
-                </a>
-            </li>
-            <li class="govuk-tabs__list-item govuk-tabs__list-item">
-                <a class="govuk-link" href="/Review/changed/QualificationDetails/Timeline?qualificationReference=@Model.Qual.Qan">
-                    History
-                </a>
-            </li>
-        </ul>
-        <div class="govuk-tabs__panel" id="details">
-            <govuk-summary-list>
+<div class="govuk-tabs" data-module="govuk-tabs">
+    <ul class="govuk-tabs__list">
+        <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
+            <a class="govuk-link" href="/Review/changed/QualificationDetails?qualificationReference=@Model.Qual.Qan">
+                Overview
+            </a>
+        </li>
+        <li class="govuk-tabs__list-item govuk-tabs__list-item">
+            <a class="govuk-link" href="/Review/changed/QualificationDetails/Timeline?qualificationReference=@Model.Qual.Qan">
+                History
+            </a>
+        </li>
+    </ul>
+    <div class="govuk-tabs__panel" id="details">
+        <govuk-summary-list>
+            <govuk-summary-list-row>
+                <govuk-summary-list-row-key>Status</govuk-summary-list-row-key>
+                <govuk-summary-list-row-value>@Model.ProcStatus.Name</govuk-summary-list-row-value>
+            </govuk-summary-list-row>
+            <govuk-summary-list-row>
+                <govuk-summary-list-row-key>Priority</govuk-summary-list-row-key>
+                <govuk-summary-list-row-value>@Model.Priority</govuk-summary-list-row-value>
+            </govuk-summary-list-row>
+            @if (Model.ChangedFieldNames != null && Model.ChangedFieldNames != "")
+            {
                 <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>Status</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.ProcStatus.Name</govuk-summary-list-row-value>
+                    <govuk-summary-list-row-key>Changes</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>@Model.ChangedFieldNames</govuk-summary-list-row-value>
                 </govuk-summary-list-row>
-                <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>Priority</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.Priority</govuk-summary-list-row-value>
-                </govuk-summary-list-row>
-                @if (Model.ChangedFieldNames != null && Model.ChangedFieldNames != "")
+            }
+            <govuk-summary-list-row>
+                <govuk-summary-list-row-key>QAN</govuk-summary-list-row-key>
+                <govuk-summary-list-row-value>@Model.Qual.Qan</govuk-summary-list-row-value>
+            </govuk-summary-list-row>
+            <govuk-summary-list-row>
+                <govuk-summary-list-row-key>Qualification title</govuk-summary-list-row-key>
+                <govuk-summary-list-row-value>@Model.Qual.QualificationName</govuk-summary-list-row-value>
+            </govuk-summary-list-row>
+            <govuk-summary-list-row>
+                <govuk-summary-list-row-key>Awarding organisation</govuk-summary-list-row-key>
+                <govuk-summary-list-row-value>@Model.Organisation.NameOfqual</govuk-summary-list-row-value>
+            </govuk-summary-list-row>
+            <govuk-summary-list-row>
+                <govuk-summary-list-row-key>Qualification type</govuk-summary-list-row-key>
+                <govuk-summary-list-row-value>@Model.Type</govuk-summary-list-row-value>
+            </govuk-summary-list-row>
+            <govuk-summary-list-row>
+                <govuk-summary-list-row-key>Level</govuk-summary-list-row-key>
+                <govuk-summary-list-row-value>@Model.Level</govuk-summary-list-row-value>
+            </govuk-summary-list-row>
+            <govuk-summary-list-row>
+                <govuk-summary-list-row-key>Sector subject area</govuk-summary-list-row-key>
+                <govuk-summary-list-row-value>@Model.Specialism</govuk-summary-list-row-value>
+            </govuk-summary-list-row>
+            <govuk-summary-list-row>
+                <govuk-summary-list-row-key>Age group(s)</govuk-summary-list-row-key>
+                <govuk-summary-list-row-value>
+                    @{
+                        var ageGroups = new List<string>();
+
+                        if (Model.PreSixteen ?? false)
+                        {
+                            ageGroups.Add("Pre 16");
+                        }
+                        if (Model.SixteenToEighteen ?? false)
+                        {
+                            ageGroups.Add("16-18");
+                        }
+                        if (Model.EighteenPlus ?? false)
+                        {
+                            ageGroups.Add("18+");
+                        }
+                        if (Model.NineteenPlus ?? false)
+                        {
+                            ageGroups.Add("19+");
+                        }
+                    }
+                    @foreach (var ageGroup in ageGroups)
+                    {
+                        <p>@ageGroup</p>
+                    }
+                </govuk-summary-list-row-value>
+            </govuk-summary-list-row>
+            <govuk-summary-list-row>
+                <govuk-summary-list-row-key>Ofqual offered in England</govuk-summary-list-row-key>
+                <govuk-summary-list-row-value>@Model.OfferedInEngland</govuk-summary-list-row-value>
+            </govuk-summary-list-row>
+            <govuk-summary-list-row>
+                <govuk-summary-list-row-key>DfE offers funded</govuk-summary-list-row-key>
+                <govuk-summary-list-row-value>
+                    @foreach (var offerfunded in Model.FundingDetails)
+                    {
+                        <p>
+                            @($"Offer: {offerfunded.FundingOfferName ?? ""} ({offerfunded.StartDate?.ToString("MM/dd/yyyy") ?? ""} - {offerfunded.EndDate?.ToString("MM/dd/yyyy") ?? ""})")
+                        </p>
+                    }
+                </govuk-summary-list-row-value>
+            </govuk-summary-list-row>
+            <govuk-summary-list-row>
+                <govuk-summary-list-row-key>Guided learning hours (GLH)</govuk-summary-list-row-key>
+                <govuk-summary-list-row-value>@Model.Glh</govuk-summary-list-row-value>
+            </govuk-summary-list-row>
+            <govuk-summary-list-row>
+                <govuk-summary-list-row-key>Total qualification time (TQT)</govuk-summary-list-row-key>
+                <govuk-summary-list-row-value>@Model.Tqt</govuk-summary-list-row-value>
+            </govuk-summary-list-row>
+            <govuk-summary-list-row>
+                <govuk-summary-list-row-key> Credit</govuk-summary-list-row-key>
+                <govuk-summary-list-row-value>@Model.TotalCredits</govuk-summary-list-row-value>
+            </govuk-summary-list-row>
+            <govuk-summary-list-row>
+                <govuk-summary-list-row-key> Operational Start Date</govuk-summary-list-row-key>
+                <govuk-summary-list-row-value>@Html.ValueFor(m => m.OperationalStartDate, "{0:MM/dd/yy hh:mm}")</govuk-summary-list-row-value>
+            </govuk-summary-list-row>
+            <govuk-summary-list-row>
+                <govuk-summary-list-row-key> Operational End Date</govuk-summary-list-row-key>
+                <govuk-summary-list-row-value>@Html.ValueFor(m => m.OperationalEndDate, "{0:MM/dd/yy hh:mm}")</govuk-summary-list-row-value>
+            </govuk-summary-list-row>
+
+            @if (Model.Applications?.Any() ?? false)
+            {
+                var idx = 1;
+                @foreach (var app in Model.Applications)
                 {
                     <govuk-summary-list-row>
-                        <govuk-summary-list-row-key>Changes</govuk-summary-list-row-key>
-                        <govuk-summary-list-row-value>@Model.ChangedFieldNames</govuk-summary-list-row-value>
+                        <govuk-summary-list-row-key>Application @idx</govuk-summary-list-row-key>
+                        <govuk-summary-list-row-value>
+                            <a class="govuk-link"
+                               asp-area="Review"
+                               asp-controller="ApplicationsReview"
+                               asp-action="ViewApplication"
+                               asp-route-applicationReviewId="@app.ApplicationReviewId"
+                               asp-route-returnUrl="@Url.Action("QualificationDetails", "Changed", new { area = "Review", qualificationReference = Model.Qual.Qan, status = "changed" })">
+                                View application @app.Name
+                            </a>
+                            <p class="govuk-body govuk-!-margin-bottom-0">Submission date: @app.ApplicationDate!.Value.ToDateDisplayFormat()</p>
+                            <p class="govuk-body govuk-!-margin-top-0">Status: @app.Status</p>
+                        </govuk-summary-list-row-value>
                     </govuk-summary-list-row>
+                    idx++;
                 }
-                <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>QAN</govuk-summary-list-row-key>
+            }
+        </govuk-summary-list>
 
-                    <govuk-summary-list-row-value>@Model.Qual.Qan</govuk-summary-list-row-value>
-                </govuk-summary-list-row>
-                <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>Qualification title</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.Qual.QualificationName</govuk-summary-list-row-value>
+        @if (Model.KeyFieldChanges.Any())
+        {
+            <h3 class="govuk-!-margin-top-8">Changes</h3>
 
-                </govuk-summary-list-row>
-                <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>Awarding organisation</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.Organisation.NameOfqual</govuk-summary-list-row-value>
-                </govuk-summary-list-row>
+            <div class="govuk-!-margin-bottom-8">
+                <govuk-summary-list>
+                    @foreach (var change in Model.KeyFieldChanges.OrderBy(item => item.Name))
+                    {
+                        <govuk-summary-list-row>
+                            <govuk-summary-list-row-key>@change.Name</govuk-summary-list-row-key>
+                            <govuk-summary-list-row-value>
+                                <p class="govuk-body govuk-!-font-weight-bold">Was:<span class="govuk-body govuk-!-font-weight-regular"> @change.Was</span></p>
+                                <p class="govuk-body govuk-!-font-weight-bold">Now:<span class="govuk-body govuk-!-font-weight-regular"> @change.Now</span></p>
+                            </govuk-summary-list-row-value>
+                        </govuk-summary-list-row>
+                    }
+                </govuk-summary-list>
+            </div>
+        }
 
-                <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>Qualification type</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.Type</govuk-summary-list-row-value>
-                </govuk-summary-list-row>
-                <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>Level</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.Level</govuk-summary-list-row-value>
-                </govuk-summary-list-row>
-                <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>Sector subject area</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.Specialism</govuk-summary-list-row-value>
-                </govuk-summary-list-row>
-                <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>Age group(s)</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>
-                        @{
-                            var ageGroups = new List<string>();
-
-                            if (Model.PreSixteen ?? false)
-                            {
-                                ageGroups.Add("Pre 16");
-                            }
-                            if (Model.SixteenToEighteen ?? false)
-                            {
-                                ageGroups.Add("16-18");
-                            }
-                            if (Model.EighteenPlus ?? false)
-                            {
-                                ageGroups.Add("18+");
-                            }
-                            if (Model.NineteenPlus ?? false)
-                            {
-                                ageGroups.Add("19+");
-                            }
-                        }
-                        @foreach (var ageGroup in ageGroups)
+        @if (!Model.IsApplicationCompleted)
+        {
+            <form asp-controller="Changed" asp-action="QualificationDetails" method="post">
+                @Html.HiddenFor(m => m.Version)
+                @Html.HiddenFor(m => m.Qual.Qan)
+                @Html.HiddenFor(m => m.ChangedFieldNames)
+                <div class="govuk-form-group">
+                    <govuk-textarea asp-for="@Model.AdditionalActions.Note">
+                        <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Comments</govuk-textarea-label>
+                        <govuk-textarea-hint>Leave comments and recommendations. Give as much detail as you can. </govuk-textarea-hint>
+                    </govuk-textarea>
+                </div>
+                <div class="govuk-form-group">
+                    <govuk-select asp-for="@Model.AdditionalActions.ProcessStatusId">
+                        <govuk-select-label is-page-heading="false" class="govuk-label--s">Status</govuk-select-label>
+                        <govuk-select-item value="@null">Choose status</govuk-select-item>
+                        @foreach (var item in Model.ProcessStatuses)
                         {
-                            <p>@ageGroup</p>
+                            <govuk-select-item value="@item.Id">@item.Name</govuk-select-item>
                         }
-                    </govuk-summary-list-row-value>
+                    </govuk-select>
+                </div>
+                <button type="submit"
+                        class="govuk-button"
+                        data-module="govuk-button"
+                        data-prevent-double-click="true">
+                    Save
+                </button>
+            </form>
+        }
+        else
+        {
+            <govuk-summary-list class="govuk-!-margin-top-4">
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>Comments</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>@Model.AdditionalActions?.Note</govuk-summary-list-row-value>
                 </govuk-summary-list-row>
                 <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>Ofqual offered in England</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.OfferedInEngland</govuk-summary-list-row-value>
-                </govuk-summary-list-row>
-                <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>DfE offers funded</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>
-                        @foreach (var offerfunded in Model.FundingDetails)
-                        {
-                            <p>
-                                @($"Offer: {offerfunded.FundingOfferName ?? ""} ({offerfunded.StartDate?.ToString("MM/dd/yyyy") ?? ""} - {offerfunded.EndDate?.ToString("MM/dd/yyyy") ?? ""})")
-                            </p>
-                        }
-                    </govuk-summary-list-row-value>
-                </govuk-summary-list-row>
-                <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>Guided learning hours (GLH)</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.Glh</govuk-summary-list-row-value>
-                </govuk-summary-list-row>
-                <govuk-summary-list-row>
-                    <govuk-summary-list-row-key>Total qualification time (TQT)</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.Tqt</govuk-summary-list-row-value>
-                </govuk-summary-list-row>
-                <govuk-summary-list-row>
-                    <govuk-summary-list-row-key> Credit</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.TotalCredits</govuk-summary-list-row-value>
-                </govuk-summary-list-row>
-                <govuk-summary-list-row>
-                    <govuk-summary-list-row-key> Operational Start Date</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Html.ValueFor(m => m.OperationalStartDate, "{0:MM/dd/yy hh:mm}")</govuk-summary-list-row-value>
-                </govuk-summary-list-row>
-                <govuk-summary-list-row>
-                    <govuk-summary-list-row-key> Operational End Date</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Html.ValueFor(m => m.OperationalEndDate, "{0:MM/dd/yy hh:mm}")</govuk-summary-list-row-value>
+                    <govuk-summary-list-row-key>Status</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>@Model.ProcStatus?.Name</govuk-summary-list-row-value>
                 </govuk-summary-list-row>
             </govuk-summary-list>
+        }
 
-
-            @if (Model.KeyFieldChanges.Any())
+        <div class="govuk-form-group govuk-!-margin-top-4">
+            @if (Model.FundingsOffersOutcomeStatus.HasValue)
             {
-                <h3 class="govuk-!-margin-top-8">Changes</h3>
-
-                <div class="govuk-!-margin-bottom-8">
-                    <govuk-summary-list>
-                        @foreach (var change in Model.KeyFieldChanges.OrderBy(item => item.Name))
-                        {
-                            <govuk-summary-list-row>
-                                <govuk-summary-list-row-key>@change.Name</govuk-summary-list-row-key>
-                                <govuk-summary-list-row-value>
-                                    <p class="govuk-body govuk-!-font-weight-bold">Was:<span class="govuk-body govuk-!-font-weight-regular"> @change.Was</span></p>
-                                    <p class="govuk-body govuk-!-font-weight-bold">Now:<span class="govuk-body govuk-!-font-weight-regular"> @change.Now</span></p>
-                                </govuk-summary-list-row-value>
-                            </govuk-summary-list-row>
-                        }
-                    </govuk-summary-list>
-                </div>
+                <a class="govuk-button" asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersSummary"
+                   asp-route-qualificationReference="@Model.Qual.Qan"
+                   asp-route-qualificationVersionId="@Model.Id"
+                   asp-route-qualificationId="@Model.QualificationId"
+                   asp-route-mode="Changed">
+                    DfE funding review
+                </a>
             }
-
-            <div class="govuk-form-group">
-                <govuk-textarea asp-for="@Model.AdditionalActions.Note">
-                    <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Comments</govuk-textarea-label>
-                    <govuk-textarea-hint>Leave comments and recommendations. Give as much detail as you can. </govuk-textarea-hint>
-                </govuk-textarea>
-            </div>
-            <div class="govuk-form-group">
-                <govuk-select asp-for="@Model.AdditionalActions.ProcessStatusId">
-                    <govuk-select-label is-page-heading="false" class="govuk-label--s">Status</govuk-select-label>
-                    <govuk-select-item value="@null">Choose status</govuk-select-item>
-                    @foreach (var item in Model.ProcessStatuses)
-                    {
-                        <govuk-select-item value="@item.Id">@item.Name</govuk-select-item>
-                    }
-                </govuk-select>
-            </div>
-            <button type="submit"
-                    class="govuk-button"
-                    data-module="govuk-button"
-                    data-prevent-double-click="true">
-                Save
-            </button>
-            <div class="govuk-form-group">
-                @if (Model.FundingsOffersOutcomeStatus.HasValue)
-                {
-                    <a class="govuk-button" asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersSummary"
-                       asp-route-qualificationReference="@Model.Qual.Qan"
-                       asp-route-qualificationVersionId="@Model.Id"
-                       asp-route-qualificationId="@Model.QualificationId"
-                       asp-route-mode="Changed">
-                        DfE funding review
-                    </a>
-
-                }
-                else
-                {
-                    <a class="govuk-button" asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersOutcome"
-                       asp-route-qualificationReference="@Model.Qual.Qan"
-                       asp-route-mode="Changed">
-                        DfE funding review
-                    </a>
-                }
-            </div>
+            else
+            {
+                <a class="govuk-button" asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersOutcome"
+                   asp-route-qualificationReference="@Model.Qual.Qan"
+                   asp-route-mode="Changed">
+                    DfE funding review
+                </a>
+            }
         </div>
     </div>
-</form>
+</div>

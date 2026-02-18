@@ -30,7 +30,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
         public string? Reviewer1 { get; set; }
         public string? Reviewer2 { get; set; }
         public List<SelectListItem> ReviewerOptions { get; set; } = new();
+        public bool IsApplicationCompleted => ApplicationStatus == ApplicationStatus.Approved && SharedWithOfqual;
 
+        public string? BackUrl { get; set; }
 
         public class Feedback
         {
