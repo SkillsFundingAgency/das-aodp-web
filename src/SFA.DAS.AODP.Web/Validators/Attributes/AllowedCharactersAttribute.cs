@@ -10,8 +10,14 @@ public sealed class AllowedCharactersAttribute : ValidationAttribute
     private readonly TextCharacterProfile _profile;
 
     public AllowedCharactersAttribute(TextCharacterProfile profile)
+        :base("{0} contains invalid characters.") 
     {
         _profile = profile;
+    }
+
+    public override string FormatErrorMessage(string name)
+    {
+        return string.Format(ErrorMessageString, name);
     }
 
     protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
@@ -41,8 +47,7 @@ public sealed class AllowedCharactersAttribute : ValidationAttribute
 
         return valid
             ? ValidationResult.Success
-            : new ValidationResult(
-                ErrorMessage ?? $"{validationContext.DisplayName} contains invalid characters.");
+            : new ValidationResult(FormatErrorMessage(validationContext.DisplayName));
     }
 
     private static bool ContainsControlCharacters(string s)

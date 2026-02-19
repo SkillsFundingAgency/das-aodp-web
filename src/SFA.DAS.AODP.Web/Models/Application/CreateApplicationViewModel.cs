@@ -12,16 +12,16 @@ namespace SFA.DAS.AODP.Web.Models.Application
         public Guid FormVersionId { get; set; }
         public string FormTitle { get; set; }
 
+        [Display(Name="Qualification title")]
         [Required(ErrorMessage = ValidationMessages.QualificationTitleRequired)]
         [StringLength(200, ErrorMessage = ValidationMessages.QualificationTitleTooLong)]
-        [AllowedCharacters(TextCharacterProfile.QualificationTitle, 
-            ErrorMessage = ValidationMessages.QualificationTitleInvalidChars)]
+        [AllowedCharacters(TextCharacterProfile.QualificationTitle)]
         public string Name { get; set; }
 
-        [Required(ErrorMessage = ValidationMessages.OwnerRequired)]
-        [StringLength(200, ErrorMessage = ValidationMessages.OwnerTooLong)]
-        [AllowedCharacters(TextCharacterProfile.PersonName, 
-            ErrorMessage = ValidationMessages.OwnerInvalidChars)]
+        [Display(Name = "Application owner")]
+        [Required(ErrorMessage = ValidationMessages.ApplicationOwnerRequired)]
+        [StringLength(200, ErrorMessage = ValidationMessages.ApplicationOwnerTooLong)]
+        [AllowedCharacters(TextCharacterProfile.PersonName)]
         public string Owner { get; set; }
 
         [QualificationNumber]
