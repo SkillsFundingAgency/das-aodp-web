@@ -6,13 +6,16 @@ using Microsoft.Extensions.Options;
 using SFA.DAS.AODP.Application.Commands.Qualification;
 using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
-using SFA.DAS.AODP.Domain.Models;
+using SFA.DAS.AODP.Authentication.DfeSignInApi.Models;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.User;
+using SFA.DAS.AODP.Web.Mappers;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 using System.Globalization;
+using System.Linq;
+using System.Reflection;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
@@ -73,7 +76,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     }
                     if (processStatusIds?.Any() ?? false)
                     {
-                        query.ProcessStatusFilter = new ProcessStatusFilter() { ProcessStatusIds = processStatusIds };
+                        query.ProcessStatusFilter = new Domain.Models.ProcessStatusFilter() { ProcessStatusIds = processStatusIds };
                     }
 
                     query.Take = recordsPerPage;
@@ -180,7 +183,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         }
 
         [Route("/Review/New/QualificationDetails")]
-        public async Task<IActionResult> QualificationDetails([FromQuery] string qualificationReference)
+        public async Task<IActionResult> QualificationDetails([FromQuery] string qualificationReference, [FromQuery] string? returnTo = null)
         {            
             if (string.IsNullOrWhiteSpace(qualificationReference))
             {
@@ -202,7 +205,20 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
                 var applications = await Send(new GetApplicationsByQanQuery(model.Qual.Qan));
                 if (applications != null)
-                    model.MapApplications(applications);
+                    model.Applications = ApplicationMapper.Map(applications);
+
+                model.BackArea = "Review";
+                model.BackController = "New";
+                model.BackAction = "Index";
+
+                if (!string.IsNullOrWhiteSpace(returnTo) &&
+                    string.Equals(returnTo, "QualificationSearch", StringComparison.OrdinalIgnoreCase))
+                {
+                    model.BackArea = "Review";
+                    model.BackController = "QualificationSearch";
+                    model.BackAction = "Index";
+                    model.ReturnTo = "QualificationSearch";
+                }
 
                 return View(model);
             }
