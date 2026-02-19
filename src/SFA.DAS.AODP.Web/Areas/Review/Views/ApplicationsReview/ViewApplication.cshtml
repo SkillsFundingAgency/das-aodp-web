@@ -8,12 +8,11 @@
 
     var currentUserReview = Model.Feedbacks.Where(f => f.UserType == Model.UserType.ToString()).First();
 
-    var IsReadOnly = Model.ApplicationStatus is ApplicationStatus.Withdrawn;
+    var IsReadOnly = Model.ApplicationStatus is ApplicationStatus.Withdrawn || Model.IsApplicationCompleted;
+    var backHref = Model.BackUrl ?? Url.Action("Index", "ApplicationsReview", new { area = "Review" });
 }
 
-<govuk-back-link class="govuk-link govuk-task-list__link"
-                 asp-controller="ApplicationsReview"
-                 asp-action="Index">Back</govuk-back-link>
+<a class="govuk-back-link govuk-link govuk-task-list__link" href="@backHref">Back</a>
 
 @if (Model.ApplicationStatus == ApplicationStatus.Withdrawn)
 {
@@ -56,7 +55,9 @@
         <div class="govuk-grid-row">
             <h1 class="govuk-heading-xl">
                 Application details
-                <span class="govuk-caption-l">Request for funding</span>
+                <span class="govuk-caption-l">
+                    @(Model.IsApplicationCompleted ? "Completed application" : "Request for funding")
+                </span>
             </h1>
         </div>
 

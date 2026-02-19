@@ -4,12 +4,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using SFA.DAS.AODP.Application.Commands.Qualification;
+using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Authentication.DfeSignInApi.Models;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.User;
+using SFA.DAS.AODP.Web.Mappers;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 using System.Globalization;
 using System.Linq;
@@ -181,7 +183,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         }
 
         [Route("/Review/New/QualificationDetails")]
-        public async Task<IActionResult> QualificationDetails([FromQuery] string qualificationReference)
+        public async Task<IActionResult> QualificationDetails([FromQuery] string qualificationReference, [FromQuery] string? returnTo = null)
         {            
             if (string.IsNullOrWhiteSpace(qualificationReference))
             {
@@ -200,6 +202,24 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     model.MapFundedOffers(feedbackForQualificationFunding);
                     model.FundingsOffersOutcomeStatus = feedbackForQualificationFunding.Approved;
                 }
+
+                var applications = await Send(new GetApplicationsByQanQuery(model.Qual.Qan));
+                if (applications != null)
+                    model.Applications = ApplicationMapper.Map(applications);
+
+                model.BackArea = "Review";
+                model.BackController = "New";
+                model.BackAction = "Index";
+
+                if (!string.IsNullOrWhiteSpace(returnTo) &&
+                    string.Equals(returnTo, "QualificationSearch", StringComparison.OrdinalIgnoreCase))
+                {
+                    model.BackArea = "Review";
+                    model.BackController = "QualificationSearch";
+                    model.BackAction = "Index";
+                    model.ReturnTo = "QualificationSearch";
+                }
+
                 return View(model);
             }
             catch (Exception ex)

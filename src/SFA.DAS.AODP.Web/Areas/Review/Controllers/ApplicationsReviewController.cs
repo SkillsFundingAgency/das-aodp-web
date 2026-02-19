@@ -1,12 +1,10 @@
-﻿using Azure;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using SFA.DAS.AODP.Application.Commands.Application.Review;
 using SFA.DAS.AODP.Application.Queries.Application.Form;
 using SFA.DAS.AODP.Application.Queries.Review;
-using SFA.DAS.AODP.Application.Queries.Users;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Models.Settings;
@@ -84,8 +82,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             });
         }
 
+
         [Route("review/application-reviews/{applicationReviewId}", Name = RouteNames.Review_ViewApplication)]
-        public async Task<IActionResult> ViewApplication(Guid applicationReviewId)
+        public async Task<IActionResult> ViewApplication(Guid applicationReviewId, [FromQuery] string? returnUrl = null)
         {
             var userType = _userHelperService.GetUserType();
             var review = await Send(new GetApplicationForReviewByIdQuery(applicationReviewId));
@@ -96,10 +95,10 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             ShowNotificationIfKeyExists(UpdateKeys.SharingStatusUpdated.ToString(), ViewNotificationMessageType.Success, "The application's sharing status has been updated.");
             ShowNotificationIfKeyExists(UpdateKeys.QanUpdated.ToString(), ViewNotificationMessageType.Success, "The application's QAN has been updated.");
             ShowNotificationIfKeyExists(UpdateKeys.OwnerUpdated.ToString(), ViewNotificationMessageType.Success, "The application's owner has been updated.");
-             ShowNotificationIfKeyExists(UpdateKeys.ReviewerUpdated.ToString(), ViewNotificationMessageType.Success, "The application's reviewer has been updated.");
+            ShowNotificationIfKeyExists(UpdateKeys.ReviewerUpdated.ToString(), ViewNotificationMessageType.Success, "The application's reviewer has been updated.");
 
-            var model = ApplicationReviewViewModel.Map(review, userType);
-            model.SetLinks(
+            var applicationReviewViewModel = ApplicationReviewViewModel.Map(review, userType);
+            applicationReviewViewModel.SetLinks(
                 Url,
                 UserType,
                 new RelatedLinksContext
@@ -107,7 +106,10 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     ApplicationReviewId = applicationReviewId
                 });
 
-            return View(model);
+            applicationReviewViewModel.BackUrl = BuildBackUrl(returnUrl, review.Qan);
+
+            return View(applicationReviewViewModel);
+
         }
 
         [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
@@ -633,6 +635,36 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 new RelatedLinksContext { ApplicationReviewId = applicationReviewId });
 
             return View(nameof(ViewApplication), vm);
+        }
+
+        private string? BuildBackUrl(string? returnUrl, string? qan)
+        {
+            if (!string.IsNullOrWhiteSpace(returnUrl))
+            {
+                if (Url.IsLocalUrl(returnUrl) || returnUrl.StartsWith("/") || returnUrl.StartsWith("~/"))
+                {
+                    return returnUrl;
+                }
+                else
+                {
+                    if (string.Equals(returnUrl, "New", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return Url.Action("QualificationDetails", "New", new { area = "Review", qualificationReference = qan });
+                    }
+                    else if (string.Equals(returnUrl, "Changed", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return Url.Action("QualificationDetails", "Changed", new { area = "Review", qualificationReference = qan });
+                    }
+                    else
+                    {
+                        return Url.Action("Index", "ApplicationsReview", new { area = "Review" });
+                    }
+                }
+            }
+            else
+            {
+                return Url.Action("Index", "ApplicationsReview", new { area = "Review" });
+            }
         }
     }
 }
