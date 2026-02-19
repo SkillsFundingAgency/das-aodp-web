@@ -15,4 +15,6 @@ internal record FeatureManagementOptions
     public bool DefundingListImport => false;
 
     public bool PldnsImport => false;
+
+    public bool Rollover => false;
 }
