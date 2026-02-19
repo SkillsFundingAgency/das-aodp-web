@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -16,6 +17,7 @@ using SFA.DAS.AODP.Web.Areas.Apply.Controllers;
 using SFA.DAS.AODP.Web.Areas.Apply.Models;
 using SFA.DAS.AODP.Web.Helpers.File;
 using SFA.DAS.AODP.Web.Helpers.User;
+using SFA.DAS.AODP.Web.Models.RelatedLinks;
 using System.Text;
 
 namespace SFA.DAS.AODP.Web.Test.Areas.Apply.Controllers
@@ -37,6 +39,8 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Apply.Controllers
         public ApplicationMessagesControllerTests()
         {
             _controller = new(_mediatorMock.Object, _loggerMock.Object, _userHelperServiceMock.Object, _messageFileValidationService.Object, _formBuilderSettings, _fileService.Object);
+
+            SetupControllerUrl();
         }
 
         [Fact]
@@ -285,6 +289,69 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Apply.Controllers
             Assert.IsType<RedirectToActionResult>(result);
             Assert.False(_controller.TempData.ContainsKey(ApplicationMessagesController.NotificationKeys.MessageSentBanner.ToString()));
         }
+
+        [Fact]
+        public async Task Get_ApplicationMessages_SetsRelatedLinks()
+        {
+            // Arrange
+            var organisationId = Guid.NewGuid();
+            var applicationId = Guid.NewGuid();
+            var formVersionId = Guid.NewGuid();
+
+
+            var response = new BaseMediatrResponse<GetApplicationMessagesByApplicationIdQueryResponse>
+            {
+                Success = true,
+                Value = new GetApplicationMessagesByApplicationIdQueryResponse()
+            };
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationMessagesByApplicationIdQuery>(), default))
+                .ReturnsAsync(response);
+
+            // No blobs
+            _fileService
+                .Setup(s => s.ListBlobs(It.IsAny<string>()))
+                .Returns(new List<UploadedBlob>());
+
+            _controller.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
+
+            // Act
+            var result = await _controller.ApplicationMessages(organisationId, applicationId, formVersionId);
+
+            // Assert
+            var view = Assert.IsType<ViewResult>(result);
+            var model = Assert.IsType<ApplicationMessagesViewModel>(view.Model);
+
+            Assert.NotNull(model.RelatedLinks);
+            Assert.NotEmpty(model.RelatedLinks);
+
+            // Contextual link exists for ApplyApplicationMessages
+            Assert.Contains(model.RelatedLinks, l => l.Text == RelatedLinkConstants.Text.ViewApplication);
+
+            // AwardingOrganisation user type adds 3 configured links
+            Assert.Contains(model.RelatedLinks, l => l.Text == RelatedLinksConfiguration.FundingApprovalManual.Text);
+        }
+
+
+        private void SetupControllerUrl()
+        {
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext()
+            };
+
+            var url = new Mock<IUrlHelper>();
+
+            url.Setup(u => u.RouteUrl(It.IsAny<UrlRouteContext>()))
+               .Returns("/fake-url");
+
+            url.Setup(u => u.Action(It.IsAny<UrlActionContext>()))
+               .Returns("/fake-url");
+
+            _controller.Url = url.Object;
+        }
+
 
     }
 

@@ -1,0 +1,46 @@
+﻿@* /Views/Shared/_RelatedLinks.cshtml *@
+@model IReadOnlyList<SFA.DAS.AODP.Web.Models.RelatedLinks.RelatedLink>
+
+@{
+    var sameTab = Model?.Where(l => !l.OpenInNewTab).ToList() ?? new List<SFA.DAS.AODP.Web.Models.RelatedLinks.RelatedLink>();
+    var newTab = Model?.Where(l => l.OpenInNewTab).ToList() ?? new List<SFA.DAS.AODP.Web.Models.RelatedLinks.RelatedLink>();
+}
+
+@if (sameTab.Count > 0 || newTab.Count > 0)
+{
+    <h5 class="govuk-heading-m govuk-!-margin-bottom-2">Related links</h5>
+
+    @if (sameTab.Count > 0)
+    {
+        <ul class="govuk-list govuk-!-margin-bottom-2">
+            @foreach (var link in sameTab)
+            {
+                <li class="govuk-!-margin-bottom-1">
+                    <a class="govuk-link" href="@link.Url">@link.Text</a>
+                </li>
+            }
+        </ul>
+    }
+
+    @if (newTab.Count > 0)
+    {
+        <p class="govuk-body govuk-!-margin-bottom-2">
+            The following links open in a new tab
+        </p>
+
+        <ul class="govuk-list govuk-!-margin-bottom-0">
+            @foreach (var link in newTab)
+            {
+                <li class="govuk-!-margin-bottom-1">
+                    <a class="govuk-link"
+                       href="@link.Url"
+                       target="@(string.IsNullOrWhiteSpace(link.TargetName) ? "_blank" : link.TargetName)"
+                       rel="noopener noreferrer">
+                        @link.Text
+                        <span class="govuk-visually-hidden">(opens in new tab)</span>
+                    </a>
+                </li>
+            }
+        </ul>
+    }
+}

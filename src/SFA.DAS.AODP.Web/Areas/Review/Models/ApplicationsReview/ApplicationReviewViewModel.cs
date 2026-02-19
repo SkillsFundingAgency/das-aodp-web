@@ -1,12 +1,15 @@
-﻿using SFA.DAS.AODP.Application.Queries.Review;
+﻿using Microsoft.AspNetCore.Mvc;
+using SFA.DAS.AODP.Application.Queries.Review;
 using SFA.DAS.AODP.Models.Application;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using SFA.DAS.AODP.Models.Users;
+using SFA.DAS.AODP.Web.Models.RelatedLinks;
 using SFA.DAS.AODP.Web.Constants;
+
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
 {
-    public class ApplicationReviewViewModel
+    public class ApplicationReviewViewModel : IHasRelatedLinks
     {
         public UserType UserType { get; set; }
         public Guid Id { get; set; }
@@ -26,6 +29,11 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
         public ApplicationStatus ApplicationStatus { get; set; }
         public List<Funding> FundedOffers { get; set; } = new();
         public List<Feedback> Feedbacks { get; set; } = new();
+
+        public IReadOnlyList<RelatedLink> RelatedLinks { get; private set; } = [];
+
+        public void SetLinks(IUrlHelper url, UserType userType, RelatedLinksContext ctx)
+            => RelatedLinks = RelatedLinksBuilder.Build(url, RelatedLinksPage.ReviewApplicationDetails, userType, ctx);
 
         public string? Reviewer1 { get; set; }
         public string? Reviewer2 { get; set; }
@@ -72,6 +80,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
                 UserType = userType,
                 FormTitle = response.FormTitle,
                 ApplicationStatus = applicationStatus,
+
                 Reviewer1 = string.IsNullOrWhiteSpace(response.Reviewer1)
                     ? ReviewerDropdown.Assignment.UnassignedValue
                     : response.Reviewer1,

@@ -1,14 +1,16 @@
+using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Models.Application;
+using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Extensions;
+using SFA.DAS.AODP.Web.Models.RelatedLinks;
 
 namespace SFA.DAS.AODP.Web.Models.Application
 {
-    public class ApplicationFormViewModel
+    public class ApplicationFormViewModel : IHasRelatedLinks
     {
         public Guid OrganisationId { get; set; }
         public Guid FormVersionId { get; set; }
         public Guid ApplicationId { get; set; }
-
         public string ApplicationName { get; set; }
         public string FormTitle { get; set; }
         public string Reference { get; set; }
@@ -24,6 +26,11 @@ namespace SFA.DAS.AODP.Web.Models.Application
         public DateTime? SubmittedDate { get; set; }
         public string Owner { get; set; }
         public List<Section> Sections { get; set; }
+
+        public IReadOnlyList<RelatedLink> RelatedLinks { get; private set; } = Array.Empty<RelatedLink>();
+
+        public void SetLinks(IUrlHelper url, UserType userType, RelatedLinksContext ctx)
+            => RelatedLinks = RelatedLinksBuilder.Build(url, RelatedLinksPage.ApplyApplicationDetails, userType, ctx);
 
         public static ApplicationFormViewModel Map(GetApplicationFormByIdQueryResponse formsResponse,
             GetApplicationFormStatusByApplicationIdQueryResponse statusResponse,
@@ -50,7 +57,6 @@ namespace SFA.DAS.AODP.Web.Models.Application
                 VisibleToReviewers = statusResponse.ReviewExists,
                 Sections = new(),
                 CanWithdraw = statusResponse.Status.IsWithdrawable()
-
             };
 
             foreach (var section in formsResponse.Sections)
