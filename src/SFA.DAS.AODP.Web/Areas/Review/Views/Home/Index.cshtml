@@ -1,6 +1,10 @@
-﻿@using SFA.DAS.AODP.Web.Areas.Review.Models.Home
+﻿@using Microsoft.FeatureManagement
+@using SFA.DAS.AODP.Web.Areas.Review.Models.Home
 @using SFA.DAS.AODP.Web.Authentication
+@using SFA.DAS.AODP.Web.FeatureManagement
 @using static SFA.DAS.AODP.Web.Areas.Review.Models.Home.ReviewHomeViewModel
+
+@inject IFeatureManager FeatureManager
 @model ReviewHomeViewModel
 @{
 
@@ -74,7 +78,8 @@
                     </h2>
                     <p class="govuk-body">Create a form for an Awarding Organisation to apply for funding.</p>
                 }
-                @if (Model.UserRoles.Contains(RoleConstants.QFAUReviewer) || Model.UserRoles.Contains(RoleConstants.QFAUApprover))
+                @if (await FeatureManager.IsEnabledAsync(nameof(Feature.Rollover)) 
+                    && (Model.UserRoles.Contains(RoleConstants.QFAUReviewer) || Model.UserRoles.Contains(RoleConstants.QFAUApprover)))
                 {
                     <h2 class="govuk-heading-s govuk-!-margin-top-6;">
                         <a asp-area="Review" asp-controller="Rollover" asp-action="Index" class="govuk-link">Rollover funding</a>
