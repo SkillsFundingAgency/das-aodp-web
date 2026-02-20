@@ -1,0 +1,15 @@
+﻿@{
+    ViewData["Title"] = "Do you want to include the Hold List?";
+}
+
+<a class="govuk-back-link" asp-action="PreviousFile" asp-controller="Rollover" asp-area="Review">Back</a>
+
+<h1 class="govuk-heading-xl">Do you want to include the Hold List?</h1>
+
+<p class="govuk-body">(Placeholder for AWARD-1083) Implement hold-list options here.</p>
+
+<form asp-action="InitialSelection" asp-controller="Rollover" asp-area="Review" method="get">
+    <div class="govuk-form-group govuk-!-margin-top-6">
+        <govuk-button type="submit">Continue</govuk-button>
+    </div>
+</form>

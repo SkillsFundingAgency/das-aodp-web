@@ -1,0 +1,33 @@
+﻿@model SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.RolloverPreviousDataViewModel
+@{
+    ViewData["Title"] = "We found a list of candidates for rollover you worked on previously.";
+}
+
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
+<a class="govuk-back-link" asp-action="CheckData" asp-controller="Rollover" asp-area="Review">Back</a>
+
+<h1 class="govuk-heading-xl">We found a list of candidates for rollover you worked on previously.</h1>
+
+<h2 class="govuk-heading-m govuk-!-margin-top-6">What would you like to do?</h2>
+
+<form asp-area="Review" asp-controller="Rollover" asp-action="PreviousFile" method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="govuk-form-group">
+        <govuk-radios asp-for="SelectedOption">
+            <govuk-radios-fieldset>
+                <govuk-radios-fieldset-legend is-page-heading="false" class="govuk-fieldset__legend--s"></govuk-radios-fieldset-legend>
+
+                @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.SelectedOption))
+
+                <govuk-radios-item value="ContinueProcessing">Continue processing the @Model.CandidateCount previously imported qualifications</govuk-radios-item>
+                <govuk-radios-item value="RemovePrevious">Remove the previously uploaded qualifications and either upload or generate a new list of candidates for rollover</govuk-radios-item>
+            </govuk-radios-fieldset>
+        </govuk-radios>
+    </div>
+
+    <div class="govuk-form-group govuk-!-margin-top-6">
+        <govuk-button type="submit">Continue</govuk-button>
+    </div>
+</form>
