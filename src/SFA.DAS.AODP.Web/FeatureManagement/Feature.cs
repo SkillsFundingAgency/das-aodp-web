@@ -6,6 +6,5 @@ namespace SFA.DAS.AODP.Web.FeatureManagement;
 internal enum Feature
 {
     DefundingListImport = 1,
-    PldnsImport = 2,
-    Rollover = 3
+    PldnsImport = 2
 }

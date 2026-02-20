@@ -91,7 +91,7 @@ public class RolloverControllerTests
         var result = controller.Index(vm);
 
         var redirect = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal(nameof(RolloverController.InitialSelection), redirect.ActionName);
+        Assert.Equal(nameof(RolloverController.CheckData), redirect.ActionName);
 
         // session should contain Start with SelectedProcess
         var json = session.GetString("RolloverSession");
@@ -133,36 +133,9 @@ public class RolloverControllerTests
         var result = controller.Index(vm);
 
         var redirect = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal(nameof(RolloverController.InitialSelection), redirect.ActionName);
+        Assert.Equal(nameof(RolloverController.CheckData), redirect.ActionName);
     }
 
-    [Fact]
-    public void InitialSelection_Get_SetsTitle_And_UsesSessionImportStatusWhenPresent()
-    {
-        var session = CreateEmptySession();
-
-        // prepare a session model with ImportStatus (session DTO)
-        var sessionModel = new Rollover
-        {
-            ImportStatus = new RolloverImportStatus
-            {
-                RegulatedQualificationsLastImported = new DateTime(2025, 1, 1)
-            }
-        };
-
-        session.SetString("RolloverSession", JsonConvert.SerializeObject(sessionModel));
-
-        var controller = CreateControllerWithSession(session);
-
-        var result = controller.InitialSelection();
-
-        var viewResult = Assert.IsType<ViewResult>(result);
-        Assert.Equal("Initial selection of qualificaton", viewResult.ViewData["Title"]);
-        // ImportStatus should be present in ViewData
-        Assert.NotNull(viewResult.ViewData["ImportStatus"]);
-        var importStatus = Assert.IsType<RolloverImportStatus>(viewResult.ViewData["ImportStatus"]);
-        Assert.Equal(sessionModel.ImportStatus.RegulatedQualificationsLastImported, importStatus.RegulatedQualificationsLastImported);
-    }
 
     [Fact]
     public void UploadQualifications_Get_SetsTitle()
@@ -332,13 +305,7 @@ public class RolloverControllerTests
         var result = controller.CheckData(posted);
 
         var redirect = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal(nameof(RolloverController.InitialSelection), redirect.ActionName);
-
-        var json = session.GetString("RolloverSession");
-        Assert.NotNull(json);
-        var saved = JsonConvert.DeserializeObject<Rollover>(json!);
-        Assert.NotNull(saved?.ImportStatus);
-        Assert.Equal(posted.RegulatedQualificationsLastImported, saved!.ImportStatus!.RegulatedQualificationsLastImported);
+        Assert.Equal(nameof(RolloverController.Index), redirect.ActionName);
     }
 
     private class TestSession : ISession
