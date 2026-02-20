@@ -1,5 +1,11 @@
-﻿using SFA.DAS.AODP.Application.Queries.Qualifications;
+﻿using SFA.DAS.AODP.Application.Queries.Application.Application;
+using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Web.Models.Qualifications;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Models;
 
@@ -157,6 +163,47 @@ public class NewQualificationDetailsViewModelTests
         Assert.Equal("Offer B", vm.FundingDetails[1].FundingOfferName);
         Assert.Null(vm.FundingDetails[1].StartDate);
         Assert.Null(vm.FundingDetails[1].EndDate);
+    }
+
+    [Fact]
+    public void MapApplications_AddsApplications_FromGetApplicationsByQanQueryResponse()
+    {
+        // Arrange
+        var appsResponse = new GetApplicationsByQanQueryResponse
+        {
+            Applications = new List<GetApplicationsByQanQueryResponse.Application>
+                {
+                    new GetApplicationsByQanQueryResponse.Application
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "App One",
+                        CreatedDate = new DateTime(2022, 1, 1),
+                        SubmittedDate = new DateTime(2022, 1, 10)
+                    },
+                    new GetApplicationsByQanQueryResponse.Application
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = "App Two",
+                        CreatedDate = null,
+                        SubmittedDate = null
+                    }
+                }
+        };
+
+        var vm = new NewQualificationDetailsViewModel();
+
+        // Act
+        vm.MapApplications(appsResponse);
+
+        // Assert
+        Assert.Equal(2, vm.Applications.Count);
+        Assert.Equal("App One", vm.Applications[0].Name);
+        Assert.Equal(new DateTime(2022, 1, 1), vm.Applications[0].CreatedDate);
+        Assert.Equal(new DateTime(2022, 1, 10), vm.Applications[0].SubmittedDate);
+
+        Assert.Equal("App Two", vm.Applications[1].Name);
+        Assert.Null(vm.Applications[1].CreatedDate);
+        Assert.Null(vm.Applications[1].SubmittedDate);
     }
 
     [Fact]

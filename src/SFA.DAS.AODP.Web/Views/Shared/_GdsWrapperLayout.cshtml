@@ -1,0 +1,23 @@
+@{
+    Layout = "_Layout";
+}
+
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
+<div class="govuk-width-container">
+    <main class="govuk-main-wrapper">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds" id="guide-contents">
+
+                <partial name="_BackLinkPartial" />
+
+                <div class="govuk-grid-row govuk-!-margin-0">
+                    <h1 class="govuk-heading-xl">@ViewData["Title"]</h1>
+                </div>
+
+                @RenderBody()
+
+            </div>
+        </div>
+    </main>
+</div>

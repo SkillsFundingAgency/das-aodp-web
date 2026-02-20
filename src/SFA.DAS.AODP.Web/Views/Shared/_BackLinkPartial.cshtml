@@ -1,0 +1,9 @@
+@if (ViewData["BackLinkArea"] != null)
+{
+    <a asp-area="@ViewData["BackLinkArea"]" 
+       asp-controller="@ViewData["BackLinkController"]" 
+       asp-action="@ViewData["BackLinkAction"]"
+       class="govuk-link govuk-!-margin-bottom-6">
+        @(ViewData["BackLinkText"] ?? "< Back")
+    </a>
+}

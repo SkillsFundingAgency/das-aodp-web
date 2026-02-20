@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Queries.Import;
@@ -18,10 +19,12 @@ public class RolloverController : ControllerBase
 {
     private readonly ILogger<RolloverController> _logger;
     private const string SessionKey = "RolloverSession";
+    private readonly IValidator<RolloverEligibilityDatesViewModel> _rolloverEligibilityDatesViewModeValidator;
 
-    public RolloverController(ILogger<RolloverController> logger, IMediator mediator) : base(mediator, logger)
+    public RolloverController(ILogger<RolloverController> logger, IMediator mediator, IValidator<RolloverEligibilityDatesViewModel> validator) : base(mediator, logger)
     {
         _logger = logger;
+        _rolloverEligibilityDatesViewModeValidator = validator;
     }
 
     [HttpGet]
@@ -108,6 +111,7 @@ public class RolloverController : ControllerBase
                     .OrderByDescending(j => j.EndTime ?? DateTime.MinValue)
                     .FirstOrDefault();
                 model.RegulatedQualificationsLastImported = latest?.EndTime ?? latest?.StartTime;
+        return View();
             }
 
             var fundedResp = await Send(new GetJobRunsQuery { JobName = JobNames.FundedQualifications.ToString() });
@@ -172,6 +176,33 @@ public class RolloverController : ControllerBase
         SaveSessionModel(sessionToSave);
 
         return RedirectToAction(nameof(InitialSelection));
+    }
+
+    [HttpGet]
+    [Route("/Review/Rollover/EnterRolloverEligibilityDates")]
+    public IActionResult EnterRolloverEligibilityDates()
+    {
+        ViewData["UseNewLayout"] = true;
+        ViewData["Title"] = "Enter rollover eligibility dates";
+
+        return View();
+    }
+
+    [HttpPost]
+    [Route("/Review/Rollover/EnterRolloverEligibilityDates")]
+    public async Task<IActionResult> EnterRolloverEligibilityDates(RolloverEligibilityDatesViewModel model)
+    {
+        ViewData["UseNewLayout"] = true;
+
+        var validation = await _rolloverEligibilityDatesViewModeValidator.ValidateAsync(model);
+        validation.AddToModelState(ModelState);
+
+        if (!ModelState.IsValid)
+        {
+            return View("EnterRolloverEligibilityDates", model);
+        }
+
+        return View("EnterMaximumFundingApprovalEndDate", model);
     }
 
     private Rollover GetSessionModel()

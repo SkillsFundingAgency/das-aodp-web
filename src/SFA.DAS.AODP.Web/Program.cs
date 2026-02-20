@@ -1,9 +1,13 @@
+using FluentValidation;
+using FluentValidation.Validators;
 using GovUk.Frontend.AspNetCore;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Authentication.Extensions;
+using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Extensions.Startup;
+using SFA.DAS.AODP.Web.Models.OutputFile;
 using SFA.DAS.AODP.Web.Validators;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -79,6 +83,7 @@ internal class Program
              });
 
         builder.Services.AddScoped<IValidator<OutputFileViewModel>, OutputFileViewModelValidator>();
+        builder.Services.AddScoped<IValidator<RolloverEligibilityDatesViewModel>, RolloverEligibilityDatesViewModelValidator>();
 
         builder.Services.AddMediatR(config =>
         {
