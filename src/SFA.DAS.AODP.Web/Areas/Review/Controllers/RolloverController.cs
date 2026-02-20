@@ -55,25 +55,10 @@ public class RolloverController : ControllerBase
 
         return model.SelectedProcess switch
         {
-            RolloverProcess.InitialSelection => RedirectToAction(nameof(InitialSelection)),
+            RolloverProcess.InitialSelection => RedirectToAction(nameof(CheckData)),
             RolloverProcess.FinalUpload => RedirectToAction(nameof(UploadQualifications)),
             _ => View("RolloverStart", model)
         };
-    }
-
-    [HttpGet]
-    [Route("/Review/Rollover/InitialSelection")]
-    public IActionResult InitialSelection()
-    {
-        ViewData["Title"] = "Initial selection of qualificaton";
-
-        var session = GetSessionModel();
-        if (session.ImportStatus != null)
-        {
-            ViewData["ImportStatus"] = session.ImportStatus;
-        }
-
-        return View();
     }
 
     [HttpGet]
@@ -153,7 +138,7 @@ public class RolloverController : ControllerBase
     [HttpPost]
     [Route("/Review/Rollover/CheckData")]
     [ValidateAntiForgeryToken]
-    public IActionResult CheckData(RolloverImportStatusViewModel model)
+    public IActionResult CheckData([FromForm] RolloverImportStatusViewModel model)
     {
         if (!ModelState.IsValid)
         {
@@ -166,12 +151,7 @@ public class RolloverController : ControllerBase
             return View("CheckData", vm);
         }
 
-        var sessionToSave = GetSessionModel();
-        sessionToSave.ImportStatus = RolloverImportStatusViewModel.MapToSession(model);
-
-        SaveSessionModel(sessionToSave);
-
-        return RedirectToAction(nameof(InitialSelection));
+        return RedirectToAction(nameof(Index));
     }
 
     private Rollover GetSessionModel()
