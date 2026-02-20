@@ -15,7 +15,7 @@ namespace SFA.DAS.AODP.Web.Models.Application
         [Display(Name="Qualification title")]
         [Required(ErrorMessage = ValidationMessages.QualificationTitleRequired)]
         [StringLength(200, ErrorMessage = ValidationMessages.QualificationTitleTooLong)]
-        [AllowedCharacters(TextCharacterProfile.QualificationTitle)]
+        [AllowedCharacters(TextCharacterProfile.Title)]
         public string Name { get; set; }
 
         [Display(Name = "Application owner")]

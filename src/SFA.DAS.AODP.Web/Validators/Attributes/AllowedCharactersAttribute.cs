@@ -31,11 +31,11 @@ public sealed class AllowedCharactersAttribute : ValidationAttribute
 
         var valid = _profile switch
         {
-            TextCharacterProfile.QualificationTitle =>
-                Regex.IsMatch(s, ValidationPatterns.Text.QualificationTitle),
-
             TextCharacterProfile.PersonName =>
                 Regex.IsMatch(s, ValidationPatterns.Text.PersonName),
+
+            TextCharacterProfile.Title =>
+                Regex.IsMatch(s, ValidationPatterns.Text.Title),
 
             TextCharacterProfile.FreeText =>
                 !ContainsControlCharacters(s)

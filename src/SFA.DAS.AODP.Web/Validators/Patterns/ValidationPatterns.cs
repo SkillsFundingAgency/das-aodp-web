@@ -12,11 +12,12 @@
         // Text - allowed characters
         public static class Text
         {
-            public const string QualificationTitle =
+            public const string Title =
                 @"^[A-Za-z0-9 \-'\.&/(),:;]+$";
 
             public const string PersonName =
                 @"^[A-Za-z \-']+$";
+
         }
     }
 }

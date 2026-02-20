@@ -1,4 +1,6 @@
 ﻿using Azure;
+using SFA.DAS.AODP.Web.Validators.Attributes;
+using SFA.DAS.AODP.Web.Validators.Patterns;
 using System.ComponentModel;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApproval
@@ -16,6 +18,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApprova
             public DateOnly? StartDate { get; set; }
             [DisplayName("End date")]
             public DateOnly? EndDate { get; set; }
+
+            [AllowedCharacters(TextCharacterProfile.FreeText)]
             public string? Comments { get; set; }
         }
 

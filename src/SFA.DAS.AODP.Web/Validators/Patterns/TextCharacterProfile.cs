@@ -2,8 +2,8 @@
 {
     public enum TextCharacterProfile
     {
-        QualificationTitle,
         PersonName,
+        Title,
         FreeText
     }
 }
