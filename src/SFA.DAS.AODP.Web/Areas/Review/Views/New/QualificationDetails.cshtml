@@ -1,4 +1,5 @@
 ﻿@using System.Globalization
+@using SFA.DAS.AODP.Web.Extensions
 @model SFA.DAS.AODP.Web.Models.Qualifications.NewQualificationDetailsViewModel
 
 @{
@@ -6,15 +7,16 @@
     var isCompleted = string.Equals(Model.Stage?.Name, "Completed", System.StringComparison.OrdinalIgnoreCase);
 }
 <a class="govuk-back-link"
-   asp-controller="New"
-   asp-action="Index">
+   asp-area="@Model.BackArea"
+   asp-controller="@Model.BackController"
+   asp-action="@Model.BackAction">
     Return to qualifications
 </a>
 
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
 <span class="govuk-caption-xl">
-    @(isCompleted ? "Completed qualification" : "Newly regulated qualification")
+    @(Model.IsApplicationCompleted ? "Completed qualification" : "Newly regulated qualification")
 </span>
 <h1 class="govuk-heading-xl">Qualification Details</h1>
 
@@ -107,7 +109,7 @@
                 <govuk-summary-list-row-key>Operational start date</govuk-summary-list-row-key>
                 <govuk-summary-list-row-value>@Model.OperationalStartDate.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)</govuk-summary-list-row-value>
             </govuk-summary-list-row>
-            @if (!isCompleted)
+            @if (!Model.IsApplicationCompleted)
             {
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key>Operational end date</govuk-summary-list-row-key>
@@ -132,18 +134,13 @@
                             <a class="govuk-link"
                                asp-area="Review"
                                asp-controller="ApplicationsReview"
-                               asp-action="ViewApplicationReadOnlyDetails"
-                               asp-route-applicationReviewId="@app.Id">
+                               asp-action="ViewApplication"
+                               asp-route-applicationReviewId="@app.ApplicationReviewId"
+                               asp-route-returnUrl="@Url.Action("QualificationDetails", "New", new { area = "Review", qualificationReference = Model.Qual.Qan, returnTo = Model.ReturnTo })">
                                 View application @app.Name
                             </a>
-                            @if (app.SubmittedDate.HasValue)
-                            {
-                                <div class="govuk-body">Submission date: @app.SubmittedDate.Value.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)</div>
-                            }
-                            else if (app.CreatedDate.HasValue)
-                            {
-                                <div class="govuk-body">Created date: @app.CreatedDate.Value.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)</div>
-                            }
+                            <p class="govuk-body govuk-!-margin-bottom-0">Submission date: @app.ApplicationDate!.Value.ToDateDisplayFormat()</p>
+                            <p class="govuk-body govuk-!-margin-top-0">Status: @app.Status</p>
                         </govuk-summary-list-row-value>
                     </govuk-summary-list-row>
                      idx++; 
@@ -152,7 +149,7 @@
         </govuk-summary-list>
 
         @* Actions (editable) are only shown when not completed *@
-        @if (!isCompleted)
+        @if (!Model.IsApplicationCompleted)
         {
             <form asp-controller="New" asp-action="QualificationDetails" method="post">
                 @Html.HiddenFor(m => m.Qual.Qan)

@@ -9,10 +9,13 @@ using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Infrastructure.File;
+using SFA.DAS.AODP.Models.Common;
+using SFA.DAS.AODP.Models.Exceptions;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationMessage;
+using SFA.DAS.AODP.Web.Helpers;
 using SFA.DAS.AODP.Web.Helpers.File;
 using SFA.DAS.AODP.Web.Helpers.User;
 using System.Text;
@@ -145,11 +148,11 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
             };
             _mediatorMock.Setup(m => m.Send(It.IsAny<GetApplicationReviewSharingStatusByIdQuery>(), default)).ReturnsAsync(applicationSharingResponse);
 
-            _messageFileValidationService.Setup(f => f.ValidateFiles(model.Files)).Throws(new Exception("error"));
-
+            _messageFileValidationService
+                .Setup(f => f.ValidateFiles(model.Files))
+                .Throws(new FileUploadPolicyException(FileUploadRejectionReason.InvalidFileName));
             // Act
             var result = await _controller.ApplicationMessages(model);
-
 
             // Assert
             var viewResult = Assert.IsType<ViewResult>(result);
@@ -158,7 +161,6 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
             Assert.False(_controller.ModelState.IsValid);
             Assert.Contains("Files", _controller.ModelState.Keys);
         }
-
 
         [Theory]
         [InlineData(UserType.Qfau)]

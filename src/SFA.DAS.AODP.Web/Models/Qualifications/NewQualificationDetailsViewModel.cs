@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Razor.TagHelpers;
 using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Models.Application;
 using System.ComponentModel;
 
 namespace SFA.DAS.AODP.Web.Models.Qualifications;
@@ -71,9 +72,14 @@ public class NewQualificationDetailsViewModel
     public AdditionalFormActions AdditionalActions { get; set; } = new AdditionalFormActions();
     public List<ProcessStatus> ProcessStatuses { get; set; } = new List<ProcessStatus>();
     public List<OfferFundingDetails> FundingDetails { get; set; } = new();
-    public List<Application> Applications { get; set; } = new();
+    public List<ApplicationModel> Applications { get; set; } = new();
     public bool? FundingsOffersOutcomeStatus { get; set; }
+    public bool IsApplicationCompleted => string.Equals(Stage?.Name, "Completed", System.StringComparison.OrdinalIgnoreCase);
 
+    public string BackArea { get; set; } = "Review";
+    public string BackController { get; set; } = "New";
+    public string BackAction { get; set; } = "Index";
+    public string? ReturnTo { get; set; } = null;
     public class OfferFundingDetails
     {
         public string FundingOfferName { get; set; }
@@ -82,7 +88,7 @@ public class NewQualificationDetailsViewModel
         [DisplayName("End date")]
         public DateOnly? EndDate { get; set; }
     }
-    internal void MapFundedOffers(GetFeedbackForQualificationFundingByIdQueryResponse feedbackForQualificationFunding)
+    public void MapFundedOffers(GetFeedbackForQualificationFundingByIdQueryResponse feedbackForQualificationFunding)
     {
         foreach (var offer in feedbackForQualificationFunding.QualificationFundedOffers)
         {

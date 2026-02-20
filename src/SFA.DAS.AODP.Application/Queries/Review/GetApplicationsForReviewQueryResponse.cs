@@ -1,9 +1,12 @@
 ﻿using SFA.DAS.AODP.Models.Application;
+using SFA.DAS.AODP.Models.Users;
 
 public class GetApplicationsForReviewQueryResponse
 {
     public List<Application> Applications { get; set; } = new();
     public int TotalRecordsCount { get; set; }
+    public List<UserOption> AvailableReviewers { get; set; } = new();
+
     public class Application
     {
         public Guid Id { get; set; }
@@ -13,12 +16,14 @@ public class GetApplicationsForReviewQueryResponse
         public int Reference { get; set; }
         public string? Qan { get; set; }
         public string? AwardingOrganisation { get; set; }
-
-
         public string? Owner { get; set; }
         public ApplicationStatus Status { get; set; }
         public bool NewMessage { get; set; }
         public string FindRegulatedQualificationUrl { get; set; } = string.Empty;
 
+        public string Reviewer1 { get; set; }
+        public string Reviewer2 { get; set; }
+
     }
-}
+
+ }

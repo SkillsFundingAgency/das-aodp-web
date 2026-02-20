@@ -1,5 +1,4 @@
-﻿using Azure;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -15,7 +14,6 @@ using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApproval;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.User;
-using SFA.DAS.AODP.Web.Models.Application;
 using System.IO.Compression;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
@@ -27,7 +25,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
     {
         enum UpdateKeys
         {
-            SharingStatusUpdated, QanUpdated, OwnerUpdated
+            SharingStatusUpdated, QanUpdated, OwnerUpdated, ReviewerUpdated
         }
         private readonly IUserHelperService _userHelperService;
         private readonly UserType UserType;
@@ -55,6 +53,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 ApplicationsWithNewMessages = model.Status?.Contains(ApplicationStatus.NewMessage) == true,
                 ApplicationSearch = model.ApplicationSearch,
                 AwardingOrganisationSearch = model.AwardingOrganisationSearch,
+                ReviewerSearch = model.ReviewerSearch,
+                UnassignedOnly = model.UnassignedOnly,
                 Limit = model.ItemsPerPage,
                 Offset = model.ItemsPerPage * (model.Page - 1)
             });
@@ -74,12 +74,13 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 ItemsPerPage = model.ItemsPerPage,
                 ApplicationSearch = model.ApplicationSearch,
                 AwardingOrganisationSearch = model.AwardingOrganisationSearch,
-                Status = model.Status
+                Status = model.Status,
+                ReviewerSelection = model.ReviewerSelection
             });
         }
 
         [Route("review/application-reviews/{applicationReviewId}")]
-        public async Task<IActionResult> ViewApplication(Guid applicationReviewId)
+        public async Task<IActionResult> ViewApplication(Guid applicationReviewId, [FromQuery] string? returnUrl = null)
         {
             var userType = _userHelperService.GetUserType();
             var review = await Send(new GetApplicationForReviewByIdQuery(applicationReviewId));
@@ -90,7 +91,14 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             ShowNotificationIfKeyExists(UpdateKeys.SharingStatusUpdated.ToString(), ViewNotificationMessageType.Success, "The application's sharing status has been updated.");
             ShowNotificationIfKeyExists(UpdateKeys.QanUpdated.ToString(), ViewNotificationMessageType.Success, "The application's QAN has been updated.");
             ShowNotificationIfKeyExists(UpdateKeys.OwnerUpdated.ToString(), ViewNotificationMessageType.Success, "The application's owner has been updated.");
-            return View(ApplicationReviewViewModel.Map(review, userType));
+            ShowNotificationIfKeyExists(UpdateKeys.ReviewerUpdated.ToString(), ViewNotificationMessageType.Success, "The application's reviewer has been updated.");
+
+            var applicationReviewViewModel = ApplicationReviewViewModel.Map(review, userType);
+
+            applicationReviewViewModel.BackUrl = BuildBackUrl(returnUrl, review.Qan);
+
+            return View(applicationReviewViewModel);
+
         }
 
         [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
@@ -198,7 +206,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
 
             await Send(QfauFundingReviewOutcomeOfferDetailsViewModel.Map(model));
-
 
             return RedirectToAction(nameof(QfauFundingReviewSummary), new { applicationReviewId = model.ApplicationReviewId });
         }
@@ -349,6 +356,48 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 });
 
             TempData[UpdateKeys.OwnerUpdated.ToString()] = true;
+            return RedirectToAction(nameof(ViewApplication), new { applicationReviewId = model.ApplicationReviewId });
+        }
+
+        [HttpPost]
+        [Route("review/application-reviews/{applicationReviewId}/update-reviewer")]
+        public async Task<IActionResult> UpdateReviewer(UpdateReviewerViewModel model)
+        {
+            var reviewerUpdateResult = await Send(
+                new SaveReviewerCommand()
+                {
+                    ApplicationId = model.ApplicationId,
+                    SentByEmail = _userHelperService.GetUserEmail(),
+                    SentByName = _userHelperService.GetUserDisplayName(),
+                    ReviewerFieldName = model.ReviewerFieldName,
+
+                    ReviewerValue = string.IsNullOrWhiteSpace(model.ReviewerValue) 
+                        ? null : model.ReviewerValue,
+
+                    UserType = _userHelperService.GetUserType().ToString()
+                });
+
+            if (reviewerUpdateResult.DuplicateReviewerError)
+            {
+                ModelState.AddModelError(model.ReviewerFieldName, "Reviewer 1 and 2 must be different people.");
+
+                var review = await Send(new GetApplicationForReviewByIdQuery(model.ApplicationReviewId));
+
+                var vm = ApplicationReviewViewModel.Map(review, UserType.Qfau);
+
+                switch (model.ReviewerFieldName)
+                {
+                    case nameof(vm.Reviewer1):
+                        vm.Reviewer1 = model.ReviewerValue;
+                        break;
+                    case nameof(vm.Reviewer2):
+                        vm.Reviewer2 = model.ReviewerValue;
+                        break;
+                }
+                return View(nameof(ViewApplication), vm);
+            }
+
+            TempData[UpdateKeys.ReviewerUpdated.ToString()] = true;
             return RedirectToAction(nameof(ViewApplication), new { applicationReviewId = model.ApplicationReviewId });
         }
 
@@ -570,6 +619,36 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             vm.Qan = attemptedQan;
 
             return View(nameof(ViewApplication), vm);
+        }
+
+        private string? BuildBackUrl(string? returnUrl, string? qan)
+        {
+            if (!string.IsNullOrWhiteSpace(returnUrl))
+            {
+                if (Url.IsLocalUrl(returnUrl) || returnUrl.StartsWith("/") || returnUrl.StartsWith("~/"))
+                {
+                    return returnUrl;
+                }
+                else
+                {
+                    if (string.Equals(returnUrl, "New", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return Url.Action("QualificationDetails", "New", new { area = "Review", qualificationReference = qan });
+                    }
+                    else if (string.Equals(returnUrl, "Changed", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return Url.Action("QualificationDetails", "Changed", new { area = "Review", qualificationReference = qan });
+                    }
+                    else
+                    {
+                        return Url.Action("Index", "ApplicationsReview", new { area = "Review" });
+                    }
+                }
+            }
+            else
+            {
+                return Url.Action("Index", "ApplicationsReview", new { area = "Review" });
+            }
         }
     }
 }

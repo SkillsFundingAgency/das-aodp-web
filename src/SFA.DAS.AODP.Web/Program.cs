@@ -29,6 +29,13 @@ internal class Program
 
         var configuration = builder.Configuration.LoadConfiguration(builder.Services, builder.Environment.IsDevelopment());
 
+        if (builder.Environment.IsDevelopment())
+        {
+            builder.Configuration[$"{FeatureManagementOptions.SectionName}:Rollover"] = "true";
+            builder.Configuration[$"{FeatureManagementOptions.SectionName}:DefundingListImport"] = "true";
+            builder.Configuration[$"{FeatureManagementOptions.SectionName}:PldnsImport"] = "true";
+        }
+
         builder.Services.AddOptions<FeatureManagementOptions>(nameof(FeatureManagementOptions.SectionName));
         builder.Services.AddFeatureManagement();
 
@@ -41,6 +48,14 @@ internal class Program
                 options.AddPolicy(PolicyConstants.IsApplyUser, policy => policy.RequireRole(RoleConstants.AOApply));
                 options.AddPolicy(PolicyConstants.IsAdminFormsUser, policy => policy.RequireRole(RoleConstants.QFAUFormBuilder, RoleConstants.IFATEFormBuilder));
                 options.AddPolicy(PolicyConstants.IsAdminImportUser, policy => policy.RequireRole(RoleConstants.QFAUImport));
+                options.AddPolicy(PolicyConstants.IsImportAndFormUser, policy => policy.RequireRole(
+                    RoleConstants.QFAUApprover,
+                    RoleConstants.QFAUReviewer,
+                    RoleConstants.IFATEReviewer,
+                    RoleConstants.OFQUALReviewer,
+                    RoleConstants.QFAUFormBuilder,
+                    RoleConstants.IFATEFormBuilder,
+                    RoleConstants.QFAUImport));
             }
             )
             .AddGovUkFrontend()
@@ -68,7 +83,7 @@ internal class Program
              });
 
         builder.Services.AddScoped<IValidator<OutputFileViewModel>, OutputFileViewModelValidator>();
-        builder.Services.AddScoped< IValidator<RolloverEligibilityDatesViewModel>, RolloverEligibilityDatesViewModelValidator>();
+        builder.Services.AddScoped<IValidator<RolloverEligibilityDatesViewModel>, RolloverEligibilityDatesViewModelValidator>();
 
         builder.Services.AddMediatR(config =>
         {
