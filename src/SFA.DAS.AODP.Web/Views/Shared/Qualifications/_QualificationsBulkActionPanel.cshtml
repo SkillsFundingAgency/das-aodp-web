@@ -1,0 +1,40 @@
+﻿@using SFA.DAS.AODP.Web.Models.BulkActions
+@model QualificationsBulkActionPageViewModel
+
+@{
+    var statusHasError =
+        ViewData.ModelState.TryGetValue("BulkAction.ProcessStatusId", out var statusState) &&
+        statusState.Errors.Count > 0;
+}
+
+<hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible" />
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+        <h3 class="govuk-heading-m">Actions for selected qualifications</h3>
+
+        <span id="BulkAction.ProcessStatusId" class="govuk-visually-hidden"></span>
+
+        <div class="govuk-form-group @(statusHasError ? "govuk-form-group--error" : "")">
+            <label class="govuk-label govuk-label--s" asp-for="BulkAction.ProcessStatusId">Choose a status</label>
+            <span asp-validation-for="BulkAction.ProcessStatusId" class="govuk-error-message"></span>
+
+            <select class="govuk-select"
+                    asp-for="BulkAction.ProcessStatusId"
+                    asp-items="Model.BulkActionStatusOptions">
+                <option value="">Status</option>
+            </select>
+        </div>
+
+        <div class="govuk-form-group">
+            <label class="govuk-label govuk-label--s" asp-for="BulkAction.Comment">Add comment (optional)</label>
+            <div class="govuk-hint">Leave comments and recommendations. Give as much detail as you can.</div>
+
+            <textarea class="govuk-textarea"
+                      asp-for="BulkAction.Comment"
+                      rows="6"></textarea>
+        </div>
+
+        <button type="submit" class="govuk-button">Apply to this selection</button>
+    </div>
+</div>

@@ -1,8 +1,14 @@
-﻿using SFA.DAS.AODP.Application.Queries.Qualifications;
+﻿using Microsoft.AspNetCore.Components.Forms;
+using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Web.Models.BulkActions;
+using SFA.DAS.AODP.Web.Validators.Attributes;
+using SFA.DAS.AODP.Web.Validators.Messages;
+using SFA.DAS.AODP.Web.Validators.Patterns;
+using System.ComponentModel.DataAnnotations;
 
 namespace SFA.DAS.AODP.Web.Models.Qualifications
 {
-    public class NewQualificationsViewModel
+    public class NewQualificationsViewModel : QualificationsBulkActionPageViewModel
     {
         public NewQualificationsViewModel()
         {
@@ -39,12 +45,23 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
             }
         }
 
+        public class BulkActionViewModel
+        {
+            [Display(Name ="Status")]
+            [Required(ErrorMessage = ValidationMessages.QualificationsBulkActionStatusRequired)]
+            public Guid? ProcessStatusId { get; set; }
+
+            [AllowedCharactersAttribute(TextCharacterProfile.FreeText)]
+            public string? Comment { get; set; }
+        }
+
         public static NewQualificationsViewModel Map(GetNewQualificationsQueryResponse response, List<GetProcessStatusesQueryResponse.ProcessStatus> processStatuses, string organisation = "", string qan = "", string name = "")
         {
             var viewModel = new NewQualificationsViewModel();
             viewModel.PaginationViewModel = new PaginationViewModel(response.TotalRecords, response.Skip, response.Take);
             viewModel.NewQualifications = response.Data.Select(s => new NewQualificationViewModel()
             {
+                Id = s.Id,
                 AwardingOrganisation = s.AwardingOrganisation,
                 Reference = s.Reference,
                 Status = s.Status,

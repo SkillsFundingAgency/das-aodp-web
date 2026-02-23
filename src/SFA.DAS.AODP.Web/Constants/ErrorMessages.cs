@@ -14,5 +14,6 @@
             public const string TextRequired = "Enter some text in the message field.";
             public const string MessageTypeRequired = "Select a message type.";
         }
+
     }
 }

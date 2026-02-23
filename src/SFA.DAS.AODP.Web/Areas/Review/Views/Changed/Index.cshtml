@@ -1,9 +1,12 @@
-﻿@model SFA.DAS.AODP.Web.Models.Qualifications.ChangedQualificationsViewModel
+﻿@using SFA.DAS.AODP.Web.Models.BulkActions
+@using SFA.DAS.AODP.Web.Models.Qualifications
+@model SFA.DAS.AODP.Web.Models.Qualifications.ChangedQualificationsViewModel
 @{
     ViewData["Title"] = "Changed Qualifications";
 }
 
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+<partial name="_ValidationSummaryPartial" />
 
 <div class="govuk-width-container">
     <main class="govuk-main-wrapper">
@@ -18,11 +21,15 @@
                             <h2 class="govuk-heading-l">Qualifications with changes</h2>
                         </div>
                     </div>
+
                     @if (Model.PaginationViewModel.CurrentPage > 0)
                     {
-                        <div class="govuk-inset-text">Import for this cycle ran: @(Model.JobStatusViewModel.LastRunTime.HasValue ? Model.JobStatusViewModel.LastRunTime.Value.ToString("G") : "Never")</div>
+                        <div class="govuk-inset-text">
+                            Import for this cycle ran: @(Model.JobStatusViewModel.LastRunTime.HasValue? Model.JobStatusViewModel.LastRunTime.Value.ToString("G") : "Never")
+                        </div>
                         <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
                     }
+
                     <form asp-controller="Changed" asp-action="Search" asp-area="Review" method="post">
                         <div class="govuk-grid-row" id="New_Qual_FilterSection">
                             <div class="govuk-grid-column-full">
@@ -32,7 +39,7 @@
                                     </div>
                                 </div>
                                 <div class="govuk-grid-row">
-                                    <div class="govuk-grid-column-one-quarter">                                        
+                                    <div class="govuk-grid-column-one-quarter">
                                         <div class="govuk-form-group">
                                             <govuk-input asp-for="@Model.Filter.QualificationName" inputmode="text" spellcheck="false" autocomplete="off">
                                                 <govuk-input-label is-page-heading="false" class="govuk-label--s">Qualification Title</govuk-input-label>
@@ -49,30 +56,30 @@
                                             </govuk-input>
                                         </div>
                                     </div>
-                                    <div class="govuk-grid-column-three-quarters">                                                                                 
+                                    <div class="govuk-grid-column-three-quarters">
                                         <div class="govuk-form-group">
                                             <fieldset class="govuk-fieldset govuk-!-static-padding-left-5">
                                                 <govuk-checkboxes name="Filter[ProcessStatusIds]" asp-for="@Model.Filter.ProcessStatusIds">
-
-                                                    <govuk-checkboxes-fieldset >
-
-                                                        <govuk-checkboxes-fieldset-legend is-page-heading="false"  class="govuk-label--s">
+                                                    <govuk-checkboxes-fieldset>
+                                                        <govuk-checkboxes-fieldset-legend is-page-heading="false" class="govuk-label--s">
                                                             <div class="govuk-label govuk-label--s">Status</div>
                                                         </govuk-checkboxes-fieldset-legend>
+
                                                         @Html.RenderPartialAsync("Validation/_CheckboxValidationPartial", nameof(Model.Filter.ProcessStatusIds))
 
                                                         @foreach (var status in Model.ProcessStatuses)
                                                         {
-                                                            <govuk-checkboxes-item  checked="@Model.Filter.ProcessStatusIds?.Contains(status.Id)" value="@status.Id">@status.Name</govuk-checkboxes-item>
-                                                        }                                                                      
+                                                            <govuk-checkboxes-item checked="@Model.Filter.ProcessStatusIds?.Contains(status.Id)" value="@status.Id">@status.Name</govuk-checkboxes-item>
+                                                        }
                                                     </govuk-checkboxes-fieldset>
-
                                                 </govuk-checkboxes>
                                             </fieldset>
-                                        </div>                                                                                                
+                                        </div>
                                     </div>
-                                </div>      
+                                </div>
+
                                 <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+
                                 <div class="govuk-grid-row">
                                     <div class="govuk-grid-column-full">
                                         <govuk-select asp-for="@Model.PaginationViewModel.RecordsPerPage">
@@ -83,6 +90,7 @@
                                         </govuk-select>
                                     </div>
                                 </div>
+
                                 <div class="govuk-grid-row">
                                     <div class="govuk-grid-column-full">
                                         <div class="govuk-button-group">
@@ -94,60 +102,131 @@
                                                     name="Search">
                                                 Search
                                             </button>
-                                            <a class="govuk-button govuk-button--secondary" asp-action="Clear" asp-controller="changed" asp-area="Review" asp-route-recordsPerPAge="@Model.PaginationViewModel.RecordsPerPage">
+                                            <a class="govuk-button govuk-button--secondary"
+                                               asp-action="Clear"
+                                               asp-controller="Changed"
+                                               asp-area="Review"
+                                               asp-route-recordsPerPAge="@Model.PaginationViewModel.RecordsPerPage">
                                                 Clear
                                             </a>
                                         </div>
                                     </div>
                                 </div>
+
                             </div>
                         </div>
                     </form>
+
                     @if (Model.PaginationViewModel.CurrentPage > 0)
                     {
                         <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+
                         @if (Model.ChangedQualifications.Any())
                         {
-                            <div class="govuk-grid-row" id="New_Qual_Pagination_Header_Section">
-                                <div class="govuk-grid-column-full">
-                                    <p class="">Viewing @(Model.PaginationViewModel.StartRecord) - @(Model.PaginationViewModel.EndRecord) of @(Model.PaginationViewModel.TotalRecords) Qualifications</p>
+                            <form asp-controller="Changed" asp-action="ApplyBulkAction" asp-area="Review" method="post">
+                                <input type="hidden" name="pageNumber" value="@Model.PaginationViewModel.CurrentPage" />
+                                <input type="hidden" name="recordsPerPage" value="@Model.PaginationViewModel.RecordsPerPage" />
+                                <input type="hidden" name="name" value="@Model.Filter.QualificationName" />
+                                <input type="hidden" name="organisation" value="@Model.Filter.Organisation" />
+                                <input type="hidden" name="qan" value="@Model.Filter.QAN" />
+
+                                @if (Model.Filter.ProcessStatusIds != null)
+                                {
+                                    foreach (var id in Model.Filter.ProcessStatusIds)
+                                    {
+                                        <input type="hidden" name="processStatusIds" value="@id" />
+                                    }
+                                }
+
+                                @{
+                                    var selectionHasError =
+                                    ViewData.ModelState.TryGetValue("SelectedQualificationIds", out var selState) &&
+                                    selState.Errors.Count > 0;
+                                }
+
+                                <div class="govuk-grid-row" id="New_Qual_Pagination_Header_Section">
+                                    <div class="govuk-grid-column-full">
+                                        <p class="">Viewing @(Model.PaginationViewModel.StartRecord) - @(Model.PaginationViewModel.EndRecord) of @(Model.PaginationViewModel.TotalRecords) Qualifications</p>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="govuk-grid-row" id="New_Qual_Data_Section">
-                                <div class="govuk-grid-column-full">
-                                    <table class="govuk-table">
-                                        <thead class="govuk-table__head">
-                                            <tr class="govuk-table__row">
-                                                <th class="govuk-table__header">QAN</th>
-                                                <th class="govuk-table__header">Qualification Title</th>
-                                                <th class="govuk-table__header">Changes</th>
-                                                <th class="govuk-table__header">Priority / Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="govuk-table__body">
-                                            @foreach (var qualification in Model.ChangedQualifications)
-                                            {
-                                                <tr class="govuk-table__row">
-                                                    <td>
-                                                        @if (!string.IsNullOrWhiteSpace(@qualification.QualificationReference))
-                                                        {
-                                                            var baseUrl = Model.FindRegulatedQualificationUrl ?? string.Empty;
-                                                            var fullUrl = $"{baseUrl}{qualification.QualificationReference}";
-                                                            <a href="@fullUrl" target="_blank">@qualification.QualificationReference</a>
-                                                        }
-                                                    </td>
-                                                    <td class="govuk-table__cell">
-                                                        <a class="govuk-link" asp-action="QualificationDetails" asp-controller="changed" asp-route-qualificationReference="@qualification.QualificationReference" asp-route-status="changed">
-                                                            @qualification.QualificationTitle
-                                                        </a>
-                                                    </td>
-                                                    <td class="govuk-table__cell">@qualification.ChangedFieldNames</td>
-                                                    <td class="govuk-table__cell">@qualification.Status</td>
-                                                </tr>
-                                            }
-                                        </tbody>
-                                    </table>
+
+                                @{
+                                    var url = Url.Action("Index", "Changed", new
+                                    {
+                                        area = "Review",
+                                        pageNumber = Model.PaginationViewModel.CurrentPage,
+                                        recordsPerPage = Model.PaginationViewModel.RecordsPerPage,
+                                        name = Model.Filter.QualificationName,
+                                        organisation = Model.Filter.Organisation,
+                                        qan = Model.Filter.QAN,
+                                        processStatusIds = Model.Filter.ProcessStatusIds,
+                                        selectAll = true,
+                                        reloadId = Guid.NewGuid().ToString("N")
+                                    }) + "#bulk-action-select-all";
+                                }
+
+                                <div id="SelectedQualificationIds" class="govuk-form-group @(selectionHasError ? "govuk-form-group--error" : "")">
+                                    <h3 class="govuk-heading-m">Qualifications</h3>
+                                    <span asp-validation-for="SelectedQualificationIds" class="govuk-error-message"></span>
+
+                                    <partial name="~/Views/Shared/Qualifications/_SelectAllOnPageButton.cshtml"
+                                             model="new SelectAllQualificationsViewModel
+                                             {
+                                                 CurrentPage = Model.PaginationViewModel.CurrentPage,
+                                                 RecordsPerPage = Model.PaginationViewModel.RecordsPerPage,
+                                                 Name = Model.Filter.QualificationName,
+                                                 Organisation = Model.Filter.Organisation,
+                                                 Qan = Model.Filter.QAN,
+                                                 ProcessStatusIds = Model.Filter.ProcessStatusIds
+                                            }" />
+
+                                    <div class="govuk-grid-row" id="New_Qual_Data_Section">
+                                        <div class="govuk-grid-column-full">
+                                            <table class="govuk-table">
+                                                <thead class="govuk-table__head">
+                                                    <tr class="govuk-table__row">
+                                                        <partial name="~/Views/Shared/Qualifications/_SelectColumnHeader.cshtml" />
+                                                        <th class="govuk-table__header">QAN</th>
+                                                        <th class="govuk-table__header">Qualification Title</th>
+                                                        <th class="govuk-table__header">Changes</th>
+                                                        <th class="govuk-table__header">Priority / Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="govuk-table__body">
+                                                    @foreach (var qualification in Model.ChangedQualifications)
+                                                    {
+                                                        var isChecked = Model.SelectedQualificationIds.Contains(qualification.Id);
+
+                                                        <tr class="govuk-table__row">
+                                                            <partial name="~/Views/Shared/Qualifications/_SelectColumnCell.cshtml"
+                                                                     model="(qualification.Id, qualification.QualificationTitle, isChecked)" />
+                                                            <td class="govuk-table__cell">
+                                                                @if (!string.IsNullOrWhiteSpace(qualification.QualificationReference))
+                                                                {
+                                                                    var baseUrl = Model.FindRegulatedQualificationUrl ?? string.Empty;
+                                                                    var fullUrl = $"{baseUrl}{qualification.QualificationReference}";
+                                                                    <a href="@fullUrl" target="_blank">@qualification.QualificationReference</a>
+                                                                }
+                                                            </td>
+                                                            <td class="govuk-table__cell">
+                                                                <a class="govuk-link"
+                                                                   asp-action="QualificationDetails"
+                                                                   asp-controller="Changed"
+                                                                   asp-route-qualificationReference="@qualification.QualificationReference"
+                                                                   asp-route-status="changed">
+                                                                    @qualification.QualificationTitle
+                                                                </a>
+                                                            </td>
+                                                            <td class="govuk-table__cell">@qualification.ChangedFieldNames</td>
+                                                            <td class="govuk-table__cell">@qualification.Status</td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
                                 </div>
+
                                 @if (Model.PaginationViewModel.TotalPages > 0)
                                 {
                                     <div class="govuk-grid-row" id="New_Qual_Pagination_Footer_Section">
@@ -275,15 +354,23 @@
                                             </nav>
                                         </div>
                                     </div>
+
                                     <div class="govuk-grid-row">
                                         <div class="govuk-button-group">
-                                            <a class="govuk-button govuk-button--secondary" asp-controller="Changed" asp-action="ExportData" asp-route-area="Review" asp-route-status="Changed">
+                                            <a class="govuk-button govuk-button--secondary"
+                                               asp-controller="Changed"
+                                               asp-action="ExportData"
+                                               asp-route-area="Review"
+                                               asp-route-status="Changed">
                                                 Download
                                             </a>
                                         </div>
                                     </div>
                                 }
-                            </div>
+
+                                <partial name="~/Views/Shared/Qualifications/_QualificationsBulkActionPanel.cshtml" model="Model" />
+
+                            </form>
                         }
                         else
                         {
@@ -311,7 +398,6 @@
                     }
 
                 </div>
-
             </div>
         </div>
     </main>

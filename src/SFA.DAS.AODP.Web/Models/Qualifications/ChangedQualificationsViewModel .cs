@@ -1,8 +1,9 @@
 ﻿using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Web.Models.BulkActions;
 
 namespace SFA.DAS.AODP.Web.Models.Qualifications
 {
-    public class ChangedQualificationsViewModel
+    public class ChangedQualificationsViewModel: QualificationsBulkActionPageViewModel
     {
         public ChangedQualificationsViewModel()
         {

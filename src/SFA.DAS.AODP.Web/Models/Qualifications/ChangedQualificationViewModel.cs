@@ -4,6 +4,7 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
 {
     public class ChangedQualificationViewModel
     {
+        public Guid Id { get; set; }
         public string QualificationReference { get; set; } = string.Empty;
         public string AwardingOrganisation { get; set; } = string.Empty;
         public string QualificationTitle { get; set; } = string.Empty;
