@@ -15,6 +15,11 @@ public sealed class AllowedCharactersAttribute : ValidationAttribute
         _profile = profile;
     }
 
+    public override string FormatErrorMessage(string name)
+    {
+        return string.Format(ErrorMessageString, name);
+    }
+
     protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
     {
         if (value is not string s || string.IsNullOrWhiteSpace(s))
