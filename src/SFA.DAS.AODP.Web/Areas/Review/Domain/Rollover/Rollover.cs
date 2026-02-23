@@ -5,8 +5,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
 public class Rollover
 {
     public RolloverStart? Start { get; set; }
-
     public RolloverImportStatus? ImportStatus { get; set; }
+    public RolloverPreviousData? PreviousData { get; set; }
+    public bool? IncludeHoldList { get; set; }
 }
 
 public class RolloverStart
@@ -20,4 +21,10 @@ public class RolloverImportStatus
     public DateTime? FundedQualificationsLastImported { get; set; }
     public DateTime? DefundingListLastImported { get; set; }
     public DateTime? PldnsListLastImported { get; set; }
+}
+
+public class RolloverPreviousData
+{
+    public int CandidateCount { get; set; }
+    public RolloverPreviousFileOption? SelectedOption { get; set; }
 }

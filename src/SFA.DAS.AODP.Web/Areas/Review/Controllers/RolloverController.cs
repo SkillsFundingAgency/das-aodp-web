@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Queries.Import;
+using SFA.DAS.AODP.Application.Queries.Review.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 using SFA.DAS.AODP.Web.Authentication;
@@ -151,6 +152,107 @@ public class RolloverController : ControllerBase
             return View("CheckData", vm);
         }
 
+        return RedirectToAction(nameof(PreviousFile));
+    }
+
+    [HttpGet]
+    [Route("/Review/Rollover/PreviousFile")]
+    public async Task<IActionResult> PreviousFile()
+    {
+        var session = GetSessionModel();
+
+        if (session.PreviousData != null)
+        {
+            var vm = new RolloverPreviousDataViewModel
+            {
+                CandidateCount = session.PreviousData.CandidateCount,
+                SelectedOption = session.PreviousData.SelectedOption
+            };
+
+            ViewData["Title"] = "Do you need to update any data before starting?";
+            return View("PreviousFile", vm);
+        }
+
+        var candidateCount = await Send(new GetRolloverCandidateQuery());
+
+        var model = new RolloverPreviousDataViewModel
+        {
+            CandidateCount = candidateCount.CandidateCount
+        };
+
+        session.PreviousData = new RolloverPreviousData
+        {
+            CandidateCount = model.CandidateCount
+        };
+        SaveSessionModel(session);
+
+        ViewData["Title"] = "We found a list of candidates for rollover you worked on previously.";
+        return View("PreviousFile", model);
+    }
+
+    [HttpPost]
+    [Route("/Review/Rollover/PreviousFile")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> PreviousFile(RolloverPreviousDataViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View("PreviousFile", model);
+        }
+
+        var session = GetSessionModel();
+        try
+        {
+            // store the previous file selection into the session object
+            session.PreviousData!.SelectedOption = model.SelectedOption;
+            SaveSessionModel(session);
+        }
+        catch (Exception ex)
+        {
+            LogException(ex);
+        }
+
+        return RedirectToAction(nameof(IncludeHoldList));
+    }
+
+    [HttpGet]
+    [Route("/Review/Rollover/IncludeHoldList")]
+    public IActionResult IncludeHoldList()
+    {
+        ViewData["Title"] = "Do you want to include the Hold List?";
+        var session = GetSessionModel();
+        var vm = new RolloverIncludeHoldListViewModel
+        {
+            SelectedOption = session.IncludeHoldList.HasValue
+                ? (session.IncludeHoldList.Value ? IncludeHoldListOption.Yes : IncludeHoldListOption.No)
+                : null
+        };
+
+        return View("IncludeHoldList", vm);
+    }
+
+    [HttpPost]
+    [Route("/Review/Rollover/IncludeHoldList")]
+    [ValidateAntiForgeryToken]
+    public IActionResult IncludeHoldList(RolloverIncludeHoldListViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View("IncludeHoldList", model);
+        }
+
+        var session = GetSessionModel();
+        try
+        {
+            session.IncludeHoldList = model.SelectedOption == IncludeHoldListOption.Yes;
+            SaveSessionModel(session);
+        }
+        catch (Exception ex)
+        {
+            LogException(ex);
+        }
+
+        // Continue the flow - adjust redirect as appropriate for next step
         return RedirectToAction(nameof(Index));
     }
 
