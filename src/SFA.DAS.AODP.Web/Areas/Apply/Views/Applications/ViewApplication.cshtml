@@ -157,40 +157,27 @@
             }
 
         }
+
+        @if (Model.CanWithdraw)
+        {
+            <div class="govuk-inset-text">
+                <p class="govuk-body">
+                    <a class="govuk-link"
+                       asp-action="Withdraw"
+                       asp-controller="Applications"
+                       asp-route-applicationId="@Model.ApplicationId"
+                       asp-route-organisationId="@Model.OrganisationId">
+                        Withdraw this application
+                    </a>
+                </p>
+            </div>
+        }
     </div>
-
-
-    @if (Model.CanWithdraw)
-    {
-        <div class="govuk-inset-text">
-            <p class="govuk-body">
-                <a class="govuk-link"
-                   asp-action="Withdraw"
-                   asp-controller="Applications"
-                   asp-route-applicationId="@Model.ApplicationId"
-                   asp-route-organisationId="@Model.OrganisationId">
-                    Withdraw this application
-                </a>
-            </p>
-        </div>
-    }
-
 
     @if (Model.VisibleToReviewers)
     {
         <div class="govuk-grid-column-one-third">
-
-            <h2 class="govuk-heading-m">Related links</h2>
-            <p class="govuk-body">
-                <a class="govuk-link" asp-action="ApplicationMessages"
-                   asp-area="Apply"
-                   asp-controller="ApplicationMessages"
-                   asp-route-applicationId="@Model.ApplicationId"
-                   asp-route-formVersionId="@Model.FormVersionId"
-                   asp-route-organisationId="@Model.OrganisationId">
-                    View messages
-                </a>
-            </p>
+            @await Html.PartialAsync("_RelatedLinks", Model.RelatedLinks)
         </div>
     }
 

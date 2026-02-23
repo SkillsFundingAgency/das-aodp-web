@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -45,6 +46,12 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
                 _formBuilderSettings,
                 _messageFileValidationService.Object,
                 _fileService.Object);
+
+            SetupControllerUrl();
+
+            _controller.TempData = new TempDataDictionary(
+                new DefaultHttpContext(),
+                Mock.Of<ITempDataProvider>());
         }
 
         [Fact]
@@ -100,8 +107,6 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
             _mediatorMock.Setup(m => m.Send(It.IsAny<GetApplicationMetadataByIdQuery>(), default)).ReturnsAsync(metaDataResponse);
             _mediatorMock.Setup(m => m.Send(It.IsAny<GetApplicationReviewSharingStatusByIdQuery>(), default)).ReturnsAsync(applicationSharingResponse);
 
-            _controller.TempData = new Mock<ITempDataDictionary>().Object;
-
             // Act
             var result = await _controller.ApplicationMessages(model);
 
@@ -136,7 +141,6 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
             };
 
             var applicationId = Guid.NewGuid();
-            _controller.TempData = new Mock<ITempDataDictionary>().Object;
 
             var applicationSharingResponse = new BaseMediatrResponse<GetApplicationReviewSharingStatusByIdQueryResponse>()
             {
@@ -329,9 +333,6 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
                 AdditionalActions = new() { Send = true }
             };
 
-            var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
-            _controller.TempData = tempData;
-
             // Act
             var result = await _controller.ApplicationMessages(model);
 
@@ -380,9 +381,6 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
                 AdditionalActions = new() { Send = true }
             };
 
-            var tempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
-            _controller.TempData = tempData;
-
             // Act
             var result = await _controller.ApplicationMessages(model);
 
@@ -390,5 +388,64 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
             Assert.IsType<RedirectToActionResult>(result);
             Assert.False(_controller.TempData.ContainsKey(ApplicationMessagesController.NotificationKeys.MessageSentBanner.ToString()));
         }
+
+        [Fact]
+        public async Task ApplicationMessagesAsync_SetsRelatedLinks()
+        {
+            // Arrange
+            var applicationReviewId = Guid.NewGuid();
+            var applicationId = Guid.NewGuid();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationReviewSharingStatusByIdQuery>(), default))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationReviewSharingStatusByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = new GetApplicationReviewSharingStatusByIdQueryResponse
+                    {
+                        ApplicationId = applicationId,
+                        SharedWithOfqual = true,
+                        SharedWithSkillsEngland = true
+                    }
+                });
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationMessagesByApplicationIdQuery>(), default))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationMessagesByApplicationIdQueryResponse>
+                {
+                    Success = true,
+                    Value = new GetApplicationMessagesByApplicationIdQueryResponse()
+                });
+
+            _fileService
+                .Setup(s => s.ListBlobs(It.IsAny<string>()))
+                .Returns(new List<UploadedBlob>());
+
+            // Act
+            var result = await _controller.ApplicationMessagesAsync(applicationReviewId);
+
+            // Assert
+            var view = Assert.IsType<ViewResult>(result);
+            var model = Assert.IsType<SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationMessage.ApplicationMessagesViewModel>(view.Model);
+
+            Assert.NotNull(model.RelatedLinks);
+            Assert.NotEmpty(model.RelatedLinks);
+        }
+
+        private void SetupControllerUrl()
+        {
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext()
+            };
+
+            var url = new Mock<IUrlHelper>();
+
+            url.Setup(u => u.RouteUrl(It.IsAny<UrlRouteContext>()))
+               .Returns("/fake-url");
+
+            _controller.Url = url.Object;
+        }
+
     }
 }
