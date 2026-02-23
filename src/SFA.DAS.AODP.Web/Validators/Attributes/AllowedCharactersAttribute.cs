@@ -10,46 +10,60 @@ public sealed class AllowedCharactersAttribute : ValidationAttribute
     private readonly TextCharacterProfile _profile;
 
     public AllowedCharactersAttribute(TextCharacterProfile profile)
-        :base("{0} contains invalid characters.") 
+        : base("{0} contains invalid characters.")
     {
         _profile = profile;
     }
 
-    public override string FormatErrorMessage(string name)
-    {
-        return string.Format(ErrorMessageString, name);
-    }
-
     protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
     {
-        var s = value as string;
-
-        if (string.IsNullOrWhiteSpace(s))
+        if (value is not string s || string.IsNullOrWhiteSpace(s))
             return ValidationResult.Success;
 
         s = s.Trim();
 
-        var valid = _profile switch
+        bool isValid = _profile switch
         {
             TextCharacterProfile.PersonName =>
-                Regex.IsMatch(s, ValidationPatterns.Text.PersonName),
+                RegexCache.PersonNameRegex.IsMatch(s),
 
             TextCharacterProfile.Title =>
-                Regex.IsMatch(s, ValidationPatterns.Text.Title),
+                RegexCache.TitleRegex.IsMatch(s),
 
             TextCharacterProfile.FreeText =>
-                !ContainsControlCharacters(s)
-                && !s.Contains('<')
-                && !s.Contains('>'),
+                IsFreeTextValid(s),
 
             _ => true
         };
 
-        return valid
+        return isValid
             ? ValidationResult.Success
             : new ValidationResult(FormatErrorMessage(validationContext.DisplayName));
     }
 
-    private static bool ContainsControlCharacters(string s)
-        => s.Any(ch => char.IsControl(ch) && ch != '\r' && ch != '\n' && ch != '\t');
+    private static bool IsFreeTextValid(string text)
+    {
+        if (string.IsNullOrEmpty(text))
+            return true;
+
+        if (text.Contains('<') || text.Contains('>'))
+            return false;
+
+        foreach (char c in text)
+        {
+            if (char.IsControl(c) && c is not ('\r' or '\n' or '\t'))
+                return false;
+        }
+
+        return true;
+    }
+
+    private static class RegexCache
+    {
+        public static readonly Regex PersonNameRegex =
+            new(ValidationPatterns.Text.PersonName, RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
+        public static readonly Regex TitleRegex =
+            new(ValidationPatterns.Text.Title, RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    }
 }
