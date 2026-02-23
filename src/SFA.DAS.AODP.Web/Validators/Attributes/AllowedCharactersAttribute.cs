@@ -66,9 +66,9 @@ public sealed class AllowedCharactersAttribute : ValidationAttribute
     private static class RegexCache
     {
         public static readonly Regex PersonNameRegex =
-            new(ValidationPatterns.Text.PersonName, RegexOptions.Compiled | RegexOptions.CultureInvariant);
+            new(ValidationPatterns.Text.PersonName, RegexOptions.Compiled | RegexOptions.CultureInvariant, TimeSpan.FromMilliseconds(100));
 
         public static readonly Regex TitleRegex =
-            new(ValidationPatterns.Text.Title, RegexOptions.Compiled | RegexOptions.CultureInvariant);
+            new(ValidationPatterns.Text.Title, RegexOptions.Compiled | RegexOptions.CultureInvariant, TimeSpan.FromMilliseconds(100));
     }
 }
