@@ -1,4 +1,5 @@
 ﻿namespace SFA.DAS.AODP.Application.Queries.Review;
+using SFA.DAS.AODP.Models.Users;
 public class GetApplicationForReviewByIdQueryResponse
 {
 public Guid Id { get; set; }
@@ -19,7 +20,10 @@ public string ApplicationStatus { get; set; }
 
 public List<Funding> FundedOffers { get; set; } = new();
 public List<Feedback> Feedbacks { get; set; } = new();
+public string? Reviewer1 { get; set; }
+public string? Reviewer2 { get; set; }
 
+public List<UserOption> AvailableReviewers { get; set; } = new();
 public class Feedback
 {
     public string? Owner { get; set; }

@@ -16,23 +16,29 @@
 
         <form asp-controller="ApplicationsReview" asp-action="Search" method="post">
             <div class="govuk-grid-row">
-                <div class="govuk-form-group govuk-grid-column-one-half">
-
-                    <govuk-input asp-for="@Model.ApplicationSearch" value="@Html.Encode(Model.ApplicationSearch)" input-class="govuk-input--width-30" inputmode="text" spellcheck="false" autocomplete="off">
-                        <govuk-input-label is-page-heading="false" class="govuk-label--s">You can search by submission ID, qualification title or QAN</govuk-input-label>
-                    </govuk-input>
-                    <govuk-input asp-for="@Model.AwardingOrganisationSearch" value="@Html.Encode(Model.AwardingOrganisationSearch)" input-class="govuk-input--width-30" inputmode="text" spellcheck="false" autocomplete="off">
-                        <govuk-input-label is-page-heading="false" class="govuk-label--s">Search by Awarding Organisation</govuk-input-label>
-                    </govuk-input>
+                <div class="govuk-grid-column-one-half">
+                    <div class="govuk-form-group">
+                        <govuk-input asp-for="@Model.ApplicationSearch" value="@Html.Encode(Model.ApplicationSearch)" input-class="govuk-input--width-30" inputmode="text" spellcheck="false" autocomplete="off">
+                            <govuk-input-label is-page-heading="false" class="govuk-label--s">Search by submission ID, qualification title or QAN</govuk-input-label>
+                        </govuk-input>
+                    </div>
+                    <div class="govuk-form-group">
+                        <govuk-input asp-for="@Model.AwardingOrganisationSearch" value="@Html.Encode(Model.AwardingOrganisationSearch)" input-class="govuk-input--width-30" inputmode="text" spellcheck="false" autocomplete="off">
+                            <govuk-input-label is-page-heading="false" class="govuk-label--s">Search by Awarding Organisation</govuk-input-label>
+                        </govuk-input>
+                    </div>
+                    <div class="govuk-form-group">
+                        <label class="govuk-label govuk-label--s" for="ReviewerSelection">Search by reviewer</label>
+                        <select class="govuk-select" asp-for="ReviewerSelection" asp-items="@Model.ReviewerOptions">
+                        </select>
+                    </div>
                 </div>
+
                 <div class="govuk-form-group govuk-grid-column-one-half">
                     <fieldset class="govuk-fieldset">
-                        <legend class="govuk-fieldset__legend govuk-fieldset__legend--s">
-                            <h1 class="govuk-fieldset__heading">
-                                Status
-                            </h1>
+                        <legend class="govuk-fieldset__legend govuk-fieldset__legend--s govuk-!-font-weight-bold">
+                            Status
                         </legend>
-
                         @{
                             void RenderCheckBoxes(Dictionary<ApplicationStatus, string> keyValuePairs)
                             {
@@ -55,48 +61,51 @@
 
                         @if (Model.UserType == UserType.Qfau.ToString())
                         {
-                            <div class="govuk-checkboxes govuk-checkboxes--small govuk-grid-column-one-half" data-module="govuk-checkboxes">
+                            <div class="govuk-grid-row">
+                                <div class="govuk-grid-column-one-half">
+                                    <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+                                        @{
+                                            RenderCheckBoxes(new()
+                                            {
+                                            {ApplicationStatus.NewMessage, ApplicationStatusDisplay.Dictionary[ApplicationStatus.NewMessage].ToString()},
+                                            {ApplicationStatus.Draft, ApplicationStatusDisplay.Dictionary[ApplicationStatus.Draft].ToString()},
+                                            {ApplicationStatus.InReview, ApplicationStatusDisplay.Dictionary[ApplicationStatus.InReview].ToString()},
+                                            });
+                                        }
+                                    </div>
+                                </div>
 
-                                @{
-                                    RenderCheckBoxes(new()
-                            {
-                            {ApplicationStatus.NewMessage, ApplicationStatusDisplay.Dictionary[ApplicationStatus.NewMessage].ToString()},
-                            {ApplicationStatus.Draft, ApplicationStatusDisplay.Dictionary[ApplicationStatus.Draft].ToString()},
-                            {ApplicationStatus.InReview, ApplicationStatusDisplay.Dictionary[ApplicationStatus.InReview].ToString()},
-                            });
-                                }
-
-                            </div>
-
-                            <div class="govuk-checkboxes govuk-checkboxes--small govuk-grid-column-one-half" data-module="govuk-checkboxes">
-                                @{
-                                    RenderCheckBoxes(new()
-                            {
-                            {ApplicationStatus.Approved, ApplicationStatusDisplay.Dictionary[ApplicationStatus.Approved].ToString()},
-                            {ApplicationStatus.NotApproved, ApplicationStatusDisplay.Dictionary[ApplicationStatus.NotApproved].ToString()},
-                            {ApplicationStatus.Withdrawn, ApplicationStatusDisplay.Dictionary[ApplicationStatus.Withdrawn].ToString()},
-                            });
-                                }
+                                <div class="govuk-grid-column-one-half">
+                                    <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+                                        @{
+                                            RenderCheckBoxes(new()
+                                            {
+                                            {ApplicationStatus.Approved, ApplicationStatusDisplay.Dictionary[ApplicationStatus.Approved].ToString()},
+                                            {ApplicationStatus.NotApproved, ApplicationStatusDisplay.Dictionary[ApplicationStatus.NotApproved].ToString()},
+                                            {ApplicationStatus.Withdrawn, ApplicationStatusDisplay.Dictionary[ApplicationStatus.Withdrawn].ToString()},
+                                            });
+                                        }
+                                    </div>
+                                </div>
                             </div>
                         }
                         else if (Model.UserType == UserType.Ofqual.ToString())
                         {
-                            <div class="govuk-checkboxes govuk-checkboxes--small govuk-grid-column-one-half" data-module="govuk-checkboxes">
-
+                            <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
                                 @{
                                     RenderCheckBoxes(new()
-                            {
-                            {ApplicationStatus.NewMessage, ApplicationStatusDisplay.Dictionary[ApplicationStatus.NewMessage].ToString()},
-                            {ApplicationStatus.InReview, ApplicationStatusDisplay.Dictionary[ApplicationStatus.InReview].ToString()},
-                            {ApplicationStatus.Reviewed, ApplicationStatusDisplay.Dictionary[ApplicationStatus.Reviewed].ToString()},
-                            });
+                                    {
+                                    {ApplicationStatus.NewMessage, ApplicationStatusDisplay.Dictionary[ApplicationStatus.NewMessage].ToString()},
+                                    {ApplicationStatus.InReview, ApplicationStatusDisplay.Dictionary[ApplicationStatus.InReview].ToString()},
+                                    {ApplicationStatus.Reviewed, ApplicationStatusDisplay.Dictionary[ApplicationStatus.Reviewed].ToString()},
+                                    });
                                 }
 
                             </div>
                         }
                         else if (Model.UserType == UserType.SkillsEngland.ToString())
                         {
-                            <div class="govuk-checkboxes govuk-checkboxes--small govuk-grid-column-one-half" data-module="govuk-checkboxes">
+                            <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
 
                                 @{
                                     RenderCheckBoxes(new()
@@ -110,9 +119,6 @@
 
                             </div>
                         }
-
-
-
                     </fieldset>
                 </div>
             </div>
@@ -149,9 +155,10 @@
                 <tr class="govuk-table__row">
                     <th scope="col" class="govuk-table__header">Submission ID</th>
                     <th scope="col" class="govuk-table__header">QAN</th>
-                    <th scope="col" class="govuk-table__header govuk-!-width-one-half">Qualification title</th>
+                    <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Qualification Title</th>
                     <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Status</th>
                     <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Awarding Organisation</th>
+                    <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Reviewer(s)</th>
                 </tr>
             </thead>
             <tbody class="govuk-table__body">
@@ -196,6 +203,14 @@
 
                         </td>
                         <td class="govuk-table__cell">@item.AwardingOrganisation</td>
+                        <td class="govuk-table__cell">
+                            <ul class="govuk-list">
+                                @foreach (var r in item.ReviewersSummary)
+                                {
+                                    <li>@r</li>
+                                }
+                            </ul>
+                        </td>
                     </tr>
                 }
             </tbody>

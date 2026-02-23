@@ -117,7 +117,6 @@
     margin-bottom: 0;
 }
 
-
 /*Interruption card*/
 .app-interruption-card {
     background-color: #1d70b8;
@@ -145,7 +144,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 16px;
-    align-items: center;
+    align-items: center; 
 }
 
 .app-interruption-card .govuk-button--inverse {
@@ -176,4 +175,28 @@
     .app-interruption-card .govuk-link--inverse:hover {
         color: #ffffff;
         text-decoration-thickness: 3px;
+    }
+
+:root {
+    --picker-width: 20rem; 
+}
+
+.select-picker {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+    /* Make both <select> and <input> the same width */
+    .select-picker .govuk-select,
+    .select-picker .govuk-input {
+        width: var(--picker-width);
+        max-width: 100%;
+    }
+
+    /* Keep the button tidy */
+    .select-picker .govuk-button {
+        margin-top: 0;
+        margin-bottom: 0;
+        white-space: nowrap;
     }

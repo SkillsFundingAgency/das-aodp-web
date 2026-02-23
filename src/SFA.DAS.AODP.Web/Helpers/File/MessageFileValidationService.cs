@@ -1,5 +1,7 @@
 ﻿using DocumentFormat.OpenXml.Packaging;
 using SFA.DAS.AODP.Application.Helpers;
+using SFA.DAS.AODP.Models.Common;
+using SFA.DAS.AODP.Models.Exceptions;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Models.Import;
 
@@ -14,25 +16,34 @@ namespace SFA.DAS.AODP.Web.Helpers.File
             _formBuilderSettings = formBuilderSettings;
         }
 
-        public void ValidateFiles(List<IFormFile> files)
+        public void ValidateFiles(List<IFormFile>? files)
         {
-            if(files.Count > _formBuilderSettings.MaxUploadNumberOfFiles)
-            {
-                throw new Exception($"Cannot upload more than {_formBuilderSettings.MaxUploadNumberOfFiles} files");
-            }
-            var maxSize = _formBuilderSettings.MaxUploadFileSize;
-            long maxSizeBytes = maxSize * 1024 * 1024;
-            foreach (var file in files)
-            {
-                if (file.Length > maxSizeBytes)
-                {
-                    throw new Exception($"File size exceeds max allowed size of {maxSize}mb.");
-                }
+            if (files is null || files.Count == 0)
+                return;
 
-                var fileExtension = Path.GetExtension(file.FileName);
-                if (!_formBuilderSettings.UploadFileTypesAllowed.Contains(fileExtension, StringComparer.InvariantCultureIgnoreCase))
+            if (files.Any(f => f is null))
+                throw new FileUploadPolicyException(FileUploadRejectionReason.MissingFile);
+
+            if (files.Any(f => f.Length == 0))
+                throw new FileUploadPolicyException(FileUploadRejectionReason.EmptyFile);
+
+            if (files.Count > _formBuilderSettings.MaxUploadNumberOfFiles)
+                throw new FileUploadPolicyException(FileUploadRejectionReason.TooManyFiles);
+
+            long maxAllowedBytes = _formBuilderSettings.MaxUploadFileSize * 1024 * 1024;
+            if (files.Any(f => f.Length > maxAllowedBytes))
+                throw new FileUploadPolicyException(FileUploadRejectionReason.FileTooLarge);
+
+            if (_formBuilderSettings.UploadFileTypesAllowed is { Count: > 0 })
+            {
+                foreach (var file in files)
                 {
-                    throw new Exception($"File type is not included in the allowed file types: {string.Join(",", _formBuilderSettings.UploadFileTypesAllowed)}");
+                    var ext = Path.GetExtension(file.FileName)?.ToLowerInvariant();
+                    var allowed = _formBuilderSettings.UploadFileTypesAllowed
+                        .Select(e => e.ToLowerInvariant());
+
+                    if (!allowed.Contains(ext))
+                        throw new FileUploadPolicyException(FileUploadRejectionReason.FileTypeNotAllowed);
                 }
             }
         }
