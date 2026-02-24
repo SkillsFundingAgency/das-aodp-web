@@ -111,7 +111,6 @@ public class RolloverController : ControllerBase
                     .OrderByDescending(j => j.EndTime ?? DateTime.MinValue)
                     .FirstOrDefault();
                 model.RegulatedQualificationsLastImported = latest?.EndTime ?? latest?.StartTime;
-        return View();
             }
 
             var fundedResp = await Send(new GetJobRunsQuery { JobName = JobNames.FundedQualifications.ToString() });
