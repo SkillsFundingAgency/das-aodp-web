@@ -25,13 +25,13 @@ public class RolloverControllerTests
     {
         _loggerMock = new Mock<ILogger<RolloverController>>();
         _mediatorMock = new Mock<IMediator>();
-        _validatorMock = new();
+        _validatorMock = new Mock<IValidator<RolloverFundingApprovalEndDateViewModel>>();
         _controller = new RolloverController(_loggerMock.Object, _mediatorMock.Object, _validatorMock.Object);
     }
 
     private RolloverController CreateControllerWithSession(ISession session)
     {
-        var controller = new RolloverController(_loggerMock.Object, _mediatorMock.Object);
+        var controller = new RolloverController(_loggerMock.Object, _mediatorMock.Object, _validatorMock.Object);
         var httpContext = new DefaultHttpContext();
         httpContext.Session = session;
         controller.ControllerContext = new ControllerContext
