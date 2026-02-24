@@ -1,10 +1,14 @@
-﻿@model SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.RolloverEligibilityDatesViewModel
-
+﻿@using SFA.DAS.AODP.Web.Areas.Review.Controllers
+@using SFA.DAS.AODP.Web.Views.Shared
+@model SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.RolloverEligibilityDatesViewModel
 @{
     ViewData["Title"] = "Enter dates to be used in calculating eligibility for rollover";
-    ViewData["BackLinkArea"] = "Review";
-    ViewData["BackLinkController"] = "Rollover";
-    ViewData["BackLinkAction"] = "Index";    
+    var backLinkModel = new BackLinkModel
+    {
+        Action = nameof(RolloverController.Index),
+        Controller = "Rollover",
+        Area = "Review"
+    };
 
     var fundingEndDateDayError = ViewData.ModelState.ContainsKey("FundingEndDate.Day") && ViewData.ModelState["FundingEndDate.Day"].Errors.Any();
     var fundingEndDateMonthError = ViewData.ModelState.ContainsKey("FundingEndDate.Month") && ViewData.ModelState["FundingEndDate.Month"].Errors.Any();
@@ -16,6 +20,12 @@
     var operationalEndDateYearError = ViewData.ModelState.ContainsKey("OperationalEndDate.Year") && ViewData.ModelState["OperationalEndDate.Year"].Errors.Any();
     var operationalEndDateGroupError = operationalEndDateDayError || operationalEndDateMonthError || operationalEndDateYearError;
 }
+
+@* @await Html.PartialAsync("_BackLinkPartial", backLinkModel) *@
+
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
+<h1 class="govuk-heading-xl">@ViewData["Title"]</h1>
 
 <form asp-area="Review" asp-controller="Rollover" asp-action="EnterRolloverEligibilityDates" method="post" novalidate="novalidate">
 

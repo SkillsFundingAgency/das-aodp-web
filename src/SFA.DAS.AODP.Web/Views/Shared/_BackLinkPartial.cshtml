@@ -1,9 +1,11 @@
-@if (ViewData["BackLinkArea"] != null)
+@model SFA.DAS.AODP.Web.Views.Shared.BackLinkModel
+
+@if (Model.Area is not null)
 {
-    <a asp-area="@ViewData["BackLinkArea"]" 
-       asp-controller="@ViewData["BackLinkController"]" 
-       asp-action="@ViewData["BackLinkAction"]"
-       class="govuk-link govuk-!-margin-bottom-6">
-        @(ViewData["BackLinkText"] ?? "< Back")
+    <a asp-area=@Model.Area 
+       asp-controller="@Model.Controller" 
+       asp-action="@Model.Action"
+       class="govuk-back-link">
+        @Model.Text
     </a>
 }
