@@ -1,14 +1,17 @@
 ﻿using CsvHelper.Configuration;
+using DocumentFormat.OpenXml.EMMA;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using SFA.DAS.AODP.Application.Commands.Qualification;
+using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.User;
+using SFA.DAS.AODP.Web.Mappers;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 using System.Globalization;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
@@ -262,6 +265,10 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     latestVersion.MapFundedOffers(feedbackForQualificationFunding);
                     latestVersion.FundingsOffersOutcomeStatus = feedbackForQualificationFunding.Approved;
                 }
+
+                var applications = await Send(new GetApplicationsByQanQuery(latestVersion.Qual.Qan));
+                if (applications != null)
+                    latestVersion.Applications = ApplicationMapper.Map(applications);
 
                 if (latestVersion.Version > 1)
                 {

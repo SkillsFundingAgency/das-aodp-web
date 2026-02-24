@@ -37,6 +37,14 @@ internal class Program
                 options.AddPolicy(PolicyConstants.IsApplyUser, policy => policy.RequireRole(RoleConstants.AOApply));
                 options.AddPolicy(PolicyConstants.IsAdminFormsUser, policy => policy.RequireRole(RoleConstants.QFAUFormBuilder, RoleConstants.IFATEFormBuilder));
                 options.AddPolicy(PolicyConstants.IsAdminImportUser, policy => policy.RequireRole(RoleConstants.QFAUImport));
+                options.AddPolicy(PolicyConstants.IsImportAndFormUser, policy => policy.RequireRole(
+                    RoleConstants.QFAUApprover,
+                    RoleConstants.QFAUReviewer,
+                    RoleConstants.IFATEReviewer,
+                    RoleConstants.OFQUALReviewer,
+                    RoleConstants.QFAUFormBuilder,
+                    RoleConstants.IFATEFormBuilder,
+                    RoleConstants.QFAUImport));
             }
             )
             .AddGovUkFrontend()
