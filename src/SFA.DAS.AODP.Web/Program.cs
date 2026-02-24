@@ -82,8 +82,7 @@ internal class Program
                  options.Filters.Add<AutoValidateAntiforgeryTokenAttribute>();
              });
 
-        builder.Services.AddScoped<IValidator<OutputFileViewModel>, OutputFileViewModelValidator>();
-        builder.Services.AddScoped<IValidator<RolloverEligibilityDatesViewModel>, RolloverEligibilityDatesViewModelValidator>();
+        builder.Services.AddScoped<IValidator<OutputFileViewModel>, OutputFileViewModelValidator>();        
 
         builder.Services.AddMediatR(config =>
         {

@@ -23,6 +23,8 @@ public static class AddServiceRegistrationsExtension
 
         services.AddValidators();
 
+        services.AddFluentValidators();
+
         services.AddFileService(configuration);
 
         services.AddScoped<IUserHelperService, UserHelperService>();
