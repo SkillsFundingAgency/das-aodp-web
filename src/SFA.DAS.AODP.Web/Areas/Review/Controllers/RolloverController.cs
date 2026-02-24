@@ -179,20 +179,12 @@ public class RolloverController : ControllerBase
 
     [HttpGet]
     [Route("/Review/Rollover/EnterRolloverEligibilityDates")]
-    public IActionResult EnterRolloverEligibilityDates()
-    {
-        ViewData["UseNewLayout"] = true;
-        ViewData["Title"] = "Enter rollover eligibility dates";
-
-        return View();
-    }
+    public IActionResult EnterRolloverEligibilityDates() => View();
 
     [HttpPost]
     [Route("/Review/Rollover/EnterRolloverEligibilityDates")]
     public async Task<IActionResult> EnterRolloverEligibilityDates(RolloverEligibilityDatesViewModel model)
     {
-        ViewData["UseNewLayout"] = true;
-
         var validation = await _rolloverEligibilityDatesViewModeValidator.ValidateAsync(model);
         validation.AddToModelState(ModelState);
 

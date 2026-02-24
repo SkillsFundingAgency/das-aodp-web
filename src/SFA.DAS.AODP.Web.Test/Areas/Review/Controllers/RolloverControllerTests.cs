@@ -354,8 +354,7 @@ public class RolloverControllerTests
         var result = _controller.EnterRolloverEligibilityDates();
 
         // Assert
-        var viewResult = Assert.IsType<ViewResult>(result);
-        Assert.Equal("Enter rollover eligibility dates", viewResult.ViewData["Title"]);
+        Assert.IsType<ViewResult>(result);
     }
 
     private class TestSession : ISession
