@@ -1,8 +1,10 @@
 ﻿@using SFA.DAS.AODP.Web.Areas.Review.Controllers
 @using SFA.DAS.AODP.Web.Views.Shared
 @model SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.RolloverEligibilityDatesViewModel
+
 @{
     ViewData["Title"] = "Enter dates to be used in calculating eligibility for rollover";
+
     var backLinkModel = new BackLinkModel
     {
         Action = nameof(RolloverController.Index),
@@ -21,7 +23,7 @@
     var operationalEndDateGroupError = operationalEndDateDayError || operationalEndDateMonthError || operationalEndDateYearError;
 }
 
-@* @await Html.PartialAsync("_BackLinkPartial", backLinkModel) *@
+@await Html.PartialAsync("_BackLinkPartial", backLinkModel)
 
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
