@@ -10,7 +10,6 @@
         UnknownFileSize,
         EmptyFile,
         FileTooLarge,
-        LargeStreamLength,
         TooManyFiles
     }
 }

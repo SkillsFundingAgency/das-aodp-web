@@ -19,6 +19,7 @@ namespace SFA.DAS.AODP.Infrastructure.File
         public const string FilePrefixMetadataKey = "FileNamePrefix";
         private readonly BlobStorageSettings _blobStorageSettings;
         private readonly FormBuilderSettings _fileUploadSettings;
+        private readonly ImportFileUploadSettings _importFileUploadSettings;
         private readonly ImportBlobStorageSettings _importBlobStorageSettings;
         private readonly BlobServiceClient _blobServiceClient;
         private BlobContainerClient? _blobContainerClient;
@@ -37,13 +38,15 @@ namespace SFA.DAS.AODP.Infrastructure.File
                     IAzureClientFactory<BlobServiceClient> clientFactory,
                     IOptions<BlobStorageSettings> settings,
                     IOptions<ImportBlobStorageSettings> importSettings,
-                    FormBuilderSettings fileUploadSettings)
+                    FormBuilderSettings fileUploadSettings,
+                    ImportFileUploadSettings importFileUploadSettings)
         {
             _blobServiceClient = blobServiceClient;
             _blobStorageSettings = settings.Value ?? throw new ArgumentNullException(nameof(settings));
             _importBlobStorageSettings = importSettings.Value ?? throw new ArgumentNullException(nameof(importSettings));
             _clientFactory = clientFactory ?? throw new ArgumentNullException(nameof(clientFactory));
             _fileUploadSettings = fileUploadSettings ?? throw new ArgumentNullException(nameof(fileUploadSettings));
+            _importFileUploadSettings = importFileUploadSettings ?? throw new ArgumentNullException(nameof(importFileUploadSettings));
             _uploadValidator = new FileUploadValidator(_fileUploadSettings);
         }
 
@@ -103,7 +106,8 @@ namespace SFA.DAS.AODP.Infrastructure.File
 
         public async Task UploadXlsxFileAsync(string folderName, string fileName, Stream stream, string? contentType, string fileNamePrefix)
         {
-            _uploadValidator.ValidateOrThrow(fileName, stream);
+            var maxAllowedFileSize = fileName is "Pldns.xlsx" ? _importFileUploadSettings.MaxPldnsUploadSizeInMB : _importFileUploadSettings.MaxDefundingListUploadSizeInMB;
+            _uploadValidator.ValidateOrThrow(fileName, stream, maxAllowedFileSize);
 
             var safeFileName = Path.GetFileName(fileName).Trim();
             var fileExtension = Path.GetExtension(safeFileName);

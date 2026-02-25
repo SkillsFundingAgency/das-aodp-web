@@ -6,7 +6,7 @@ namespace SFA.DAS.AODP.Models.Exceptions
     {
         public FileUploadRejectionReason Reason { get; }
 
-        public FileUploadPolicyException(FileUploadRejectionReason reason) : base($"File upload rejected: {reason}")
+        public FileUploadPolicyException(FileUploadRejectionReason reason)
         {
             Reason = reason;
         }
