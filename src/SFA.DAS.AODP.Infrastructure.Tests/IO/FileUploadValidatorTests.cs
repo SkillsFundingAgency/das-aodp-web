@@ -118,7 +118,7 @@ namespace SFA.DAS.AODP.Infrastructure.UnitTests.Common.IO
             var ex = Assert.Throws<FileUploadPolicyException>(() =>
                 _sut.ValidateOrThrow(ValidFileName, stream));
 
-            ex.Reason.Should().Be(FileUploadRejectionReason.FileTooLarge);
+            ex.Reason.Should().Be(FileUploadRejectionReason.LargeStreamLength);
         }
 
         [Fact]
