@@ -21,17 +21,20 @@ namespace SFA.DAS.AODP.Infrastructure.UnitTests.File
         public BlobStorageFileServiceTests()
         {
             _blobStorageSettings = _fixture.Create<BlobStorageSettings>();
-            _formBuilderSettings = _formBuilderSettings = new FormBuilderSettings
+            _formBuilderSettings = new FormBuilderSettings
             {
                 MaxUploadFileSize = 10,
                 UploadFileTypesAllowed = new List<string> { ".docx" }
             };
             var importBlobStorageSettings = _fixture.Create<ImportBlobStorageSettings>();
+            var importFileUploadSettings = _fixture.Create<ImportFileUploadSettings>();
+
             var clientFactoryMock = new Mock<Microsoft.Extensions.Azure.IAzureClientFactory<BlobServiceClient>>();
             clientFactoryMock
                 .Setup(f => f.CreateClient(It.IsAny<string>()))
                 .Returns(_blobServiceClient.Object);
-            _sut = new(_blobServiceClient.Object, clientFactoryMock.Object, Options.Create(_blobStorageSettings), Options.Create(importBlobStorageSettings), _formBuilderSettings);
+
+            _sut = new(_blobServiceClient.Object, clientFactoryMock.Object, Options.Create(_blobStorageSettings), Options.Create(importBlobStorageSettings), _formBuilderSettings, importFileUploadSettings);
         }
 
         [Fact]
