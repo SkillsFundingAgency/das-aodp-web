@@ -7,6 +7,7 @@ using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Extensions;
+using System.Diagnostics.CodeAnalysis;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers;
@@ -162,12 +163,11 @@ public class RolloverController : ControllerBase
         return RedirectToAction(nameof(Index));
     }
 
+    [ExcludeFromCodeCoverage]
     [HttpGet]
     [Route("/Review/Rollover/FundingStreamInclusionExclusion")]
     public IActionResult FundingStreamInclusionExclusion()
     {
-        ViewData["Title"] = "Select funding stream(s)";
-
         var vm = new FundingStreamInclusionExclusionViewModel
         {
             FundingStreams = GetFundingStreams()
@@ -176,6 +176,7 @@ public class RolloverController : ControllerBase
         return View(vm);
     }
 
+    [ExcludeFromCodeCoverage]
     [HttpPost]
     [Route("/Review/Rollover/FundingStreamInclusionExclusion")]
     public IActionResult FundingStreamInclusionExclusion(FundingStreamInclusionExclusionViewModel vm, string action)
@@ -207,10 +208,12 @@ public class RolloverController : ControllerBase
         return RedirectToAction(nameof(EnterRolloverEligibilityDates));
     }
 
+    [ExcludeFromCodeCoverage]
     [HttpGet]
     [Route("/Review/Rollover/EnterRolloverEligibilityDates")]
     public IActionResult EnterRolloverEligibilityDates() => View();
 
+    [ExcludeFromCodeCoverage]
     private List<FundingStream> GetFundingStreams()
     {
         return new List<FundingStream>
