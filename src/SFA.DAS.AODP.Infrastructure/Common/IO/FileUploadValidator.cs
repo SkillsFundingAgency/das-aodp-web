@@ -69,7 +69,7 @@ public sealed class FileUploadValidator
             throw new FileUploadPolicyException(FileUploadRejectionReason.EmptyFile);
 
         if (stream.Length > maxBytes)
-            throw new FileUploadPolicyException(FileUploadRejectionReason.FileTooLarge);
+            throw new FileUploadPolicyException(FileUploadRejectionReason.LargeStreamLength);
 
         if (stream.Position != 0)
             stream.Position = 0;
