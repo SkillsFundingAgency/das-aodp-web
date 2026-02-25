@@ -154,6 +154,37 @@ public class RolloverController : ControllerBase
         return RedirectToAction(nameof(Index));
     }
 
+    [HttpGet]
+    [Route("/Review/Rollover/UploadBespokeQualificationCandidates")]
+    public IActionResult UploadBespokeQualificationCandidates()
+    {
+        return View(new UploadBespokeQualificationCandidatesViewModel());
+    }
+
+
+    [HttpPost]
+    [Route("/Review/Rollover/UploadBespokeQualificationCandidates")]
+    public IActionResult UploadBespokeQualificationCandidates([FromForm] UploadBespokeQualificationCandidatesViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var extension = Path.GetExtension(model.File.FileName).ToLowerInvariant();
+        var isCsvExt = extension == ".csv";
+        var isCsvMime = string.Equals(model.File.ContentType, "text/csv", StringComparison.OrdinalIgnoreCase);
+
+        if (!isCsvExt || !isCsvMime)
+        {
+            ModelState.AddModelError(nameof(model.File), "The file you provided does not match the required format.");
+            return View(model);
+        }
+
+        return RedirectToAction("UploadBespokeQualificationCandidates");
+    }
+
+
     private Rollover GetSessionModel()
     {
         try
