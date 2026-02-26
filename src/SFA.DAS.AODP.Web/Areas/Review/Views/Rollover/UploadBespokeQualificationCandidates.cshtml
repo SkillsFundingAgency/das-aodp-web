@@ -15,14 +15,13 @@
 
 
     var fileHasError = ViewData.ModelState.TryGetValue(nameof(Model.File), out var fileState)
-                           && fileState.Errors.Count > 0;
+                   && fileState.Errors.Count > 0;
     var fileErrorMessage = fileHasError ? fileState.Errors.First().ErrorMessage : null;
 }
 
 @await Html.PartialAsync("_BackLinkPartial", backLinkModel)
 
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
-
 
 @if (fileHasError)
 {
@@ -44,18 +43,22 @@
 
 <h1 class="govuk-heading-l">@ViewData["Title"]</h1>
 
-<h2 class="govuk-body">Import file</h2>
+<div id="uploadText">
 
-<p class="govuk-hint">
-    This must be a correctly formatted CSV file which includes: QAN, level, type,
-    SSA and AO. Data within the table cannot include any commas or special characters.
-</p>
+    <h2 class="govuk-body">Import file</h2>
 
-<p class="govuk-hint">
-    Do not close this window, navigate away or refresh the page until it’s done.
-</p>
+    <p class="govuk-hint">
+        This must be a correctly formatted CSV file which includes: QAN, level, type,
+        SSA and AO. Data within the table cannot include any commas or special characters.
+    </p>
 
-<form asp-area="Review" asp-controller="Rollover" asp-action="UploadBespokeQualificationCandidates" method="post" enctype="multipart/form-data">
+    <p class="govuk-hint">
+        Do not close this window, navigate away or refresh the page until it’s done.
+    </p>
+
+</div>
+
+<form asp-area="Review" asp-controller="Rollover" asp-action="UploadBespokeQualificationCandidates" method="post" enctype="multipart/form-data" id="uploadForm">
 
     @Html.AntiForgeryToken()
 
@@ -66,7 +69,7 @@
         </span>
     }
 
-    <div class="govuk-form-group">
+    <div id="fileSection" class="govuk-form-group">
         <input asp-for="File" id="fileUpload"
                type="file"
                class="govuk-file-upload"
@@ -74,8 +77,39 @@
                required />
     </div>
 
-    <button type="submit" class="govuk-button" data-module="govuk-button">
+    <div id="uploadingSection" style="display:none;">
+        <p class="govuk-body">File uploading</p>
+        <img src="/assets/images/spinner.svg"
+             alt="Loading"
+             class="upload-spinner govuk-!-display-inline-block govuk-!-margin-5" style="width:50px"
+             aria-hidden="true" />
+    </div>
+
+    <button type="submit" id="continueButton" class="govuk-button" data-module="govuk-button">
         Continue
     </button>
 
 </form>
+
+<script>
+    (function () {
+        const form = document.getElementById('uploadForm');
+        const fileSection = document.getElementById('fileSection');
+        const uploadText = document.getElementById('uploadText');
+        const uploadingSection = document.getElementById('uploadingSection');
+        const continueButton = document.getElementById('continueButton');
+        if (!form) return;
+        form.addEventListener('submit', function () {
+            const fileInput = document.getElementById('File');
+            if (fileInput && fileInput.files.length === 0) {
+                return;
+            }
+
+            fileSection.style.display = 'none';
+            uploadText.style.display = 'none';
+            uploadingSection.style.display = 'block';
+            continueButton.disabled = true;
+            continueButton.innerText = 'Uploading...';
+        }, { once: true });
+    })();
+</script>

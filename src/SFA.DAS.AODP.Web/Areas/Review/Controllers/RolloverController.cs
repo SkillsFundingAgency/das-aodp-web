@@ -161,29 +161,32 @@ public class RolloverController : ControllerBase
         return View(new UploadBespokeQualificationCandidatesViewModel());
     }
 
-
     [HttpPost]
     [Route("/Review/Rollover/UploadBespokeQualificationCandidates")]
-    public IActionResult UploadBespokeQualificationCandidates([FromForm] UploadBespokeQualificationCandidatesViewModel model)
+    public async Task<IActionResult> UploadBespokeQualificationCandidates([FromForm] UploadBespokeQualificationCandidatesViewModel model)
     {
         if (!ModelState.IsValid)
         {
             return View(model);
         }
 
-        var extension = Path.GetExtension(model.File.FileName).ToLowerInvariant();
-        var isCsvExt = extension == ".csv";
-        var isCsvMime = string.Equals(model.File.ContentType, "text/csv", StringComparison.OrdinalIgnoreCase);
+        var uploadSucceeded = true;
 
-        if (!isCsvExt || !isCsvMime)
+        if (!uploadSucceeded)
         {
-            ModelState.AddModelError(nameof(model.File), "The file you provided does not match the required format.");
+            ModelState.AddModelError(nameof(model.File), "File upload failed.");
             return View(model);
         }
 
-        return RedirectToAction("UploadBespokeQualificationCandidates");
+        return RedirectToAction("FundingStreamInclusionExclusion");
     }
 
+    [HttpGet]
+    [Route("/Review/Rollover/FundingStreamInclusionExclusion")]
+    public IActionResult FundingStreamInclusionExclusion()
+    {
+        return View();
+    }
 
     private Rollover GetSessionModel()
     {
