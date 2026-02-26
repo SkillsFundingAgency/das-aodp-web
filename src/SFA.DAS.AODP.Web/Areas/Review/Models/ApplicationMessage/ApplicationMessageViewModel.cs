@@ -6,6 +6,8 @@ using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Models.RelatedLinks;
 using SFA.DAS.AODP.Web.Models.TimelineComponents;
+using SFA.DAS.AODP.Web.Validators.Attributes;
+using SFA.DAS.AODP.Web.Validators.Patterns;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
@@ -22,6 +24,7 @@ public class ApplicationMessagesViewModel : IHasRelatedLinks
     
     [DisplayName("Message")]
     [Required(ErrorMessage = ErrorMessages.ApplicationMessages.TextRequired)]
+    [AllowedCharacters(TextCharacterProfile.FreeText)]
     public string MessageText { get; set; }
 
     [DisplayName("Message type")]
