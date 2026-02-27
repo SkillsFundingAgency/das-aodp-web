@@ -287,7 +287,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover
             t = t.Replace('\u00A0', ' ');
 
             // Collapse internal whitespace
-            t = System.Text.RegularExpressions.Regex.Replace(t, @"\s+", " ");
+            t = System.Text.RegularExpressions.Regex.Replace(t, @"\s+", " ", System.Text.RegularExpressions.RegexOptions.None, TimeSpan.FromMilliseconds(100));
 
             // Lowercase
             t = t.ToLowerInvariant();
