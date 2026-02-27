@@ -92,24 +92,29 @@
 </form>
 
 <script>
-    (function () {
+    document.addEventListener('DOMContentLoaded', () => {
         const form = document.getElementById('uploadForm');
+        if (!form) return;
+
         const fileSection = document.getElementById('fileSection');
         const uploadText = document.getElementById('uploadText');
         const uploadingSection = document.getElementById('uploadingSection');
         const continueButton = document.getElementById('continueButton');
-        if (!form) return;
-        form.addEventListener('submit', function () {
-            const fileInput = document.getElementById('File');
-            if (fileInput && fileInput.files.length === 0) {
+        const fileInput = document.getElementById('fileUpload');
+
+        form.addEventListener('submit', () => {
+
+            if (!fileInput || fileInput.files.length === 0) {
                 return;
             }
 
-            fileSection.style.display = 'none';
-            uploadText.style.display = 'none';
+            fileSection.hidden = true;
+            uploadText.hidden = true;
+
             uploadingSection.style.display = 'block';
+
             continueButton.disabled = true;
-            continueButton.innerText = 'Uploading...';
+            continueButton.textContent = 'Uploading...';
         }, { once: true });
-    })();
+    });
 </script>
