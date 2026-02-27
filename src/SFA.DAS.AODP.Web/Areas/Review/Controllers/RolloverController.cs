@@ -170,14 +170,6 @@ public class RolloverController : ControllerBase
             return View(model);
         }
 
-        var uploadSucceeded = true;
-
-        if (!uploadSucceeded)
-        {
-            ModelState.AddModelError(nameof(model.File), "File upload failed.");
-            return View(model);
-        }
-
         return RedirectToAction("FundingStreamInclusionExclusion");
     }
 
