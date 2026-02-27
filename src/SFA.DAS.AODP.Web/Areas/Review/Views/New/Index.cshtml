@@ -181,11 +181,11 @@
                                             <tbody class="govuk-table__body">
                                                 @foreach (var qualification in Model.NewQualifications)
                                                 {
-                                                    var isChecked = Model.SelectedQualificationIds.Contains(qualification.Id);
+                                                    var isChecked = Model.SelectedQualificationIds.Contains(qualification.QualificationId);
 
                                                     <tr class="govuk-table__row">
                                                         <partial name="~/Views/Shared/Qualifications/_SelectColumnCell.cshtml"
-                                                                 model="(qualification.Id, qualification.Title, isChecked)" />
+                                                                 model="(qualification.QualificationId, qualification.Title, isChecked)" />
 
                                                         <td class="govuk-table__cell">
                                                             @if (!string.IsNullOrWhiteSpace(qualification.Reference))

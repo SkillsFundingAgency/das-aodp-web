@@ -2,7 +2,7 @@
 {
     public class NewQualificationViewModel
     {
-        public Guid Id { get; set; }
+        public Guid QualificationId { get; set; }
         public string? Title { get; set; }
         public string? Reference { get; set; }
         public string? AwardingOrganisation { get; set; }

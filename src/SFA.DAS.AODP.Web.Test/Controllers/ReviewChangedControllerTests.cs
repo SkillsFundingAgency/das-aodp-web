@@ -57,7 +57,7 @@ public class ReviewChangedControllerTests
                      .ReturnsAsync(processResponse);
 
         // Act
-        var result = await _controller.Index(processStatusIds: new List<Guid>());
+        var result = await _controller.Index(new());
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -85,8 +85,15 @@ public class ReviewChangedControllerTests
         _mediatorMock.Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), default))
                      .ReturnsAsync(processResponse);
 
+        var qualificationQuery =
+            new QualificationQuery
+            {
+                PageNumber = 1,
+                RecordsPerPage = 10
+            };
+
         // Act
-        var result = await _controller.Index(processStatusIds: new List<Guid>(), pageNumber: 1, recordsPerPage: 10);
+        var result = await _controller.Index(qualificationQuery);
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -109,8 +116,15 @@ public class ReviewChangedControllerTests
         _mediatorMock.Setup(m => m.Send(It.IsAny<GetChangedQualificationsQuery>(), default))
                      .ReturnsAsync(queryResponse);
 
+        var qualificationQuery =
+            new QualificationQuery
+            {
+                PageNumber = 1,
+                RecordsPerPage = 10
+            };
+
         // Act
-        var result = await _controller.Index(processStatusIds: new List<Guid>(), pageNumber: 1, recordsPerPage: 10);
+        var result = await _controller.Index(qualificationQuery);
 
         // Assert
         var redirect = Assert.IsType<RedirectResult>(result);
@@ -199,8 +213,16 @@ public class ReviewChangedControllerTests
         _mediatorMock.Setup(m => m.Send(It.IsAny<GetChangedQualificationsQuery>(), default))
                      .ReturnsAsync(queryResponse);
 
+        QualificationQuery qualificationQuery =
+            new QualificationQuery
+            {
+                PageNumber = 1,
+                RecordsPerPage = 10,
+
+            };
+
         // Act
-        var result = await _controller.ChangePage(newPage: 2, recordsPerPage: 10);
+        var result = await _controller.ChangePage(qualificationQuery, newPage: 2);
 
         // Assert
         var viewResult = Assert.IsType<RedirectToActionResult>(result);

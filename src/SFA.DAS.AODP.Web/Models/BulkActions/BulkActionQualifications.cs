@@ -1,7 +1,9 @@
 ﻿using SFA.DAS.AODP.Models.Qualifications;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SFA.DAS.AODP.Web.Models.BulkActions
 {
+    [ExcludeFromCodeCoverage]
     public class BulkActionQualifications
     {
         public const string SuccessKey = "Bulk:Qualifications:Success";

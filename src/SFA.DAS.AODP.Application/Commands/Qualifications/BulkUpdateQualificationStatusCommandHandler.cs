@@ -4,7 +4,7 @@ using SFA.DAS.AODP.Domain.Qualifications.Requests;
 
 namespace SFA.DAS.AODP.Application.Commands.Qualifications
 {
-    public class BulkUpdateQualificationStatusCommandHandler : IRequestHandler<BulkUpdateQualificationStatusCommand, BaseMediatrResponse<BulkUpdateQualificationsStatusResponse>>
+    public class BulkUpdateQualificationStatusCommandHandler : IRequestHandler<BulkUpdateQualificationStatusCommand, BaseMediatrResponse<BulkUpdateQualificationStatusCommandResponse>>
     {
         private readonly IApiClient _apiClient;
 
@@ -14,9 +14,9 @@ namespace SFA.DAS.AODP.Application.Commands.Qualifications
             _apiClient = apiClient;
         }
 
-        public async Task<BaseMediatrResponse<BulkUpdateQualificationsStatusResponse>> Handle(BulkUpdateQualificationStatusCommand request, CancellationToken cancellationToken)
+        public async Task<BaseMediatrResponse<BulkUpdateQualificationStatusCommandResponse>> Handle(BulkUpdateQualificationStatusCommand request, CancellationToken cancellationToken)
         {
-            var response = new BaseMediatrResponse<BulkUpdateQualificationsStatusResponse>()
+            var response = new BaseMediatrResponse<BulkUpdateQualificationStatusCommandResponse>()
             {
                 Success = false
             };
@@ -27,7 +27,7 @@ namespace SFA.DAS.AODP.Application.Commands.Qualifications
                 {
                     Data = request
                 };
-                //await _apiClient.Put(apiRequest);
+                await _apiClient.Put(apiRequest);
                 response.Success = true;
             }
             catch (Exception ex)

@@ -1,4 +1,5 @@
 ﻿using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Web.Extensions;
 using SFA.DAS.AODP.Web.Models.BulkActions;
 
 namespace SFA.DAS.AODP.Web.Models.Qualifications
@@ -40,7 +41,10 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
             }
         }
 
-        public static ChangedQualificationsViewModel Map(GetChangedQualificationsQueryResponse response, List<GetProcessStatusesQueryResponse.ProcessStatus> processStatuses,string organisation = "", string qan = "", string name = "")
+        public static ChangedQualificationsViewModel Map(
+            GetChangedQualificationsQueryResponse response, 
+            List<GetProcessStatusesQueryResponse.ProcessStatus> processStatuses,
+            QualificationQuery qualificationQuery)
         {
             var viewModel = new ChangedQualificationsViewModel();
             viewModel.PaginationViewModel = new PaginationViewModel(response.TotalRecords, response.Skip, response.Take);
@@ -58,12 +62,7 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
                 Status=s.Status
                 
             }).ToList();
-            viewModel.Filter = new NewQualificationFilterViewModel()
-            {
-                Organisation = organisation,
-                QAN = qan,
-                QualificationName = name
-            };
+            viewModel.Filter = qualificationQuery.ToQualificationFilterViewModel();
             viewModel.JobStatusViewModel = new JobStatusViewModel()
             {
                 Name = response.Job.Name,

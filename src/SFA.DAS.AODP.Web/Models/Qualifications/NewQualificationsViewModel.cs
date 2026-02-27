@@ -55,13 +55,16 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
             public string? Comment { get; set; }
         }
 
-        public static NewQualificationsViewModel Map(GetNewQualificationsQueryResponse response, List<GetProcessStatusesQueryResponse.ProcessStatus> processStatuses, string organisation = "", string qan = "", string name = "")
+        public static NewQualificationsViewModel Map(
+            GetNewQualificationsQueryResponse response, 
+            List<GetProcessStatusesQueryResponse.ProcessStatus> processStatuses,
+            QualificationQuery qualificationQuery)
         {
             var viewModel = new NewQualificationsViewModel();
             viewModel.PaginationViewModel = new PaginationViewModel(response.TotalRecords, response.Skip, response.Take);
             viewModel.NewQualifications = response.Data.Select(s => new NewQualificationViewModel()
             {
-                Id = s.Id,
+                QualificationId = s.QualificationId,
                 AwardingOrganisation = s.AwardingOrganisation,
                 Reference = s.Reference,
                 Status = s.Status,
@@ -70,9 +73,9 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
             }).ToList();
             viewModel.Filter = new NewQualificationFilterViewModel()
             {
-                 Organisation = organisation,
-                 QAN = qan,
-                 QualificationName = name
+                 Organisation = qualificationQuery.Organisation,
+                 QAN = qualificationQuery.Qan,
+                 QualificationName = qualificationQuery.Name
             };
             viewModel.JobStatusViewModel = new JobStatusViewModel()
             {
