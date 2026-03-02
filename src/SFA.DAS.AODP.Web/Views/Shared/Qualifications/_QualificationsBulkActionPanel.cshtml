@@ -5,6 +5,10 @@
     var statusHasError =
         ViewData.ModelState.TryGetValue("BulkAction.ProcessStatusId", out var statusState) &&
         statusState.Errors.Count > 0;
+
+    var commentHasError =
+        ViewData.ModelState.TryGetValue("BulkAction.Comment", out var commentState) &&
+        commentState.Errors.Count > 0;
 }
 
 <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible" />
@@ -26,9 +30,13 @@
             </select>
         </div>
 
-        <div class="govuk-form-group">
+        <span id="BulkAction.Comment" class="govuk-visually-hidden"></span>
+
+        <div class="govuk-form-group @(commentHasError ? "govuk-form-group--error" : "")">
             <label class="govuk-label govuk-label--s" asp-for="BulkAction.Comment">Add comment (optional)</label>
             <div class="govuk-hint">Leave comments and recommendations. Give as much detail as you can.</div>
+
+            <span asp-validation-for="BulkAction.Comment" class="govuk-error-message"></span>
 
             <textarea class="govuk-textarea"
                       asp-for="BulkAction.Comment"
