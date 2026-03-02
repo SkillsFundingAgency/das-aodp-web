@@ -67,7 +67,7 @@ namespace SFA.DAS.AODP.Web.Extensions
                     ? null
                     : q.Qan,
 
-                ProcessStatusIds = (q.ProcessStatusIds?.Any() ?? false)
+                ProcessStatusIds = (q.ProcessStatusIds?.Count > 0)
                     ? q.ProcessStatusIds
                     : null
             };

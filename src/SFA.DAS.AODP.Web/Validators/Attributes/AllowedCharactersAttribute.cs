@@ -9,6 +9,16 @@ public sealed class AllowedCharactersAttribute : ValidationAttribute
 {
     private readonly TextCharacterProfile _profile;
 
+    private static readonly Regex TitleRegex =
+        new(ValidationPatterns.Text.QualificationTitle,
+            RegexOptions.Compiled,
+            TimeSpan.FromMilliseconds(100));
+
+    private static readonly Regex PersonNameRegex =
+        new(ValidationPatterns.Text.PersonName,
+            RegexOptions.Compiled,
+            TimeSpan.FromMilliseconds(100));
+
     public AllowedCharactersAttribute(TextCharacterProfile profile)
         :base("{0} contains invalid characters.") 
     {
@@ -32,10 +42,10 @@ public sealed class AllowedCharactersAttribute : ValidationAttribute
         var valid = _profile switch
         {
             TextCharacterProfile.QualificationTitle =>
-                Regex.IsMatch(s, ValidationPatterns.Text.QualificationTitle),
+                TitleRegex.IsMatch(s),
 
             TextCharacterProfile.PersonName =>
-                Regex.IsMatch(s, ValidationPatterns.Text.PersonName),
+                PersonNameRegex.IsMatch(s),
 
             TextCharacterProfile.FreeText =>
                 !ContainsControlCharacters(s)
