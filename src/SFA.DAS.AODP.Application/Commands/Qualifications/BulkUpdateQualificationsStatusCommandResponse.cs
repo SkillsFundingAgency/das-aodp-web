@@ -10,12 +10,12 @@ namespace SFA.DAS.AODP.Application.Commands.Qualifications
         public int RequestedCount { get; init; }
         public int UpdatedCount { get; init; }
         public int ErrorCount { get; init; }
-        public IReadOnlyCollection<BulkQualificationErrorDTO> Errors { get; init; }
-            = Array.Empty<BulkQualificationErrorDTO>();
+        public IReadOnlyCollection<BulkQualificationErrorDto> Errors { get; init; }
+            = Array.Empty<BulkQualificationErrorDto>();
     }
 
     [ExcludeFromCodeCoverage]
-    public class BulkQualificationErrorDTO
+    public class BulkQualificationErrorDto
     {
         public Guid QualificationId { get; init; }
         public string Qan { get; init; } = default!;

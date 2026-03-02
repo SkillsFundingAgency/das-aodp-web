@@ -24,7 +24,7 @@ namespace SFA.DAS.AODP.Web.Extensions
             if (!string.IsNullOrWhiteSpace(q.Qan))
                 query.QAN = q.Qan;
 
-            if (q.ProcessStatusIds?.Any() == true)
+            if (q.ProcessStatusIds?.Count > 0)
             {
                 query.ProcessStatusFilter = new Domain.Models.ProcessStatusFilter
                 {
@@ -39,9 +39,9 @@ namespace SFA.DAS.AODP.Web.Extensions
         {
             return new NewQualificationFilterViewModel
             {
-                Organisation = q.Organisation,
-                QualificationName = q.Name,
-                QAN = q.Qan,
+                Organisation = q.Organisation ?? string.Empty,
+                QualificationName = q.Name ?? string.Empty,
+                QAN = q.Qan ?? string.Empty,
                 ProcessStatusIds = q.ProcessStatusIds
             };
         }

@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace SFA.DAS.AODP.Web.Models.BulkActions
 {
     [ExcludeFromCodeCoverage]
-    public class BulkActionQualifications
+    public static class BulkActionQualifications
     {
         public const string SuccessKey = "Bulk:Qualifications:Success";
         public const string SuccessMessage = "Actions have been applied to the selected qualifications.";

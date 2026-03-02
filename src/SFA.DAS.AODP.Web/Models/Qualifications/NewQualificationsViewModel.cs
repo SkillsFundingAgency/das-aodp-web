@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.Forms;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Web.Extensions;
 using SFA.DAS.AODP.Web.Models.BulkActions;
 using SFA.DAS.AODP.Web.Validators.Attributes;
 using SFA.DAS.AODP.Web.Validators.Messages;
@@ -28,7 +29,6 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
         public List<ProcessStatus> ProcessStatuses { get; set; } = new List<ProcessStatus>();
 
         public string FindRegulatedQualificationUrl { get; set; } = string.Empty;
-        public QualificationBulkActionResultViewModel? BulkUpdateResult { get; set; }
         public class ProcessStatus
         {
             public Guid Id { get; set; }
@@ -71,12 +71,7 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
                 Title = s.Title,                
                 AgeGroup = s.AgeGroup
             }).ToList();
-            viewModel.Filter = new NewQualificationFilterViewModel()
-            {
-                 Organisation = qualificationQuery.Organisation,
-                 QAN = qualificationQuery.Qan,
-                 QualificationName = qualificationQuery.Name
-            };
+            viewModel.Filter = qualificationQuery.ToQualificationFilterViewModel();
             viewModel.JobStatusViewModel = new JobStatusViewModel()
             {
                 Name = response.Job.Name,

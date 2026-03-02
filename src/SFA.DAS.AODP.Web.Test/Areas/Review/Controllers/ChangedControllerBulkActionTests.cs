@@ -178,9 +178,9 @@ public class ChangedControllerBulkActionTests
                 Value = new BulkUpdateQualificationStatusCommandResponse
                 {
                     ErrorCount = 1,
-                    Errors = new List<BulkQualificationErrorDTO>
+                    Errors = new List<BulkQualificationErrorDto>
                     {
-                        new BulkQualificationErrorDTO
+                        new BulkQualificationErrorDto
                         {
                             QualificationId = selectedIds[0],
                             Title = "Missing",

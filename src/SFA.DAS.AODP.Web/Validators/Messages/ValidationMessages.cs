@@ -1,6 +1,6 @@
 ﻿namespace SFA.DAS.AODP.Web.Validators.Messages
 {
-    public class ValidationMessages
+    public static class ValidationMessages
     {
         public const string QualificationTitleRequired = "Enter a qualification title.";
         public const string QualificationTitleTooLong = "Qualification title must be 200 characters or fewer.";

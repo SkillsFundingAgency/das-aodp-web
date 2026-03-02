@@ -155,21 +155,6 @@
                                     </div>
                                 </div>
 
-                                @{
-                                    var url = Url.Action("Index", "Changed", new
-                                    {
-                                        area = "Review",
-                                        pageNumber = Model.PaginationViewModel.CurrentPage,
-                                        recordsPerPage = Model.PaginationViewModel.RecordsPerPage,
-                                        name = Model.Filter.QualificationName,
-                                        organisation = Model.Filter.Organisation,
-                                        qan = Model.Filter.QAN,
-                                        processStatusIds = Model.Filter.ProcessStatusIds,
-                                        selectAll = true,
-                                        reloadId = Guid.NewGuid().ToString("N")
-                                    }) + "#bulk-action-select-all";
-                                }
-
                                 <div id="SelectedQualificationIds" class="govuk-form-group @(selectionHasError ? "govuk-form-group--error" : "")">
                                     <h3 class="govuk-heading-m">Qualifications</h3>
                                     <span asp-validation-for="SelectedQualificationIds" class="govuk-error-message"></span>

@@ -1,4 +1,5 @@
-﻿@using SFA.DAS.AODP.Web.Models.Qualifications
+﻿@using SFA.DAS.AODP.Web.Models.BulkActions
+@using SFA.DAS.AODP.Web.Models.Qualifications
 @model SFA.DAS.AODP.Web.Models.Qualifications.NewQualificationsViewModel
 @{
     ViewData["Title"] = "New Qualifications";
@@ -129,28 +130,10 @@
                             }
 
                             @{
-                                var url = Url.Action("Index", "New", new
-                                {
-                                    area = "Review",
-                                    pageNumber = Model.PaginationViewModel.CurrentPage,
-                                    recordsPerPage = Model.PaginationViewModel.RecordsPerPage,
-                                    name = Model.Filter.QualificationName,
-                                    organisation = Model.Filter.Organisation,
-                                    qan = Model.Filter.QAN,
-                                    processStatusIds = Model.Filter.ProcessStatusIds,
-                                    selectAll = true,
-                                    reloadId = Guid.NewGuid().ToString("N")
-                                }) + "#bulk-action-select-all";
-                            }
-                            @{
                                 var selectionHasError =
                                 ViewData.ModelState.TryGetValue(nameof(NewQualificationsViewModel.SelectedQualificationIds), out var selState) &&
                                     selState.Errors.Count > 0;
 
-                                var statusHasError =
-                                ViewData.ModelState.TryGetValue(nameof(NewQualificationsViewModel.BulkAction) + "." +
-                                    nameof(NewQualificationsViewModel.BulkActionViewModel.ProcessStatusId), out var statusState) &&
-                                    statusState.Errors.Count > 0;
                             }
                            
                             <div id="SelectedQualificationIds" class="govuk-form-group @(selectionHasError ? "govuk-form-group--error" : "")">
@@ -163,11 +146,16 @@
                                     </div>
                                 </div>
 
-                                <div id="bulk-action-select-all" class="govuk-button-group">
-                                    <a class="govuk-button govuk-button--secondary" href="@url">
-                                        Select all on this page
-                                    </a>
-                                </div>
+                                <partial name="~/Views/Shared/Qualifications/_SelectAllOnPageButton.cshtml"
+                                    model="new SelectAllQualificationsViewModel
+                                    {
+                                        CurrentPage = Model.PaginationViewModel.CurrentPage,
+                                        RecordsPerPage = Model.PaginationViewModel.RecordsPerPage,
+                                        Name = Model.Filter.QualificationName,
+                                        Organisation = Model.Filter.Organisation,
+                                        Qan = Model.Filter.QAN,
+                                        ProcessStatusIds = Model.Filter.ProcessStatusIds
+                                    }" />
 
                                 <div class="govuk-grid-row" id="New_Qual_Data_Section">
                                     <div class="govuk-grid-column-full">
