@@ -4,6 +4,7 @@
 
 @{
     ViewData["Title"] = "Qualification Details";
+    var isCompleted = string.Equals(Model.Stage?.Name, "Completed", System.StringComparison.OrdinalIgnoreCase);
 }
 <a class="govuk-back-link"
    asp-area="@Model.BackArea"
