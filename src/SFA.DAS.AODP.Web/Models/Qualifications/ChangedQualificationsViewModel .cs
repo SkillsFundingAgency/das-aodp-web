@@ -50,6 +50,7 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
             viewModel.PaginationViewModel = new PaginationViewModel(response.TotalRecords, response.Skip, response.Take);
             viewModel.ChangedQualifications= response.Data.Select(s => new ChangedQualificationViewModel()
             {
+                QualificationId = s.QualificationId,
                 QualificationReference=s.QualificationReference,
                 AwardingOrganisation = s.AwardingOrganisation,
                 QualificationTitle=s.QualificationTitle,

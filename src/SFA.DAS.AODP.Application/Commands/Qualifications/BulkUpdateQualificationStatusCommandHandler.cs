@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using Azure;
+using MediatR;
 using SFA.DAS.AODP.Domain.Interfaces;
 using SFA.DAS.AODP.Domain.Qualifications.Requests;
 
@@ -23,11 +24,13 @@ namespace SFA.DAS.AODP.Application.Commands.Qualifications
 
             try
             {
-                var apiRequest = new BulkUpdateQualificationStatusApiRequest()
-                {
-                    Data = request
-                };
-                await _apiClient.Put(apiRequest);
+                var apiResult = await _apiClient.PutWithResponseCode<BulkUpdateQualificationStatusCommandResponse>(
+                    new BulkUpdateQualificationStatusApiRequest()
+                    {
+                        Data = request
+                    });
+
+                response.Value = apiResult.Body;
                 response.Success = true;
             }
             catch (Exception ex)

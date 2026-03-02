@@ -296,18 +296,36 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
                 return View("Index", viewModel);
             }
+            try 
+            { 
+                var result = await Send(new BulkUpdateQualificationStatusCommand
+                {
+                    QualificationIds = model.SelectedQualificationIds,
+                    ProcessStatusId = model.BulkAction.ProcessStatusId!.Value,
+                    Comment = model.BulkAction.Comment,
+                    UserDisplayName = HttpContext.User?.Identity?.Name
+                });
 
-            await Send(new BulkUpdateQualificationStatusCommand
+                if (result.ErrorCount == 0)
+                {
+                    TempData[BulkActionQualifications.SuccessKey] = true;
+
+                    return RedirectToAction(nameof(Index), qualificationQuery.ToRouteValues());
+                }
+               
+                var viewModel = await BuildIndexViewModelAsync(
+                    qualificationQuery,
+                    postedModel: model);
+
+                viewModel.BulkUpdateResult = QualificationBulkActionResultViewModel.From(result);
+
+                return View("Index", viewModel);
+            }
+            catch (Exception ex)
             {
-                QualificationIds = model.SelectedQualificationIds,
-                ProcessStatusId = model.BulkAction.ProcessStatusId!.Value,
-                Comment = model.BulkAction.Comment,
-                UserDisplayName = HttpContext.User?.Identity?.Name
-            });
-
-            TempData[BulkActionQualifications.SuccessKey] = true;
-
-            return RedirectToAction(nameof(Index), qualificationQuery.ToRouteValues());
+                LogException(ex);
+                return Redirect("/Home/Error");
+            }
         }
 
         private void CheckInvalidParameters(QualificationQuery qualificationQuery)

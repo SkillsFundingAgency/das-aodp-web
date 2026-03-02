@@ -32,11 +32,32 @@ public class ReviewChangedControllerTests
     {
         _fixture = new Fixture().Customize(new AutoMoqCustomization());
         _loggerMock = _fixture.Freeze<Mock<ILogger<ChangedController>>>();
-        _loggerMock = _fixture.Freeze<Mock<ILogger<ChangedController>>>();
         _userHelper = _fixture.Freeze<Mock<IUserHelperService>>();
         _mediatorMock = _fixture.Freeze<Mock<IMediator>>();
 
         _controller = new ChangedController(_loggerMock.Object, _aodpOptions, _mediatorMock.Object, _userHelper.Object);
+
+        _userHelper
+            .Setup(u => u.GetUserRoles())
+            .Returns(new List<string>());
+
+        var processResponse = new BaseMediatrResponse<GetProcessStatusesQueryResponse>
+        {
+            Success = true,
+            Value = new GetProcessStatusesQueryResponse
+            {
+                ProcessStatuses = new List<GetProcessStatusesQueryResponse.ProcessStatus>
+            {
+                new() { Id = Guid.NewGuid(), Name = "Decision Required" },
+                new() { Id = Guid.NewGuid(), Name = "No Action Required" }
+            }
+            }
+        };
+
+        _mediatorMock
+            .Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(processResponse);
+
     }
 
     [Fact]
@@ -49,12 +70,6 @@ public class ReviewChangedControllerTests
 
         _mediatorMock.Setup(m => m.Send(It.IsAny<GetChangedQualificationsQuery>(), default))
                      .ReturnsAsync(queryResponse);
-
-        var processResponse = _fixture.Create<BaseMediatrResponse<GetProcessStatusesQueryResponse>>();
-        processResponse.Success = true;
-        processResponse.Value.ProcessStatuses = _fixture.CreateMany<ProcessStatus>(2).ToList();
-        _mediatorMock.Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), default))
-                     .ReturnsAsync(processResponse);
 
         // Act
         var result = await _controller.Index(new());
@@ -78,12 +93,6 @@ public class ReviewChangedControllerTests
 
         _mediatorMock.Setup(m => m.Send(It.IsAny<GetChangedQualificationsQuery>(), default))
                      .ReturnsAsync(queryResponse);
-
-        var processResponse = _fixture.Create<BaseMediatrResponse<GetProcessStatusesQueryResponse>>();
-        processResponse.Success = true;
-        processResponse.Value.ProcessStatuses = _fixture.CreateMany<ProcessStatus>(2).ToList();
-        _mediatorMock.Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), default))
-                     .ReturnsAsync(processResponse);
 
         var qualificationQuery =
             new QualificationQuery
@@ -113,7 +122,7 @@ public class ReviewChangedControllerTests
         var queryResponse = _fixture.Create<BaseMediatrResponse<GetChangedQualificationsQueryResponse>>();
         queryResponse.Success = false;
 
-        _mediatorMock.Setup(m => m.Send(It.IsAny<GetChangedQualificationsQuery>(), default))
+        _mediatorMock.Setup(m => m.Send(It.IsAny<GetChangedQualificationsQuery>(), It.IsAny<CancellationToken>()))
                      .ReturnsAsync(queryResponse);
 
         var qualificationQuery =

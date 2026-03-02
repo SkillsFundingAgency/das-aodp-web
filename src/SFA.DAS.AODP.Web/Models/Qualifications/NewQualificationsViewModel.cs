@@ -28,7 +28,7 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
         public List<ProcessStatus> ProcessStatuses { get; set; } = new List<ProcessStatus>();
 
         public string FindRegulatedQualificationUrl { get; set; } = string.Empty;
-
+        public QualificationBulkActionResultViewModel? BulkUpdateResult { get; set; }
         public class ProcessStatus
         {
             public Guid Id { get; set; }

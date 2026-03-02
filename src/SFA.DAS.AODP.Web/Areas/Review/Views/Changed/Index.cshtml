@@ -7,6 +7,8 @@
 
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 <partial name="_ValidationSummaryPartial" />
+<partial name="~/Views/Shared/Qualifications/_QualificationBulkActionResultSummary.cshtml"
+         model="Model.BulkUpdateResult" />
 
 <div class="govuk-width-container">
     <main class="govuk-main-wrapper">
@@ -198,11 +200,11 @@
                                                 <tbody class="govuk-table__body">
                                                     @foreach (var qualification in Model.ChangedQualifications)
                                                     {
-                                                        var isChecked = Model.SelectedQualificationIds.Contains(qualification.Id);
+                                                        var isChecked = Model.SelectedQualificationIds.Contains(qualification.QualificationId);
 
                                                         <tr class="govuk-table__row">
                                                             <partial name="~/Views/Shared/Qualifications/_SelectColumnCell.cshtml"
-                                                                     model="(qualification.Id, qualification.QualificationTitle, isChecked)" />
+                                                                     model="(qualification.QualificationId, qualification.QualificationTitle, isChecked)" />
                                                             <td class="govuk-table__cell">
                                                                 @if (!string.IsNullOrWhiteSpace(qualification.QualificationReference))
                                                                 {

@@ -9,6 +9,7 @@ using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Authentication;
+using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Extensions;
 using SFA.DAS.AODP.Web.Helpers.User;
@@ -46,23 +47,25 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             this._userHelperService = userHelperService;
         }
 
-        public async Task<IActionResult> Index(QualificationQuery qualificationQuery)
+        public async Task<IActionResult> Index(QualificationQuery qualificationQuery, bool selectAll = false)
         {
-            //if ((recordsPerPage != 10 && recordsPerPage != 20 && recordsPerPage != 50) || pageNumber < 0)
-            //{
-            //    ShowNotificationIfKeyExists(NewQualDataKeys.InvalidPageParams.ToString(),
-            //        ViewNotificationMessageType.Error,
-            //        "Invalid parameters.");
-            //}
+            try { 
+                ValidatePagingAndNotify(qualificationQuery);
 
-            var viewModel = await BuildIndexViewModelAsync(qualificationQuery);
+                var viewModel = await BuildIndexViewModelAsync(qualificationQuery, selectAll);
 
-            ShowNotificationIfKeyExists(
-                BulkActionQualifications.SuccessKey,
-                ViewNotificationMessageType.Success,
-                BulkActionQualifications.SuccessMessage);
+                ShowNotificationIfKeyExists(
+                    BulkActionQualifications.SuccessKey,
+                    ViewNotificationMessageType.Success,
+                    BulkActionQualifications.SuccessMessage);
 
-            return View(viewModel);
+                return View(viewModel);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+                return Redirect("/Home/Error");
+            }
         }
 
         [HttpPost]
@@ -193,40 +196,51 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         [HttpPost]
         [Route("/Review/Changed/ApplyBulkAction")]
         public async Task<IActionResult> ApplyBulkAction(
-        ChangedQualificationsViewModel model,
-        QualificationQuery qualificationQuery)
+            ChangedQualificationsViewModel model,
+            QualificationQuery qualificationQuery)
         {
             if (!ModelState.IsValid)
             {
-                //if ((recordsPerPage != 10 && recordsPerPage != 20 && recordsPerPage != 50) || pageNumber < 0)
-                //{
-                //    ShowNotificationIfKeyExists(NewQualDataKeys.InvalidPageParams.ToString(),
-                //        ViewNotificationMessageType.Error,
-                //        "Invalid parameters.");
-                //}
+                ValidatePagingAndNotify(qualificationQuery);
 
-                var viewModel = await BuildIndexViewModelAsync(qualificationQuery);
-
-                ShowNotificationIfKeyExists(
-                    BulkActionQualifications.SuccessKey,
-                    ViewNotificationMessageType.Success,
-                    BulkActionQualifications.SuccessMessage);
+                var viewModel = await BuildIndexViewModelAsync(
+                    qualificationQuery,
+                    postedModel: model); 
 
                 return View("Index", viewModel);
             }
 
-            await Send(new BulkUpdateQualificationStatusCommand
+            try
             {
-                QualificationIds = model.SelectedQualificationIds,
-                ProcessStatusId = model.BulkAction.ProcessStatusId!.Value,
-                Comment = model.BulkAction.Comment,
-                UserDisplayName = HttpContext.User?.Identity?.Name
-            });
+                var result = await Send(new BulkUpdateQualificationStatusCommand
+                {
+                    QualificationIds = model.SelectedQualificationIds,
+                    ProcessStatusId = model.BulkAction.ProcessStatusId!.Value,
+                    Comment = model.BulkAction.Comment,
+                    UserDisplayName = HttpContext.User?.Identity?.Name
+                });
 
-            TempData[BulkActionQualifications.SuccessKey] = true;
+                if (result.ErrorCount == 0)
+                {
+                    TempData[BulkActionQualifications.SuccessKey] = true;
 
-            return RedirectToAction(nameof(Index), qualificationQuery.ToRouteValues());
+                    return RedirectToAction(nameof(Index), qualificationQuery.ToRouteValues());
+                }
 
+                var viewModel = await BuildIndexViewModelAsync(
+                    qualificationQuery,
+                    postedModel: model);
+
+                viewModel.BulkUpdateResult =
+                    QualificationBulkActionResultViewModel.From(result);
+
+                return View("Index", viewModel);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+                return Redirect("/Home/Error");
+            }
         }
 
         private static string BuildChangeString(ChangedQualificationDetailsViewModel qualVersion)
@@ -418,6 +432,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
         private async Task<ChangedQualificationsViewModel> BuildIndexViewModelAsync(
             QualificationQuery qualificationQuery,
+            bool selectAll = false,
             ChangedQualificationsViewModel? postedModel = null)
         {
             var procStatuses = await Send(new GetProcessStatusesQuery());
@@ -434,6 +449,11 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     response, 
                     statuses, 
                     qualificationQuery);
+
+                if (selectAll)
+                {
+                    vm.SelectedQualificationIds = vm.ChangedQualifications.Select(q => q.QualificationId).ToList();
+                }
             }
             else
             {
@@ -493,6 +513,16 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             {
                 csv.WriteRecords(qualifications);
                 return writer.ToString();
+            }
+        }
+
+        private void ValidatePagingAndNotify(QualificationQuery query)
+        {
+            if ((query.RecordsPerPage != 10 && query.RecordsPerPage != 20 && query.RecordsPerPage != 50) || query.PageNumber < 0)
+            {
+                ShowNotificationIfKeyExists(NewQualDataKeys.InvalidPageParams.ToString(),
+                    ViewNotificationMessageType.Error,
+                    "Invalid parameters.");
             }
         }
 
