@@ -35,11 +35,11 @@
     <div class="govuk-form-group" @(fundingEndDateGroupError || operationalEndDateGroupError ? "govuk-form-group--error" : "")">
         <fieldset class="govuk-fieldset" role="group" aria-describedby="funding-end-date-hint">
             <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
-                <h2 class="govuk-fieldset__heading">Funding end date</h2>
+                <h2 class="govuk-fieldset__heading">Funding end date eligibility threshold</h2>
             </legend>
 
             <div id="funding-end-date-hint" class="govuk-hint">
-                Qualifications with a funding end date before this date will not be included in this rollover process
+                Qualifications with a funding end date before this date will not be included in this rollover process.
             </div>
 
             @if (fundingEndDateGroupError)
@@ -95,7 +95,7 @@
     <div class="govuk-form-group">
         <fieldset class="govuk-fieldset" role="group" aria-describedby="operational-end-date-hint">
             <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
-                <h2 class="govuk-fieldset__heading">Operational end date</h2>
+                <h2 class="govuk-fieldset__heading">Operational end date eligibility threshold</h2>
             </legend>
 
             <div id="operational-end-date-hint" class="govuk-hint">
