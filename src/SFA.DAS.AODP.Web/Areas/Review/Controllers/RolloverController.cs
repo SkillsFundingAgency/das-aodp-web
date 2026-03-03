@@ -195,7 +195,7 @@ public class RolloverController : ControllerBase
 
         if (vm.SelectedIds == null || !vm.SelectedIds.Any())
         {
-            ModelState.AddModelError(nameof(vm.SelectedIds), "Select at least one funding stream");
+            ModelState.AddModelError(nameof(vm.SelectedIds), "Select at least one funding stream.");
             return View(vm);
         }
 
