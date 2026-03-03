@@ -75,6 +75,7 @@ public class RolloverControllerTests
 
         var result = controller.Index(vm);
 
+        // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
         Assert.Equal("RolloverStart", viewResult.ViewName);
         Assert.Same(vm, viewResult.Model);
@@ -285,6 +286,7 @@ public class RolloverControllerTests
 
         var result = controller.CheckData(posted);
 
+        // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
         Assert.Equal("CheckData", viewResult.ViewName);
         var vm = Assert.IsType<RolloverImportStatusViewModel>(viewResult.Model);
