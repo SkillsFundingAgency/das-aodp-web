@@ -5,6 +5,5 @@ namespace SFA.DAS.AODP.Web.FeatureManagement;
 /// </summary>
 internal enum Feature
 {
-    DefundingListImport = 1,
-    PldnsImport = 2
+    // Left empty in case we need this in the future.
 }

@@ -12,7 +12,7 @@ public sealed class FileUploadValidator
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
     }
 
-    public void ValidateOrThrow(string? originalFileName, Stream? stream)
+    public void ValidateOrThrow(string? originalFileName, Stream? stream, int? importFileSize = null)
     {
         if (stream is null)
             throw new FileUploadPolicyException(FileUploadRejectionReason.MissingFile);
@@ -56,7 +56,7 @@ public sealed class FileUploadValidator
                 throw new FileUploadPolicyException(FileUploadRejectionReason.FileTypeNotAllowed);
         }
 
-        var configuredMb = _settings.MaxUploadFileSize;
+        var configuredMb = importFileSize ??_settings.MaxUploadFileSize;
         if (configuredMb <= 0)
             throw new FileUploadPolicyException(FileUploadRejectionReason.FileTooLarge);
 
