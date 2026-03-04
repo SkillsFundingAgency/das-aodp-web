@@ -1,14 +1,18 @@
 ﻿@using SFA.DAS.AODP.Web.Extensions
+@using SFA.DAS.AODP.Web.Views.Shared
 @model SFA.DAS.AODP.Web.Models.Qualifications.ChangedQualificationDetailsViewModel
 
 @{
     ViewData["Title"] = "Qualification Details";
+
+    var backLinkModel = new BackLinkModel
+    {
+        Action = "Index",
+        Controller = "Changed"
+    };
 }
-<a class="govuk-back-link"
-   asp-controller="changed"
-   asp-action="Index">
-    Back
-</a>
+
+@await Html.PartialAsync("_BackLinkPartial", backLinkModel)
 
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
