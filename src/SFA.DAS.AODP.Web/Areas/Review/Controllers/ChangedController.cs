@@ -7,6 +7,7 @@ using SFA.DAS.AODP.Application.Commands.Qualification;
 using SFA.DAS.AODP.Application.Commands.Qualifications;
 using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Models.Qualifications;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Constants;
@@ -33,8 +34,15 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
         private List<string> ReviewerAllowedStatuses { get; set; } = new List<string>()
         {
-            "Decision Required",
-            "No Action Required",
+            ProcessStatus.DecisionRequired,
+            ProcessStatus.NoActionRequired,
+        };
+
+        private List<string> BulkUpdateAllowedStatuses { get; set; } = new List<string>()
+        {
+            ProcessStatus.DecisionRequired,
+            ProcessStatus.NoActionRequired,
+            ProcessStatus.OnHold
         };
 
         public enum NewQualDataKeys { InvalidPageParams, CommentSaved}

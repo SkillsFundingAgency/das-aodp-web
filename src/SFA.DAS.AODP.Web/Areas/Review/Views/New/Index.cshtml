@@ -1,4 +1,5 @@
-﻿@using SFA.DAS.AODP.Web.Models.BulkActions
+﻿@using SFA.DAS.AODP.Web.Areas.Review.Controllers
+@using SFA.DAS.AODP.Web.Models.BulkActions
 @using SFA.DAS.AODP.Web.Models.Qualifications
 @model SFA.DAS.AODP.Web.Models.Qualifications.NewQualificationsViewModel
 @{
@@ -146,23 +147,27 @@
                                     </div>
                                 </div>
 
-                                <partial name="~/Views/Shared/Qualifications/_SelectAllOnPageButton.cshtml"
-                                    model="new SelectAllQualificationsViewModel
-                                    {
-                                        CurrentPage = Model.PaginationViewModel.CurrentPage,
-                                        RecordsPerPage = Model.PaginationViewModel.RecordsPerPage,
-                                        Name = Model.Filter.QualificationName,
-                                        Organisation = Model.Filter.Organisation,
-                                        Qan = Model.Filter.QAN,
-                                        ProcessStatusIds = Model.Filter.ProcessStatusIds
-                                    }" />
+                                @{
+                                    var selectAllCheckboxesViewModel = SelectAllViewModelFactory.ForQualifications
+                                    (
+                                        Model.PaginationViewModel.CurrentPage,
+                                        Model.PaginationViewModel.RecordsPerPage,
+                                        nameof(NewController).Replace("Controller", ""),
+                                        Model.Filter.QualificationName,
+                                        Model.Filter.Organisation,
+                                        Model.Filter.QAN,
+                                        Model.Filter.ProcessStatusIds
+                                    );
+                                }
+
+                                <partial name="~/Views/Shared/_SelectAllOnPage.cshtml" model="selectAllCheckboxesViewModel" />
 
                                 <div class="govuk-grid-row" id="New_Qual_Data_Section">
                                     <div class="govuk-grid-column-full">
                                         <table class="govuk-table">
                                             <thead class="govuk-table__head">
                                                 <tr class="govuk-table__row">
-                                                    <partial name="~/Views/Shared/Qualifications/_SelectColumnHeader.cshtml" />
+                                                    <partial name="~/Views/Shared/_SelectColumnHeader.cshtml" />
                                                     <th class="govuk-table__header">QAN</th>
                                                     <th class="govuk-table__header">Qualification Title</th>
                                                     <th class="govuk-table__header">Age Group(s)</th>
@@ -172,10 +177,17 @@
                                                 @foreach (var qualification in Model.NewQualifications)
                                                 {
                                                     var isChecked = Model.SelectedQualificationIds.Contains(qualification.QualificationId);
-
+                                                    var theModel = new MultiSelectCheckboxCellViewModel
+                                                    (
+                                                        qualification.QualificationId,
+                                                        qualification.Title,
+                                                        isChecked,
+                                                        nameof(Model.SelectedQualificationIds),
+                                                        "qual"
+                                                    );
                                                     <tr class="govuk-table__row">
-                                                        <partial name="~/Views/Shared/Qualifications/_SelectColumnCell.cshtml"
-                                                                 model="(qualification.QualificationId, qualification.Title, isChecked)" />
+                                                        <partial name="~/Views/Shared/_SelectCheckboxCell.cshtml"
+                                                                 model="theModel" />
 
                                                         <td class="govuk-table__cell">
                                                             @if (!string.IsNullOrWhiteSpace(qualification.Reference))

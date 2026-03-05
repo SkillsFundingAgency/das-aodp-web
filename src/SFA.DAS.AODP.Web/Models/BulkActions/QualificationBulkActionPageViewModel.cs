@@ -1,13 +1,7 @@
-﻿using DocumentFormat.OpenXml.Office2010.Excel;
-using DocumentFormat.OpenXml.Wordprocessing;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using SFA.DAS.AODP.Application.Queries.Qualifications;
-using SFA.DAS.AODP.Models.Qualifications;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using SFA.DAS.AODP.Web.Validators.Attributes;
 using SFA.DAS.AODP.Web.Validators.Messages;
 using SFA.DAS.AODP.Web.Validators.Patterns;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
