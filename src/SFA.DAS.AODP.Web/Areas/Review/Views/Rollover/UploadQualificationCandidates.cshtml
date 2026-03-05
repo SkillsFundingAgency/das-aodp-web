@@ -1,14 +1,14 @@
 ﻿@using SFA.DAS.AODP.Web.Areas.Review.Controllers
 @using SFA.DAS.AODP.Web.Extensions
 @using SFA.DAS.AODP.Web.Views.Shared
-@model SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.UploadBespokeQualificationCandidatesViewModel
+@model SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.RolloverUploadQualificationCandidatesViewModel
 
 @{
     ViewData["Title"] = "Import a list of candidates for rollover";
 
     var backLinkModel = new BackLinkModel
     {
-        Action = nameof(RolloverController.UploadBespokeQualificationCandidates),
+        Action = nameof(RolloverController.UploadQualificationCandidates),
         Controller = "Rollover",
         Area = "Review"
     };
@@ -45,7 +45,7 @@
 
 <div id="uploadText">
 
-    <h2 class="govuk-body">Import file</h2>
+    <h2 class="govuk-body govuk-!-margin-bottom-1">Import file</h2>
 
     <p class="govuk-hint">
         This must be a correctly formatted CSV file which includes: QAN, level, type,
@@ -58,7 +58,7 @@
 
 </div>
 
-<form asp-area="Review" asp-controller="Rollover" asp-action="UploadBespokeQualificationCandidates" method="post" enctype="multipart/form-data" id="uploadForm">
+<form asp-area="Review" asp-controller="Rollover" asp-action="UploadQualificationCandidates" method="post" enctype="multipart/form-data" id="uploadForm">
 
     @Html.AntiForgeryToken()
 

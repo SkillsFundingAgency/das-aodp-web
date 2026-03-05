@@ -6,7 +6,7 @@ using System.Text;
 namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover
 {
     // to do refactoring later
-    public sealed record BespokeQualificationCandidateColumnNames(
+    public sealed record QualificationCandidateColumnNames(
         string? QualificationNumber,
         string? Title,
         string? AwardingOrganisation,
@@ -22,7 +22,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover
     }
 
     [ExcludeFromCodeCoverage] // to do refactoring later
-    public class UploadBespokeQualificationCandidatesViewModel : IValidatableObject
+    public class RolloverUploadQualificationCandidatesViewModel : IValidatableObject
     {
         [Required(ErrorMessage = "You must select a CSV file")]
         public IFormFile File { get; set; }
@@ -82,7 +82,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover
                     {
                         DefaultRowIndex = 1,
                         MinMatches = 3,
-                        MapColumns = MapBespokeQualificationCandidateColumns
+                        MapColumns = MapQualificationCandidateColumns
                     },
                     cancellationToken: CancellationToken.None
                 );
@@ -106,9 +106,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover
             return Enumerable.Empty<ValidationResult>();
         }
 
-        private static BespokeQualificationCandidateColumnNames MapBespokeQualificationCandidateColumns(IDictionary<string, string> headerMap)
+        private static QualificationCandidateColumnNames MapQualificationCandidateColumns(IDictionary<string, string> headerMap)
         {
-            return new BespokeQualificationCandidateColumnNames(
+            return new QualificationCandidateColumnNames(
                 FindColumn(headerMap, "Qualification number"),
                 FindColumn(headerMap, "Title"),
                 FindColumn(headerMap, "Awarding organisation"),

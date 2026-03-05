@@ -155,15 +155,15 @@ public class RolloverController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/Review/Rollover/UploadBespokeQualificationCandidates")]
-    public IActionResult UploadBespokeQualificationCandidates()
+    [Route("/Review/Rollover/UploadQualificationCandidates")]
+    public IActionResult UploadQualificationCandidates()
     {
-        return View(new UploadBespokeQualificationCandidatesViewModel());
+        return View(new RolloverUploadQualificationCandidatesViewModel());
     }
 
     [HttpPost]
-    [Route("/Review/Rollover/UploadBespokeQualificationCandidates")]
-    public async Task<IActionResult> UploadBespokeQualificationCandidates([FromForm] UploadBespokeQualificationCandidatesViewModel model)
+    [Route("/Review/Rollover/UploadQualificationCandidates")]
+    public async Task<IActionResult> UploadQualificationCandidates([FromForm] RolloverUploadQualificationCandidatesViewModel model)
     {
         if (!ModelState.IsValid)
         {
