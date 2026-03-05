@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Queries.Import;
@@ -18,10 +19,12 @@ public class RolloverController : ControllerBase
 {
     private readonly ILogger<RolloverController> _logger;
     private const string SessionKey = "RolloverSession";
+    private readonly IValidator<RolloverFundingApprovalEndDateViewModel> _rolloverFundingApprovalEndDateViewModelViewModeValidator;
 
-    public RolloverController(ILogger<RolloverController> logger, IMediator mediator) : base(mediator, logger)
+    public RolloverController(ILogger<RolloverController> logger, IMediator mediator, IValidator<RolloverFundingApprovalEndDateViewModel> validator) : base(mediator, logger)
     {
         _logger = logger;
+        _rolloverFundingApprovalEndDateViewModelViewModeValidator = validator;
     }
 
     [HttpGet]
@@ -59,6 +62,14 @@ public class RolloverController : ControllerBase
             RolloverProcess.FinalUpload => RedirectToAction(nameof(UploadQualifications)),
             _ => View("RolloverStart", model)
         };
+    }
+
+    [HttpGet]
+    [Route("/Review/Rollover/InitialSelection")]
+    public IActionResult InitialSelection()
+    {
+        ViewData["Title"] = "Initial selection of qualificaton";
+        return View();
     }
 
     [HttpGet]
@@ -152,6 +163,29 @@ public class RolloverController : ControllerBase
         }
 
         return RedirectToAction(nameof(Index));
+    }
+
+    [Route("/Review/Rollover/EnterRolloverFundingApprovalEndDate")]
+    public IActionResult EnterRolloverFundingApprovalEndDate()
+    {
+        ViewData["Title"] = "Set the end date for funding extension";
+        return View();
+    }
+
+    [HttpPost]
+    [Route("/Review/Rollover/EnterRolloverFundingApprovalEndDate")]
+    public async Task<IActionResult> EnterRolloverFundingApprovalEndDate(RolloverFundingApprovalEndDateViewModel model)
+    {
+        var validation = await _rolloverFundingApprovalEndDateViewModelViewModeValidator.ValidateAsync(model);
+
+        validation.AddToModelState(ModelState);
+
+        if (!ModelState.IsValid)
+        {
+            return View("EnterRolloverFundingApprovalEndDate", model);
+        }
+
+        return RedirectToAction(nameof(EnterRolloverFundingApprovalEndDate));
     }
 
     private Rollover GetSessionModel()
