@@ -1,0 +1,22 @@
+﻿@using SFA.DAS.AODP.Web.Areas.Review.Controllers
+@using SFA.DAS.AODP.Web.Extensions
+@using SFA.DAS.AODP.Web.Views.Shared
+
+@{
+    ViewData["Title"] = "Select funding stream(s)";
+
+    var backLinkModel = new BackLinkModel
+    {
+        Action = nameof(RolloverController.UploadQualificationCandidates),
+        Controller = "Rollover",
+        Area = "Review"
+    };
+}
+
+@await Html.PartialAsync("_BackLinkPartial", backLinkModel)
+
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
+<h1 class="govuk-heading-xl">@ViewData["Title"]</h1>
+
+<p class="govuk-body">Content to be implemented (Award-1072).</p>
