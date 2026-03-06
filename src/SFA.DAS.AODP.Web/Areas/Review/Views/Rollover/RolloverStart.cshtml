@@ -8,15 +8,13 @@
 <a class="govuk-back-link" asp-area="Review" asp-action="Index" asp-controller="Home" asp-area="Review">Back</a>
 
 <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">@ViewData["Title"]</h1>
-                    <h1 class="govuk-heading-xl">@ViewData["Title"]</h1>
+
 <form asp-area="Review" asp-controller="Rollover" asp-action="Index" method="post">
     @Html.AntiForgeryToken()
     <div class="govuk-form-group">
         <govuk-radios asp-for="@Model.SelectedProcess">
             <govuk-radios-fieldset>
                 <govuk-radios-fieldset-legend is-page-heading="false" class="govuk-fieldset__legend--s"></govuk-radios-fieldset-legend>
-                            <govuk-radios-fieldset>
-                                <govuk-radios-fieldset-legend is-page-heading="false" class="govuk-fieldset__legend--s"></govuk-radios-fieldset-legend>
 
                 @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.SelectedProcess))
 
