@@ -7,7 +7,6 @@ public class Rollover
     public RolloverStart? Start { get; set; }
     public RolloverImportStatus? ImportStatus { get; set; }
     public RolloverPreviousData? PreviousData { get; set; }
-    public bool? IncludeHoldList { get; set; }
 }
 
 public class RolloverStart

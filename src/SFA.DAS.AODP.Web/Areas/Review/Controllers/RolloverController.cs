@@ -139,7 +139,7 @@ public class RolloverController : ControllerBase
     [HttpPost]
     [Route("/Review/Rollover/CheckData")]
     [ValidateAntiForgeryToken]
-    public IActionResult CheckData([FromForm] RolloverImportStatusViewModel model)
+    public async Task<IActionResult> CheckData([FromForm] RolloverImportStatusViewModel model)
     {
         if (!ModelState.IsValid)
         {
@@ -152,7 +152,39 @@ public class RolloverController : ControllerBase
             return View("CheckData", vm);
         }
 
-        return RedirectToAction(nameof(PreviousFile));
+        var sessionModel = GetSessionModel();
+
+        var sessionCountAvailable = sessionModel.PreviousData != null && sessionModel.PreviousData.CandidateCount > 0;
+        var count = sessionCountAvailable ? sessionModel?.PreviousData?.CandidateCount : 0;
+
+        if (!sessionCountAvailable)
+        {
+            var candidateCount = await Send(new GetRolloverWorkflowCandidatesQuery());
+            count = candidateCount?.Data?.Count ?? 0;
+
+            if (count > 0)
+            {
+                try
+                {
+                    sessionModel.PreviousData = new RolloverPreviousData
+                    {
+                        CandidateCount = count.Value
+                    };
+                    SaveSessionModel(sessionModel);
+                }
+                catch (Exception ex)
+                {
+                    LogException(ex);
+                }
+            }
+        }
+
+        if (count > 0)
+        {
+            return RedirectToAction(nameof(PreviousFile));
+        }
+
+        return RedirectToAction(nameof(SelectCandidates), new { returnAction = nameof(CheckData) });
     }
 
     [HttpGet]
@@ -169,15 +201,14 @@ public class RolloverController : ControllerBase
                 SelectedOption = session.PreviousData.SelectedOption
             };
 
-            ViewData["Title"] = "Do you need to update any data before starting?";
             return View("PreviousFile", vm);
         }
 
-        var candidateCount = await Send(new GetRolloverCandidateQuery());
+        var candidateCount = await Send(new GetRolloverWorkflowCandidatesQuery());
 
         var model = new RolloverPreviousDataViewModel
         {
-            CandidateCount = candidateCount.CandidateCount
+            CandidateCount = candidateCount.Data.Count
         };
 
         session.PreviousData = new RolloverPreviousData
@@ -203,7 +234,6 @@ public class RolloverController : ControllerBase
         var session = GetSessionModel();
         try
         {
-            // store the previous file selection into the session object
             session.PreviousData!.SelectedOption = model.SelectedOption;
             SaveSessionModel(session);
         }
@@ -212,48 +242,29 @@ public class RolloverController : ControllerBase
             LogException(ex);
         }
 
-        return RedirectToAction(nameof(IncludeHoldList));
+        return model.SelectedOption switch
+        {
+            RolloverPreviousFileOption.ContinueProcessing => RedirectToAction(nameof(SelectFundingStreams)),
+            RolloverPreviousFileOption.RemovePrevious => RedirectToAction(nameof(SelectCandidates), new { returnAction = nameof(PreviousFile) }),
+            _ => View("RolloverStart", model)
+        };
     }
 
     [HttpGet]
-    [Route("/Review/Rollover/IncludeHoldList")]
-    public IActionResult IncludeHoldList()
+    [Route("/Review/Rollover/SelectCandidates")]
+    public IActionResult SelectCandidates(string? returnAction = null)
     {
-        ViewData["Title"] = "Do you want to include the Hold List?";
-        var session = GetSessionModel();
-        var vm = new RolloverIncludeHoldListViewModel
-        {
-            SelectedOption = session.IncludeHoldList.HasValue
-                ? (session.IncludeHoldList.Value ? IncludeHoldListOption.Yes : IncludeHoldListOption.No)
-                : null
-        };
-
-        return View("IncludeHoldList", vm);
+        ViewData["Title"] = "How do you want to select candidates for rollover";
+        ViewData["ReturnAction"] = returnAction ?? nameof(CheckData);
+        return View();
     }
 
-    [HttpPost]
-    [Route("/Review/Rollover/IncludeHoldList")]
-    [ValidateAntiForgeryToken]
-    public IActionResult IncludeHoldList(RolloverIncludeHoldListViewModel model)
+    [HttpGet]
+    [Route("/Review/Rollover/SelectFundingStreams")]
+    public IActionResult SelectFundingStreams()
     {
-        if (!ModelState.IsValid)
-        {
-            return View("IncludeHoldList", model);
-        }
-
-        var session = GetSessionModel();
-        try
-        {
-            session.IncludeHoldList = model.SelectedOption == IncludeHoldListOption.Yes;
-            SaveSessionModel(session);
-        }
-        catch (Exception ex)
-        {
-            LogException(ex);
-        }
-
-        // Continue the flow - adjust redirect as appropriate for next step
-        return RedirectToAction(nameof(Index));
+        ViewData["Title"] = "Select funding stream(s)";
+        return View();
     }
 
     private Rollover GetSessionModel()

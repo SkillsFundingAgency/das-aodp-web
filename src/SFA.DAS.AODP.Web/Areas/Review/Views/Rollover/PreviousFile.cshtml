@@ -22,7 +22,7 @@
                 @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.SelectedOption))
 
                 <govuk-radios-item value="ContinueProcessing">Continue processing the @Model.CandidateCount previously imported qualifications</govuk-radios-item>
-                <govuk-radios-item value="RemovePrevious">Remove the previously uploaded qualifications and either upload or generate a new list of candidates for rollover</govuk-radios-item>
+                <govuk-radios-item value="RemovePrevious">Remove the previously imported candidates and either upload or generate a new list?</govuk-radios-item>
             </govuk-radios-fieldset>
         </govuk-radios>
     </div>
