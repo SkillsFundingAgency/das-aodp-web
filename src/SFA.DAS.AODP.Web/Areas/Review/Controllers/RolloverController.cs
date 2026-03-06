@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Queries.Import;
+using SFA.DAS.AODP.Application.Queries.Review.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 using SFA.DAS.AODP.Web.Authentication;
@@ -138,7 +139,7 @@ public class RolloverController : ControllerBase
     [HttpPost]
     [Route("/Review/Rollover/CheckData")]
     [ValidateAntiForgeryToken]
-    public IActionResult CheckData([FromForm] RolloverImportStatusViewModel model)
+    public async Task<IActionResult> CheckData([FromForm] RolloverImportStatusViewModel model)
     {
         if (!ModelState.IsValid)
         {
@@ -151,7 +152,119 @@ public class RolloverController : ControllerBase
             return View("CheckData", vm);
         }
 
-        return RedirectToAction(nameof(Index));
+        var sessionModel = GetSessionModel();
+
+        var sessionCountAvailable = sessionModel.PreviousData != null && sessionModel.PreviousData.CandidateCount > 0;
+        var count = sessionCountAvailable ? sessionModel?.PreviousData?.CandidateCount : 0;
+
+        if (!sessionCountAvailable)
+        {
+            var candidateCount = await Send(new GetRolloverWorkflowCandidatesQuery());
+            count = candidateCount?.Data?.Count ?? 0;
+
+            if (count > 0)
+            {
+                try
+                {
+                    sessionModel.PreviousData = new RolloverPreviousData
+                    {
+                        CandidateCount = count.Value
+                    };
+                    SaveSessionModel(sessionModel);
+                }
+                catch (Exception ex)
+                {
+                    LogException(ex);
+                }
+            }
+        }
+
+        if (count > 0)
+        {
+            return RedirectToAction(nameof(PreviousFile));
+        }
+
+        return RedirectToAction(nameof(SelectCandidates), new { returnAction = nameof(CheckData) });
+    }
+
+    [HttpGet]
+    [Route("/Review/Rollover/PreviousFile")]
+    public async Task<IActionResult> PreviousFile()
+    {
+        var session = GetSessionModel();
+
+        if (session.PreviousData != null)
+        {
+            var vm = new RolloverPreviousDataViewModel
+            {
+                CandidateCount = session.PreviousData.CandidateCount,
+                SelectedOption = session.PreviousData.SelectedOption
+            };
+
+            return View("PreviousFile", vm);
+        }
+
+        var candidateCount = await Send(new GetRolloverWorkflowCandidatesQuery());
+
+        var model = new RolloverPreviousDataViewModel
+        {
+            CandidateCount = candidateCount.Data.Count
+        };
+
+        session.PreviousData = new RolloverPreviousData
+        {
+            CandidateCount = model.CandidateCount
+        };
+        SaveSessionModel(session);
+
+        ViewData["Title"] = "We found a list of candidates for rollover you worked on previously.";
+        return View("PreviousFile", model);
+    }
+
+    [HttpPost]
+    [Route("/Review/Rollover/PreviousFile")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> PreviousFile(RolloverPreviousDataViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View("PreviousFile", model);
+        }
+
+        var session = GetSessionModel();
+        try
+        {
+            session.PreviousData!.SelectedOption = model.SelectedOption;
+            SaveSessionModel(session);
+        }
+        catch (Exception ex)
+        {
+            LogException(ex);
+        }
+
+        return model.SelectedOption switch
+        {
+            RolloverPreviousFileOption.ContinueProcessing => RedirectToAction(nameof(SelectFundingStreams)),
+            RolloverPreviousFileOption.RemovePrevious => RedirectToAction(nameof(SelectCandidates), new { returnAction = nameof(PreviousFile) }),
+            _ => View("RolloverStart", model)
+        };
+    }
+
+    [HttpGet]
+    [Route("/Review/Rollover/SelectCandidates")]
+    public IActionResult SelectCandidates(string? returnAction = null)
+    {
+        ViewData["Title"] = "How do you want to select candidates for rollover";
+        ViewData["ReturnAction"] = returnAction ?? nameof(CheckData);
+        return View();
+    }
+
+    [HttpGet]
+    [Route("/Review/Rollover/SelectFundingStreams")]
+    public IActionResult SelectFundingStreams()
+    {
+        ViewData["Title"] = "Select funding stream(s)";
+        return View();
     }
 
     private Rollover GetSessionModel()
