@@ -1,8 +1,15 @@
-﻿using SFA.DAS.AODP.Application.Queries.Qualifications;
+﻿using Microsoft.AspNetCore.Components.Forms;
+using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Web.Extensions;
+using SFA.DAS.AODP.Web.Models.BulkActions;
+using SFA.DAS.AODP.Web.Validators.Attributes;
+using SFA.DAS.AODP.Web.Validators.Messages;
+using SFA.DAS.AODP.Web.Validators.Patterns;
+using System.ComponentModel.DataAnnotations;
 
 namespace SFA.DAS.AODP.Web.Models.Qualifications
 {
-    public class NewQualificationsViewModel
+    public class NewQualificationsViewModel : QualificationsBulkActionPageViewModel
     {
         public NewQualificationsViewModel()
         {
@@ -22,7 +29,6 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
         public List<ProcessStatus> ProcessStatuses { get; set; } = new List<ProcessStatus>();
 
         public string FindRegulatedQualificationUrl { get; set; } = string.Empty;
-
         public class ProcessStatus
         {
             public Guid Id { get; set; }
@@ -39,24 +45,33 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
             }
         }
 
-        public static NewQualificationsViewModel Map(GetNewQualificationsQueryResponse response, List<GetProcessStatusesQueryResponse.ProcessStatus> processStatuses, string organisation = "", string qan = "", string name = "")
+        public class BulkActionViewModel
+        {
+            [Display(Name ="Status")]
+            [Required(ErrorMessage = ValidationMessages.QualificationsBulkActionStatusRequired)]
+            public Guid? ProcessStatusId { get; set; }
+
+            [AllowedCharactersAttribute(TextCharacterProfile.FreeText)]
+            public string? Comment { get; set; }
+        }
+
+        public static NewQualificationsViewModel Map(
+            GetNewQualificationsQueryResponse response, 
+            List<GetProcessStatusesQueryResponse.ProcessStatus> processStatuses,
+            QualificationQuery qualificationQuery)
         {
             var viewModel = new NewQualificationsViewModel();
             viewModel.PaginationViewModel = new PaginationViewModel(response.TotalRecords, response.Skip, response.Take);
             viewModel.NewQualifications = response.Data.Select(s => new NewQualificationViewModel()
             {
+                QualificationId = s.QualificationId,
                 AwardingOrganisation = s.AwardingOrganisation,
                 Reference = s.Reference,
                 Status = s.Status,
                 Title = s.Title,                
                 AgeGroup = s.AgeGroup
             }).ToList();
-            viewModel.Filter = new NewQualificationFilterViewModel()
-            {
-                 Organisation = organisation,
-                 QAN = qan,
-                 QualificationName = name
-            };
+            viewModel.Filter = qualificationQuery.ToQualificationFilterViewModel();
             viewModel.JobStatusViewModel = new JobStatusViewModel()
             {
                 Name = response.Job.Name,

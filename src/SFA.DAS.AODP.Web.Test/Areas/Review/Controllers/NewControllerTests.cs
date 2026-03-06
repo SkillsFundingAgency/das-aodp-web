@@ -48,7 +48,8 @@ public class NewControllerTests
         _mediator.Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Success(new GetProcessStatusesQueryResponse { ProcessStatuses = new List<GetProcessStatusesQueryResponse.ProcessStatus>() }));
 
-        var result = await controller.Index(null, pageNumber: 0);
+        QualificationQuery qualificationQuery = new QualificationQuery { PageNumber = 0};
+        var result = await controller.Index(qualificationQuery);
 
         var view = Assert.IsType<ViewResult>(result);
         var model = Assert.IsType<NewQualificationsViewModel>(view.Model);
@@ -75,7 +76,8 @@ public class NewControllerTests
         _mediator.Setup(m => m.Send(It.IsAny<GetNewQualificationsQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Success(newQualsResp));
 
-        var result = await controller.Index(null, pageNumber: 1);
+        QualificationQuery qualificationQuery = new QualificationQuery { PageNumber = 1 };
+        var result = await controller.Index(qualificationQuery);
 
         var view = Assert.IsType<ViewResult>(result);
         var model = Assert.IsType<NewQualificationsViewModel>(view.Model);
@@ -128,7 +130,17 @@ public class NewControllerTests
     {
         var controller = CreateController();
 
-        var result = await controller.ChangePage(2, 10, "n", "o", "q");
+        QualificationQuery qualificationQuery = 
+            new QualificationQuery 
+            { 
+                PageNumber = 2,
+                RecordsPerPage = 10,
+                Name = "n",
+                Organisation = "o",
+                Qan = "q"
+            
+            };
+        var result = await controller.ChangePage(qualificationQuery);
 
         var redirect = Assert.IsType<RedirectToActionResult>(result);
         Assert.Equal(nameof(NewController.Index), redirect.ActionName);
@@ -140,7 +152,17 @@ public class NewControllerTests
         var controller = CreateController();
         controller.ModelState.AddModelError("k", "e");
 
-        var result = await controller.ChangePage(2, 10, "n", "o", "q");
+        QualificationQuery qualificationQuery =
+            new QualificationQuery
+            {
+                PageNumber = 2,
+                RecordsPerPage = 10,
+                Name = "n",
+                Organisation = "o",
+                Qan = "q"
+
+            };
+        var result = await controller.ChangePage(qualificationQuery);
 
         var view = Assert.IsType<ViewResult>(result);
         Assert.Equal("Index", view.ViewName);
