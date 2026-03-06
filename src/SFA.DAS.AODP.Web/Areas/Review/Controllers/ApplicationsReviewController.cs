@@ -2,8 +2,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using SFA.DAS.AODP.Application.Commands.Application.Application;
 using SFA.DAS.AODP.Application.Commands.Application.Review;
+using SFA.DAS.AODP.Application.Commands.Review;
 using SFA.DAS.AODP.Application.Queries.Application.Form;
+using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Application.Queries.Review;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Application;
@@ -14,8 +17,12 @@ using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApproval;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Enums;
+using SFA.DAS.AODP.Web.Extensions;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Application;
+using SFA.DAS.AODP.Web.Models.Applications;
+using SFA.DAS.AODP.Web.Models.BulkActions;
+using SFA.DAS.AODP.Web.Models.BulkActions.Options;
 using SFA.DAS.AODP.Web.Models.RelatedLinks;
 using System.IO.Compression;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
@@ -45,41 +52,99 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         }
 
         [Route("review/application-reviews")]
-        public async Task<IActionResult> Index(ApplicationsReviewListViewModel model)
+        public async Task<IActionResult> Index(
+            ApplicationsReviewQuery query, 
+            bool selectAll = false)
         {
-            string userType = _userHelperService.GetUserType().ToString();
-            model.FindRegulatedQualificationUrl = _aodpConfiguration.Value.FindRegulatedQualificationUrl;
-            var response = await Send(new GetApplicationsForReviewQuery()
-            {
-                ReviewUser = userType,
-                ApplicationStatuses = model.Status?.Select(s => s.ToString()).ToList(),
-                ApplicationsWithNewMessages = model.Status?.Contains(ApplicationStatus.NewMessage) == true,
-                ApplicationSearch = model.ApplicationSearch,
-                AwardingOrganisationSearch = model.AwardingOrganisationSearch,
-                ReviewerSearch = model.ReviewerSearch,
-                UnassignedOnly = model.UnassignedOnly,
-                Limit = model.ItemsPerPage,
-                Offset = model.ItemsPerPage * (model.Page - 1)
-            });
+            var viewModel = await BuildIndexViewModelAsync(query, selectAll);
 
-            model.MapApplications(response);
-            model.UserType = userType;
-            return View(model);
+            return View(viewModel);
         }
 
         [HttpPost]
-        [Route("review/application-reviews")]
-        public async Task<IActionResult> Search(ApplicationsReviewListViewModel model)
+        [Route("/review/application-reviews/bulk-action")]
+        public async Task<IActionResult> ApplyBulkAction(
+            ApplicationsBulkActionPostModel model,
+            ApplicationsReviewQuery applicationQuery)
         {
-            return RedirectToAction(nameof(Index), new ApplicationsReviewListViewModel()
+
+            if (!ModelState.IsValid)
             {
-                Page = 1,
-                ItemsPerPage = model.ItemsPerPage,
-                ApplicationSearch = model.ApplicationSearch,
-                AwardingOrganisationSearch = model.AwardingOrganisationSearch,
-                Status = model.Status,
-                ReviewerSelection = model.ReviewerSelection
-            });
+                var viewModel = await BuildIndexViewModelAsync(
+                    applicationQuery,
+                    selectAll: false,
+                    postedModel: model);
+
+                return View("Index", viewModel);
+            }
+            try
+            {
+                switch (model.BulkActionInputViewModel.SubmitAction)
+                {
+                    case SubmitAction.Assign:
+                        {
+                            var input = model.BulkActionInputViewModel;
+
+                            var reviewer1Selection = input.Reviewer1?.Trim();
+                            var reviewer2Selection = input.Reviewer2?.Trim();
+
+                            var command = new BulkSaveReviewerCommand
+                            {
+                                ApplicationReviewIds = model.SelectedApplicationIds ?? new List<Guid>(),
+
+                                Reviewer1Set = !string.IsNullOrWhiteSpace(reviewer1Selection),
+                                Reviewer1 = reviewer1Selection == ReviewerDropdown.UnassignedValue
+                                    ? null
+                                    : reviewer1Selection,
+
+                                Reviewer2Set = !string.IsNullOrWhiteSpace(reviewer2Selection),
+                                Reviewer2 = reviewer2Selection == ReviewerDropdown.UnassignedValue
+                                    ? null
+                                    : reviewer2Selection,
+
+                                UserType = _userHelperService.GetUserType().ToString(),
+                                SentByEmail = _userHelperService.GetUserEmail(),
+                                SentByName = _userHelperService.GetUserDisplayName()
+                            };
+
+                            var result = await Send(command);
+                            TempData[BulkActionApplications.SuccessKey] = true;
+                            return RedirectToAction(nameof(Index), applicationQuery.ToRouteValues());
+                        }
+
+                    case SubmitAction.Message:
+                        {
+                            var result = await Send(new BulkApplicationActionCommand
+                            {
+                                ApplicationReviewIds = model.SelectedApplicationIds,
+                                ActionType = model.BulkActionInputViewModel.BulkActionType!.Value,
+                                UserType = _userHelperService.GetUserType().ToString(),
+                                SentByEmail = _userHelperService.GetUserEmail(),
+                                SentByName = _userHelperService.GetUserDisplayName()
+                            });
+
+                            TempData[BulkActionApplications.SuccessKey] = true;
+                            return RedirectToAction(nameof(Index), applicationQuery.ToRouteValues());
+                        }
+
+                    default:
+                        return Redirect("/Home/Error");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+                return Redirect("/Home/Error");
+            }
+        }
+
+
+        [HttpPost]
+        [Route("review/application-reviews")]
+        public async Task<IActionResult> Search(ApplicationsReviewQuery query)
+        {
+            query.PageNumber = 1;
+            return RedirectToAction(nameof(Index), query);
         }
 
 
@@ -382,8 +447,10 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     SentByName = _userHelperService.GetUserDisplayName(),
                     ReviewerFieldName = model.ReviewerFieldName,
 
-                    ReviewerValue = string.IsNullOrWhiteSpace(model.ReviewerValue) 
-                        ? null : model.ReviewerValue,
+                    ReviewerValue = string.IsNullOrWhiteSpace(model.ReviewerValue) ||
+                                    model.ReviewerValue == ReviewerDropdown.UnassignedValue
+                        ? null
+                        : model.ReviewerValue,
 
                     UserType = _userHelperService.GetUserType().ToString()
                 });
@@ -665,6 +732,46 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             {
                 return Url.Action("Index", "ApplicationsReview", new { area = "Review" });
             }
+        }
+
+        private async Task<ApplicationsReviewListViewModel> BuildIndexViewModelAsync(
+            ApplicationsReviewQuery applicationQuery,
+            bool selectAll = false,
+            ApplicationsBulkActionPostModel? postedModel = null)
+        { 
+
+            var userType = _userHelperService.GetUserType().ToString();
+            
+            var response = await Send(applicationQuery.ToGetApplicationsForReviewQuery(userType));
+
+            var viewModel = new ApplicationsReviewListViewModel
+            {
+                PageNumber = applicationQuery.PageNumber,
+                RecordsPerPage = applicationQuery.RecordsPerPage,
+                ApplicationSearch = applicationQuery.ApplicationSearch,
+                AwardingOrganisationSearch = applicationQuery.AwardingOrganisationSearch,
+                ReviewerSelection = applicationQuery.ReviewerSelection,
+                Status = applicationQuery.Status ?? new List<ApplicationStatus>(),
+                UserType = userType,
+                FindRegulatedQualificationUrl = _aodpConfiguration.Value.FindRegulatedQualificationUrl
+            };
+
+            viewModel.MapApplications(response);
+
+            if (selectAll)
+            {
+                viewModel.SelectedApplicationIds = viewModel.Applications.Select(a => a.Id).Distinct().ToList();
+            }
+
+            viewModel.BulkActionOptions = BulkMessageActionOptions.Build();
+
+            if (postedModel is not null)
+            {
+                viewModel.SelectedApplicationIds = postedModel.SelectedApplicationIds ?? new List<Guid>();
+                viewModel.BulkActionInputViewModel = postedModel.BulkActionInputViewModel ?? new ApplicationsBulkActionInputViewModel();
+            }
+
+            return viewModel;
         }
     }
 }

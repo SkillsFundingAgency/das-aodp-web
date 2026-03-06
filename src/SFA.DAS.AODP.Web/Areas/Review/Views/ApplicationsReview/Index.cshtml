@@ -2,6 +2,7 @@
 @using SFA.DAS.AODP.Models.Users
 @using SFA.DAS.AODP.Web.Areas.Review.Controllers
 @using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
+@using SFA.DAS.AODP.Web.Models.BulkActions
 @using SFA.DAS.AODP.Web.Models.GdsComponents
 @model ApplicationsReviewListViewModel
 
@@ -9,6 +10,7 @@
     ViewData["Title"] = "Review applications";
 }
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+<partial name="_ValidationSummaryPartial" />
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-full" id="guide-contents">
@@ -125,7 +127,7 @@
 
             <div class="govuk-grid-row">
                 <div class="govuk-grid-column-full">
-                    <govuk-select asp-for="@Model.ItemsPerPage">
+                    <govuk-select asp-for="@Model.RecordsPerPage">
                         <govuk-select-label>Applications per page</govuk-select-label>
                         <govuk-select-item value="10" selected="true">10</govuk-select-item>
                         <govuk-select-item value="20">20</govuk-select-item>
@@ -144,95 +146,164 @@
 
         @if (Model.Applications.Count != 0 && Model.TotalItems.HasValue)
         {
-            int startNumber = (Model.Page - 1) * Model.ItemsPerPage + 1;
-            int endNumber = Math.Min(Model.Page * Model.ItemsPerPage, Model.TotalItems.Value);
+            int startNumber = (Model.PageNumber - 1) * Model.RecordsPerPage + 1;
+            int endNumber = Math.Min(Model.PageNumber * Model.RecordsPerPage, Model.TotalItems.Value);
 
             <p class="govuk-heading-s">Viewing @startNumber-@endNumber of @Model.TotalItems qualifications</p>
         }
 
-        <table class="govuk-table">
-            <thead class="govuk-table__head">
-                <tr class="govuk-table__row">
-                    <th scope="col" class="govuk-table__header">Submission ID</th>
-                    <th scope="col" class="govuk-table__header">QAN</th>
-                    <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Qualification Title</th>
-                    <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Status</th>
-                    <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Awarding Organisation</th>
-                    <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Reviewer(s)</th>
-                </tr>
-            </thead>
-            <tbody class="govuk-table__body">
-                @foreach (var item in Model.Applications.OrderByDescending(a => a.LastUpdated))
-                {
-                    <tr class="govuk-table__row">
-                        <td class="govuk-table__cell">
-                            @item.Reference.ToString().PadLeft(6, '0')
-                        </td>
-                        <td class="govuk-table__cell">
-                            @if (!string.IsNullOrWhiteSpace(item.Qan))
-                            {
-                                var baseUrl = Model.FindRegulatedQualificationUrl ?? string.Empty;
-                                var fullUrl = $"{baseUrl}{item.Qan}";
-                                <a href="@fullUrl" target="_blank">@item.Qan</a>
-                            }
-                        </td>
-                        <td class="govuk-table__cell">
-                            <a class="govuk-link"
-                               asp-area="Review"
-                               asp-action="ViewApplication"
-                               asp-route-applicationReviewId="@item.ApplicationReviewId"
-                               asp-controller="ApplicationsReview">@item.Name</a>
-                        </td>
-                        <td class="govuk-table__cell">
-
-                            @if (item.Status == ApplicationStatus.Approved && Model.UserType == UserType.Qfau.ToString())
-                            {
-                                <span>Approved - for one or more offers</span>
-                            }
-                            else
-                            {
-                                @ApplicationStatusDisplay.Dictionary[item.Status]
-                            }
-
-                            @if (item.NewMessage)
-                            {
-                                <br />
-                                <govuk-tag class="govuk-!-static-margin-top-1">New message</govuk-tag>
-
-                            }
-
-                        </td>
-                        <td class="govuk-table__cell">@item.AwardingOrganisation</td>
-                        <td class="govuk-table__cell">
-                            <ul class="govuk-list">
-                                @foreach (var r in item.ReviewersSummary)
-                                {
-                                    <li>@r</li>
-                                }
-                            </ul>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-
         @{
-            PaginationModel model = new()
-            {
-                CurrentPage = Model.Page,
-                MaxPageNumber = (int)Math.Ceiling((double)Model.TotalItems / Model.ItemsPerPage),
-                ActionName = "Index",
-                ControllerName = nameof(ApplicationsReviewController)
-            };
+            var selectAllCheckboxesViewModel = SelectAllViewModelFactory.ForApplications
+            (
+                Model.PageNumber,
+                Model.RecordsPerPage,
+                nameof(ApplicationsReviewController).Replace("Controller", ""),
+                Model.ApplicationSearch,
+                Model.AwardingOrganisationSearch,
+                Model.ReviewerSelection,
+                Model.Status
+            );
         }
 
-        <div class="govuk-grid-row">
+        <form asp-controller="ApplicationsReview"
+            asp-action="ApplyBulkAction"
+            asp-area="Review"
+            method="post">
 
-            <div class="govuk-grid-column-two-thirds">
-                @{
-                    await Html.RenderPartialAsync("GdsComponents/_GdsPagination", model);
+            @Html.AntiForgeryToken()
+
+            <input type="hidden" name="pageNumber" value="@Model.PageNumber" />
+            <input type="hidden" name="recordsPerPage" value="@Model.RecordsPerPage" />
+            <input type="hidden" name="applicationSearch" value="@Model.ApplicationSearch" />
+            <input type="hidden" name="awardingOrganisationSearch" value="@Model.AwardingOrganisationSearch" />
+            <input type="hidden" name="reviewerSelection" value="@Model.ReviewerSelection" />
+
+            <!-- Preserve status filter (checkbox list) -->
+            @if (Model.Status != null)
+            {
+                foreach (var status in Model.Status)
+                {
+                    <input type="hidden" name="status" value="@status" />
                 }
+            }
+            <partial name="~/Views/Shared/_SelectAllOnPage.cshtml" model="selectAllCheckboxesViewModel" />
+
+
+            @{
+                var selectionHasError =
+                    ViewData.ModelState.TryGetValue(nameof(Model.SelectedApplicationIds), out var selState)
+                    && selState.Errors.Count > 0;
+            }
+
+
+            <div id="SelectedApplicationIds"
+                class="govuk-form-group @(selectionHasError ? "govuk-form-group--error" : "")">
+
+                <span asp-validation-for="SelectedApplicationIds"
+                      class="govuk-error-message"></span>
+
+
+                <table class="govuk-table">
+                    <thead class="govuk-table__head">
+                        <tr class="govuk-table__row">
+                            <partial name="~/Views/Shared/_SelectColumnHeader.cshtml" />
+                            <th scope="col" class="govuk-table__header">Submission ID</th>
+                            <th scope="col" class="govuk-table__header">QAN</th>
+                            <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Qualification Title</th>
+                            <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Status</th>
+                            <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Awarding Organisation</th>
+                            <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Reviewer(s)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="govuk-table__body">
+                        @foreach (var item in Model.Applications.OrderByDescending(a => a.LastUpdated))
+                        {
+                            var isChecked = Model.SelectedApplicationIds.Contains(item.Id);
+                            var theModel = new MultiSelectCheckboxCellViewModel
+                            (
+                                item.ApplicationReviewId,
+                                item.Name,
+                                isChecked,
+                                nameof(Model.SelectedApplicationIds),
+                                "app"
+                            );
+                    
+                            <tr class="govuk-table__row">
+                                <partial name="~/Views/Shared/_SelectCheckboxCell.cshtml"
+                                    model="theModel" />
+                                <td class="govuk-table__cell">
+                                    @item.Reference.ToString().PadLeft(6, '0')
+                                </td>
+                                <td class="govuk-table__cell">
+                                    @if (!string.IsNullOrWhiteSpace(item.Qan))
+                              {
+                                        var baseUrl = Model.FindRegulatedQualificationUrl ?? string.Empty;
+                                        var fullUrl = $"{baseUrl}{item.Qan}";
+                                        <a href="@fullUrl" target="_blank">@item.Qan</a>
+                                    }
+                                </td>
+                                <td class="govuk-table__cell">
+                                    <a class="govuk-link"
+                                       asp-area="Review"
+                                       asp-action="ViewApplication"
+                                       asp-route-applicationReviewId="@item.ApplicationReviewId"
+                                       asp-controller="ApplicationsReview">@item.Name</a>
+                                </td>
+                                <td class="govuk-table__cell">
+
+                                    @if (item.Status == ApplicationStatus.Approved && Model.UserType == UserType.Qfau.ToString())
+                                    {
+                                        <span>Approved - for one or more offers</span>
+                                    }
+                                    else
+                                    {
+                                        @ApplicationStatusDisplay.Dictionary[item.Status]
+                                    }
+
+                                    @if (item.NewMessage)
+                                    {
+                                        <br />
+                                        <govuk-tag class="govuk-!-static-margin-top-1">New message</govuk-tag>
+
+                                    }
+
+                                </td>
+                                <td class="govuk-table__cell">@item.AwardingOrganisation</td>
+                                <td class="govuk-table__cell">
+                                    <ul class="govuk-list">
+                                        @foreach (var r in item.ReviewersSummary)
+                                        {
+                                            <li>@r</li>
+                                        }
+                                    </ul>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
             </div>
-        </div>
+            @{
+                PaginationModel model = new()
+                {
+                    CurrentPage = Model.PageNumber,
+                    MaxPageNumber = (int)Math.Ceiling((double)Model.TotalItems / Model.RecordsPerPage),
+                    ActionName = "Index",
+                    ControllerName = nameof(ApplicationsReviewController)
+                };
+            }
+            <p class="govuk-body">Navigating to another page clears this selection. If you want to comment or assign actions to results on this page, do so before clicking on another page.</p>
+
+            <div class="govuk-grid-row">
+
+                <div class="govuk-grid-column-two-thirds">
+                    @{
+                        await Html.RenderPartialAsync("GdsComponents/_GdsPagination", model);
+                    }
+                </div>
+            </div>
+
+            <partial name="~/Views/Shared/_ApplicationsBulkActionPanel.cshtml" model="Model" />
+        </form>
+
     </div>
-</div>

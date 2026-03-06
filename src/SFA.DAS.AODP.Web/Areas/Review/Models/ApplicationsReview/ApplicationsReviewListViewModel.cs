@@ -3,25 +3,25 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Constants;
+using SFA.DAS.AODP.Web.Models.BulkActions;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
 {
-    public class ApplicationsReviewListViewModel
+    public class ApplicationsReviewListViewModel :ApplicationsBulkActionPageViewModel
     {
         public List<Application> Applications { get; set; } = new();
         public int? TotalItems { get; set; }
 
-        public int Page { get; set; } = 1;
-        public int ItemsPerPage { get; set; } = 10;
+        public int PageNumber { get; set; } = 1;
+        public int RecordsPerPage { get; set; } = 10;
 
         public string? ApplicationSearch { get; set; }
         public string? AwardingOrganisationSearch { get; set; }
-        public List<SelectListItem> ReviewerOptions { get; set; } = new();
         public string? ReviewerSelection { get; set; }
         public bool UnassignedOnly =>
             string.Equals(
                 ReviewerSelection?.Trim(), 
-                ReviewerDropdown.Filter.UnassignedValue, 
+                ReviewerDropdown.UnassignedValue, 
                 StringComparison.Ordinal);
         public string? ReviewerSearch =>
             UnassignedOnly 
@@ -72,9 +72,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
                 });
             }
 
-            ReviewerOptions = GetReviewersForSearch(response.AvailableReviewers).ToList();       
+            ReviewerOptions = GetReviewersForSearchFilter(response.AvailableReviewers).ToList();       
         }
-        private IEnumerable<SelectListItem> GetReviewersForSearch(
+        private IEnumerable<SelectListItem> GetReviewersForSearchFilter(
             IEnumerable<UserOption> availableReviewers,
             string? selectedReviewer = null)
         {
@@ -84,16 +84,16 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
             {
                 new SelectListItem
                 {
-                    Value = ReviewerDropdown.Filter.PlaceholderValue,
-                    Text = ReviewerDropdown.Filter.PlaceholderText,
+                    Value = ReviewerDropdown.PlaceholderValue,
+                    Text = ReviewerDropdown.PlaceholderText,
                     Selected = string.IsNullOrWhiteSpace(selectedReviewer),
                     Disabled = true
                 },
                 new SelectListItem
                 {
-                    Value = ReviewerDropdown.Filter.UnassignedValue,
-                    Text = ReviewerDropdown.Filter.UnassignedText,
-                    Selected = selectedReviewer == ReviewerDropdown.Filter.UnassignedValue
+                    Value = ReviewerDropdown.UnassignedValue,
+                    Text = ReviewerDropdown.UnassignedText,
+                    Selected = selectedReviewer == ReviewerDropdown.UnassignedValue
                 }
             };
 

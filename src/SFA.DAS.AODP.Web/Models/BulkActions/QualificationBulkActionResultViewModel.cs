@@ -16,7 +16,6 @@ namespace SFA.DAS.AODP.Web.Models.BulkActions
         public List<BulkStatusUpdateErrorItemViewModel> HistoryUpdateFailed { get; set; } = new();
 
         public bool HasAnyErrors => ErrorCount > 0;
-
         public static QualificationBulkActionResultViewModel From(BulkUpdateQualificationStatusCommandResponse response)
         {
             var vm = new QualificationBulkActionResultViewModel
@@ -41,13 +40,13 @@ namespace SFA.DAS.AODP.Web.Models.BulkActions
 
                 switch (e.ErrorType)
                 {
-                    case BulkQualificationErrorType.Missing:
+                    case BulkUpdateQualificationsErrorType.Missing:
                         vm.MissingQualifications.Add(item);
                         break;
-                    case BulkQualificationErrorType.StatusUpdateFailed:
+                    case BulkUpdateQualificationsErrorType.StatusUpdateFailed:
                         vm.StatusUpdateFailed.Add(item);
                         break;
-                    case BulkQualificationErrorType.HistoryFailed:
+                    case BulkUpdateQualificationsErrorType.HistoryFailed:
                         vm.HistoryUpdateFailed.Add(item);
                         break;
                 }
@@ -62,7 +61,7 @@ namespace SFA.DAS.AODP.Web.Models.BulkActions
         public Guid QualificationId { get; set; }
         public string Qan { get; set; } = "";
         public string Title { get; set; } = "";
-        public BulkQualificationErrorType ErrorType { get; set; }
+        public BulkUpdateQualificationsErrorType ErrorType { get; set; }
     }
 
 }

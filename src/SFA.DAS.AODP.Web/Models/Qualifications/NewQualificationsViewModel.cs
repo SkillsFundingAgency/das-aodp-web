@@ -48,7 +48,7 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
         public class BulkActionViewModel
         {
             [Display(Name ="Status")]
-            [Required(ErrorMessage = ValidationMessages.QualificationsBulkActionStatusRequired)]
+            [Required(ErrorMessage = ValidationMessages.QualificationsBulkAction.StatusRequired)]
             public Guid? ProcessStatusId { get; set; }
 
             [AllowedCharactersAttribute(TextCharacterProfile.FreeText)]
