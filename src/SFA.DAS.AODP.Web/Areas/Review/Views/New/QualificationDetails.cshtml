@@ -1,16 +1,21 @@
 ﻿@using System.Globalization
 @using SFA.DAS.AODP.Web.Extensions
+@using SFA.DAS.AODP.Web.Views.Shared
 @model SFA.DAS.AODP.Web.Models.Qualifications.NewQualificationDetailsViewModel
 
 @{
     ViewData["Title"] = "Qualification Details";
+
+    var backLinkModel = new BackLinkModel
+    {
+        Action = Model.BackAction,
+        Controller = Model.BackController,
+        Area = Model.BackArea,
+        Text = "Return to qualifications"
+    };
 }
-<a class="govuk-back-link"
-   asp-area="@Model.BackArea"
-   asp-controller="@Model.BackController"
-   asp-action="@Model.BackAction">
-    Return to qualifications
-</a>
+
+@await Html.PartialAsync("_BackLinkPartial", backLinkModel)
 
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
@@ -142,7 +147,7 @@
                             <p class="govuk-body govuk-!-margin-top-0">Status: @app.Status</p>
                         </govuk-summary-list-row-value>
                     </govuk-summary-list-row>
-                     idx++; 
+                    idx++;
                 }
             }
         </govuk-summary-list>
