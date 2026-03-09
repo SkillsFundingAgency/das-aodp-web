@@ -10,7 +10,7 @@ public enum RolloverPreviousFileOption
 
 public class RolloverPreviousDataViewModel
 {
-    public int CandidateCount { get; set; }
+    public int CandidateCount { get; set; } = 0;
 
     [Required(ErrorMessage = "You must select what you want to do.")]
     public RolloverPreviousFileOption? SelectedOption { get; set; }

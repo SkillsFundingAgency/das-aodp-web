@@ -8,17 +8,19 @@ using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Extensions;
+using System.Runtime.CompilerServices;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers;
 
 [Area("Review")]
-[Route("{controller}/{action}")]
 [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
 public class RolloverController : ControllerBase
 {
     private readonly ILogger<RolloverController> _logger;
     private const string SessionKey = "RolloverSession";
+
+    private const string RolloverStartView = "RolloverStart";
 
     public RolloverController(ILogger<RolloverController> logger, IMediator mediator) : base(mediator, logger)
     {
@@ -34,7 +36,7 @@ public class RolloverController : ControllerBase
             ? new RolloverStartViewModel { SelectedProcess = session.Start.SelectedProcess }
             : new RolloverStartViewModel();
 
-        return View("RolloverStart", model);
+        return View(RolloverStartView, model);
     }
 
     [HttpPost]
@@ -58,7 +60,7 @@ public class RolloverController : ControllerBase
         {
             RolloverProcess.InitialSelection => RedirectToAction(nameof(CheckData)),
             RolloverProcess.FinalUpload => RedirectToAction(nameof(UploadQualifications)),
-            _ => View("RolloverStart", model)
+            _ => View(RolloverStartView, model)
         };
     }
 
@@ -155,7 +157,7 @@ public class RolloverController : ControllerBase
         var sessionModel = GetSessionModel();
 
         var sessionCountAvailable = sessionModel.PreviousData != null && sessionModel.PreviousData.CandidateCount > 0;
-        var count = sessionCountAvailable ? sessionModel?.PreviousData?.CandidateCount : 0;
+        var count = sessionCountAvailable ? sessionModel.PreviousData.CandidateCount : 0;
 
         if (!sessionCountAvailable)
         {
@@ -168,7 +170,7 @@ public class RolloverController : ControllerBase
                 {
                     sessionModel.PreviousData = new RolloverPreviousData
                     {
-                        CandidateCount = count.Value
+                        CandidateCount = count
                     };
                     SaveSessionModel(sessionModel);
                 }
@@ -246,7 +248,7 @@ public class RolloverController : ControllerBase
         {
             RolloverPreviousFileOption.ContinueProcessing => RedirectToAction(nameof(SelectFundingStreams)),
             RolloverPreviousFileOption.RemovePrevious => RedirectToAction(nameof(SelectCandidates), new { returnAction = nameof(PreviousFile) }),
-            _ => View("RolloverStart", model)
+            _ => View(RolloverStartView, model)
         };
     }
 

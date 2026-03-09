@@ -1,6 +1,5 @@
 ﻿using SFA.DAS.AODP.Common.Extensions;
 using SFA.DAS.AODP.Domain.Interfaces;
-using SFA.DAS.AODP.Domain.Models;
 using System.Collections.Specialized;
 
 namespace SFA.DAS.AODP.Domain.Rollover;
@@ -17,7 +16,7 @@ public class GetRolloverWorkflowCandidatesApiRequest : IGetApiRequest
     }
 
 
-    public string BaseUrl = "api/rollover/workflowcandidates";
+    private string BaseUrl = "api/rollover/workflowcandidates";
 
     public string GetUrl
     {
