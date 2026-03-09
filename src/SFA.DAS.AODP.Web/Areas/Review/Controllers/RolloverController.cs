@@ -1,12 +1,14 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.DotNet.Scaffolding.Shared.CodeModifier.CodeChange;
 using SFA.DAS.AODP.Application.Queries.Import;
 using SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Extensions;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers;
@@ -18,10 +20,12 @@ public class RolloverController : ControllerBase
 {
     private readonly ILogger<RolloverController> _logger;
     private const string SessionKey = "RolloverSession";
+    private readonly ICsvFileReader _csvFileReader;
 
-    public RolloverController(ILogger<RolloverController> logger, IMediator mediator) : base(mediator, logger)
+    public RolloverController(ILogger<RolloverController> logger, IMediator mediator, ICsvFileReader csvFileReader) : base(mediator, logger)
     {
         _logger = logger;
+        _csvFileReader = csvFileReader;
     }
 
     [HttpGet]
@@ -167,6 +171,20 @@ public class RolloverController : ControllerBase
     {
         if (!ModelState.IsValid)
         {
+            return View(model);
+        }
+
+        var result = await _csvFileReader.FileReadAsync(
+            model.File,
+            QualificationCandidate.Required,
+            QualificationCandidate.Map
+        );
+
+        if (!result.IsValid)
+        {
+            foreach (var error in result.Errors)
+                ModelState.AddModelError(nameof(model.File), error);
+
             return View(model);
         }
 
