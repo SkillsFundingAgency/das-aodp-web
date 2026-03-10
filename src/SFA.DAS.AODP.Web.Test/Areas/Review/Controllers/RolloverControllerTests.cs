@@ -18,20 +18,22 @@ public class RolloverControllerTests
 {
     private readonly Mock<ILogger<RolloverController>> _loggerMock;
     private readonly Mock<IMediator> _mediatorMock;
-    private readonly Mock<IValidator<RolloverFundingApprovalEndDateViewModel>> _validatorMock;
     private readonly RolloverController _controller;
+    private readonly Mock<IValidator<RolloverEligibilityDatesViewModel>> _eligibilityDatesValidatorMock;
+    private readonly Mock<IValidator<RolloverFundingApprovalEndDateViewModel>> _approvalEndDateValidatorMock;
 
     public RolloverControllerTests()
     {
         _loggerMock = new Mock<ILogger<RolloverController>>();
         _mediatorMock = new Mock<IMediator>();
-        _validatorMock = new Mock<IValidator<RolloverFundingApprovalEndDateViewModel>>();
-        _controller = new RolloverController(_loggerMock.Object, _mediatorMock.Object, _validatorMock.Object);
+        _eligibilityDatesValidatorMock = new Mock<IValidator<RolloverEligibilityDatesViewModel>>();
+        _approvalEndDateValidatorMock = new Mock<IValidator<RolloverFundingApprovalEndDateViewModel>>();
+        _controller = new RolloverController(_loggerMock.Object, _mediatorMock.Object, _eligibilityDatesValidatorMock.Object, _approvalEndDateValidatorMock.Object);
     }
 
     private RolloverController CreateControllerWithSession(ISession session)
     {
-        var controller = new RolloverController(_loggerMock.Object, _mediatorMock.Object, _validatorMock.Object);
+        var controller = new RolloverController(_loggerMock.Object, _mediatorMock.Object, _eligibilityDatesValidatorMock.Object, _approvalEndDateValidatorMock.Object);
         var httpContext = new DefaultHttpContext();
         httpContext.Session = session;
         controller.ControllerContext = new ControllerContext
@@ -314,6 +316,16 @@ public class RolloverControllerTests
 
         var redirect = Assert.IsType<RedirectToActionResult>(result);
         Assert.Equal(nameof(RolloverController.Index), redirect.ActionName);
+    }
+
+    [Fact]
+    public void EnterRolloverEligibilityDates_Get_ReturnsViewAndSetsTitle()
+    {
+        // Act
+        var result = _controller.EnterRolloverEligibilityDates();
+
+        // Assert
+        Assert.IsType<ViewResult>(result);
     }
 
     [Fact]

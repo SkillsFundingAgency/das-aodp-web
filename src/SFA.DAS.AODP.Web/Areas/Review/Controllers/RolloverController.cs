@@ -19,12 +19,14 @@ public class RolloverController : ControllerBase
 {
     private readonly ILogger<RolloverController> _logger;
     private const string SessionKey = "RolloverSession";
+    private readonly IValidator<RolloverEligibilityDatesViewModel> _rolloverEligibilityDatesViewModeValidator;
     private readonly IValidator<RolloverFundingApprovalEndDateViewModel> _rolloverFundingApprovalEndDateViewModelViewModeValidator;
 
-    public RolloverController(ILogger<RolloverController> logger, IMediator mediator, IValidator<RolloverFundingApprovalEndDateViewModel> validator) : base(mediator, logger)
+    public RolloverController(ILogger<RolloverController> logger, IMediator mediator, IValidator<RolloverEligibilityDatesViewModel> validatorEligibilityDates, IValidator<RolloverFundingApprovalEndDateViewModel> validatorApprovalEndDate) : base(mediator, logger)
     {
         _logger = logger;
-        _rolloverFundingApprovalEndDateViewModelViewModeValidator = validator;
+        _rolloverEligibilityDatesViewModeValidator = validatorEligibilityDates;
+        _rolloverFundingApprovalEndDateViewModelViewModeValidator = validatorApprovalEndDate;
     }
 
     [HttpGet]
@@ -163,6 +165,25 @@ public class RolloverController : ControllerBase
         }
 
         return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet]
+    [Route("/Review/Rollover/EnterRolloverEligibilityDates")]
+    public IActionResult EnterRolloverEligibilityDates() => View();
+
+    [HttpPost]
+    [Route("/Review/Rollover/EnterRolloverEligibilityDates")]
+    public async Task<IActionResult> EnterRolloverEligibilityDates(RolloverEligibilityDatesViewModel model)
+    {
+        var validation = await _rolloverEligibilityDatesViewModeValidator.ValidateAsync(model);
+        validation.AddToModelState(ModelState);
+
+        if (!ModelState.IsValid)
+        {
+            return View("EnterRolloverEligibilityDates", model);
+        }
+
+        return View("EnterMaximumFundingApprovalEndDate", model);
     }
 
     [Route("/Review/Rollover/EnterRolloverFundingApprovalEndDate")]

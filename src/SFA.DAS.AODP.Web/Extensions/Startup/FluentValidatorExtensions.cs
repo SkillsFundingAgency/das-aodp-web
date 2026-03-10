@@ -8,6 +8,7 @@ public static class FluentValidatorExtensions
 {
     public static IServiceCollection AddFluentValidators(this IServiceCollection services)
     {
+        services.AddTransient<IValidator<RolloverEligibilityDatesViewModel>, RolloverEligibilityDatesViewModelValidator>();
         services.AddTransient<IValidator<RolloverFundingApprovalEndDateViewModel>, RolloverFundingApprovalEndDateViewModelValidator>();
 
         return services;

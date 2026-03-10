@@ -255,7 +255,7 @@ public class NewQualificationDetailsViewModel
         };
     }
 
-    public void MapApplications(GetApplicationsByQanQueryResponse applications)
+    internal void MapApplications(GetApplicationsByQanQueryResponse applications)
     {
         foreach (var application in applications.Applications)
         {
