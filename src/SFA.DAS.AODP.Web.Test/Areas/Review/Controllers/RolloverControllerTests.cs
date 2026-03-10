@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -19,18 +20,32 @@ public class RolloverControllerTests
 {
     private readonly Mock<ILogger<RolloverController>> _loggerMock;
     private readonly Mock<IMediator> _mediatorMock;
+    private readonly Mock<IValidator<RolloverEligibilityDatesViewModel>> _validatorMock;
     private readonly Mock<ICsvFileReader> _csvFileReaderMock;
 
     public RolloverControllerTests()
     {
         _loggerMock = new Mock<ILogger<RolloverController>>();
         _mediatorMock = new Mock<IMediator>();
+        _validatorMock = new Mock<IValidator<RolloverEligibilityDatesViewModel>>();
         _csvFileReaderMock = new Mock<ICsvFileReader>();
     }
 
     private static ISession CreateEmptySession() => new TestSession();
     private static ISession CreateThrowingSessionOnGet() => new ThrowingSession(throwOnGet: true, throwOnSet: false);
     private static ISession CreateThrowingSessionOnSet() => new ThrowingSession(throwOnGet: false, throwOnSet: true);
+
+    private RolloverController CreateControllerWithSession(ISession session)
+    {
+        var controller = new RolloverController(_loggerMock.Object, _mediatorMock.Object, _validatorMock.Object, _csvFileReaderMock.Object);
+        var httpContext = new DefaultHttpContext();
+        httpContext.Session = session;
+        controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = httpContext
+        };
+        return controller;
+    }
 
     [Fact]
     public void Index_Get_ReturnsRolloverStartView_WithEmptyModel_WhenNoSession()
@@ -67,6 +82,7 @@ public class RolloverControllerTests
 
         var result = controller.Index();
 
+        // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
         var vm = Assert.IsType<RolloverStartViewModel>(viewResult.Model);
         Assert.Equal(RolloverProcess.FinalUpload, vm.SelectedProcess);
@@ -288,6 +304,7 @@ public class RolloverControllerTests
 
         var result = await controller.CheckData(posted);
 
+        // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
         Assert.Equal("CheckData", viewResult.ViewName);
         var vm = Assert.IsType<RolloverImportStatusViewModel>(viewResult.Model);
@@ -591,19 +608,19 @@ public class RolloverControllerTests
         // Assert value matches
         var rollovercandidate = saved.RolloverCandidates.First();
         Assert.Equal(qan, rollovercandidate.QualificationNumber);
-    }
+    }    
 
-
-    private RolloverController CreateControllerWithSession(ISession session)
+    [Fact]
+    public void EnterRolloverEligibilityDates_Get_ReturnsViewAndSetsTitle()
     {
-        var controller = new RolloverController(_loggerMock.Object, _mediatorMock.Object, _csvFileReaderMock.Object);
-        var httpContext = new DefaultHttpContext();
-        httpContext.Session = session;
-        controller.ControllerContext = new ControllerContext
-        {
-            HttpContext = httpContext
-        };
-        return controller;
+        var session = CreateEmptySession();
+        var controller = CreateControllerWithSession(session);
+
+        // Act
+        var result = controller.EnterRolloverEligibilityDates();
+
+        // Assert
+        Assert.IsType<ViewResult>(result);
     }
 
     private class TestSession : ISession

@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Queries.Import;
@@ -22,10 +23,12 @@ public class RolloverController : ControllerBase
     private const string SessionKey = "RolloverSession";
     private const string RolloverStartView = "RolloverStart";
     private readonly ICsvFileReader _csvFileReader;
+    private readonly IValidator<RolloverEligibilityDatesViewModel> _rolloverEligibilityDatesViewModeValidator;
 
-    public RolloverController(ILogger<RolloverController> logger, IMediator mediator, ICsvFileReader csvFileReader) : base(mediator, logger)
+    public RolloverController(ILogger<RolloverController> logger, IMediator mediator, IValidator<RolloverEligibilityDatesViewModel> validator, ICsvFileReader csvFileReader) : base(mediator, logger)
     {
         _logger = logger;
+        _rolloverEligibilityDatesViewModeValidator = validator;
         _csvFileReader = csvFileReader;
     }
 
@@ -313,9 +316,18 @@ public class RolloverController : ControllerBase
 
         foreach (var item in file.Items)
         {
-            var isExists = response.RolloverCandidates.Any(x => x.Qan.Equals(item.QualificationNumber?.Trim(), StringComparison.OrdinalIgnoreCase));
-            if (isExists)
-                matchedCsv.Add(item);
+            var candidate = response.RolloverCandidates.Where(x => x.Qan == item.QualificationNumber).FirstOrDefault();
+
+            if (candidate != null)
+                matchedCsv.Add(new QualificationCandidate
+                {
+                    QualificationNumber = candidate.Qan,
+                    Title = candidate.Title,
+                    FundingOfferId = candidate.FundingOfferId.ToString(),
+                    FundingOffer = candidate.FundingOffer,
+                    AwardingOrganisation = candidate.AwardingOrganisation,
+                    FundingApprovalEndDate = candidate.FundingApprovalEndDate
+                });
         }
 
         if (matchedCsv.Count == 0)
@@ -335,8 +347,71 @@ public class RolloverController : ControllerBase
     [Route("/Review/Rollover/FundingStreamInclusionExclusion")]
     public IActionResult FundingStreamInclusionExclusion()
     {
-        return View();
+        var session = GetSessionModel();
+        var model = GetFundingStreams(session.RolloverCandidates);
+
+        return View(model);
     }
+
+    private static FundingStreamInclusionExclusionViewModel GetFundingStreams(IEnumerable<QualificationCandidate> rolloverCandidates)
+    {
+        var model = new FundingStreamInclusionExclusionViewModel();
+
+        if (rolloverCandidates.Any())
+        {
+            foreach (var item in rolloverCandidates)
+            {
+                if (!model.FundingStreams.Any(fs =>
+                            fs.Id == item.FundingOfferId && fs.Name == item.FundingOffer))
+                {
+                    model.FundingStreams.Add(new FundingStream
+                    {
+                        Id = item.FundingOfferId!,
+                        Name = item.FundingOffer!
+                    });
+                }
+            }
+        }
+
+        return model;
+    }
+
+
+    [HttpPost]
+    [Route("/Review/Rollover/FundingStreamInclusionExclusion")]
+    public IActionResult FundingStreamInclusionExclusion(FundingStreamInclusionExclusionViewModel vm, string action)
+    {
+        var session = GetSessionModel();
+        var model = GetFundingStreams(session.RolloverCandidates);
+        var validIds = model.FundingStreams.Select(x => x.Id).ToHashSet();
+
+        vm.FundingStreams = model.FundingStreams;
+
+        if (action == "selectAll")
+        {
+            vm.SelectedIds = validIds.ToList();
+            ModelState.Clear();
+            return View(vm);
+        }
+
+        if (vm.SelectedIds == null || !vm.SelectedIds.Any())
+        {
+            ModelState.AddModelError(nameof(vm.SelectedIds), "Select at least one funding stream.");
+            return View(vm);
+        }
+
+        if (!vm.SelectedIds.All(id => validIds.Contains(id)))
+        {
+            ModelState.AddModelError(string.Empty, "Invalid selection");
+            return View(vm);
+        }
+
+        return RedirectToAction(nameof(EnterRolloverEligibilityDates));
+    }
+
+    [HttpGet]
+    [Route("/Review/Rollover/EnterRolloverEligibilityDates")]
+    public IActionResult EnterRolloverEligibilityDates() => View();
 
     private Rollover GetSessionModel()
     {
