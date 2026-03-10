@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -17,16 +18,20 @@ public class RolloverControllerTests
 {
     private readonly Mock<ILogger<RolloverController>> _loggerMock;
     private readonly Mock<IMediator> _mediatorMock;
+    private readonly RolloverController _controller;
+    private readonly Mock<IValidator<RolloverEligibilityDatesViewModel>> _validatorMock;
 
     public RolloverControllerTests()
     {
         _loggerMock = new Mock<ILogger<RolloverController>>();
         _mediatorMock = new Mock<IMediator>();
+        _validatorMock = new Mock<IValidator<RolloverEligibilityDatesViewModel>>();
+        _controller = new RolloverController(_loggerMock.Object, _mediatorMock.Object, _validatorMock.Object);
     }
 
     private RolloverController CreateControllerWithSession(ISession session)
     {
-        var controller = new RolloverController(_loggerMock.Object, _mediatorMock.Object);
+        var controller = new RolloverController(_loggerMock.Object, _mediatorMock.Object, _validatorMock.Object);
         var httpContext = new DefaultHttpContext();
         httpContext.Session = session;
         controller.ControllerContext = new ControllerContext
@@ -308,6 +313,16 @@ public class RolloverControllerTests
 
         var redirect = Assert.IsType<RedirectToActionResult>(result);
         Assert.Equal(nameof(RolloverController.Index), redirect.ActionName);
+    }
+
+    [Fact]
+    public void EnterRolloverEligibilityDates_Get_ReturnsViewAndSetsTitle()
+    {
+        // Act
+        var result = _controller.EnterRolloverEligibilityDates();
+
+        // Assert
+        Assert.IsType<ViewResult>(result);
     }
 
     private class TestSession : ISession
