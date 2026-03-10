@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Moq;
-using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
+using SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover;
 using System.Text;
 
-namespace SFA.DAS.AODP.Web.UnitTests.Helpers.File
+namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Helpers
 {
     public class CsvFileReaderTests
     {

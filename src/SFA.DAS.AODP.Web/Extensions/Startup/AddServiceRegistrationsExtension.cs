@@ -2,7 +2,7 @@
 using SFA.DAS.AODP.Domain.Interfaces;
 using SFA.DAS.AODP.Infrastructure.ApiClient;
 using SFA.DAS.AODP.Infrastructure.Extensions;
-using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
+using SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover;
 using SFA.DAS.AODP.Web.Helpers.File;
 using SFA.DAS.AODP.Web.Helpers.User;
 using System.Diagnostics.CodeAnalysis;

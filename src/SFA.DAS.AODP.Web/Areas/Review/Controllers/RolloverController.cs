@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Queries.Import;
 using SFA.DAS.AODP.Application.Queries.Review.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
+using SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
@@ -283,6 +284,11 @@ public class RolloverController : ControllerBase
     {
         var session = GetSessionModel();
 
+        if (model.File == null && session.RolloverCandidates.Any())
+        {
+            return RedirectToAction("FundingStreamInclusionExclusion");
+        }
+
         if (!ModelState.IsValid)
         {
             return View(model);
@@ -290,8 +296,8 @@ public class RolloverController : ControllerBase
 
         var file = await _csvFileReader.FileReadAsync(
             model.File,
-            QualificationCandidate.Required,
-            QualificationCandidate.Map
+            QualificationImportColumns.Required,
+            QualificationCandidateMapper.Map
         );
 
         if (!file.IsValid)
@@ -308,7 +314,7 @@ public class RolloverController : ControllerBase
         foreach (var item in file.Items)
         {
             var isExists = response.RolloverCandidates.Any(x => x.Qan.Equals(item.QualificationNumber?.Trim(), StringComparison.OrdinalIgnoreCase));
-            if(isExists)
+            if (isExists)
                 matchedCsv.Add(item);
         }
 

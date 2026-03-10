@@ -1,4 +1,4 @@
-﻿namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover
+﻿namespace SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover
 {
     public class CsvFileReaderResult<T>
     {

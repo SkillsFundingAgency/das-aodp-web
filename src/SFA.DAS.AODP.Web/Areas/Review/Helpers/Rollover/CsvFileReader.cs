@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Text.RegularExpressions;
 
-namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover
+namespace SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover
 {
     public class CsvFileReader : ICsvFileReader
     {
@@ -18,7 +18,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover
             "The file you provided does not match the required format.";
 
         public async Task<CsvFileReaderResult<T>> FileReadAsync<T>(
-            IFormFile file,
+            IFormFile? file,
             IEnumerable<string> requiredHeaders,
             Func<IReadOnlyDictionary<string, string>, T> mapRow)
         {

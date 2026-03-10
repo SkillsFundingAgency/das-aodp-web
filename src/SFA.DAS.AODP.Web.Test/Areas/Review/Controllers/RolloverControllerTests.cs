@@ -9,6 +9,7 @@ using SFA.DAS.AODP.Application.Queries.Import;
 using SFA.DAS.AODP.Application.Queries.Review.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
+using SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 using SFA.DAS.AODP.Web.Enums;
 
@@ -550,8 +551,8 @@ public class RolloverControllerTests
         _csvFileReaderMock
         .Setup(x => x.FileReadAsync(
             uploadedModel.File,
-            QualificationCandidate.Required,
-            QualificationCandidate.Map))
+            QualificationImportColumns.Required,
+            QualificationCandidateMapper.Map))
         .ReturnsAsync(csvResult);
 
         _mediatorMock
