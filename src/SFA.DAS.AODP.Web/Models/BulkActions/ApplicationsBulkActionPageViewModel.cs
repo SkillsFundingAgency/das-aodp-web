@@ -1,6 +1,6 @@
-﻿using DocumentFormat.OpenXml.Spreadsheet;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using SFA.DAS.AODP.Application.Commands.Review;
+using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Validators.Messages;
 using System.ComponentModel.DataAnnotations;
 
@@ -9,7 +9,7 @@ namespace SFA.DAS.AODP.Web.Models.BulkActions
     public abstract class ApplicationsBulkActionPageViewModel 
     {
         [MinLength(1, ErrorMessage = ValidationMessages.ApplicationsBulkAction.NoApplicationsSelected)]
-        public List<Guid> SelectedApplicationIds { get; set; } = new();
+        public List<Guid> SelectedApplicationReviewIds { get; set; } = new();
 
         public List<SelectListItem> ReviewerOptions { get; set; } = new();
 
@@ -39,20 +39,32 @@ namespace SFA.DAS.AODP.Web.Models.BulkActions
             {
                 yield return new ValidationResult(
                     ValidationMessages.ApplicationsBulkAction.NoActionSelected,
-                    new[] { nameof(BulkActionType) });
+                    [nameof(BulkActionType)]);
             }
 
-            if (SubmitAction == SubmitAction.Assign && 
-                string.IsNullOrEmpty(Reviewer1) && 
-                string.IsNullOrEmpty(Reviewer2))
+            if (SubmitAction == SubmitAction.Assign)
             {
-                yield return new ValidationResult(
+                if(string.IsNullOrEmpty(Reviewer1) && string.IsNullOrEmpty(Reviewer2))
+                {
+                    yield return new ValidationResult(
                     ValidationMessages.ApplicationsBulkAction.NoReviewerSelected,
                     new[] { nameof(Reviewer1) });
+                }
+
+                if (!string.IsNullOrEmpty(Reviewer1) &&
+                    !string.IsNullOrEmpty(Reviewer2) &&
+                    Reviewer1 == Reviewer2 &&
+                    Reviewer1 != ReviewerDropdown.UnassignedValue
+                    )
+                {
+                    yield return new ValidationResult(
+                        ValidationMessages.Reviewer1Reviewer2Conflict,
+                        [nameof(Reviewer1)]);
+                }
             }
         }
 
-    }
+    }   
 
     public enum SubmitAction
     {

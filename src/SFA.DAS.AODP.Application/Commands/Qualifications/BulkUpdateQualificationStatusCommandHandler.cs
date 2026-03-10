@@ -9,7 +9,6 @@ namespace SFA.DAS.AODP.Application.Commands.Qualifications
     {
         private readonly IApiClient _apiClient;
 
-
         public BulkUpdateQualificationStatusCommandHandler(IApiClient apiClient)
         {
             _apiClient = apiClient;

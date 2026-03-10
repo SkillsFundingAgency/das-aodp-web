@@ -1,5 +1,4 @@
-﻿using SFA.DAS.AODP.Application.Commands.Qualifications;
-using SFA.DAS.AODP.Application.Commands.Review;
+﻿using SFA.DAS.AODP.Application.Commands.Review;
 using System.Diagnostics.CodeAnalysis;
 
 namespace SFA.DAS.AODP.Web.Models.BulkActions
@@ -11,9 +10,9 @@ namespace SFA.DAS.AODP.Web.Models.BulkActions
         public int UpdatedCount { get; set; }
         public int ErrorCount { get; set; }
 
-        public List<ApplicationsBulkStatusUpdateErrorItemViewModel> List1 { get; set; } = new();
-        public List<ApplicationsBulkStatusUpdateErrorItemViewModel> List2 { get; set; } = new();
-        public List<ApplicationsBulkStatusUpdateErrorItemViewModel> List3 { get; set; } = new();
+        public List<ApplicationsBulkActionErrorItemViewModel> List1 { get; set; } = new();
+        public List<ApplicationsBulkActionErrorItemViewModel> List2 { get; set; } = new();
+        public List<ApplicationsBulkActionErrorItemViewModel> List3 { get; set; } = new();
 
         public bool HasAnyErrors => ErrorCount > 0;
 
@@ -21,12 +20,12 @@ namespace SFA.DAS.AODP.Web.Models.BulkActions
         {
             var vm = new ApplicationsBulkActionResultViewModel
             {
-                //RequestedCount = response.RequestedCount,
+                //RequestedCount = response.,
                 //UpdatedCount = response.UpdatedCount,
                 ErrorCount = response.ErrorCount
             };
 
-            //if (response.Errors == null) return vm;
+            //if (response. == null) return vm;
 
             //foreach (var e in response.Errors)
             //{
@@ -57,7 +56,7 @@ namespace SFA.DAS.AODP.Web.Models.BulkActions
 
     }
 
-    public class ApplicationsBulkStatusUpdateErrorItemViewModel
+    public class ApplicationsBulkActionErrorItemViewModel
     {
         //public Guid QualificationId { get; set; }
         //public string Qan { get; set; } = "";

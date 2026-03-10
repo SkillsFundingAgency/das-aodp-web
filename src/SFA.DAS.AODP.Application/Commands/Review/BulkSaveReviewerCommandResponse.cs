@@ -9,19 +9,17 @@ namespace SFA.DAS.AODP.Application.Commands.Review
         public int UpdatedCount { get; set; }
         public int ErrorCount { get; set; }
 
-        public IReadOnlyCollection<BulkReviewerErrorDto> Errors { get; init; }
-            = Array.Empty<BulkReviewerErrorDto>();
+        public IReadOnlyCollection<BulkReviewerErrorDto> Errors { get; init; } = [];
     }
 
     [ExcludeFromCodeCoverage]
     public class BulkReviewerErrorDto
     {
-        public Guid ApplicationId { get; init; }
+        public Guid ApplicationReviewId { get; init; }
         public int ReferenceNumber { get; init; } = default!;
         public string? Qan { get; set; }
-
-        //Might need this
-        //public string? QualificationTitle { get; set; }
+        public string? Title { get; set; }
+        public string? AwardingOrganisation { get; set; }
         public BulkReviewerErrorType ErrorType { get; init; }
     }
 

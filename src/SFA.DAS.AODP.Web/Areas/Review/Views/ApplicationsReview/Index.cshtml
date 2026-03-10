@@ -191,15 +191,15 @@
 
             @{
                 var selectionHasError =
-                    ViewData.ModelState.TryGetValue(nameof(Model.SelectedApplicationIds), out var selState)
+                    ViewData.ModelState.TryGetValue(nameof(Model.SelectedApplicationReviewIds), out var selState)
                     && selState.Errors.Count > 0;
             }
 
 
-            <div id="SelectedApplicationIds"
+            <div id="SelectedApplicationReviewIds"
                 class="govuk-form-group @(selectionHasError ? "govuk-form-group--error" : "")">
 
-                <span asp-validation-for="SelectedApplicationIds"
+                <span asp-validation-for="SelectedApplicationReviewIds"
                       class="govuk-error-message"></span>
 
 
@@ -218,13 +218,13 @@
                     <tbody class="govuk-table__body">
                         @foreach (var item in Model.Applications.OrderByDescending(a => a.LastUpdated))
                         {
-                            var isChecked = Model.SelectedApplicationIds.Contains(item.Id);
+                            var isChecked = Model.SelectedApplicationReviewIds.Contains(item.Id);
                             var theModel = new MultiSelectCheckboxCellViewModel
                             (
                                 item.ApplicationReviewId,
                                 item.Name,
                                 isChecked,
-                                nameof(Model.SelectedApplicationIds),
+                                nameof(Model.SelectedApplicationReviewIds),
                                 "app"
                             );
                     

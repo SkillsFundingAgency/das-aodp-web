@@ -1,10 +1,12 @@
 ﻿using CsvHelper.Configuration;
+using CsvHelper.Configuration.Attributes;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using SFA.DAS.AODP.Application.Commands.Qualification;
 using SFA.DAS.AODP.Application.Commands.Qualifications;
+using SFA.DAS.AODP.Application.Commands.Review;
 using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Models.Qualifications;
@@ -18,6 +20,7 @@ using SFA.DAS.AODP.Web.Mappers;
 using SFA.DAS.AODP.Web.Models.BulkActions;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 using System.Globalization;
+using System.Text.Json;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
@@ -32,18 +35,11 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         private readonly IUserHelperService _userHelperService;
         private readonly IOptions<AodpConfiguration> _aodpConfiguration;
 
-        private List<string> ReviewerAllowedStatuses { get; set; } = new List<string>()
-        {
+        private List<string> ReviewerAllowedStatuses { get; set; } =
+        [
             ProcessStatus.DecisionRequired,
             ProcessStatus.NoActionRequired,
-        };
-
-        private List<string> BulkUpdateAllowedStatuses { get; set; } = new List<string>()
-        {
-            ProcessStatus.DecisionRequired,
-            ProcessStatus.NoActionRequired,
-            ProcessStatus.OnHold
-        };
+        ];
 
         public enum NewQualDataKeys { InvalidPageParams, CommentSaved}
 
@@ -235,20 +231,48 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     return RedirectToAction(nameof(Index), qualificationQuery.ToRouteValues());
                 }
 
-                var viewModel = await BuildIndexViewModelAsync(
-                    qualificationQuery,
-                    postedModel: model);
+                var failed = result.Errors.Select(e => new QualificationBulkActionErrorItemViewModel
+                {
+                    QualificationId = e.QualificationId,
+                    Qan = e.Qan ?? "",
+                    Title = e.Title ?? "",
+                    FailureReason = e.ErrorType switch
+                    {
+                        BulkUpdateQualificationsErrorType.Missing => "Qualification not found.",
+                        BulkUpdateQualificationsErrorType.StatusUpdateFailed => "Status update failed.",
+                        BulkUpdateQualificationsErrorType.HistoryFailed => "Status updated but history was not updated.",
+                        _ => "Unknown error."
+                    }
+                }).ToList();
 
-                viewModel.BulkUpdateResult =
-                    QualificationBulkActionResultViewModel.From(result);
+                var errorModel = new QualificationBulkActionErrorModel
+                {
+                    Failed = failed,
+                    BackLinkText = "Go back to Changed qualifications",
+                    BackLinkUrl = Url.Action(nameof(Index), qualificationQuery.ToRouteValues())!
+                };
 
-                return View("Index", viewModel);
+                TempData[BulkActionQualifications.Errors] = JsonSerializer.Serialize(errorModel);
+                return RedirectToAction(nameof(BulkQualificationError));
             }
             catch (Exception ex)
             {
                 LogException(ex);
                 return Redirect("/Home/Error");
             }
+        }
+
+        [HttpGet]
+        public IActionResult BulkQualificationError()
+        {
+            var json = TempData[BulkActionQualifications.Errors] as string;
+
+            var model = !string.IsNullOrEmpty(json)
+                ? JsonSerializer.Deserialize<QualificationBulkActionErrorModel>(json)
+                    ?? new QualificationBulkActionErrorModel()
+                : new QualificationBulkActionErrorModel();
+
+            return View(model);
         }
 
         private static string BuildChangeString(ChangedQualificationDetailsViewModel qualVersion)
@@ -444,7 +468,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             ChangedQualificationsViewModel? postedModel = null)
         {
             var procStatuses = await Send(new GetProcessStatusesQuery());
-            var statuses = procStatuses.ProcessStatuses ?? new List<GetProcessStatusesQueryResponse.ProcessStatus>();
+            var statuses = procStatuses.ProcessStatuses ?? new();
 
             ChangedQualificationsViewModel vm;
 

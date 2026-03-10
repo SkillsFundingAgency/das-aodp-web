@@ -17,6 +17,7 @@ using SFA.DAS.AODP.Web.Mappers;
 using SFA.DAS.AODP.Web.Models.BulkActions;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 using System.Globalization;
+using System.Text.Json;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
@@ -312,20 +313,49 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
                     return RedirectToAction(nameof(Index), qualificationQuery.ToRouteValues());
                 }
-               
-                var viewModel = await BuildIndexViewModelAsync(
-                    qualificationQuery,
-                    postedModel: model);
 
-                viewModel.BulkUpdateResult = QualificationBulkActionResultViewModel.From(result);
+                var failed = result.Errors.Select(e => new QualificationBulkActionErrorItemViewModel
+                {
+                    QualificationId = e.QualificationId,
+                    Qan = e.Qan ?? "",
+                    Title = e.Title ?? "",
+                    FailureReason = e.ErrorType switch
+                    {
+                        BulkUpdateQualificationsErrorType.Missing => "Qualification not found.",
+                        BulkUpdateQualificationsErrorType.StatusUpdateFailed => "Status update failed.",
+                        BulkUpdateQualificationsErrorType.HistoryFailed => "Status updated but history was not updated.",
+                        _ => "Unknown error."
+                    }
+                }).ToList();
 
-                return View("Index", viewModel);
+                var errorModel = new QualificationBulkActionErrorModel
+                {
+                    Failed = failed,
+                    BackLinkText = "Go back to New qualifications",
+                    BackLinkUrl = Url.Action(nameof(Index), qualificationQuery.ToRouteValues())!
+                };
+
+                TempData[BulkActionQualifications.Errors] = JsonSerializer.Serialize(errorModel);
+                return RedirectToAction(nameof(BulkQualificationError));
             }
             catch (Exception ex)
             {
                 LogException(ex);
                 return Redirect("/Home/Error");
             }
+        }
+
+        [HttpGet]
+        public IActionResult BulkQualificationError()
+        {
+            var json = TempData[BulkActionQualifications.Errors] as string;
+
+            var model = !string.IsNullOrEmpty(json)
+                ? JsonSerializer.Deserialize<QualificationBulkActionErrorModel>(json)
+                    ?? new QualificationBulkActionErrorModel()
+                : new QualificationBulkActionErrorModel();
+
+            return View(model);
         }
 
         private void CheckInvalidParameters(QualificationQuery qualificationQuery)

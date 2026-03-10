@@ -55,7 +55,5 @@ namespace SFA.DAS.AODP.Web.Models.BulkActions
             [AllowedCharacters(TextCharacterProfile.FreeText)]
             public string? Comment { get; set; }
         }
-
-        public QualificationBulkActionResultViewModel? BulkUpdateResult { get; set; }
     }
 }

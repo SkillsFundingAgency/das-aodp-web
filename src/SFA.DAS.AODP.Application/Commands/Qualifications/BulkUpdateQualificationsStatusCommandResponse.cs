@@ -10,8 +10,7 @@ namespace SFA.DAS.AODP.Application.Commands.Qualifications
         public int RequestedCount { get; init; }
         public int UpdatedCount { get; init; }
         public int ErrorCount { get; init; }
-        public IReadOnlyCollection<BulkUpdateQualificationsErrorDto> Errors { get; init; }
-            = Array.Empty<BulkUpdateQualificationsErrorDto>();
+        public IReadOnlyCollection<BulkUpdateQualificationsErrorDto> Errors { get; init; } = [];
     }
 
     [ExcludeFromCodeCoverage]

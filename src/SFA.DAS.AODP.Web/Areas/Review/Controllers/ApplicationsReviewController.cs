@@ -1,7 +1,9 @@
-﻿using MediatR;
+﻿using Azure.Identity;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.Application.Application;
 using SFA.DAS.AODP.Application.Commands.Application.Review;
 using SFA.DAS.AODP.Application.Commands.Review;
@@ -24,7 +26,9 @@ using SFA.DAS.AODP.Web.Models.Applications;
 using SFA.DAS.AODP.Web.Models.BulkActions;
 using SFA.DAS.AODP.Web.Models.BulkActions.Options;
 using SFA.DAS.AODP.Web.Models.RelatedLinks;
+using SFA.DAS.AODP.Web.Validators.Messages;
 using System.IO.Compression;
+using System.Text.Json;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
@@ -90,15 +94,18 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
                             var command = new BulkSaveReviewerCommand
                             {
-                                ApplicationReviewIds = model.SelectedApplicationIds ?? new List<Guid>(),
+                                ApplicationReviewIds = model.SelectedApplicationReviewIds ?? new List<Guid>(),
 
                                 Reviewer1Set = !string.IsNullOrWhiteSpace(reviewer1Selection),
-                                Reviewer1 = reviewer1Selection == ReviewerDropdown.UnassignedValue
+                                Reviewer2Set = !string.IsNullOrWhiteSpace(reviewer2Selection),
+
+                                Reviewer1 = string.IsNullOrWhiteSpace(reviewer1Selection) ||
+                                    reviewer1Selection == ReviewerDropdown.UnassignedValue
                                     ? null
                                     : reviewer1Selection,
 
-                                Reviewer2Set = !string.IsNullOrWhiteSpace(reviewer2Selection),
-                                Reviewer2 = reviewer2Selection == ReviewerDropdown.UnassignedValue
+                                Reviewer2 = string.IsNullOrWhiteSpace(reviewer2Selection) ||
+                                    reviewer2Selection == ReviewerDropdown.UnassignedValue
                                     ? null
                                     : reviewer2Selection,
 
@@ -108,23 +115,62 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                             };
 
                             var result = await Send(command);
-                            TempData[BulkActionApplications.SuccessKey] = true;
-                            return RedirectToAction(nameof(Index), applicationQuery.ToRouteValues());
+                            if (result.ErrorCount == 0)
+                            {
+                                TempData[BulkActionApplications.SuccessKey] = true;
+                                return RedirectToAction(nameof(Index), applicationQuery.ToRouteValues());
+                            }
+
+                            var failed = result.Errors.Select(e => new ApplicationBulkActionErrorItemViewModel
+                            {
+                                ReferenceNumber = e.ReferenceNumber,
+                                Qan = e.Qan ?? string.Empty,
+                                Title = e.Title,
+                                AwardingOrganisation = e.AwardingOrganisation,
+                                FailureReason = e.ErrorType switch
+                                {
+                                    BulkReviewerErrorType.Missing => "Application not found.",
+                                    BulkReviewerErrorType.Conflict => "Reviewer 1 and 2 must be different users.",
+                                    BulkReviewerErrorType.MessageFailed => "Reviewer updated but message failed to send.",
+                                    _ => "The application could not be updated."
+                                }
+                            }).ToList();
+
+                            return HandleApplicationBulkErrors(failed, applicationQuery);
                         }
 
                     case SubmitAction.Message:
                         {
                             var result = await Send(new BulkApplicationActionCommand
                             {
-                                ApplicationReviewIds = model.SelectedApplicationIds,
+                                ApplicationReviewIds = model.SelectedApplicationReviewIds,
                                 ActionType = model.BulkActionInputViewModel.BulkActionType!.Value,
                                 UserType = _userHelperService.GetUserType().ToString(),
                                 SentByEmail = _userHelperService.GetUserEmail(),
                                 SentByName = _userHelperService.GetUserDisplayName()
                             });
 
-                            TempData[BulkActionApplications.SuccessKey] = true;
-                            return RedirectToAction(nameof(Index), applicationQuery.ToRouteValues());
+                            if(result.ErrorCount == 0)
+                            {
+                                TempData[BulkActionApplications.SuccessKey] = true;
+                                return RedirectToAction(nameof(Index), applicationQuery.ToRouteValues());
+                            }
+
+                            var failed = result.Errors.Select(e => new ApplicationBulkActionErrorItemViewModel
+                            {
+                                ReferenceNumber = e.ReferenceNumber,
+                                Title = e.Title,
+                                AwardingOrganisation = e.AwardingOrganisation,
+                                Qan = e.Qan,
+                                FailureReason = e.ErrorType switch
+                                {
+                                    BulkApplicationActionErrorType.InvalidAction => "Invalid action.",
+                                    BulkApplicationActionErrorType.UpdateFailed => "Update failed.",
+                                    _ => "Unknown error."
+                                }
+                            }).ToList();
+
+                            return HandleApplicationBulkErrors(failed, applicationQuery);
                         }
 
                     default:
@@ -138,6 +184,37 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
         }
 
+        private IActionResult HandleApplicationBulkErrors(
+            List<ApplicationBulkActionErrorItemViewModel> failed,
+            ApplicationsReviewQuery query)
+        {
+            var errorModel = new ApplicationBulkActionErrorModel
+            {
+                Failed = failed,
+                BackLinkText = "Go back to Applications",
+                BackLinkUrl = Url.Action(nameof(Index), query.ToRouteValues())!
+            };
+
+            TempData[BulkActionApplications.Errors] = JsonSerializer.Serialize(errorModel);
+
+            return RedirectToAction(nameof(BulkApplicationError));
+        }
+
+        [HttpGet]
+        [HttpGet]
+        [Route("review/application-reviews/bulk-error")]
+        public IActionResult BulkApplicationError()
+        {
+            var json = TempData[BulkActionApplications.Errors] as string;
+
+            if (string.IsNullOrEmpty(json))
+            {
+                return View("Error");
+            }
+
+            var model = JsonSerializer.Deserialize<ApplicationBulkActionErrorModel>(json);
+            return View("BulkApplicationError", model);
+        }
 
         [HttpPost]
         [Route("review/application-reviews")]
@@ -760,15 +837,15 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
             if (selectAll)
             {
-                viewModel.SelectedApplicationIds = viewModel.Applications.Select(a => a.Id).Distinct().ToList();
+                viewModel.SelectedApplicationReviewIds = viewModel.Applications.Select(a => a.Id).Distinct().ToList();
             }
 
             viewModel.BulkActionOptions = BulkMessageActionOptions.Build();
 
             if (postedModel is not null)
             {
-                viewModel.SelectedApplicationIds = postedModel.SelectedApplicationIds ?? new List<Guid>();
-                viewModel.BulkActionInputViewModel = postedModel.BulkActionInputViewModel ?? new ApplicationsBulkActionInputViewModel();
+                viewModel.SelectedApplicationReviewIds = postedModel.SelectedApplicationReviewIds ?? new();
+                viewModel.BulkActionInputViewModel = postedModel.BulkActionInputViewModel ?? new();
             }
 
             return viewModel;

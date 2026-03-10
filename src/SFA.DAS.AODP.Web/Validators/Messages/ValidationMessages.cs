@@ -10,6 +10,8 @@
         public const string ApplicationOwnerTooLong = "Application owner must be 200 characters or fewer.";
         public const string ApplicationOwnerInvalidChars = "Application owner contains invalid characters.";
 
+        public const string Reviewer1Reviewer2Conflict = "Reviewer 1 and 2 must be different people.";
+
         public static class QualificationsBulkAction
         {
             public const string StatusRequired = "Select a status.";
