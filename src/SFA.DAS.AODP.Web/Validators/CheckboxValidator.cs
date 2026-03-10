@@ -1,5 +1,4 @@
-﻿using Humanizer;
-using SFA.DAS.AODP.Models.Exceptions.FormValidation;
+﻿using SFA.DAS.AODP.Models.Exceptions.FormValidation;
 using SFA.DAS.AODP.Models.Forms;
 using SFA.DAS.AODP.Web.Models.Application;
 

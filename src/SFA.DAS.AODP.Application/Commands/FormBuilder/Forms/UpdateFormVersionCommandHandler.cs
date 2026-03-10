@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using MediatR;
+﻿using MediatR;
 using SFA.DAS.AODP.Domain.FormBuilder.Requests.Forms;
 using SFA.DAS.AODP.Domain.Interfaces;
 
