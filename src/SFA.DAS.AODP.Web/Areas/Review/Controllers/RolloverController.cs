@@ -254,10 +254,65 @@ public class RolloverController : ControllerBase
 
     [HttpGet]
     [Route("/Review/Rollover/SelectCandidates")]
-    public IActionResult SelectCandidates(string? returnAction = null)
+    public IActionResult SelectCandidates([FromQuery] string? returnAction = null)
+    {
+        var session = GetSessionModel();
+        var model = new RolloverSelectCandidatesViewModel();
+
+        if (session.SelectCandidates != null)
+        {
+            model.SelectedOption = session.SelectCandidates.SelectedOption;
+            model.ReturnUrl ??= returnAction ?? session.SelectCandidates.ReturnUrl;
+        }
+        else
+        {
+            model.ReturnUrl ??= returnAction ?? nameof(CheckData);
+        }
+        
+        return View("SelectCandidates", model);
+    }
+
+    [HttpPost]
+    [Route("/Review/Rollover/SelectCandidates")]
+    [ValidateAntiForgeryToken]
+    public IActionResult SelectCandidates([FromForm] RolloverSelectCandidatesViewModel model)
     {
         ViewData["Title"] = "How do you want to select candidates for rollover";
-        ViewData["ReturnAction"] = returnAction ?? nameof(CheckData);
+
+        if (!ModelState.IsValid)
+        {
+            return View("SelectCandidates", model);
+        }
+
+        var session = GetSessionModel();
+        session.SelectCandidates = new RolloverSelectCandidates
+        {
+            SelectedOption = model.SelectedOption,
+            ReturnUrl = model.ReturnUrl
+        };
+        SaveSessionModel(session);
+
+        return model.SelectedOption switch
+        {
+            SelectCandidatesForRollover.ImportAList => RedirectToAction(nameof(ImportCandidatesList)),
+            SelectCandidatesForRollover.GenerateAList  => RedirectToAction(nameof(RolloverQueryBuilder)),
+            _ => View()
+        };
+    }
+
+    [HttpGet]
+    [Route("/Review/Rollover/ImportCandidatesList")]
+    public IActionResult ImportCandidatesList()
+    {
+        ViewData["Title"] = "Import Candidates List ";
+        return View();
+    }
+
+    [HttpGet]
+    [Route("/Review/Rollover/RolloverQueryBuilder")]
+    public IActionResult RolloverQueryBuilder()
+    {
+        ViewData["Title"] = "Rollover Query Builder";
         return View();
     }
 

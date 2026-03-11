@@ -515,8 +515,8 @@ public class RolloverControllerTests
         var result = controller.SelectCandidates();
 
         var viewResult = Assert.IsType<ViewResult>(result);
-        Assert.Equal("How do you want to select candidates for rollover", viewResult.ViewData["Title"]);
-        Assert.Equal(nameof(RolloverController.CheckData), viewResult.ViewData["ReturnAction"]);
+        var model = viewResult.Model as RolloverSelectCandidatesViewModel;
+        Assert.Equal(nameof(RolloverController.CheckData), model.ReturnUrl);
     }
 
     [Fact]
@@ -528,6 +528,144 @@ public class RolloverControllerTests
 
         var viewResult = Assert.IsType<ViewResult>(result);
         Assert.Equal("Select funding stream(s)", viewResult.ViewData["Title"]);
+    }
+
+    [Fact]
+    public void SelectCandidates_Get_WhenSessionHasSelectCandidates_PopulatesModel()
+    {
+        // arrange
+        var session = new TestSession();
+        var saved = new Rollover
+        {
+            SelectCandidates = new RolloverSelectCandidates
+            {
+                SelectedOption = SelectCandidatesForRollover.GenerateAList,
+                ReturnUrl = "SavedReturn"
+            }
+        };
+        session.Set("RolloverSession", System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(saved)));
+
+        var controller = CreateControllerWithSession(session);
+
+        // act
+        var result = controller.SelectCandidates();
+
+        // assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.Equal("SelectCandidates", viewResult.ViewName);
+        var model = Assert.IsType<RolloverSelectCandidatesViewModel>(viewResult.Model);
+        Assert.Equal(SelectCandidatesForRollover.GenerateAList, model.SelectedOption);
+        Assert.Equal("SavedReturn", model.ReturnUrl);
+    }
+
+    [Fact]
+    public void SelectCandidates_Post_InvalidModelState_ReturnsViewAndSetsTitle()
+    {
+        // arrange
+        var controller = CreateControllerWithSession(new TestSession());
+        controller.ModelState.AddModelError("SelectedOption", "required");
+
+        var posted = new RolloverSelectCandidatesViewModel
+        {
+            SelectedOption = null,
+            ReturnUrl = "someReturn"
+        };
+
+        // act
+        var result = controller.SelectCandidates(posted);
+
+        // assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.Equal("SelectCandidates", viewResult.ViewName);
+        Assert.Same(posted, viewResult.Model);
+        Assert.Equal("How do you want to select candidates for rollover", controller.ViewData["Title"]);
+    }
+
+    [Fact]
+    public void SelectCandidates_Post_ValidModel_ImportAList_SavesSessionAndRedirects()
+    {
+        // arrange
+        var session = new TestSession();
+        var controller = CreateControllerWithSession(session);
+
+        var posted = new RolloverSelectCandidatesViewModel
+        {
+            SelectedOption = SelectCandidatesForRollover.ImportAList,
+            ReturnUrl = "return123"
+        };
+
+        // act
+        var result = controller.SelectCandidates(posted);
+
+        // assert redirect
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal(nameof(RolloverController.ImportCandidatesList), redirect.ActionName);
+
+        // assert
+        Assert.True(session.TryGetValue("RolloverSession", out var bytes));
+        var json = System.Text.Encoding.UTF8.GetString(bytes);
+        var saved = JsonConvert.DeserializeObject<Rollover>(json);
+        Assert.NotNull(saved);
+        Assert.NotNull(saved.SelectCandidates);
+        Assert.Equal(SelectCandidatesForRollover.ImportAList, saved.SelectCandidates.SelectedOption);
+        Assert.Equal("return123", saved.SelectCandidates.ReturnUrl);
+    }
+
+    [Fact]
+    public void SelectCandidates_Post_ValidModel_GenerateAList_SavesSessionAndRedirects()
+    {
+        // arrange
+        var session = new TestSession();
+        var controller = CreateControllerWithSession(session);
+
+        var posted = new RolloverSelectCandidatesViewModel
+        {
+            SelectedOption = SelectCandidatesForRollover.GenerateAList,
+            ReturnUrl = "r2"
+        };
+
+        // act
+        var result = controller.SelectCandidates(posted);
+
+        // assert
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal(nameof(RolloverController.RolloverQueryBuilder), redirect.ActionName);
+
+        Assert.True(session.TryGetValue("RolloverSession", out var bytes));
+        var json = System.Text.Encoding.UTF8.GetString(bytes);
+        var saved = JsonConvert.DeserializeObject<Rollover>(json);
+        Assert.NotNull(saved);
+        Assert.NotNull(saved.SelectCandidates);
+        Assert.Equal(SelectCandidatesForRollover.GenerateAList, saved.SelectCandidates.SelectedOption);
+        Assert.Equal("r2", saved.SelectCandidates.ReturnUrl);
+    }
+
+    [Fact]
+    public void ImportCandidatesList_Get_SetsTitle()
+    {
+        // arrange
+        var controller = CreateControllerWithSession(new TestSession());
+
+        // act
+        var result = controller.ImportCandidatesList();
+
+        // assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.Equal("Import Candidates List ", viewResult.ViewData["Title"]);
+    }
+
+    [Fact]
+    public void RolloverQueryBuilder_Get_SetsTitle()
+    {
+        // arrange
+        var controller = CreateControllerWithSession(new TestSession());
+
+        // act
+        var result = controller.RolloverQueryBuilder();
+
+        // assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.Equal("Rollover Query Builder", viewResult.ViewData["Title"]);
     }
 
     private RolloverController CreateControllerWithSession(ISession session)
