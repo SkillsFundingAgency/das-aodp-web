@@ -1,0 +1,17 @@
+@model SFA.DAS.AODP.Web.Views.Shared.BackLinkModel
+
+@if (Model.Controller is not null)
+{
+    @if (Model.Area is not null)
+    {
+        <a class="govuk-back-link" asp-area="@Model.Area" asp-controller="@Model.Controller" asp-action="@Model.Action">
+            @Model.Text
+        </a>
+    }
+    else
+    {
+        <a class="govuk-back-link" asp-controller="@Model.Controller" asp-action="@Model.Action">
+            @Model.Text
+        </a>
+    }
+}

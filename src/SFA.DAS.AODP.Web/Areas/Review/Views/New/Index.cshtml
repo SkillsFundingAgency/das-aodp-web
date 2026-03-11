@@ -1,11 +1,13 @@
 ﻿@using SFA.DAS.AODP.Web.Areas.Review.Controllers
+@using SFA.DAS.AODP.Web.Factories
 @using SFA.DAS.AODP.Web.Models.BulkActions
 @using SFA.DAS.AODP.Web.Models.Qualifications
 @model SFA.DAS.AODP.Web.Models.Qualifications.NewQualificationsViewModel
 @{
     ViewData["Title"] = "New Qualifications";
+    var backLinkModel = BackLinkModelFactory.Dashboard();
 }
-
+@await Html.PartialAsync("_BackLinkPartial", backLinkModel)
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 <partial name="_ValidationSummaryPartial" />
 
@@ -14,7 +16,7 @@
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-full" id="guide-contents">
                 <div class="govuk-grid-row">
-                    <div class="govuk-grid-column">
+                    <div class="govuk-grid-column-full">
                         <h2 class="govuk-heading-l">New Qualifications</h2>
                         <p class="govuk-body">Review and manage qualifications that have been newly regulated by Ofqual.</p>
                         <p class="govuk-body">You can filter results to view only what you need, and comment and assign actions in bulk, or individually.</p>
@@ -25,7 +27,7 @@
                     <div class="govuk-inset-text">Import for this cycle ran: @(Model.JobStatusViewModel.LastRunTime.HasValue? Model.JobStatusViewModel.LastRunTime.Value.ToString("G") : "Never")</div>
                     <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
                 }
-                
+
                 <form asp-controller="New" asp-action="Search" asp-area="Review" method="post">
                     <div class="govuk-grid-row" id="New_Qual_FilterSection">
                         <div class="govuk-grid-column-full">
@@ -35,7 +37,7 @@
                                 </div>
                             </div>
                             <div class="govuk-grid-row">
-                                <div class="govuk-grid-column-one-quarter">
+                                <div class="govuk-grid-column-one-half">
                                     <div class="govuk-form-group">
                                         <govuk-input asp-for="@Model.Filter.QualificationName" value="@Html.Encode(Model.Filter.QualificationName)" inputmode="text" spellcheck="false" autocomplete="off">
                                             <govuk-input-label is-page-heading="false" class="govuk-label--s">Qualification Title</govuk-input-label>
@@ -52,7 +54,7 @@
                                         </govuk-input>
                                     </div>
                                 </div>
-                                <div class="govuk-grid-column-three-quarters">
+                                <div class="govuk-grid-column-one-half">
                                     <div class="govuk-form-group">
                                         <fieldset class="govuk-fieldset govuk-!-static-padding-left-5">
                                             <govuk-checkboxes name="Filter[ProcessStatusIds]" asp-for="@Model.Filter.ProcessStatusIds">
@@ -77,7 +79,6 @@
                                     </div>
                                 </div>
                             </div>
-                            <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
                             <div class="govuk-grid-row">
                                 <div class="govuk-grid-column-full">
                                     <govuk-select asp-for="@Model.PaginationViewModel.RecordsPerPage">
@@ -92,7 +93,7 @@
                                 <div class="govuk-grid-column-full">
                                     <div class="govuk-button-group">
                                         <button type="submit"
-                                                class="govuk-button govuk-button--secondary"
+                                                class="govuk-button"
                                                 data-module="govuk-button"
                                                 data-prevent-double-click="true"
                                                 value="true"
@@ -108,6 +109,7 @@
                         </div>
                     </div>
                 </form>
+
                 @if (Model.PaginationViewModel.CurrentPage > 0)
                 {
                     <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
@@ -131,30 +133,30 @@
                             @{
                                 var selectionHasError =
                                 ViewData.ModelState.TryGetValue(nameof(NewQualificationsViewModel.SelectedQualificationIds), out var selState) &&
-                                    selState.Errors.Count > 0;
+                                selState.Errors.Count > 0;
 
                             }
-                           
+
                             <div id="SelectedQualificationIds" class="govuk-form-group @(selectionHasError ? "govuk-form-group--error" : "")">
                                 <h3 class="govuk-heading-m">Qualifications</h3>
                                 <span asp-validation-for="SelectedQualificationIds" class="govuk-error-message"></span>
 
                                 <div class="govuk-grid-row" id="New_Qual_Pagination_Header_Section">
                                     <div class="govuk-grid-column-full">
-                                        <p class="">Viewing @(Model.PaginationViewModel.StartRecord) - @(Model.PaginationViewModel.EndRecord) of @(Model.PaginationViewModel.TotalRecords) Qualifications</p>
+                                        <p>Viewing @(Model.PaginationViewModel.StartRecord) - @(Model.PaginationViewModel.EndRecord) of @(Model.PaginationViewModel.TotalRecords) Qualifications</p>
                                     </div>
                                 </div>
 
                                 @{
                                     var selectAllCheckboxesViewModel = SelectAllViewModelFactory.ForQualifications
                                     (
-                                        Model.PaginationViewModel.CurrentPage,
-                                        Model.PaginationViewModel.RecordsPerPage,
-                                        nameof(NewController).Replace("Controller", ""),
-                                        Model.Filter.QualificationName,
-                                        Model.Filter.Organisation,
-                                        Model.Filter.QAN,
-                                        Model.Filter.ProcessStatusIds
+                                    Model.PaginationViewModel.CurrentPage,
+                                    Model.PaginationViewModel.RecordsPerPage,
+                                    nameof(NewController).Replace("Controller", ""),
+                                    Model.Filter.QualificationName,
+                                    Model.Filter.Organisation,
+                                    Model.Filter.QAN,
+                                    Model.Filter.ProcessStatusIds
                                     );
                                 }
 
@@ -174,14 +176,14 @@
                                             <tbody class="govuk-table__body">
                                                 @foreach (var qualification in Model.NewQualifications)
                                                 {
-                                                    var isChecked = Model.SelectedQualificationIds.Contains(qualification.QualificationId);
+                                                    var isChecked = Model.SelectedQualificationIds?.Contains(qualification.QualificationId) ?? false;
                                                     var theModel = new MultiSelectCheckboxCellViewModel
                                                     (
-                                                        qualification.QualificationId,
-                                                        qualification.Title,
-                                                        isChecked,
-                                                        nameof(Model.SelectedQualificationIds),
-                                                        "qual"
+                                                    qualification.QualificationId,
+                                                    qualification.Title,
+                                                    isChecked,
+                                                    nameof(Model.SelectedQualificationIds),
+                                                    "qual"
                                                     );
                                                     <tr class="govuk-table__row">
                                                         <partial name="~/Views/Shared/_SelectCheckboxCell.cshtml"
@@ -211,6 +213,8 @@
 
                             @if (Model.PaginationViewModel.TotalPages > 0)
                             {
+                                <p class="govuk-body">Navigating to another page clears this selection. If you want to comment or assign actions to results on this page, do so before clicking on another page.</p>
+
                                 <div class="govuk-grid-row" id="New_Qual_Pagination_Footer_Section">
                                     <div class="govuk-grid-column-three-quarters">
                                         <nav class="govuk-pagination" aria-label="Pagination">

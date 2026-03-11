@@ -1,11 +1,13 @@
 ﻿@using SFA.DAS.AODP.Web.Areas.Review.Controllers
+@using SFA.DAS.AODP.Web.Factories
 @using SFA.DAS.AODP.Web.Models.BulkActions
 @using SFA.DAS.AODP.Web.Models.Qualifications
 @model SFA.DAS.AODP.Web.Models.Qualifications.ChangedQualificationsViewModel
 @{
     ViewData["Title"] = "Changed Qualifications";
+    var backLinkModel = BackLinkModelFactory.Dashboard();
 }
-
+@await Html.PartialAsync("_BackLinkPartial", backLinkModel)
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 <partial name="_ValidationSummaryPartial" />
 
@@ -18,11 +20,10 @@
             <div class="govuk-grid-row">
                 <div class="govuk-grid-column-full" id="guide-contents">
                     <div class="govuk-grid-row">
-                        <div class="govuk-grid-column-one-half">
+                        <div class="govuk-grid-column-full">
                             <h2 class="govuk-heading-l">Qualifications with changes</h2>
                             <p class="govuk-body">Review qualifications that have had changes made to them.</p>
                             <p class="govuk-body">You can filter results to view only what you need, and comment and assign actions in bulk, or individually.</p>
-
                         </div>
                     </div>
 
@@ -43,7 +44,7 @@
                                     </div>
                                 </div>
                                 <div class="govuk-grid-row">
-                                    <div class="govuk-grid-column-one-quarter">
+                                    <div class="govuk-grid-column-one-half">
                                         <div class="govuk-form-group">
                                             <govuk-input asp-for="@Model.Filter.QualificationName" inputmode="text" spellcheck="false" autocomplete="off">
                                                 <govuk-input-label is-page-heading="false" class="govuk-label--s">Qualification Title</govuk-input-label>
@@ -60,7 +61,7 @@
                                             </govuk-input>
                                         </div>
                                     </div>
-                                    <div class="govuk-grid-column-three-quarters">
+                                    <div class="govuk-grid-column-one-half">
                                         <div class="govuk-form-group">
                                             <fieldset class="govuk-fieldset govuk-!-static-padding-left-5">
                                                 <govuk-checkboxes name="Filter[ProcessStatusIds]" asp-for="@Model.Filter.ProcessStatusIds">
@@ -81,8 +82,6 @@
                                         </div>
                                     </div>
                                 </div>
-
-                                <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
 
                                 <div class="govuk-grid-row">
                                     <div class="govuk-grid-column-full">
@@ -144,13 +143,13 @@
 
                                 @{
                                     var selectionHasError =
-                                    ViewData.ModelState.TryGetValue("SelectedQualificationIds", out var selState) &&
-                                    selState.Errors.Count > 0;
+                                        ViewData.ModelState.TryGetValue("SelectedQualificationIds", out var selState) &&
+                                        selState.Errors.Count > 0;
                                 }
 
                                 <div class="govuk-grid-row" id="New_Qual_Pagination_Header_Section">
                                     <div class="govuk-grid-column-full">
-                                        <p class="">Viewing @(Model.PaginationViewModel.StartRecord) - @(Model.PaginationViewModel.EndRecord) of @(Model.PaginationViewModel.TotalRecords) Qualifications</p>
+                                        <p>Viewing @(Model.PaginationViewModel.StartRecord) - @(Model.PaginationViewModel.EndRecord) of @(Model.PaginationViewModel.TotalRecords) Qualifications</p>
                                     </div>
                                 </div>
 
@@ -159,8 +158,7 @@
                                     <span asp-validation-for="SelectedQualificationIds" class="govuk-error-message"></span>
 
                                     @{
-                                        var selectAllViewModel = SelectAllViewModelFactory.ForQualifications
-                                        (
+                                        var selectAllViewModel = SelectAllViewModelFactory.ForQualifications(
                                             Model.PaginationViewModel.CurrentPage,
                                             Model.PaginationViewModel.RecordsPerPage,
                                             nameof(ChangedController).Replace("Controller", ""),
@@ -171,7 +169,7 @@
                                         );
                                     }
 
-                                    <partial name="~/Views/Shared/Qualifications/_SelectAllOnPageButton.cshtml"
+                                    <partial name="~/Views/Shared/_SelectAllOnPage.cshtml"
                                              model="selectAllViewModel" />
 
                                     <div class="govuk-grid-row" id="New_Qual_Data_Section">
@@ -233,7 +231,6 @@
                                 {
                                     <p class="govuk-body">Navigating to another page clears this selection. If you want to comment or assign actions to results on this page, do so before clicking on another page.</p>
 
-                                    
                                     <div class="govuk-grid-row" id="New_Qual_Pagination_Footer_Section">
                                         <div class="govuk-grid-column-three-quarters">
                                             <nav class="govuk-pagination" aria-label="Pagination">
@@ -374,7 +371,6 @@
                                 }
 
                                 <partial name="~/Views/Shared/Qualifications/_QualificationsBulkActionPanel.cshtml" model="Model" />
-
                             </form>
                         }
                         else
