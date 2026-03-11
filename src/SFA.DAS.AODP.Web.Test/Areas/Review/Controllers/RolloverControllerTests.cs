@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -18,11 +19,27 @@ public class RolloverControllerTests
 {
     private readonly Mock<ILogger<RolloverController>> _loggerMock;
     private readonly Mock<IMediator> _mediatorMock;
+    private readonly RolloverController _controller;
+    private readonly Mock<IValidator<RolloverEligibilityDatesViewModel>> _validatorMock;
 
     public RolloverControllerTests()
     {
         _loggerMock = new Mock<ILogger<RolloverController>>();
         _mediatorMock = new Mock<IMediator>();
+        _validatorMock = new Mock<IValidator<RolloverEligibilityDatesViewModel>>();
+        _controller = new RolloverController(_loggerMock.Object, _mediatorMock.Object, _validatorMock.Object);
+    }
+
+    private RolloverController CreateControllerWithSession(ISession session)
+    {
+        var controller = new RolloverController(_loggerMock.Object, _mediatorMock.Object, _validatorMock.Object);
+        var httpContext = new DefaultHttpContext();
+        httpContext.Session = session;
+        controller.ControllerContext = new ControllerContext
+        {
+            HttpContext = httpContext
+        };
+        return controller;
     }
 
     private static ISession CreateEmptySession() => new TestSession();
@@ -79,6 +96,7 @@ public class RolloverControllerTests
 
         var result = controller.Index(vm);
 
+        // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
         Assert.Equal("RolloverStart", viewResult.ViewName);
         Assert.Same(vm, viewResult.Model);
@@ -668,17 +686,16 @@ public class RolloverControllerTests
         Assert.Equal("Rollover Query Builder", viewResult.ViewData["Title"]);
     }
 
-    private RolloverController CreateControllerWithSession(ISession session)
+    [Fact]
+    public void EnterRolloverEligibilityDates_Get_ReturnsViewAndSetsTitle()
     {
-        var controller = new RolloverController(_loggerMock.Object, _mediatorMock.Object);
-        var httpContext = new DefaultHttpContext();
-        httpContext.Session = session;
-        controller.ControllerContext = new ControllerContext
-        {
-            HttpContext = httpContext
-        };
-        return controller;
+        // Act
+        var result = _controller.EnterRolloverEligibilityDates();
+
+        // Assert
+        Assert.IsType<ViewResult>(result);
     }
+
     private class TestSession : ISession
     {
         private readonly Dictionary<string, byte[]> _store = new();
