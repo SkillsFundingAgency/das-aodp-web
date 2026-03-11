@@ -1,10 +1,12 @@
-﻿using FluentValidation;
+﻿using DocumentFormat.OpenXml.EMMA;
+using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Queries.Import;
 using SFA.DAS.AODP.Application.Queries.Review.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
+using SFA.DAS.AODP.Web.Areas.Review.Extensions;
 using SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 using SFA.DAS.AODP.Web.Authentication;
@@ -312,23 +314,8 @@ public class RolloverController : ControllerBase
         }
 
         var response = await Send(new GetRolloverCandidatesQuery());
-        var matchedCsv = new List<QualificationCandidate>();
 
-        foreach (var item in file.Items)
-        {
-            var candidate = response.RolloverCandidates.Where(x => x.Qan == item.QualificationNumber).FirstOrDefault();
-
-            if (candidate != null)
-                matchedCsv.Add(new QualificationCandidate
-                {
-                    QualificationNumber = candidate.Qan,
-                    Title = candidate.Title,
-                    FundingOfferId = candidate.FundingOfferId.ToString(),
-                    FundingOffer = candidate.FundingOffer,
-                    AwardingOrganisation = candidate.AwardingOrganisation,
-                    FundingApprovalEndDate = candidate.FundingApprovalEndDate
-                });
-        }
+        var matchedCsv = RolloverCandidateExtensions.FilterCandidates(file.Items, response.RolloverCandidates);
 
         if (matchedCsv.Count == 0)
         {
@@ -348,32 +335,33 @@ public class RolloverController : ControllerBase
     public IActionResult FundingStreamInclusionExclusion()
     {
         var session = GetSessionModel();
-        var model = GetFundingStreams(session.RolloverCandidates);
-
-        return View(model);
-    }
-
-    private static FundingStreamInclusionExclusionViewModel GetFundingStreams(IEnumerable<QualificationCandidate> rolloverCandidates)
-    {
         var model = new FundingStreamInclusionExclusionViewModel();
 
-        if (rolloverCandidates.Any())
+        if (session.RolloverFundingStream != null)
         {
-            foreach (var item in rolloverCandidates)
+            model.FundingStreams = session.RolloverFundingStream.FundingStreams;
+            model.SelectedIds = session.RolloverFundingStream.SelectedIds;
+        }
+        else
+        {
+            model.FundingStreams = RolloverCandidateExtensions.ToFundingStreams(session.RolloverCandidates);
+
+            if (model.FundingStreams.Count == 0)
             {
-                if (!model.FundingStreams.Any(fs =>
-                            fs.Id == item.FundingOfferId && fs.Name == item.FundingOffer))
-                {
-                    model.FundingStreams.Add(new FundingStream
-                    {
-                        Id = item.FundingOfferId!,
-                        Name = item.FundingOffer!
-                    });
-                }
+                ModelState.AddModelError(nameof(model.FundingStreams), "No Funding Streams found.");
+                return View(model);
             }
+
+            session.RolloverFundingStream = new RolloverFundingStream
+            {
+                FundingStreams = model.FundingStreams,
+                SelectedIds = model.SelectedIds
+            };
+
+            SaveSessionModel(session);
         }
 
-        return model;
+        return View(model);
     }
 
 
@@ -382,10 +370,13 @@ public class RolloverController : ControllerBase
     public IActionResult FundingStreamInclusionExclusion(FundingStreamInclusionExclusionViewModel vm, string action)
     {
         var session = GetSessionModel();
-        var model = GetFundingStreams(session.RolloverCandidates);
-        var validIds = model.FundingStreams.Select(x => x.Id).ToHashSet();
+        var validIds = new List<string>();
 
-        vm.FundingStreams = model.FundingStreams;
+        if (session.RolloverFundingStream != null)
+        {
+            validIds = session.RolloverFundingStream.FundingStreams.Select(x => x.Id).ToList();
+            vm.FundingStreams = session.RolloverFundingStream.FundingStreams;
+        }
 
         if (action == "selectAll")
         {
@@ -405,6 +396,14 @@ public class RolloverController : ControllerBase
             ModelState.AddModelError(string.Empty, "Invalid selection");
             return View(vm);
         }
+
+        session.RolloverFundingStream = new RolloverFundingStream
+        {
+            FundingStreams = vm.FundingStreams,
+            SelectedIds = vm.SelectedIds
+        };
+
+        SaveSessionModel(session);
 
         return RedirectToAction(nameof(EnterRolloverEligibilityDates));
     }

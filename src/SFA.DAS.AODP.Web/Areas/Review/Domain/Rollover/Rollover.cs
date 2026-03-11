@@ -7,7 +7,14 @@ public class Rollover
     public RolloverStart? Start { get; set; }
     public RolloverImportStatus? ImportStatus { get; set; }
     public RolloverPreviousData? PreviousData { get; set; }
-    public IEnumerable<QualificationCandidate> RolloverCandidates { get; set; } = new List<QualificationCandidate>();
+    public List<QualificationCandidate> RolloverCandidates { get; set; } = new();
+    public RolloverFundingStream? RolloverFundingStream { get; set; }
+}
+
+public class RolloverFundingStream
+{
+    public List<FundingStream> FundingStreams { get; set; } = new();
+    public List<string> SelectedIds { get; set; } = new();
 }
 
 public class RolloverStart

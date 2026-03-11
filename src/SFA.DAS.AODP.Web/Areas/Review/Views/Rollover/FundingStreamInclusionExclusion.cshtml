@@ -13,12 +13,20 @@
         Area = "Review"
     };
 
-    var hasGroupError = ViewData.ModelState.ContainsKey("SelectedIds");
-    var groupError = hasGroupError
+    var hasFundingStreamsError = ViewData.ModelState.ContainsKey("FundingStreams");
+    var fundingStreamsError = hasFundingStreamsError
+        ? ViewData.ModelState["FundingStreams"].Errors.First().ErrorMessage
+        : null;
+
+    var hasSelectedIdsError = ViewData.ModelState.ContainsKey("SelectedIds");
+    var selectedIdsError = hasSelectedIdsError
         ? ViewData.ModelState["SelectedIds"].Errors.First().ErrorMessage
         : null;
 
-    var firstCheckboxId = "funding_" + Model.FundingStreams.First().Id;
+    var firstId = Model.FundingStreams.FirstOrDefault()?.Id;
+    var firstCheckboxId = firstId is not null
+        ? $"funding_{firstId}"
+        : null;
 }
 
 
@@ -26,10 +34,27 @@
 
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
-<h1 class="govuk-heading-l">@ViewData["Title"]</h1>
+@if (hasFundingStreamsError)
+{
+    <div class="govuk-error-summary"
+         role="alert"
+         data-module="govuk-error-summary"
+         tabindex="-1">
+        <h2 class="govuk-error-summary__title">There is a problem</h2>
 
-<form asp-area="Review" asp-controller="Rollover" asp-action="FundingStreamInclusionExclusion" method="post" novalidate="novalidate">
+        <div class="govuk-error-summary__body">
+            <ul class="govuk-list govuk-error-summary__list">
+                <li>
+                    <a href="">@fundingStreamsError</a>
+                </li>
+            </ul>
+        </div>
+    </div>
 
+    <h1 class="govuk-heading-l">@ViewData["Title"]</h1>
+}
+else
+{
     @if (!ViewData.ModelState.IsValid)
     {
         <div class="govuk-error-summary"
@@ -40,10 +65,10 @@
 
             <div class="govuk-error-summary__body">
                 <ul class="govuk-list govuk-error-summary__list">
-                    @if (hasGroupError)
+                    @if (hasSelectedIdsError)
                     {
                         <li>
-                            <a href="#@firstCheckboxId">@groupError</a>
+                            <a href="#@firstCheckboxId">@selectedIdsError</a>
                         </li>
                     }
                 </ul>
@@ -51,41 +76,46 @@
         </div>
     }
 
-    <div class="govuk-form-group @(hasGroupError ? "govuk-form-group--error" : "")">
+    <h1 class="govuk-heading-l">@ViewData["Title"]</h1>
 
-        <fieldset class="govuk-fieldset" aria-describedby="funding-hint @(hasGroupError ? "funding-error" : "")">
+    <form asp-area="Review" asp-controller="Rollover" asp-action="FundingStreamInclusionExclusion" method="post" novalidate="novalidate">
 
-            <div id="funding-hint" class="govuk-hint">
-                Select all that apply
-            </div>
+        <div class="govuk-form-group @(hasSelectedIdsError ? "govuk-form-group--error" : "")">
 
-            <button type="submit" name="action" value="selectAll" class="govuk-button govuk-button--secondary">
-                Select all
-            </button>
+            <fieldset class="govuk-fieldset" aria-describedby="funding-hint @(hasSelectedIdsError ? "funding-error" : "")">
 
-            <div class="govuk-checkboxes" data-module="govuk-checkboxes">
-                @foreach (var fs in Model.FundingStreams)
-                {
-                    var checkboxId = $"funding_{fs.Id}";
-                    var isChecked = Model.SelectedIds?.Contains(fs.Id) == true;
+                <div id="funding-hint" class="govuk-hint">
+                    Select all that apply
+                </div>
 
-                    <div class="govuk-checkboxes__item">
-                        <input class="govuk-checkboxes__input"
-                               type="checkbox"
-                               id="@checkboxId"
-                               name="SelectedIds"
-                               value="@fs.Id"
-                               @(isChecked ? "checked" : "") />
+                <button type="submit" name="action" value="selectAll" class="govuk-button govuk-button--secondary">
+                    Select all
+                </button>
 
-                        <label class="govuk-label govuk-checkboxes__label"
-                               for="@checkboxId">@fs.Name</label>
-                    </div>
-                }
-            </div>
+                <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+                    @foreach (var fs in Model.FundingStreams)
+                    {
+                        var checkboxId = $"funding_{fs.Id}";
+                        var isChecked = Model.SelectedIds?.Contains(fs.Id) == true;
 
-        </fieldset>
-    </div>
+                        <div class="govuk-checkboxes__item">
+                            <input class="govuk-checkboxes__input"
+                                   type="checkbox"
+                                   id="@checkboxId"
+                                   name="SelectedIds"
+                                   value="@fs.Id"
+                                   @(isChecked ? "checked" : "") />
 
-    <govuk-button type="submit">Continue</govuk-button>
+                            <label class="govuk-label govuk-checkboxes__label"
+                                   for="@checkboxId">@fs.Name</label>
+                        </div>
+                    }
+                </div>
 
-</form>
+            </fieldset>
+        </div>
+
+        <govuk-button type="submit">Continue</govuk-button>
+
+    </form>
+}
