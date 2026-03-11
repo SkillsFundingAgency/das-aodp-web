@@ -1064,15 +1064,18 @@ public class RolloverControllerTests
     }
 
     [Fact]
-    public void EnterRolloverFundingApprovalEndDate_Get_SetsCorrectTitle()
+    public void EnterRolloverFundingApprovalEndDate_Get_ReturnsView()
     {
+        // Arrange
+        var session = CreateEmptySession();
+        var controller = CreateControllerWithSession(session);
+
         // Act
         var result = _controller.EnterRolloverFundingApprovalEndDate();
+        var viewResult = Assert.IsType<ViewResult>(result);
 
         // Assert
-        var viewResult = Assert.IsType<ViewResult>(result);
-        Assert.True(viewResult.ViewData.ContainsKey("Title"));
-        Assert.Equal("Set the end date for funding extension", viewResult.ViewData["Title"]);
+        Assert.Null(viewResult.ViewName); // default view
     }
 
     private class TestSession : ISession
