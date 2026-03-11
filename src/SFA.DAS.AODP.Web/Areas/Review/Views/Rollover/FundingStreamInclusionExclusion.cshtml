@@ -51,7 +51,7 @@
         </div>
     </div>
 
-    <h1 class="govuk-heading-l">@ViewData["Title"]</h1>
+    <h1 class="govuk-heading-xl">@ViewData["Title"]</h1>
 }
 else
 {
@@ -76,7 +76,7 @@ else
         </div>
     }
 
-    <h1 class="govuk-heading-l">@ViewData["Title"]</h1>
+    <h1 class="govuk-heading-xl">@ViewData["Title"]</h1>
 
     <form asp-area="Review" asp-controller="Rollover" asp-action="FundingStreamInclusionExclusion" method="post" novalidate="novalidate">
 
@@ -84,38 +84,38 @@ else
 
             <fieldset class="govuk-fieldset" aria-describedby="funding-hint @(hasSelectedIdsError ? "funding-error" : "")">
 
-                <div id="funding-hint" class="govuk-hint">
-                    Select all that apply
-                </div>
+            <div id="funding-hint" class="govuk-hint">
+                Select all that apply
+            </div>
 
-                <button type="submit" name="action" value="selectAll" class="govuk-button govuk-button--secondary">
-                    Select all
-                </button>
+            <button type="submit" name="action" value="selectAll" class="govuk-button govuk-button--secondary">
+                Select all
+            </button>
 
-                <div class="govuk-checkboxes" data-module="govuk-checkboxes">
-                    @foreach (var fs in Model.FundingStreams)
-                    {
-                        var checkboxId = $"funding_{fs.Id}";
-                        var isChecked = Model.SelectedIds?.Contains(fs.Id) == true;
+            <div class="govuk-checkboxes" data-module="govuk-checkboxes">
+                @foreach (var fs in Model.FundingStreams)
+                {
+                    var checkboxId = $"funding_{fs.Id}";
+                    var isChecked = Model.SelectedIds?.Contains(fs.Id) == true;
 
-                        <div class="govuk-checkboxes__item">
-                            <input class="govuk-checkboxes__input"
-                                   type="checkbox"
-                                   id="@checkboxId"
-                                   name="SelectedIds"
-                                   value="@fs.Id"
-                                   @(isChecked ? "checked" : "") />
+                    <div class="govuk-checkboxes__item">
+                        <input class="govuk-checkboxes__input"
+                               type="checkbox"
+                               id="@checkboxId"
+                               name="SelectedIds"
+                               value="@fs.Id"
+                               @(isChecked ? "checked" : "") />
 
-                            <label class="govuk-label govuk-checkboxes__label"
+                        <label class="govuk-label govuk-checkboxes__label"
                                    for="@checkboxId">@fs.Name</label>
-                        </div>
-                    }
-                </div>
+                    </div>
+                }
+            </div>
 
-            </fieldset>
-        </div>
+        </fieldset>
+    </div>
 
-        <govuk-button type="submit">Continue</govuk-button>
+    <govuk-button type="submit">Continue</govuk-button>
 
-    </form>
+</form>
 }

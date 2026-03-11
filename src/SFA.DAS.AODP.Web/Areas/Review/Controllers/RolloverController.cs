@@ -26,11 +26,13 @@ public class RolloverController : ControllerBase
     private const string RolloverStartView = "RolloverStart";
     private readonly ICsvFileReader _csvFileReader;
     private readonly IValidator<RolloverEligibilityDatesViewModel> _rolloverEligibilityDatesViewModeValidator;
+    private readonly IValidator<RolloverFundingApprovalEndDateViewModel> _rolloverFundingApprovalEndDateViewModelViewModeValidator;
 
-    public RolloverController(ILogger<RolloverController> logger, IMediator mediator, IValidator<RolloverEligibilityDatesViewModel> validator, ICsvFileReader csvFileReader) : base(mediator, logger)
+    public RolloverController(ILogger<RolloverController> logger, IMediator mediator, IValidator<RolloverEligibilityDatesViewModel> validatorEligibilityDates, IValidator<RolloverFundingApprovalEndDateViewModel> validatorApprovalEndDate, ICsvFileReader csvFileReader) : base(mediator, logger)
     {
         _logger = logger;
-        _rolloverEligibilityDatesViewModeValidator = validator;
+        _rolloverEligibilityDatesViewModeValidator = validatorEligibilityDates;
+        _rolloverFundingApprovalEndDateViewModelViewModeValidator = validatorApprovalEndDate;
         _csvFileReader = csvFileReader;
     }
 
@@ -69,6 +71,14 @@ public class RolloverController : ControllerBase
             RolloverProcess.FinalUpload => RedirectToAction(nameof(UploadQualifications)),
             _ => View(RolloverStartView, model)
         };
+    }
+
+    [HttpGet]
+    [Route("/Review/Rollover/InitialSelection")]
+    public IActionResult InitialSelection()
+    {
+        ViewData["Title"] = "Initial selection of qualificaton";
+        return View();
     }
 
     [HttpGet]
@@ -322,7 +332,7 @@ public class RolloverController : ControllerBase
         catch (Exception ex)
         {
             LogException(ex);
-        }        
+        }
 
         var matchedCsv = RolloverCandidateExtensions.FilterCandidates(file.Items, response.RolloverCandidates);
 
@@ -420,6 +430,44 @@ public class RolloverController : ControllerBase
     [HttpGet]
     [Route("/Review/Rollover/EnterRolloverEligibilityDates")]
     public async Task<IActionResult> EnterRolloverEligibilityDates() => View();
+
+    [HttpPost]
+    [Route("/Review/Rollover/EnterRolloverEligibilityDates")]
+    public async Task<IActionResult> EnterRolloverEligibilityDates(RolloverEligibilityDatesViewModel model)
+    {
+        var validation = await _rolloverEligibilityDatesViewModeValidator.ValidateAsync(model);
+        validation.AddToModelState(ModelState);
+
+        if (!ModelState.IsValid)
+        {
+            return View("EnterRolloverEligibilityDates", model);
+        }
+
+        return RedirectToAction(nameof(EnterRolloverFundingApprovalEndDate));
+    }
+
+    [HttpGet]
+    [Route("/Review/Rollover/EnterRolloverFundingApprovalEndDate")]
+    public IActionResult EnterRolloverFundingApprovalEndDate()
+    {
+        return View();
+    }
+
+    [HttpPost]
+    [Route("/Review/Rollover/EnterRolloverFundingApprovalEndDate")]
+    public async Task<IActionResult> EnterRolloverFundingApprovalEndDate(RolloverFundingApprovalEndDateViewModel model)
+    {
+        var validation = await _rolloverFundingApprovalEndDateViewModelViewModeValidator.ValidateAsync(model);
+
+        validation.AddToModelState(ModelState);
+
+        if (!ModelState.IsValid)
+        {
+            return View("EnterRolloverFundingApprovalEndDate", model);
+        }
+
+        return RedirectToAction(nameof(EnterRolloverFundingApprovalEndDate));
+    }
 
     private Rollover GetSessionModel()
     {
