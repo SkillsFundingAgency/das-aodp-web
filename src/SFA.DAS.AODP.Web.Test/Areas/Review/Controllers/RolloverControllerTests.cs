@@ -20,19 +20,21 @@ public class RolloverControllerTests
     private readonly Mock<ILogger<RolloverController>> _loggerMock;
     private readonly Mock<IMediator> _mediatorMock;
     private readonly RolloverController _controller;
-    private readonly Mock<IValidator<RolloverEligibilityDatesViewModel>> _validatorMock;
+    private readonly Mock<IValidator<RolloverEligibilityDatesViewModel>> _eligibilityDatesValidatorMock;
+    private readonly Mock<IValidator<RolloverFundingApprovalEndDateViewModel>> _approvalEndDateValidatorMock;
 
     public RolloverControllerTests()
     {
         _loggerMock = new Mock<ILogger<RolloverController>>();
         _mediatorMock = new Mock<IMediator>();
-        _validatorMock = new Mock<IValidator<RolloverEligibilityDatesViewModel>>();
-        _controller = new RolloverController(_loggerMock.Object, _mediatorMock.Object, _validatorMock.Object);
+        _eligibilityDatesValidatorMock = new Mock<IValidator<RolloverEligibilityDatesViewModel>>();
+        _approvalEndDateValidatorMock = new Mock<IValidator<RolloverFundingApprovalEndDateViewModel>>();
+        _controller = new RolloverController(_loggerMock.Object, _mediatorMock.Object, _eligibilityDatesValidatorMock.Object, _approvalEndDateValidatorMock.Object);
     }
 
     private RolloverController CreateControllerWithSession(ISession session)
     {
-        var controller = new RolloverController(_loggerMock.Object, _mediatorMock.Object, _validatorMock.Object);
+        var controller = new RolloverController(_loggerMock.Object, _mediatorMock.Object, _eligibilityDatesValidatorMock.Object, _approvalEndDateValidatorMock.Object);
         var httpContext = new DefaultHttpContext();
         httpContext.Session = session;
         controller.ControllerContext = new ControllerContext
@@ -276,6 +278,7 @@ public class RolloverControllerTests
 
         var result = await controller.CheckData();
 
+        // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
         Assert.Equal("CheckData", viewResult.ViewName);
     }
@@ -303,6 +306,7 @@ public class RolloverControllerTests
 
         var result = await controller.CheckData(posted);
 
+        // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
         Assert.Equal("CheckData", viewResult.ViewName);
         var vm = Assert.IsType<RolloverImportStatusViewModel>(viewResult.Model);
@@ -694,6 +698,18 @@ public class RolloverControllerTests
 
         // Assert
         Assert.IsType<ViewResult>(result);
+    }
+
+    [Fact]
+    public void EnterRolloverFundingApprovalEndDate_Get_SetsCorrectTitle()
+    {
+        // Act
+        var result = _controller.EnterRolloverFundingApprovalEndDate();
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.True(viewResult.ViewData.ContainsKey("Title"));
+        Assert.Equal("Set the end date for funding extension", viewResult.ViewData["Title"]);
     }
 
     private class TestSession : ISession

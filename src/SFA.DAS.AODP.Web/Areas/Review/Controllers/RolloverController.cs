@@ -9,7 +9,7 @@ using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Extensions;
-using System.Runtime.CompilerServices;
+using System.Diagnostics.CodeAnalysis;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers;
@@ -21,13 +21,13 @@ public class RolloverController : ControllerBase
     private readonly ILogger<RolloverController> _logger;
     private const string SessionKey = "RolloverSession";
     private readonly IValidator<RolloverEligibilityDatesViewModel> _rolloverEligibilityDatesViewModeValidator;
-
+    private readonly IValidator<RolloverFundingApprovalEndDateViewModel> _rolloverFundingApprovalEndDateViewModelViewModeValidator;
     private const string RolloverStartView = "RolloverStart";
-
-    public RolloverController(ILogger<RolloverController> logger, IMediator mediator, IValidator<RolloverEligibilityDatesViewModel> validator) : base(mediator, logger)
+    public RolloverController(ILogger<RolloverController> logger, IMediator mediator, IValidator<RolloverEligibilityDatesViewModel> validatorEligibilityDates, IValidator<RolloverFundingApprovalEndDateViewModel> validatorApprovalEndDate) : base(mediator, logger)
     {
         _logger = logger;
-        _rolloverEligibilityDatesViewModeValidator = validator;
+        _rolloverEligibilityDatesViewModeValidator = validatorEligibilityDates;
+        _rolloverFundingApprovalEndDateViewModelViewModeValidator = validatorApprovalEndDate;
     }
 
     [HttpGet]
@@ -65,6 +65,14 @@ public class RolloverController : ControllerBase
             RolloverProcess.FinalUpload => RedirectToAction(nameof(UploadQualifications)),
             _ => View(RolloverStartView, model)
         };
+    }
+
+    [HttpGet]
+    [Route("/Review/Rollover/InitialSelection")]
+    public IActionResult InitialSelection()
+    {
+        ViewData["Title"] = "Initial selection of qualificaton";
+        return View();
     }
 
     [HttpGet]
@@ -327,23 +335,94 @@ public class RolloverController : ControllerBase
         return View();
     }
 
+    [ExcludeFromCodeCoverage]
+    [HttpGet]
+    [Route("/Review/Rollover/FundingStreamInclusionExclusion")]
+    public IActionResult FundingStreamInclusionExclusion()
+    {
+        var vm = new FundingStreamInclusionExclusionViewModel
+        {
+            FundingStreams = GetFundingStreams()
+        };
+
+        return View(vm);
+    }
+
+    [ExcludeFromCodeCoverage]
+    [HttpPost]
+    [Route("/Review/Rollover/FundingStreamInclusionExclusion")]
+    public IActionResult FundingStreamInclusionExclusion(FundingStreamInclusionExclusionViewModel vm, string action)
+    {
+        var fundingStreams = GetFundingStreams();
+        var validIds = fundingStreams.Select(x => x.Id).ToHashSet();
+
+        vm.FundingStreams = fundingStreams;
+
+        if (action == "selectAll")
+        {
+            vm.SelectedIds = validIds.ToList();
+            ModelState.Clear();
+            return View(vm);
+        }
+
+        if (vm.SelectedIds == null || !vm.SelectedIds.Any())
+        {
+            ModelState.AddModelError(nameof(vm.SelectedIds), "Select at least one funding stream.");
+            return View(vm);
+        }
+
+        if (!vm.SelectedIds.All(id => validIds.Contains(id)))
+        {
+            ModelState.AddModelError(string.Empty, "Invalid selection");
+            return View(vm);
+        }
+
+        return RedirectToAction(nameof(EnterRolloverEligibilityDates));
+    }
+
+    [ExcludeFromCodeCoverage]
     [HttpGet]
     [Route("/Review/Rollover/EnterRolloverEligibilityDates")]
     public IActionResult EnterRolloverEligibilityDates() => View();
 
-    [HttpPost]
-    [Route("/Review/Rollover/EnterRolloverEligibilityDates")]
-    public async Task<IActionResult> EnterRolloverEligibilityDates(RolloverEligibilityDatesViewModel model)
+    [ExcludeFromCodeCoverage]
+    private List<FundingStream> GetFundingStreams()
     {
-        var validation = await _rolloverEligibilityDatesViewModeValidator.ValidateAsync(model);
+        return new List<FundingStream>
+        {
+            new FundingStream { Id = 1, Label = "Age 14-16" },
+            new FundingStream { Id = 2, Label = "Age 16-19" },
+            new FundingStream { Id =3, Label = "Local flexibilities" },
+            new FundingStream { Id = 4, Label = "Legal entitlement L2 L3" },
+            new FundingStream { Id = 5, Label = "Legal entitlement English and Maths" },
+            new FundingStream { Id = 6, Label = "Digital entitlement" },
+            new FundingStream { Id = 7, Label = "Lifelong learning entitlement" },
+            new FundingStream { Id = 8, Label = "Advanced learner loans" },
+            new FundingStream { Id = 9, Label = "Free courses for jobs" }
+        };
+    }
+
+    [Route("/Review/Rollover/EnterRolloverFundingApprovalEndDate")]
+    public IActionResult EnterRolloverFundingApprovalEndDate()
+    {
+        ViewData["Title"] = "Set the end date for funding extension";
+        return View();
+    }
+
+    [HttpPost]
+    [Route("/Review/Rollover/EnterRolloverFundingApprovalEndDate")]
+    public async Task<IActionResult> EnterRolloverFundingApprovalEndDate(RolloverFundingApprovalEndDateViewModel model)
+    {
+        var validation = await _rolloverFundingApprovalEndDateViewModelViewModeValidator.ValidateAsync(model);
+
         validation.AddToModelState(ModelState);
 
         if (!ModelState.IsValid)
         {
-            return View("EnterRolloverEligibilityDates", model);
+            return View("EnterRolloverFundingApprovalEndDate", model);
         }
 
-        return View("EnterMaximumFundingApprovalEndDate", model);
+        return RedirectToAction(nameof(EnterRolloverFundingApprovalEndDate));
     }
 
     private Rollover GetSessionModel()
