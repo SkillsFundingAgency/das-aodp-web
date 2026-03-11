@@ -278,7 +278,7 @@ public class RolloverController : ControllerBase
 
     [HttpGet]
     [Route("/Review/Rollover/UploadQualificationCandidates")]
-    public IActionResult UploadQualificationCandidates()
+    public async Task<IActionResult> UploadQualificationCandidates()
     {
         return View(new RolloverUploadQualificationCandidatesViewModel());
     }
@@ -313,7 +313,16 @@ public class RolloverController : ControllerBase
             return View(model);
         }
 
-        var response = await Send(new GetRolloverCandidatesQuery());
+        var response = new GetRolloverCandidatesQueryResponse();
+
+        try
+        {
+            response = await Send(new GetRolloverCandidatesQuery());
+        }
+        catch (Exception ex)
+        {
+            LogException(ex);
+        }        
 
         var matchedCsv = RolloverCandidateExtensions.FilterCandidates(file.Items, response.RolloverCandidates);
 
@@ -332,7 +341,7 @@ public class RolloverController : ControllerBase
 
     [HttpGet]
     [Route("/Review/Rollover/FundingStreamInclusionExclusion")]
-    public IActionResult FundingStreamInclusionExclusion()
+    public async Task<IActionResult> FundingStreamInclusionExclusion()
     {
         var session = GetSessionModel();
         var model = new FundingStreamInclusionExclusionViewModel();
@@ -367,7 +376,7 @@ public class RolloverController : ControllerBase
 
     [HttpPost]
     [Route("/Review/Rollover/FundingStreamInclusionExclusion")]
-    public IActionResult FundingStreamInclusionExclusion(FundingStreamInclusionExclusionViewModel vm, string action)
+    public async Task<IActionResult> FundingStreamInclusionExclusion(FundingStreamInclusionExclusionViewModel vm, string action)
     {
         var session = GetSessionModel();
         var validIds = new List<string>();
@@ -410,7 +419,7 @@ public class RolloverController : ControllerBase
 
     [HttpGet]
     [Route("/Review/Rollover/EnterRolloverEligibilityDates")]
-    public IActionResult EnterRolloverEligibilityDates() => View();
+    public async Task<IActionResult> EnterRolloverEligibilityDates() => View();
 
     private Rollover GetSessionModel()
     {
