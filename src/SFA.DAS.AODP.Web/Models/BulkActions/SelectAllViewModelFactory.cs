@@ -1,6 +1,8 @@
-﻿namespace SFA.DAS.AODP.Web.Models.BulkActions
-{
+﻿using System.Diagnostics.CodeAnalysis;
 
+namespace SFA.DAS.AODP.Web.Models.BulkActions
+{
+    [ExcludeFromCodeCoverage]
     public static class SelectAllViewModelFactory
     {
         public static SelectAllCheckboxesViewModel ForQualifications(

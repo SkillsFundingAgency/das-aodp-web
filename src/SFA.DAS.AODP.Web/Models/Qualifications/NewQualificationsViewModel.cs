@@ -45,16 +45,6 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
             }
         }
 
-        public class BulkActionViewModel
-        {
-            [Display(Name ="Status")]
-            [Required(ErrorMessage = ValidationMessages.QualificationsBulkActionStatusRequired)]
-            public Guid? ProcessStatusId { get; set; }
-
-            [AllowedCharactersAttribute(TextCharacterProfile.FreeText)]
-            public string? Comment { get; set; }
-        }
-
         public static NewQualificationsViewModel Map(
             GetNewQualificationsQueryResponse response, 
             List<GetProcessStatusesQueryResponse.ProcessStatus> processStatuses,

@@ -2,9 +2,11 @@
 using SFA.DAS.AODP.Domain.Interfaces;
 using SFA.DAS.AODP.Domain.Models;
 using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SFA.DAS.AODP.Domain.Qualifications.Requests
 {
+    [ExcludeFromCodeCoverage]
     public class GetChangedQualificationsApiRequest : IGetApiRequest
     {
         public int Skip { get; set; }
