@@ -22,6 +22,8 @@ public class RolloverController : ControllerBase
     private const string SessionKey = "RolloverSession";
     private readonly IValidator<RolloverEligibilityDatesViewModel> _rolloverEligibilityDatesViewModeValidator;
 
+    private const string RolloverStartView = "RolloverStart";
+
     public RolloverController(ILogger<RolloverController> logger, IMediator mediator, IValidator<RolloverEligibilityDatesViewModel> validator) : base(mediator, logger)
     {
         _logger = logger;
