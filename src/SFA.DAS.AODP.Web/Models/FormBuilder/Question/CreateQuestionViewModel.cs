@@ -1,4 +1,6 @@
 ﻿using SFA.DAS.AODP.Models.Forms;
+using SFA.DAS.AODP.Web.Validators.Attributes;
+using SFA.DAS.AODP.Web.Validators.Patterns;
 using System.ComponentModel.DataAnnotations;
 
 namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
@@ -10,6 +12,7 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
         public Guid FormVersionId { get; set; }
 
         [Required(ErrorMessage = "Enter a title.")]
+        [AllowedCharacters(TextCharacterProfile.Title)]
         public string Title { get; set; } = string.Empty;
 
         [Required]
