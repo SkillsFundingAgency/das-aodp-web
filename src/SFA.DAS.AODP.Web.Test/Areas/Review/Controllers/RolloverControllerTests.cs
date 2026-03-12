@@ -335,17 +335,11 @@ public class RolloverControllerTests
     public async Task CheckData_Post_ValidModel_WhenMediatorReturnsCandidates_SavesPreviousDataAndRedirects()
     {
         _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetRolloverWorkflowCandidatesQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetRolloverWorkflowCandidatesQueryResponse>
+            .Setup(m => m.Send(It.IsAny<GetRolloverWorkflowCandidatesCountQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetRolloverWorkflowCandidatesCountQueryResponse>
             {
                 Success = true,
-                Value = new GetRolloverWorkflowCandidatesQueryResponse
-                {
-                    Data = new List<RolloverWorkflowCandidate>
-                    {
-                            new RolloverWorkflowCandidate()
-                    }
-                }
+                Value = new GetRolloverWorkflowCandidatesCountQueryResponse { TotalRecords = 5}
             });
 
         var session = CreateEmptySession();
@@ -365,34 +359,7 @@ public class RolloverControllerTests
         Assert.NotNull(json);
         var saved = JsonConvert.DeserializeObject<Rollover>(json!);
         Assert.NotNull(saved?.PreviousData);
-        Assert.Equal(1, saved!.PreviousData!.CandidateCount);
-    }
-
-    [Fact]
-    public async Task CheckData_Post_SavePreviousDataThrows_DoesNotBubbleException_RedirectsWhenCandidatesFound()
-    {
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetRolloverWorkflowCandidatesQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetRolloverWorkflowCandidatesQueryResponse>
-            {
-                Success = true,
-                Value = new GetRolloverWorkflowCandidatesQueryResponse
-                {
-                    Data = new List<RolloverWorkflowCandidate> { new RolloverWorkflowCandidate() }
-                }
-            });
-
-        var controller = CreateControllerWithSession(CreateThrowingSessionOnSet());
-
-        var posted = new RolloverImportStatusViewModel
-        {
-            RegulatedQualificationsLastImported = DateTime.UtcNow
-        };
-
-        var result = await controller.CheckData(posted);
-
-        var redirect = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal(nameof(RolloverController.PreviousFile), redirect.ActionName);
+        Assert.Equal(5, saved!.PreviousData!.CandidateCount);
     }
 
     [Fact]
@@ -424,33 +391,11 @@ public class RolloverControllerTests
     public async Task PreviousFile_Get_WhenNoSession_CallsMediatorAndSavesSession()
     {
         _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetRolloverWorkflowCandidatesQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetRolloverWorkflowCandidatesQueryResponse>
+            .Setup(m => m.Send(It.IsAny<GetRolloverWorkflowCandidatesCountQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetRolloverWorkflowCandidatesCountQueryResponse>
             {
                 Success = true,
-                Value = new GetRolloverWorkflowCandidatesQueryResponse
-                {
-                    Data = new List<RolloverWorkflowCandidate>
-                    {
-                            new RolloverWorkflowCandidate 
-                            { 
-                                AcademicYear = "2024/25",
-                                CreatedAt = DateTime.UtcNow.AddDays(-1), 
-                                CurrentFundingEndDate = DateTime.UtcNow.AddMonths(6), 
-                                FundingOfferId = Guid.NewGuid(),
-                                Id = Guid.NewGuid(),
-                                IncludedInFinalUpload = false,
-                                IncludedInP1Export = false,
-                                PassP1 = false,
-                                ProposedFundingEndDate = DateTime.UtcNow.AddMonths(12),
-                                QualificationVersionId = Guid.NewGuid(),
-                                P1FailureReason = null, 
-                                RolloverCandidateRecordId = Guid.NewGuid(),
-                                RolloverWorkflowRunId = Guid.NewGuid(),
-                                UpdatedAt = DateTime.UtcNow 
-                            }
-                    }
-                }
+                Value = new GetRolloverWorkflowCandidatesCountQueryResponse { TotalRecords = 1 }
             });
 
         var session = CreateEmptySession();

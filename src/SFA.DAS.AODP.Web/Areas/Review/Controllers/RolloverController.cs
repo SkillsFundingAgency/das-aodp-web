@@ -172,8 +172,8 @@ public class RolloverController : ControllerBase
 
         if (!sessionCountAvailable)
         {
-            var candidateCount = await Send(new GetRolloverWorkflowCandidatesQuery());
-            count = candidateCount?.Data?.Count ?? 0;
+            var candidateCount = await Send(new GetRolloverWorkflowCandidatesCountQuery());
+            count = candidateCount.TotalRecords;
 
             if (count > 0)
             {
@@ -217,11 +217,11 @@ public class RolloverController : ControllerBase
             return View("PreviousFile", vm);
         }
 
-        var candidateCount = await Send(new GetRolloverWorkflowCandidatesQuery());
+        var candidateCount = await Send(new GetRolloverWorkflowCandidatesCountQuery());
 
         var model = new RolloverPreviousDataViewModel
         {
-            CandidateCount = candidateCount.Data.Count
+            CandidateCount = candidateCount.TotalRecords
         };
 
         session.PreviousData = new RolloverPreviousData
