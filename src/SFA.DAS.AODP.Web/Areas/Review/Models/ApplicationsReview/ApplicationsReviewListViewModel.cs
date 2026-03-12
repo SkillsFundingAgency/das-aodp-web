@@ -36,6 +36,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
         public string UserType { get; set; }
         public string FindRegulatedQualificationUrl { get; set; } = string.Empty;
 
+        public string AvailableReviewersJson { get; set; } = string.Empty;
+
         public class Application
         {
             public Guid Id { get; set; }
@@ -79,6 +81,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
 
             ReviewerOptions = GetReviewersForSearch(response.AvailableReviewers).ToList();       
         }
+
         private IEnumerable<SelectListItem> GetReviewersForSearch(
             IEnumerable<UserOption> availableReviewers,
             string? selectedReviewer = null)

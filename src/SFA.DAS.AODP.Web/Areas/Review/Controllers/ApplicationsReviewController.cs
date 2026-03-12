@@ -1,7 +1,11 @@
-﻿using MediatR;
+﻿using Azure;
+using DocumentFormat.OpenXml.Spreadsheet;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using SFA.DAS.AODP.Application.Commands.Application.Review;
 using SFA.DAS.AODP.Application.Queries.Application.Form;
 using SFA.DAS.AODP.Application.Queries.Review;
@@ -46,21 +50,43 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         {
             string userType = _userHelperService.GetUserType().ToString();
             model.FindRegulatedQualificationUrl = _aodpConfiguration.Value.FindRegulatedQualificationUrl;
-            var response = await Send(new GetApplicationsForReviewQuery()
+            GetApplicationsForReviewQueryResponse response;
+
+            bool hasSearchErrors =
+                    ModelState.GetFieldValidationState(nameof(model.ApplicationSearch)) == ModelValidationState.Invalid ||
+                    ModelState.GetFieldValidationState(nameof(model.AwardingOrganisationSearch)) == ModelValidationState.Invalid;
+
+            if (hasSearchErrors)
             {
-                ReviewUser = userType,
-                ApplicationStatuses = model.Status?.Select(s => s.ToString()).ToList(),
-                ApplicationsWithNewMessages = model.Status?.Contains(ApplicationStatus.NewMessage) == true,
-                ApplicationSearch = model.ApplicationSearch,
-                AwardingOrganisationSearch = model.AwardingOrganisationSearch,
-                ReviewerSearch = model.ReviewerSearch,
-                UnassignedOnly = model.UnassignedOnly,
-                Limit = model.ItemsPerPage,
-                Offset = model.ItemsPerPage * (model.Page - 1)
-            });
+                response = new GetApplicationsForReviewQueryResponse();
+
+                response.AvailableReviewers =
+                    string.IsNullOrWhiteSpace(model.AvailableReviewersJson)
+                        ? new List<UserOption>()
+                        : JsonConvert.DeserializeObject<List<UserOption>>(model.AvailableReviewersJson)
+                            ?? new List<UserOption>();
+            }
+            else
+            {
+                response = await Send(new GetApplicationsForReviewQuery()
+                {
+                    ReviewUser = userType,
+                    ApplicationStatuses = model.Status?.Select(s => s.ToString()).ToList(),
+                    ApplicationsWithNewMessages = model.Status?.Contains(ApplicationStatus.NewMessage) == true,
+                    ApplicationSearch = model.ApplicationSearch,
+                    AwardingOrganisationSearch = model.AwardingOrganisationSearch,
+                    ReviewerSearch = model.ReviewerSearch,
+                    UnassignedOnly = model.UnassignedOnly,
+                    Limit = model.ItemsPerPage,
+                    Offset = model.ItemsPerPage * (model.Page - 1)
+                });
+            }
 
             model.MapApplications(response);
             model.UserType = userType;
+
+            model.AvailableReviewersJson = JsonConvert.SerializeObject(response.AvailableReviewers);
+
             return View(model);
         }
 
@@ -75,7 +101,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 ApplicationSearch = model.ApplicationSearch,
                 AwardingOrganisationSearch = model.AwardingOrganisationSearch,
                 Status = model.Status,
-                ReviewerSelection = model.ReviewerSelection
+                ReviewerSelection = model.ReviewerSelection,
+                AvailableReviewersJson = model.AvailableReviewersJson
             });
         }
 
@@ -371,7 +398,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     SentByName = _userHelperService.GetUserDisplayName(),
                     ReviewerFieldName = model.ReviewerFieldName,
 
-                    ReviewerValue = string.IsNullOrWhiteSpace(model.ReviewerValue) 
+                    ReviewerValue = string.IsNullOrWhiteSpace(model.ReviewerValue)
                         ? null : model.ReviewerValue,
 
                     UserType = _userHelperService.GetUserType().ToString()
@@ -569,7 +596,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 {
                     foreach (var file in files)
                     {
-                        var fileStream = await _fileService.OpenReadStreamAsync(file.FullPath); 
+                        var fileStream = await _fileService.OpenReadStreamAsync(file.FullPath);
 
                         if (fileStream != null)
                         {
@@ -583,7 +610,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                         else
                         {
                             throw new IOException($"Could not open stream for {file.FullPath}");
-                        } 
+                        }
                     }
                 }
 
