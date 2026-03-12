@@ -1,19 +1,26 @@
 ﻿using CsvHelper.Configuration;
-using DocumentFormat.OpenXml.EMMA;
+using CsvHelper.Configuration.Attributes;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using SFA.DAS.AODP.Application.Commands.Qualification;
+using SFA.DAS.AODP.Application.Commands.Qualifications;
+using SFA.DAS.AODP.Application.Commands.Review;
 using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Models.Qualifications;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Authentication;
+using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Enums;
+using SFA.DAS.AODP.Web.Extensions;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Mappers;
+using SFA.DAS.AODP.Web.Models.BulkActions;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 using System.Globalization;
+using System.Text.Json;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
@@ -28,11 +35,11 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         private readonly IUserHelperService _userHelperService;
         private readonly IOptions<AodpConfiguration> _aodpConfiguration;
 
-        private List<string> ReviewerAllowedStatuses { get; set; } = new List<string>()
-        {
-            "Decision Required",
-            "No Action Required",
-        };
+        private List<string> ReviewerAllowedStatuses { get; set; } =
+        [
+            ProcessStatus.DecisionRequired,
+            ProcessStatus.NoActionRequired,
+        ];
 
         public enum NewQualDataKeys { InvalidPageParams, CommentSaved}
 
@@ -44,58 +51,18 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             this._userHelperService = userHelperService;
         }
 
-        public async Task<IActionResult> Index(List<Guid>? processStatusIds, int pageNumber = 0, int recordsPerPage = 10, string name = "", string organisation = "", string qan = "")
+        public async Task<IActionResult> Index(QualificationQuery qualificationQuery, bool selectAll = false)
         {
-            var viewModel = new ChangedQualificationsViewModel();
-            try
-            {
+            try { 
+                ValidatePagingAndNotify(qualificationQuery);
 
-                if (!ModelState.IsValid || (recordsPerPage != 10 && recordsPerPage != 20 && recordsPerPage != 50) || pageNumber < 0)
-                {
-                    ShowNotificationIfKeyExists(NewQualDataKeys.InvalidPageParams.ToString(), ViewNotificationMessageType.Error, "Invalid parameters.");
-                }
+                var viewModel = await BuildIndexViewModelAsync(qualificationQuery, selectAll);
 
-                var procStatuses = await Send(new GetProcessStatusesQuery());
+                ShowNotificationIfKeyExists(
+                    BulkActionQualifications.SuccessKey,
+                    ViewNotificationMessageType.Success,
+                    BulkActionQualifications.SuccessMessage);
 
-                // Initial page load will not load records and have a page number of 0
-                if (pageNumber > 0)
-                {
-                    var query = new GetChangedQualificationsQuery();
-                    if (!string.IsNullOrWhiteSpace(name))
-                    {
-                        query.Name = name;
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(organisation))
-                    {
-                        query.Organisation = organisation;
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(qan))
-                    {
-                        query.QAN = qan;
-                    }
-
-
-                    if (processStatusIds?.Any() ?? false)
-                    {
-                        query.ProcessStatusIds = processStatusIds;
-                    }
-                    query.Take = recordsPerPage;
-                    query.Skip = recordsPerPage * (pageNumber - 1);
-
-                    var response = await Send(query);
-                    viewModel = ChangedQualificationsViewModel.Map(response, procStatuses.ProcessStatuses, organisation, qan, name);
-                }
-                viewModel.Filter = new NewQualificationFilterViewModel()
-                {
-                    Organisation = organisation,
-                    QualificationName = name,
-                    QAN = qan,
-                    ProcessStatusIds = processStatusIds
-                };
-                viewModel.ProcessStatuses = [.. procStatuses.ProcessStatuses];
-                viewModel.FindRegulatedQualificationUrl = _aodpConfiguration.Value.FindRegulatedQualificationUrl;
                 return View(viewModel);
             }
             catch (Exception ex)
@@ -153,20 +120,17 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ChangePage(int newPage = 1, int recordsPerPage = 10, string name = "", string organisation = "", string qan = "")
+        public async Task<IActionResult> ChangePage(
+            QualificationQuery qualificationQuery, 
+            int newPage = 1)
         {
             try
             {
                 if (ModelState.IsValid)
                 {
-                    return RedirectToAction(nameof(Index), new
-                    {
-                        pageNumber = newPage,
-                        recordsPerPage = recordsPerPage,
-                        name = name,
-                        organisation = organisation,
-                        qan = qan
-                    });
+                    return RedirectToAction(
+                        nameof(Index), 
+                        qualificationQuery.ToRouteValues(pageNumberOverride:newPage));
                 }
                 else
                 {
@@ -233,6 +197,84 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("/Review/Changed/ApplyBulkAction")]
+        public async Task<IActionResult> ApplyBulkAction(
+            ChangedQualificationsViewModel model,
+            QualificationQuery qualificationQuery)
+        {
+            if (!ModelState.IsValid)
+            {
+                ValidatePagingAndNotify(qualificationQuery);
+
+                var viewModel = await BuildIndexViewModelAsync(
+                    qualificationQuery,
+                    postedModel: model); 
+
+                return View("Index", viewModel);
+            }
+
+            try
+            {
+                var result = await Send(new BulkUpdateQualificationStatusCommand
+                {
+                    QualificationIds = model.SelectedQualificationIds,
+                    ProcessStatusId = model.BulkAction.ProcessStatusId!.Value,
+                    Comment = model.BulkAction.Comment,
+                    UserDisplayName = HttpContext.User?.Identity?.Name
+                });
+
+                if (result.ErrorCount == 0)
+                {
+                    TempData[BulkActionQualifications.SuccessKey] = true;
+
+                    return RedirectToAction(nameof(Index), qualificationQuery.ToRouteValues());
+                }
+
+                var failed = result.Errors.Select(e => new QualificationBulkActionErrorItemViewModel
+                {
+                    QualificationId = e.QualificationId,
+                    Qan = e.Qan ?? "",
+                    Title = e.Title ?? "",
+                    FailureReason = e.ErrorType switch
+                    {
+                        BulkUpdateQualificationsErrorType.Missing => "Qualification not found.",
+                        BulkUpdateQualificationsErrorType.StatusUpdateFailed => "Status update failed.",
+                        BulkUpdateQualificationsErrorType.HistoryFailed => "Status updated but history was not updated.",
+                        _ => "Unknown error."
+                    }
+                }).ToList();
+
+                var errorModel = new QualificationBulkActionErrorModel
+                {
+                    Failed = failed,
+                    BackLinkText = "Go back to Changed qualifications",
+                    BackLinkUrl = Url.Action(nameof(Index), qualificationQuery.ToRouteValues())!
+                };
+
+                TempData[BulkActionQualifications.Errors] = JsonSerializer.Serialize(errorModel);
+                return RedirectToAction(nameof(BulkQualificationError));
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+                return Redirect("/Home/Error");
+            }
+        }
+
+        [HttpGet]
+        public IActionResult BulkQualificationError()
+        {
+            var json = TempData[BulkActionQualifications.Errors] as string;
+
+            var model = !string.IsNullOrEmpty(json)
+                ? JsonSerializer.Deserialize<QualificationBulkActionErrorModel>(json)
+                    ?? new QualificationBulkActionErrorModel()
+                : new QualificationBulkActionErrorModel();
+
+            return View(model);
+        }
+
         private static string BuildChangeString(ChangedQualificationDetailsViewModel qualVersion)
         {
             string comment = "";
@@ -256,9 +298,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             {
                 ChangedQualificationDetailsViewModel latestVersion = await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });
                 latestVersion.ProcessStatuses = [.. await GetProcessStatuses()];
-                
+
                 ShowNotificationIfKeyExists(NewQualDataKeys.CommentSaved.ToString(), ViewNotificationMessageType.Success, "The comment has been saved.");
-                
+
                 var feedbackForQualificationFunding = await Send(new GetFeedbackForQualificationFundingByIdQuery(latestVersion.Id));
                 if (feedbackForQualificationFunding != null)
                 {
@@ -375,7 +417,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     });
 
                     TempData[NewQualDataKeys.CommentSaved.ToString()] = true;
-                    return RedirectToAction(nameof(QualificationDetails), new { qualificationReference = model.Qual.Qan});
+                    return RedirectToAction(nameof(QualificationDetails), new { qualificationReference = model.Qual.Qan });
                 }
                 else if (!procStatus.HasValue)
                     return RedirectToAction(nameof(QualificationDetails), new { qualificationReference = model.Qual.Qan });
@@ -420,6 +462,51 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             return procStatuses.ProcessStatuses;
         }
 
+        private async Task<ChangedQualificationsViewModel> BuildIndexViewModelAsync(
+            QualificationQuery qualificationQuery,
+            bool selectAll = false,
+            ChangedQualificationsViewModel? postedModel = null)
+        {
+            var procStatuses = await Send(new GetProcessStatusesQuery());
+            var statuses = procStatuses.ProcessStatuses ?? new();
+
+            ChangedQualificationsViewModel vm;
+
+            if (qualificationQuery.PageNumber > 0)
+            {
+                var query = qualificationQuery.ToGetChangedQualificationsQuery();
+
+                var response = await Send(query);
+                vm = ChangedQualificationsViewModel.Map(
+                    response, 
+                    statuses, 
+                    qualificationQuery);
+
+                if (selectAll)
+                {
+                    vm.SelectedQualificationIds = vm.ChangedQualifications.Select(q => q.QualificationId).ToList();
+                }
+            }
+            else
+            {
+                vm = new ChangedQualificationsViewModel();
+            }
+
+            vm.Filter = qualificationQuery.ToQualificationFilterViewModel();
+
+            vm.ProcessStatuses = [.. statuses];
+            vm.SetBulkActionStatusOptions(statuses.Select(s => (s.Id, s.Name ?? "")));
+            vm.FindRegulatedQualificationUrl = _aodpConfiguration.Value.FindRegulatedQualificationUrl;
+
+            if (postedModel != null)
+            {
+                vm.SelectedQualificationIds = postedModel.SelectedQualificationIds ?? new List<Guid>();
+                vm.BulkAction = postedModel.BulkAction;
+            }
+
+            return vm;
+        }
+
         [Route("/Review/Changed/ExportData")]
         public async Task<IActionResult> ExportData()
         {
@@ -458,6 +545,16 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             {
                 csv.WriteRecords(qualifications);
                 return writer.ToString();
+            }
+        }
+
+        private void ValidatePagingAndNotify(QualificationQuery query)
+        {
+            if ((query.RecordsPerPage != 10 && query.RecordsPerPage != 20 && query.RecordsPerPage != 50) || query.PageNumber < 0)
+            {
+                ShowNotificationIfKeyExists(NewQualDataKeys.InvalidPageParams.ToString(),
+                    ViewNotificationMessageType.Error,
+                    "Invalid parameters.");
             }
         }
 

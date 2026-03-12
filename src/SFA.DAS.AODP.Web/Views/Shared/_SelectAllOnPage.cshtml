@@ -1,0 +1,25 @@
+﻿@model SFA.DAS.AODP.Web.Models.BulkActions.SelectAllCheckboxesViewModel
+
+@{
+    var controller = Model.Controller ?? (string)ViewContext.RouteData.Values["controller"]!;
+    var action = Model.Action ?? "Index";
+    var area = Model.Area ?? "Review";
+    var anchorId = Model.AnchorId ?? "bulk-action-select-all";
+
+    var route = new Dictionary<string, object?>(Model.RouteValues ?? new Dictionary<string, object?>())
+    {
+        ["area"] = area,
+        ["pageNumber"] = Model.CurrentPage,
+        ["recordsPerPage"] = Model.RecordsPerPage,
+        ["selectAll"] = true,
+        ["reloadId"] = Guid.NewGuid().ToString("N")
+    };
+
+    var url = (Url.Action(action, controller, route) ?? "") + $"#{anchorId}";
+}
+
+<div id="@anchorId" class="govuk-button-group">
+    <a class="govuk-button govuk-button--secondary" href="@url">
+        Select all on this page
+    </a>
+</div>

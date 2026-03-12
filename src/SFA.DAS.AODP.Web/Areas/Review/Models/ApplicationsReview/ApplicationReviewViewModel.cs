@@ -82,10 +82,10 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
                 ApplicationStatus = applicationStatus,
 
                 Reviewer1 = string.IsNullOrWhiteSpace(response.Reviewer1)
-                    ? ReviewerDropdown.Assignment.UnassignedValue
+                    ? ReviewerDropdown.UnassignedValue
                     : response.Reviewer1,
                 Reviewer2 = string.IsNullOrWhiteSpace(response.Reviewer2)
-                    ? ReviewerDropdown.Assignment.UnassignedValue
+                    ? ReviewerDropdown.UnassignedValue
                     : response.Reviewer2,
                 ReviewerOptions =
                     response.AvailableReviewers
@@ -99,8 +99,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
                         {
                             new SelectListItem
                             {
-                                Value = ReviewerDropdown.Assignment.UnassignedValue,
-                                Text  = ReviewerDropdown.Assignment.UnassignedText
+                                Value = ReviewerDropdown.UnassignedValue,
+                                Text  = ReviewerDropdown.UnassignedText
                             }
                         })
                         .ToList(),

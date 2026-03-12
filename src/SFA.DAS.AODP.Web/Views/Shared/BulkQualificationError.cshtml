@@ -1,0 +1,32 @@
+﻿@using SFA.DAS.AODP.Web.Models.BulkActions
+@model QualificationBulkActionErrorModel
+
+@{
+    ViewData["Title"] = "Sorry, there is a problem with the service";
+}
+
+<div class="govuk-width-container">
+    <main class="govuk-main-wrapper" id="main-content" role="main">
+
+        <h1 class="govuk-heading-l">Sorry, there is a problem with the service</h1>
+
+        <p class="govuk-body">
+            The following qualifications could not be updated.
+        </p>
+
+        <ul class="govuk-list govuk-list--spaced govuk-!-margin-top-4 govuk-!-margin-bottom-6">
+            @foreach (var q in Model.Failed)
+            {
+                <li class="govuk-!-padding-bottom-3 govuk-!-border-bottom">
+                    <div class="govuk-!-font-weight-bold">@q.Qan</div>
+                    <div>@q.Title</div>
+                </li>
+            }
+        </ul>
+
+        <p class="govuk-body govuk-!-margin-top-6">
+            <a href="@Model.BackLinkUrl">@Model.BackLinkText</a>
+        </p>
+
+    </main>
+</div>

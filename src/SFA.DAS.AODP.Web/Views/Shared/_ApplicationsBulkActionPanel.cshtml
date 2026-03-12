@@ -1,0 +1,76 @@
+﻿@using SFA.DAS.AODP.Web.Models.BulkActions
+@model ApplicationsBulkActionPageViewModel
+
+@{
+    var reviewersHasError =
+            (ViewData.ModelState.TryGetValue("BulkActionInputViewModel.Reviewer1", out var r1State) && r1State.Errors.Count > 0);
+
+    var bulkActionHasError =
+        ViewData.ModelState.TryGetValue("BulkActionInputViewModel.BulkActionType", out var addState) &&
+        addState.Errors.Count > 0;
+}
+
+<hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible" />
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+        @{
+            var bulkActionSelectId = "bulkActionType";
+        }
+        <h3 id="@bulkActionSelectId" class="govuk-heading-m">Actions for selected applications</h3>
+
+        <div class="govuk-form-group @(bulkActionHasError ? "govuk-form-group--error" : "")">
+            <span asp-validation-for="BulkActionInputViewModel.BulkActionType" class="govuk-error-message"></span>
+
+            <select class="govuk-select"
+                    id="BulkActionInputViewModel.BulkActionType"
+                    asp-for="BulkActionInputViewModel.BulkActionType" 
+                    aria-labelledby="@bulkActionSelectId">
+                @foreach (var option in Model.BulkActionOptions)
+                {
+                    <option value="@option.Value">@option.Text</option>
+                }
+            </select>
+        </div>
+
+        <button type="submit"
+                class="govuk-button govuk-button--secondary"
+                name="BulkActionInputViewModel.SubmitAction"
+                value="@SubmitAction.Message">
+            Apply actions to this selection
+        </button>
+
+        <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible" />
+
+        <h3 class="govuk-heading-m">Assign reviewers to selected applications</h3>
+
+        <div class="govuk-form-group @(reviewersHasError ? "govuk-form-group--error" : "")">
+            <span asp-validation-for="BulkActionInputViewModel.Reviewer1" class="govuk-error-message"></span>
+
+            <div class="govuk-form-group">
+                <label class="govuk-label govuk-label--s" asp-for="BulkActionInputViewModel.Reviewer1">Reviewer 1</label>
+                <select class="govuk-select"
+                        id="BulkActionInputViewModel.Reviewer1"
+                        asp-for="BulkActionInputViewModel.Reviewer1"
+                        asp-items="Model.ReviewerOptions">
+                </select>
+            </div>
+
+            <div class="govuk-form-group">
+                <label class="govuk-label govuk-label--s" asp-for="BulkActionInputViewModel.Reviewer2">Reviewer 2</label>
+                <select class="govuk-select"
+                        asp-for="BulkActionInputViewModel.Reviewer2"
+                        asp-items="Model.ReviewerOptions">
+                </select>
+            </div>
+        </div>
+
+        <button type="submit"
+                class="govuk-button govuk-button--secondary"
+                name="BulkActionInputViewModel.SubmitAction"
+                value="@SubmitAction.Assign">
+            Assign reviewers
+        </button>
+
+    </div>
+</div>
