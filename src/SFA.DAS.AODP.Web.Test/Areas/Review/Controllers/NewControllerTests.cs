@@ -14,6 +14,7 @@ using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 using Xunit;
+using static SFA.DAS.AODP.Application.Queries.Qualifications.GetDiscussionHistoriesForQualificationQueryResponse;
 
 namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers;
 
@@ -705,6 +706,106 @@ public class NewControllerTests
         {
             Assert.Equal(CsvContentType, file.ContentType);
             Assert.NotEmpty(file.FileContents);
+        });
+    }
+
+    [Fact]
+    public async Task QualificationDetailsTimeline_WithValidReference_ReturnsViewWithModelAndSetsQan()
+    {
+        var controller = CreateController();
+
+        var timelineResponse = new GetDiscussionHistoriesForQualificationQueryResponse
+        {
+            QualificationDiscussionHistories = new List<QualificationDiscussionHistory>()
+        };
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetDiscussionHistoriesForQualificationQuery>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.FromResult(new BaseMediatrResponse<GetDiscussionHistoriesForQualificationQueryResponse>
+            {
+                Success = true,
+                Value = timelineResponse
+            }));
+
+        var result = await controller.QualificationDetailsTimeline(QualificationReference);
+
+        var view = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<QualificationDetailsTimelineViewModel>(view.Model);
+
+        Assert.Multiple(() =>
+        {
+            Assert.Equal(QualificationReference, model.Qan);
+            Assert.NotNull(model.QualificationDiscussionHistories);
+            Assert.Empty(model.QualificationDiscussionHistories);
+        });
+    }
+
+    [Fact]
+    public async Task QualificationDetailsTimeline_WithValidReferenceAndHistories_ReturnsViewWithHistories()
+    {
+        var controller = CreateController();
+
+        var timelineResponse = new GetDiscussionHistoriesForQualificationQueryResponse
+        {
+            QualificationDiscussionHistories = new List<GetDiscussionHistoriesForQualificationQueryResponse.QualificationDiscussionHistory>
+        {
+            new()
+            {
+                Id = Guid.NewGuid(),
+                QualificationId = Guid.NewGuid(),
+                ActionTypeId = Guid.NewGuid(),
+                Title = "Change",
+                Notes = "A note",
+                UserDisplayName = "Test User",
+                Timestamp = DateTime.UtcNow,
+                ActionType = new ActionType
+                {
+                    Id = Guid.NewGuid(),
+                    Description = "Changed"
+                }
+            }
+        }
+        };
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetDiscussionHistoriesForQualificationQuery>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.FromResult(new BaseMediatrResponse<GetDiscussionHistoriesForQualificationQueryResponse>
+            {
+                Success = true,
+                Value = timelineResponse
+            }));
+
+        var result = await controller.QualificationDetailsTimeline(QualificationReference);
+
+        var view = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<QualificationDetailsTimelineViewModel>(view.Model);
+
+        Assert.Multiple(() =>
+        {
+            Assert.Equal(QualificationReference, model.Qan);
+            Assert.Single(model.QualificationDiscussionHistories);
+            Assert.Equal("Change", model.QualificationDiscussionHistories.First().Title);
+            Assert.Equal("A note", model.QualificationDiscussionHistories.First().Notes);
+            Assert.Equal("Test User", model.QualificationDiscussionHistories.First().UserDisplayName);
+            Assert.NotNull(model.QualificationDiscussionHistories.First().ActionType);
+            Assert.Equal("Changed", model.QualificationDiscussionHistories.First().ActionType.Description);
+        });
+    }
+
+    [Fact]
+    public async Task QualificationDetailsTimeline_WhenMediatorThrows_RedirectsToQualificationDetails()
+    {
+        var controller = CreateController();
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetDiscussionHistoriesForQualificationQuery>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new Exception("test"));
+
+        var result = await controller.QualificationDetailsTimeline(QualificationReference);
+
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+
+        Assert.Multiple(() =>
+        {
+            Assert.Equal(nameof(NewController.QualificationDetails), redirect.ActionName);
+            Assert.Equal(QualificationReference, redirect.RouteValues!["qualificationReference"]);
         });
     }
 }

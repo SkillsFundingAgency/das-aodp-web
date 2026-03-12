@@ -172,17 +172,17 @@
                                         @foreach (var qualification in Model.NewQualifications)
                                         {
                                             var isChecked = Model.SelectedQualificationIds?.Contains(qualification.QualificationId) ?? false;
-                                            var theModel = new MultiSelectCheckboxCellViewModel
+                                            var checkboxModel = new MultiSelectCheckboxCellViewModel
                                             (
-                                            qualification.QualificationId,
-                                            qualification.Title,
-                                            isChecked,
-                                            nameof(Model.SelectedQualificationIds),
-                                            "qual"
+                                                qualification.QualificationId,
+                                                qualification.Title ?? string.Empty,
+                                                isChecked,
+                                                nameof(Model.SelectedQualificationIds),
+                                                "qual"
                                             );
                                             <tr class="govuk-table__row">
                                                 <partial name="~/Views/Shared/_SelectCheckboxCell.cshtml"
-                                                            model="theModel" />
+                                                            model="checkboxModel" />
 
                                                 <td class="govuk-table__cell">
                                                     @if (!string.IsNullOrWhiteSpace(qualification.Reference))

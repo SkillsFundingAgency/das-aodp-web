@@ -7,9 +7,9 @@ namespace SFA.DAS.AODP.Web.Models.BulkActions
     public class QualificationBulkActionResultViewModel
     {
         public string ProcessStatusName { get; set; } = "";
-        public int RequestedCount { get; set; }
-        public int UpdatedCount { get; set; }
-        public int ErrorCount { get; set; }
+        public int? RequestedCount { get; set; }
+        public int? UpdatedCount { get; set; }
+        public int? ErrorCount { get; set; }
 
         public List<BulkStatusUpdateErrorItemViewModel> MissingQualifications { get; set; } = new();
         public List<BulkStatusUpdateErrorItemViewModel> StatusUpdateFailed { get; set; } = new();

@@ -179,7 +179,7 @@ public class ChangedControllerTests
     {
         var controller = CreateController();
 
-        var result = await controller.QualificationDetails(qualificationReference: (string?)null);
+        var result = await controller.QualificationDetails(qualificationReference: null!);
 
         var redirect = Assert.IsType<RedirectResult>(result);
 

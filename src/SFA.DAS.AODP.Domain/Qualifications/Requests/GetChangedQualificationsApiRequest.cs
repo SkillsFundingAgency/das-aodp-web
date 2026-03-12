@@ -52,7 +52,7 @@ namespace SFA.DAS.AODP.Domain.Qualifications.Requests
                     queryParams.Add("QAN", QAN);
                 }
 
-                if (ProcessStatusFilter?.ProcessStatusIds?.Any() == true)
+                if (ProcessStatusFilter?.ProcessStatusIds?.Count > 0)
                 {
                     var ids = string.Join(",", ProcessStatusFilter.ProcessStatusIds);
                     ids = Uri.EscapeDataString(ids);

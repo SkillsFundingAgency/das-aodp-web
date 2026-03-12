@@ -189,7 +189,7 @@
                                                 var theModel = new MultiSelectCheckboxCellViewModel
                                                 (
                                                     qualification.QualificationId,
-                                                    qualification.QualificationTitle,
+                                                    qualification.QualificationTitle ?? string.Empty,
                                                     isChecked,
                                                     nameof(Model.SelectedQualificationIds),
                                                     "qual"
