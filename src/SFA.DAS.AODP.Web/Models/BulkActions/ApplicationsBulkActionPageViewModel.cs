@@ -3,9 +3,11 @@ using SFA.DAS.AODP.Application.Commands.Review;
 using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Validators.Messages;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SFA.DAS.AODP.Web.Models.BulkActions
 {
+    [ExcludeFromCodeCoverage]
     public abstract class ApplicationsBulkActionPageViewModel 
     {
         [MinLength(1, ErrorMessage = ValidationMessages.ApplicationsBulkAction.NoApplicationsSelected)]

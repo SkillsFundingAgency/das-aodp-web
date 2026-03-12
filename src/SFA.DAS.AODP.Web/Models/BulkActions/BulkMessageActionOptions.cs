@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using SFA.DAS.AODP.Application.Commands.Review;
 using SFA.DAS.AODP.Models.Users;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SFA.DAS.AODP.Web.Models.BulkActions.Options;
 
+[ExcludeFromCodeCoverage]
 public static class BulkMessageActionOptions
 {
     public static List<SelectListItem> Build() =>

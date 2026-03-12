@@ -1,7 +1,9 @@
 ﻿using SFA.DAS.AODP.Application.Commands.Review;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SFA.DAS.AODP.Web.Models.BulkActions
 {
+    [ExcludeFromCodeCoverage]
     public class ApplicationBulkActionErrorModel
     {
         public List<ApplicationBulkActionErrorItemViewModel> Failed { get; set; } = new();
@@ -9,6 +11,7 @@ namespace SFA.DAS.AODP.Web.Models.BulkActions
         public string BackLinkUrl { get; set; } = string.Empty;
     }
 
+    [ExcludeFromCodeCoverage]
     public class ApplicationBulkActionErrorItemViewModel
     {
         public int ReferenceNumber { get; set; }

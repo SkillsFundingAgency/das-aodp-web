@@ -1,5 +1,8 @@
-﻿namespace SFA.DAS.AODP.Web.Models.BulkActions
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace SFA.DAS.AODP.Web.Models.BulkActions
 {
+    [ExcludeFromCodeCoverage]
     public class QualificationBulkActionErrorModel
     {
         public List<QualificationBulkActionErrorItemViewModel> Failed { get; set; } = new();
@@ -7,6 +10,7 @@
         public string BackLinkUrl { get; set; } = string.Empty;
     }
 
+    [ExcludeFromCodeCoverage]
     public class QualificationBulkActionErrorItemViewModel
     {
         public Guid QualificationId { get; set; }
