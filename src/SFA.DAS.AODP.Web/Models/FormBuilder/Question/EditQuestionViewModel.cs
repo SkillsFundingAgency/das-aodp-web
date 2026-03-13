@@ -77,6 +77,9 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
             public class OptionItem
             {
                 public Guid Id { get; set; }
+
+                [DisplayName("Option item")]
+                [AllowedCharacters(TextCharacterProfile.FreeText)]
                 public string? Value { get; set; } = string.Empty;
                 public int Order { get; set; }
                 public bool DoesHaveAssociatedRoutes { get; set; } = false;
@@ -110,6 +113,9 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
         public class FileUploadOptions
         {
             public List<string>? FileTypes { get; set; } = new();
+
+            [DisplayName("File name prefix")]
+            [AllowedCharacters(TextCharacterProfile.Title)]
             public string? FileNamePrefix { get; set; }
             public int NumberOfFiles { get; set; }
         }
