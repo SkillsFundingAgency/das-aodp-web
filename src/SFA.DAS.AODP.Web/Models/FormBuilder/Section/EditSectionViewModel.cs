@@ -1,4 +1,6 @@
 ﻿using SFA.DAS.AODP.Application.Queries.FormBuilder.Sections;
+using SFA.DAS.AODP.Web.Validators.Attributes;
+using SFA.DAS.AODP.Web.Validators.Patterns;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SFA.DAS.AODP.Web.Models.FormBuilder.Section
@@ -6,7 +8,10 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Section
     public class EditSectionViewModel
     {
         public int Order { get; set; }
+
+        [AllowedCharacters(TextCharacterProfile.Title)]
         public string Title { get; set; }
+
         public Guid FormVersionId { get; set; }
         public Guid SectionId { get; set; }
         public List<Page> Pages { get; set; } = new();

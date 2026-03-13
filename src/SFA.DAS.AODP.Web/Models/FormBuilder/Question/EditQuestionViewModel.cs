@@ -3,6 +3,8 @@ using SFA.DAS.AODP.Application.Queries.FormBuilder.Questions;
 using SFA.DAS.AODP.Models.Forms;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Constants;
+using SFA.DAS.AODP.Web.Validators.Attributes;
+using SFA.DAS.AODP.Web.Validators.Patterns;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
@@ -18,14 +20,18 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
         public int Index { get; set; }
 
         [Required]
+        [AllowedCharacters(TextCharacterProfile.Title)]
         public string Title { get; set; } = string.Empty;
         [Required]
         public QuestionType Type { get; set; }
         [Required]
         public bool Required { get; set; }
 
+        [AllowedCharacters(TextCharacterProfile.Title)]
         public string? Hint { get; set; } = string.Empty;
         public bool DoesHaveAssociatedRoutes { get; set; } = false;
+
+        [AllowedCharacters(TextCharacterProfile.FreeText)]
         public string? Helper { get; set; }
         public string? HelperHTML { get; set; }
 
@@ -71,6 +77,9 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
             public class OptionItem
             {
                 public Guid Id { get; set; }
+
+                [DisplayName("Option item")]
+                [AllowedCharacters(TextCharacterProfile.FreeText)]
                 public string? Value { get; set; } = string.Empty;
                 public int Order { get; set; }
                 public bool DoesHaveAssociatedRoutes { get; set; } = false;
@@ -104,6 +113,9 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
         public class FileUploadOptions
         {
             public List<string>? FileTypes { get; set; } = new();
+
+            [DisplayName("File name prefix")]
+            [AllowedCharacters(TextCharacterProfile.Title)]
             public string? FileNamePrefix { get; set; }
             public int NumberOfFiles { get; set; }
         }

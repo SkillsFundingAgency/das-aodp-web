@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using SFA.DAS.AODP.Web.Validators.Patterns;
+using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 namespace SFA.DAS.AODP.Web.Validators.Attributes;
 public sealed class QualificationNumberAttribute : ValidationAttribute
@@ -7,7 +8,7 @@ public sealed class QualificationNumberAttribute : ValidationAttribute
         "Enter a qualification number in the format 12345678, 1234567X, 123/4567/8 or 123/4567/X";
 
     private static readonly Regex QanRegex =
-        new(@"^(?:\s*|\d{8}|\d{7}[A-Za-z]|\d{3}\/\d{4}\/(?:\d|[A-Za-z]))$",
+        new(ValidationPatterns.Format.QualificationNumber,
             RegexOptions.Compiled,
             TimeSpan.FromMilliseconds(100));
 

@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Web.Models.Qualifications;
+using SFA.DAS.AODP.Web.Validators.Attributes;
+using SFA.DAS.AODP.Web.Validators.Patterns;
 using System.ComponentModel.DataAnnotations;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Models.Qualifications;
@@ -15,6 +17,7 @@ public class QualificationSearchViewModel : IValidatableObject
 
     [Display(Name = "Qualification title or QAN")]
     [Required(ErrorMessage = "Enter a search term")]
+    [AllowedCharacters(TextCharacterProfile.FreeText)]
     public string SearchTerm { get; set; } = string.Empty; 
 
     // paging

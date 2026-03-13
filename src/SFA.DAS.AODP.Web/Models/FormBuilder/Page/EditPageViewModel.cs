@@ -1,15 +1,19 @@
 ﻿using SFA.DAS.AODP.Application.Queries.FormBuilder.Pages;
+using SFA.DAS.AODP.Web.Validators.Attributes;
+using SFA.DAS.AODP.Web.Validators.Patterns;
 
 namespace SFA.DAS.AODP.Web.Models.FormBuilder.Page
 {
     public class EditPageViewModel
     {
         public int Order { get; set; }
+
+        [AllowedCharacters(TextCharacterProfile.Title)]
         public string Title { get; set; }
         public Guid FormVersionId { get; set; }
         public Guid SectionId { get; set; }
         public Guid PageId { get; set; }
-        public List<Question> Questions { get; set; }
+        public List<Question> Questions { get; set; } = new List<Question>();
         public bool Editable { get; set; }
 
         public AdditionalPageActions AdditionalFormActions { get; set; } = new AdditionalPageActions();
@@ -18,7 +22,6 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Page
         {
             public Guid? MoveUp { get; set; }
             public Guid? MoveDown { get; set; }
-
         }
 
 

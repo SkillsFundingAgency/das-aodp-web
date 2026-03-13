@@ -38,6 +38,11 @@ public class PagesController : ControllerBase
     [Route("/admin/forms/{formVersionId}/sections/{sectionId}/pages/create")]
     public async Task<IActionResult> Create(CreatePageViewModel model)
     {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
         var command = new CreatePageCommand()
         {
             SectionId = model.SectionId,
@@ -69,6 +74,11 @@ public class PagesController : ControllerBase
     {
         try
         {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
             if (model.AdditionalFormActions.MoveUp != default)
             {
                 var command = new MoveQuestionUpCommand()

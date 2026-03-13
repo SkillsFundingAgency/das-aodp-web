@@ -36,6 +36,11 @@ public class SectionsController : ControllerBase
     {
         try
         {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
             var command = new CreateSectionCommand()
             {
                 FormVersionId = model.FormVersionId,
@@ -63,7 +68,6 @@ public class SectionsController : ControllerBase
         ShowNotificationIfKeyExists(SectionUpdatedKey, ViewNotificationMessageType.Success, "The section has been updated.");
 
         return View(EditSectionViewModel.Map(response));
-
     }
 
     [HttpPost]
@@ -72,6 +76,11 @@ public class SectionsController : ControllerBase
     {
         try
         {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
             if (model.AdditionalActions.MoveUp != default)
             {
                 var command = new MovePageUpCommand()

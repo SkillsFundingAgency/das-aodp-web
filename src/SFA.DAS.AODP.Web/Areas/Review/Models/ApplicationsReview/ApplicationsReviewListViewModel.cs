@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Constants;
+using SFA.DAS.AODP.Web.Validators.Attributes;
+using SFA.DAS.AODP.Web.Validators.Patterns;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
 {
@@ -14,7 +16,10 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
         public int Page { get; set; } = 1;
         public int ItemsPerPage { get; set; } = 10;
 
+        [AllowedCharacters(TextCharacterProfile.Title)]
         public string? ApplicationSearch { get; set; }
+
+        [AllowedCharacters(TextCharacterProfile.Title)]
         public string? AwardingOrganisationSearch { get; set; }
         public List<SelectListItem> ReviewerOptions { get; set; } = new();
         public string? ReviewerSelection { get; set; }
@@ -30,6 +35,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
         public List<ApplicationStatus> Status { get; set; }
         public string UserType { get; set; }
         public string FindRegulatedQualificationUrl { get; set; } = string.Empty;
+
+        public string AvailableReviewersJson { get; set; } = string.Empty;
 
         public class Application
         {
@@ -74,6 +81,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
 
             ReviewerOptions = GetReviewersForSearch(response.AvailableReviewers).ToList();       
         }
+
         private IEnumerable<SelectListItem> GetReviewersForSearch(
             IEnumerable<UserOption> availableReviewers,
             string? selectedReviewer = null)

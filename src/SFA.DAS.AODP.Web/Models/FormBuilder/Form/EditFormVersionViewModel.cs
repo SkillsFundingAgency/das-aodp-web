@@ -1,12 +1,18 @@
-﻿namespace SFA.DAS.AODP.Web.Models.FormBuilder.Form;
+﻿using SFA.DAS.AODP.Web.Validators.Attributes;
+using SFA.DAS.AODP.Web.Validators.Patterns;
+
+namespace SFA.DAS.AODP.Web.Models.FormBuilder.Form;
 public class EditFormVersionViewModel
 {
     public Guid Id { get; set; }
     public string? Version { get; set; }
     public string? Status { get; set; }
 
+    [AllowedCharacters(TextCharacterProfile.Title)]
     public string Title { get; set; }
     public int Order { get; set; }
+
+    [AllowedCharacters(TextCharacterProfile.FreeText)]
     public string Description { get; set; }
     public string? DescriptionHTML { get; set; }
     public AdditionalActions AdditionalFormActions { get; set; } = new AdditionalActions();
