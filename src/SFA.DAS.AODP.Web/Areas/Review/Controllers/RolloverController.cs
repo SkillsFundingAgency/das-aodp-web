@@ -168,6 +168,25 @@ public class RolloverController : ControllerBase
         return RedirectToAction(nameof(Index));
     }
 
+    [HttpGet]
+    [Route("/Review/Rollover/UploadQualificationCandidates")]
+    public IActionResult UploadQualificationCandidates()
+    {
+        return View(new RolloverUploadQualificationCandidatesViewModel());
+    }
+
+    [HttpPost]
+    [Route("/Review/Rollover/UploadQualificationCandidates")]
+    public async Task<IActionResult> UploadQualificationCandidates([FromForm] RolloverUploadQualificationCandidatesViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        return RedirectToAction("FundingStreamInclusionExclusion");
+    }
+
     [ExcludeFromCodeCoverage]
     [HttpGet]
     [Route("/Review/Rollover/FundingStreamInclusionExclusion")]

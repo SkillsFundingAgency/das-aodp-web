@@ -1,0 +1,130 @@
+﻿@using SFA.DAS.AODP.Web.Areas.Review.Controllers
+@using SFA.DAS.AODP.Web.Extensions
+@using SFA.DAS.AODP.Web.Views.Shared
+@model SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.RolloverUploadQualificationCandidatesViewModel
+
+@{
+    ViewData["Title"] = "Import a list of candidates for rollover";
+
+    var backLinkModel = new BackLinkModel
+    {
+        Action = nameof(RolloverController.UploadQualificationCandidates),
+        Controller = "Rollover",
+        Area = "Review"
+    };
+
+
+    var fileHasError = ViewData.ModelState.TryGetValue(nameof(Model.File), out var fileState)
+                   && fileState.Errors.Count > 0;
+    var fileErrorMessage = fileHasError ? fileState.Errors.First().ErrorMessage : null;
+}
+
+@await Html.PartialAsync("_BackLinkPartial", backLinkModel)
+
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
+@if (fileHasError)
+{
+    <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert">
+        <h2 class="govuk-error-summary__title" id="error-summary-title">
+            There is a problem
+        </h2>
+        <div class="govuk-error-summary__body">
+            <ul class="govuk-list govuk-error-summary__list">
+                @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li><a href="#fileUpload">@fileErrorMessage</a></li>
+                }
+            </ul>
+        </div>
+    </div>
+}
+
+
+<h1 class="govuk-heading-l">@ViewData["Title"]</h1>
+
+<div id="uploadText">
+
+    <h2 class="govuk-body govuk-!-margin-bottom-1">Import file</h2>
+
+    <p class="govuk-hint">
+        This must be a correctly formatted CSV file which includes: QAN, level, type,
+        SSA and AO. Data within the table cannot include any commas or special characters.
+    </p>
+
+    <p class="govuk-hint">
+        Do not close this window, navigate away or refresh the page until it’s done.
+    </p>
+
+</div>
+
+<form asp-area="Review" asp-controller="Rollover" asp-action="UploadQualificationCandidates" method="post" enctype="multipart/form-data" id="uploadForm">
+
+    @Html.AntiForgeryToken()
+
+    @if (fileHasError)
+    {
+        <span class="govuk-error-message" id="File-error">
+            <span class="govuk-visually-hidden">Error:</span> @fileErrorMessage
+        </span>
+    }
+
+    <div id="fileSection" class="govuk-form-group">
+        <input asp-for="File" id="fileUpload"
+               type="file"
+               class="govuk-file-upload"
+               accept=".csv,text/csv"
+               required />
+    </div>
+
+    <div id="uploadingSection" style="display:none;">
+        <p class="govuk-body">File uploading</p>
+        <img src="/assets/images/spinner.svg"
+             alt="Loading"
+             class="upload-spinner govuk-!-display-inline-block govuk-!-margin-5" style="width:50px"
+             aria-hidden="true" />
+    </div>
+
+    <button type="submit" id="continueButton" class="govuk-button" data-module="govuk-button">
+        Continue
+    </button>
+
+</form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('uploadForm');
+        if (!form) return;
+
+        const fileSection = document.getElementById('fileSection');
+        const uploadText = document.getElementById('uploadText');
+        const uploadingSection = document.getElementById('uploadingSection');
+        const continueButton = document.getElementById('continueButton');
+        const fileInput = document.getElementById('fileUpload');
+
+        fileInput.addEventListener('change', () => {
+            const errorSummary = document.querySelector('.govuk-error-summary');
+            if (errorSummary) errorSummary.remove();
+
+            const fileError = document.getElementById('File-error');
+            if (fileError) fileError.remove();
+
+            fileSection.classList.remove('govuk-form-group--error');
+        });
+
+        form.addEventListener('submit', () => {
+
+            if (!fileInput || fileInput.files.length === 0) {
+                return;
+            }
+
+            fileSection.hidden = true;
+            uploadText.hidden = true;
+
+            uploadingSection.style.display = 'block';
+
+            continueButton.disabled = true;
+            continueButton.textContent = 'Uploading...';
+        }, { once: true });
+    });
+</script>
