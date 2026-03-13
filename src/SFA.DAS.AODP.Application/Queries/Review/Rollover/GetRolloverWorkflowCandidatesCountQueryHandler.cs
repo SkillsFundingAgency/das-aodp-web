@@ -30,6 +30,6 @@ public class GetRolloverWorkflowCandidatesCountQueryHandler : IRequestHandler<Ge
             response.ErrorMessage = ex.Message;
         }
 
-        return await Task.FromResult(response);
+        return response;
     }
 }

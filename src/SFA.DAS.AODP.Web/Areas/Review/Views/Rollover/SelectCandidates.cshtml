@@ -1,43 +1,37 @@
-﻿@model SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.RolloverSelectCandidatesViewModel
+﻿@using SFA.DAS.AODP.Web.Areas.Review.Controllers
+@using SFA.DAS.AODP.Web.Views.Shared
+@model SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.RolloverSelectCandidatesViewModel
 @{
     ViewData["Title"] = "How do you want to select candidates for rollover?";
+
+    var backLinkModel = new BackLinkModel
+    {
+        Action = @Model.ReturnUrl == nameof(RolloverController.PreviousFile) ? nameof(RolloverController.PreviousFile) : nameof(RolloverController.CheckData),
+        Controller = "Rollover",
+        Area = "Review"
+    };
 }
+
+@await Html.PartialAsync("_BackLinkPartial", backLinkModel)
 
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
-<a class="govuk-back-link" asp-action=@Model.ReturnUrl asp-controller="Rollover" asp-area="Review">Back</a>
+<form asp-area="Review" asp-controller="Rollover" asp-action="SelectCandidates" method="post">
+    @Html.AntiForgeryToken()
 
-<h1 class="govuk-heading-xl govuk-!-margin-bottom-2">@ViewData["Title"]</h1>
+    <input asp-for="ReturnUrl" type="hidden" />
 
-<div class="govuk-width-container">
-    <main class="govuk-main-wrapper">
-        <div class="govuk-grid-row">
-            <div class="govuk-grid-column-two-thirds" id="guide-contents">
+        <govuk-radios asp-for="@Model.SelectedOption">
+            <govuk-radios-fieldset>
+                <govuk-radios-fieldset-legend is-page-heading="true" class="govuk-fieldset__legend--l">@ViewData["Title"]</govuk-radios-fieldset-legend>
 
-                <form asp-area="Review" asp-controller="Rollover" asp-action="SelectCandidates" method="post">
-                    @Html.AntiForgeryToken()
+                @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.SelectedOption))
 
-                    <input asp-for="ReturnUrl" type="hidden" />
+                <govuk-radios-item value="ImportAList">Import a list</govuk-radios-item>
+                <govuk-radios-item value="GenerateAList">Generate a list of candidates by selecting level, type, SSA and AO</govuk-radios-item>
+            </govuk-radios-fieldset>
+        </govuk-radios>
 
-                    <div class="govuk-form-group">
-                        <govuk-radios asp-for="@Model.SelectedOption">
-                            <govuk-radios-fieldset>
-                                <govuk-radios-fieldset-legend is-page-heading="false" class="govuk-fieldset__legend--s"></govuk-radios-fieldset-legend>
+    <govuk-button type="submit">Continue</govuk-button>
 
-                                @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.SelectedOption))
-
-                                <govuk-radios-item value="ImportAList">Import a list</govuk-radios-item>
-                                <govuk-radios-item value="GenerateAList">Generate a list of candidates by selecting level, type, SSA and AO</govuk-radios-item>
-                            </govuk-radios-fieldset>
-                        </govuk-radios>
-                    </div>
-
-                    <div class="govuk-form-group govuk-!-margin-top-6">
-                        <govuk-button type="submit">Continue</govuk-button>
-                    </div>
-                </form>
-
-            </div>
-        </div>
-    </main>
-</div>
+</form>

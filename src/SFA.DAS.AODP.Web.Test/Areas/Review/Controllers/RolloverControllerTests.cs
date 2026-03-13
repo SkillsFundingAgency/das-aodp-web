@@ -545,7 +545,6 @@ public class RolloverControllerTests
         var viewResult = Assert.IsType<ViewResult>(result);
         Assert.Equal("SelectCandidates", viewResult.ViewName);
         Assert.Same(posted, viewResult.Model);
-        Assert.Equal("How do you want to select candidates for rollover", controller.ViewData["Title"]);
     }
 
     [Fact]

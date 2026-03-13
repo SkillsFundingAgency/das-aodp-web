@@ -52,11 +52,7 @@ public class RolloverController : ControllerBase
         }
 
         var session = GetSessionModel();
-        session.Start = new RolloverStart
-        {
-            SelectedProcess = model.SelectedProcess
-        };
-
+        (session.Start ??= new RolloverStart()).SetStart(session, model);
         SaveSessionModel(session);
 
         return model.SelectedProcess switch
@@ -136,8 +132,7 @@ public class RolloverController : ControllerBase
                 model.PldnsListLastImported = latest?.EndTime ?? latest?.StartTime;
             }
 
-            session.ImportStatus = RolloverImportStatusViewModel.MapToSession(model);
-
+            (session.ImportStatus ??= new RolloverImportStatus()).SetImportStatus(session, model);
             SaveSessionModel(session);
         }
         catch (Exception ex)
@@ -179,10 +174,11 @@ public class RolloverController : ControllerBase
             {
                 try
                 {
-                    sessionModel.PreviousData = new RolloverPreviousData
+                    var previousData = new RolloverPreviousDataViewModel
                     {
                         CandidateCount = count
                     };
+                    (sessionModel.PreviousData ??= new RolloverPreviousData()).SetPreviousDataCandidate(sessionModel, previousData);
                     SaveSessionModel(sessionModel);
                 }
                 catch (Exception ex)
@@ -224,13 +220,9 @@ public class RolloverController : ControllerBase
             CandidateCount = candidateCount.TotalRecords
         };
 
-        session.PreviousData = new RolloverPreviousData
-        {
-            CandidateCount = model.CandidateCount
-        };
+        (session.PreviousData ??= new RolloverPreviousData()).SetPreviousDataCandidate(session, model);
         SaveSessionModel(session);
 
-        ViewData["Title"] = "We found a list of candidates for rollover you worked on previously.";
         return View("PreviousFile", model);
     }
 
@@ -247,7 +239,7 @@ public class RolloverController : ControllerBase
         var session = GetSessionModel();
         try
         {
-            session.PreviousData!.SelectedOption = model.SelectedOption;
+            (session.PreviousData ??= new RolloverPreviousData()).SetPreviousDataCandidate(session, model);
             SaveSessionModel(session);
         }
         catch (Exception ex)
@@ -288,19 +280,13 @@ public class RolloverController : ControllerBase
     [ValidateAntiForgeryToken]
     public IActionResult SelectCandidates([FromForm] RolloverSelectCandidatesViewModel model)
     {
-        ViewData["Title"] = "How do you want to select candidates for rollover";
-
         if (!ModelState.IsValid)
         {
             return View("SelectCandidates", model);
         }
 
         var session = GetSessionModel();
-        session.SelectCandidates = new RolloverSelectCandidates
-        {
-            SelectedOption = model.SelectedOption,
-            ReturnUrl = model.ReturnUrl
-        };
+        (session.SelectCandidates ??= new RolloverSelectCandidates()).SetSelectCandidates(session, model);
         SaveSessionModel(session);
 
         return model.SelectedOption switch
