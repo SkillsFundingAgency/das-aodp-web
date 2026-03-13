@@ -21,6 +21,9 @@ public static class AddConfigurationOptionsExtension
         services.Configure<ImportBlobStorageSettings>(configuration.GetSection("ImportBlobStorageSettings"));
         services.AddSingleton(cfg => cfg.GetRequiredService<IOptions<ImportBlobStorageSettings>>().Value);
 
+        services.Configure<ImportFileUploadSettings>(configuration.GetSection("ImportFileUploadSettings"));
+        services.AddSingleton(cfg => cfg.GetRequiredService<IOptions<ImportFileUploadSettings>>().Value);
+
         services.Configure<AodpConfiguration>(configuration);
         services.AddSingleton(cfg => cfg.GetRequiredService<IOptions<AodpConfiguration>>().Value);
     }

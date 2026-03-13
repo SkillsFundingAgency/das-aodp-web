@@ -16,8 +16,11 @@ using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApproval;
 using SFA.DAS.AODP.Web.Authentication;
+using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.User;
+using SFA.DAS.AODP.Web.Models.Application;
+using SFA.DAS.AODP.Web.Models.RelatedLinks;
 using System.IO.Compression;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
@@ -106,7 +109,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             });
         }
 
-        [Route("review/application-reviews/{applicationReviewId}")]
+
+        [Route("review/application-reviews/{applicationReviewId}", Name = RouteNames.Review_ViewApplication)]
         public async Task<IActionResult> ViewApplication(Guid applicationReviewId, [FromQuery] string? returnUrl = null)
         {
             var userType = _userHelperService.GetUserType();
@@ -121,6 +125,13 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             ShowNotificationIfKeyExists(UpdateKeys.ReviewerUpdated.ToString(), ViewNotificationMessageType.Success, "The application's reviewer has been updated.");
 
             var applicationReviewViewModel = ApplicationReviewViewModel.Map(review, userType);
+            applicationReviewViewModel.SetLinks(
+                Url,
+                UserType,
+                new RelatedLinksContext
+                {
+                    ApplicationReviewId = applicationReviewId
+                });
 
             applicationReviewViewModel.BackUrl = BuildBackUrl(returnUrl, review.Qan);
 
@@ -547,7 +558,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
         [Authorize(Policy = PolicyConstants.IsReviewUser)]
         [HttpGet]
-        [Route("review/application-reviews/{applicationReviewId}/details")]
+        [Route("review/application-reviews/{applicationReviewId}/details", Name = RouteNames.Review_ViewApplicationReadOnlyDetails)]
         public async Task<IActionResult> ViewApplicationReadOnlyDetails(Guid applicationReviewId)
         {
             var applicationId = await GetApplicationIdWithAccessValidation(applicationReviewId);
@@ -644,6 +655,11 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
             var vm = ApplicationReviewViewModel.Map(review, userType);
             vm.Qan = attemptedQan;
+
+            vm.SetLinks(
+                Url,
+                UserType,
+                new RelatedLinksContext { ApplicationReviewId = applicationReviewId });
 
             return View(nameof(ViewApplication), vm);
         }
