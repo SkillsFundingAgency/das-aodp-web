@@ -22,7 +22,7 @@ public class RolloverController : ControllerBase
     private const string SessionKey = "RolloverSession";
     private readonly IValidator<RolloverEligibilityDatesViewModel> _rolloverEligibilityDatesViewModeValidator;
     private readonly IValidator<RolloverFundingApprovalEndDateViewModel> _rolloverFundingApprovalEndDateViewModelViewModeValidator;
-    private const string RolloverStartView = "RolloverStart";
+
     public RolloverController(ILogger<RolloverController> logger, IMediator mediator, IValidator<RolloverEligibilityDatesViewModel> validatorEligibilityDates, IValidator<RolloverFundingApprovalEndDateViewModel> validatorApprovalEndDate) : base(mediator, logger)
     {
         _logger = logger;
@@ -39,7 +39,7 @@ public class RolloverController : ControllerBase
             ? new RolloverStartViewModel { SelectedProcess = session.Start.SelectedProcess }
             : new RolloverStartViewModel();
 
-        return View(RolloverStartView, model);
+        return View("RolloverStart", model);
     }
 
     [HttpPost]
@@ -59,7 +59,7 @@ public class RolloverController : ControllerBase
         {
             RolloverProcess.InitialSelection => RedirectToAction(nameof(CheckData)),
             RolloverProcess.FinalUpload => RedirectToAction(nameof(UploadQualifications)),
-            _ => View(RolloverStartView, model)
+            _ => View("RolloverStart", model)
         };
     }
 
@@ -251,7 +251,7 @@ public class RolloverController : ControllerBase
         {
             RolloverPreviousFileOption.ContinueProcessing => RedirectToAction(nameof(SelectFundingStreams)),
             RolloverPreviousFileOption.RemovePrevious => RedirectToAction(nameof(SelectCandidates), new { returnAction = nameof(PreviousFile) }),
-            _ => View(RolloverStartView, model)
+            _ => View("RolloverStart", model)
         };
     }
 
