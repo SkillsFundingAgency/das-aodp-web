@@ -1,0 +1,18 @@
+﻿@using SFA.DAS.AODP.Web.Areas.Review.Controllers
+@using SFA.DAS.AODP.Web.Views.Shared
+@{
+    ViewData["Title"] = "Checking data";
+}
+
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-one-quarter">
+        <div class="govuk-!-text-align-centre">
+            <h1 class="govuk-heading-l">@ViewData["Title"]</h1>
+            <img src="/assets/images/spinner.svg"
+                 alt="Loading"
+                 style="width:50px">
+        </div>
+    </div>
+</div>

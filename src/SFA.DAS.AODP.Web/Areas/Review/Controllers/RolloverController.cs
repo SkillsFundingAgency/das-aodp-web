@@ -233,11 +233,6 @@ public class RolloverController : ControllerBase
     }
 
     [ExcludeFromCodeCoverage]
-    [HttpGet]
-    [Route("/Review/Rollover/EnterRolloverEligibilityDates")]
-    public IActionResult EnterRolloverEligibilityDates() => View();
-
-    [ExcludeFromCodeCoverage]
     private List<FundingStream> GetFundingStreams()
     {
         return new List<FundingStream>
@@ -254,10 +249,29 @@ public class RolloverController : ControllerBase
         };
     }
 
+    [HttpGet]
+    [Route("/Review/Rollover/EnterRolloverEligibilityDates")]
+    public async Task<IActionResult> EnterRolloverEligibilityDates() => View();
+
+    [HttpPost]
+    [Route("/Review/Rollover/EnterRolloverEligibilityDates")]
+    public async Task<IActionResult> EnterRolloverEligibilityDates(RolloverEligibilityDatesViewModel model)
+    {
+        var validation = await _rolloverEligibilityDatesViewModeValidator.ValidateAsync(model);
+        validation.AddToModelState(ModelState);
+
+        if (!ModelState.IsValid)
+        {
+            return View("EnterRolloverEligibilityDates", model);
+        }
+
+        return RedirectToAction(nameof(EnterRolloverFundingApprovalEndDate));
+    }
+
+    [HttpGet]
     [Route("/Review/Rollover/EnterRolloverFundingApprovalEndDate")]
     public IActionResult EnterRolloverFundingApprovalEndDate()
     {
-        ViewData["Title"] = "Set the end date for funding extension";
         return View();
     }
 
@@ -274,7 +288,12 @@ public class RolloverController : ControllerBase
             return View("EnterRolloverFundingApprovalEndDate", model);
         }
 
-        return RedirectToAction(nameof(EnterRolloverFundingApprovalEndDate));
+        return CheckingData();
+    }
+
+    public IActionResult CheckingData()
+    {
+        return View();
     }
 
     private Rollover GetSessionModel()

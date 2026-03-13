@@ -65,21 +65,21 @@
                     <div class="govuk-form-group">
                         <label class="govuk-label govuk-date-input__label" for="MaxApprovalEndDate_Day">Day</label>
                         <input class="govuk-input govuk-date-input__input govuk-input--width-2 @(maxApprovalEndDateDayError ? "govuk-input--error" : "")"
-                               asp-for="MaxApprovalEndDate.Day" maxlength="2" type="text" autocomplete="off" />
+                               asp-for="MaxApprovalEndDate.Day" maxlength="2" type="text" autocomplete="off" value="1"/>
                     </div>
                 </div>
                 <div class="govuk-date-input__item">
                     <div class="govuk-form-group">
                         <label class="govuk-label govuk-date-input__label" for="MaxApprovalEndDate_Month">Month</label>
                         <input class="govuk-input govuk-date-input__input govuk-input--width-2 @(maxApprovalEndDateMonthError ? "govuk-input--error" : "")"
-                               asp-for="MaxApprovalEndDate.Month" maxlength="2" type="text" autocomplete="off" />
+                               asp-for="MaxApprovalEndDate.Month" maxlength="2" type="text" autocomplete="off" value="1" />
                     </div>
                 </div>
                 <div class="govuk-date-input__item">
                     <div class="govuk-form-group">
                         <label class="govuk-label govuk-date-input__label" for="MaxApprovalEndDate_Year">Year</label>
                         <input class="govuk-input govuk-date-input__input govuk-input--width-4 @(maxApprovalEndDateYearError ? "govuk-input--error" : "")"
-                               asp-for="MaxApprovalEndDate.Year" maxlength="4" type="text" autocomplete="off" />
+                               asp-for="MaxApprovalEndDate.Year" maxlength="4" type="text" autocomplete="off" value="2027"/>
                     </div>
                 </div>
             </div>
