@@ -1,0 +1,37 @@
+﻿@using SFA.DAS.AODP.Web.Areas.Review.Controllers
+@using SFA.DAS.AODP.Web.Views.Shared
+@model SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.RolloverPreviousDataViewModel
+@{
+    ViewData["Title"] = "We found a list of candidates for rollover you worked on previously.";
+    ViewData["Question"] = "What would you like to do?";
+
+    var backLinkModel = new BackLinkModel
+    {
+        Action = nameof(RolloverController.CheckData),
+        Controller = "Rollover",
+        Area = "Review"
+    };
+}
+
+@await Html.PartialAsync("_BackLinkPartial", backLinkModel)
+
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
+<h1 class="govuk-heading-xl">We found a list of candidates for rollover you worked on previously.</h1>
+
+<form asp-area="Review" asp-controller="Rollover" asp-action="PreviousFile" method="post">
+    @Html.AntiForgeryToken()
+
+    <govuk-radios asp-for="SelectedOption">
+        <govuk-radios-fieldset>
+            <govuk-radios-fieldset-legend is-page-heading="true" class="govuk-fieldset__legend--m">@ViewData["Question"]</govuk-radios-fieldset-legend>
+
+            @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.SelectedOption))
+
+            <govuk-radios-item value="ContinueProcessing">Continue processing the @Model.CandidateCount previously imported candidates?</govuk-radios-item>
+            <govuk-radios-item value="RemovePrevious">Remove the previously imported candidates and either upload or generate a new list?</govuk-radios-item>
+        </govuk-radios-fieldset>
+    </govuk-radios>
+
+    <govuk-button type="submit">Continue</govuk-button>
+</form>
