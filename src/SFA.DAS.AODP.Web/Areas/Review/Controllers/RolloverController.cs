@@ -12,7 +12,7 @@ using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Extensions;
-
+using System.Diagnostics.CodeAnalysis;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers;
@@ -45,7 +45,7 @@ public class RolloverController : ControllerBase
             ? new RolloverStartViewModel { SelectedProcess = session.Start.SelectedProcess }
             : new RolloverStartViewModel();
 
-        return View(RolloverStartView, model);
+        return View("RolloverStart", model);
     }
 
     [HttpPost]
@@ -58,18 +58,14 @@ public class RolloverController : ControllerBase
         }
 
         var session = GetSessionModel();
-        session.Start = new RolloverStart
-        {
-            SelectedProcess = model.SelectedProcess
-        };
-
+        (session.Start ??= new RolloverStart()).SetStart(session, model);
         SaveSessionModel(session);
 
         return model.SelectedProcess switch
         {
             RolloverProcess.InitialSelection => RedirectToAction(nameof(CheckData)),
             RolloverProcess.FinalUpload => RedirectToAction(nameof(UploadQualifications)),
-            _ => View(RolloverStartView, model)
+            _ => View("RolloverStart", model)
         };
     }
 
@@ -142,8 +138,7 @@ public class RolloverController : ControllerBase
                 model.PldnsListLastImported = latest?.EndTime ?? latest?.StartTime;
             }
 
-            session.ImportStatus = RolloverImportStatusViewModel.MapToSession(model);
-
+            (session.ImportStatus ??= new RolloverImportStatus()).SetImportStatus(session, model);
             SaveSessionModel(session);
         }
         catch (Exception ex)
@@ -178,17 +173,18 @@ public class RolloverController : ControllerBase
 
         if (!sessionCountAvailable)
         {
-            var candidateCount = await Send(new GetRolloverWorkflowCandidatesQuery());
-            count = candidateCount?.Data?.Count ?? 0;
+            var candidateCount = await Send(new GetRolloverWorkflowCandidatesCountQuery());
+            count = candidateCount.TotalRecords;
 
             if (count > 0)
             {
                 try
                 {
-                    sessionModel.PreviousData = new RolloverPreviousData
+                    var previousData = new RolloverPreviousDataViewModel
                     {
                         CandidateCount = count
                     };
+                    (sessionModel.PreviousData ??= new RolloverPreviousData()).SetPreviousDataCandidate(sessionModel, previousData);
                     SaveSessionModel(sessionModel);
                 }
                 catch (Exception ex)
@@ -223,20 +219,16 @@ public class RolloverController : ControllerBase
             return View("PreviousFile", vm);
         }
 
-        var candidateCount = await Send(new GetRolloverWorkflowCandidatesQuery());
+        var candidateCount = await Send(new GetRolloverWorkflowCandidatesCountQuery());
 
         var model = new RolloverPreviousDataViewModel
         {
-            CandidateCount = candidateCount.Data.Count
+            CandidateCount = candidateCount.TotalRecords
         };
 
-        session.PreviousData = new RolloverPreviousData
-        {
-            CandidateCount = model.CandidateCount
-        };
+        (session.PreviousData ??= new RolloverPreviousData()).SetPreviousDataCandidate(session, model);
         SaveSessionModel(session);
 
-        ViewData["Title"] = "We found a list of candidates for rollover you worked on previously.";
         return View("PreviousFile", model);
     }
 
@@ -253,7 +245,7 @@ public class RolloverController : ControllerBase
         var session = GetSessionModel();
         try
         {
-            session.PreviousData!.SelectedOption = model.SelectedOption;
+            (session.PreviousData ??= new RolloverPreviousData()).SetPreviousDataCandidate(session, model);
             SaveSessionModel(session);
         }
         catch (Exception ex)
@@ -265,16 +257,65 @@ public class RolloverController : ControllerBase
         {
             RolloverPreviousFileOption.ContinueProcessing => RedirectToAction(nameof(SelectFundingStreams)),
             RolloverPreviousFileOption.RemovePrevious => RedirectToAction(nameof(SelectCandidates), new { returnAction = nameof(PreviousFile) }),
-            _ => View(RolloverStartView, model)
+            _ => View("RolloverStart", model)
         };
     }
 
     [HttpGet]
     [Route("/Review/Rollover/SelectCandidates")]
-    public IActionResult SelectCandidates(string? returnAction = null)
+    public IActionResult SelectCandidates([FromQuery] string? returnAction = null)
     {
-        ViewData["Title"] = "How do you want to select candidates for rollover";
-        ViewData["ReturnAction"] = returnAction ?? nameof(CheckData);
+        var session = GetSessionModel();
+        var model = new RolloverSelectCandidatesViewModel();
+
+        if (session.SelectCandidates != null)
+        {
+            model.SelectedOption = session.SelectCandidates.SelectedOption;
+            model.ReturnUrl ??= returnAction ?? session.SelectCandidates.ReturnUrl;
+        }
+        else
+        {
+            model.ReturnUrl ??= returnAction ?? nameof(CheckData);
+        }
+        
+        return View("SelectCandidates", model);
+    }
+
+    [HttpPost]
+    [Route("/Review/Rollover/SelectCandidates")]
+    [ValidateAntiForgeryToken]
+    public IActionResult SelectCandidates([FromForm] RolloverSelectCandidatesViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View("SelectCandidates", model);
+        }
+
+        var session = GetSessionModel();
+        (session.SelectCandidates ??= new RolloverSelectCandidates()).SetSelectCandidates(session, model);
+        SaveSessionModel(session);
+
+        return model.SelectedOption switch
+        {
+            SelectCandidatesForRollover.ImportAList => RedirectToAction(nameof(ImportCandidatesList)),
+            SelectCandidatesForRollover.GenerateAList  => RedirectToAction(nameof(RolloverQueryBuilder)),
+            _ => View()
+        };
+    }
+
+    [HttpGet]
+    [Route("/Review/Rollover/ImportCandidatesList")]
+    public IActionResult ImportCandidatesList()
+    {
+        ViewData["Title"] = "Import Candidates List ";
+        return View();
+    }
+
+    [HttpGet]
+    [Route("/Review/Rollover/RolloverQueryBuilder")]
+    public IActionResult RolloverQueryBuilder()
+    {
+        ViewData["Title"] = "Rollover Query Builder";
         return View();
     }
 
