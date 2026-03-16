@@ -87,6 +87,13 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 {
                     case SubmitAction.Assign:
                         {
+                            _logger.LogInformation(
+                                "WEB CONTROLLER: Bulk Assign selected. Count={Count}, Reviewer1={Reviewer1}, Reviewer2={Reviewer2}",
+                                model.SelectedApplicationReviewIds?.Count,
+                                model.BulkActionInputViewModel?.Reviewer1,
+                                model.BulkActionInputViewModel?.Reviewer2);
+
+
                             var input = model.BulkActionInputViewModel;
 
                             var reviewer1Selection = input.Reviewer1?.Trim();
@@ -141,6 +148,11 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
                     case SubmitAction.Message:
                         {
+                            _logger.LogInformation(
+                                "WEB CONTROLLER: Bulk Message selected. Count={Count}, ActionType={ActionType}",
+                                model.SelectedApplicationReviewIds?.Count,
+                                model.BulkActionInputViewModel?.BulkActionType);
+
                             var result = await Send(new BulkApplicationActionCommand
                             {
                                 ApplicationReviewIds = model.SelectedApplicationReviewIds,

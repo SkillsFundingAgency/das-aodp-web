@@ -1,5 +1,6 @@
 ﻿using AutoFixture;
 using AutoFixture.AutoMoq;
+using Microsoft.Extensions.Logging;
 using Moq;
 using SFA.DAS.AODP.Application.Commands.Review;
 using SFA.DAS.AODP.Domain.Application.Application;
@@ -14,6 +15,7 @@ public class BulkApplicationActionCommandHandlerTests
     private readonly IFixture _fixture;
     private readonly Mock<IApiClient> _apiClientMock;
     private readonly BulkApplicationActionCommandHandler _handler;
+    private readonly ILogger<BulkApplicationActionCommandHandler> _logger;
 
     public BulkApplicationActionCommandHandlerTests()
     {
@@ -21,7 +23,9 @@ public class BulkApplicationActionCommandHandlerTests
 
         _apiClientMock = _fixture.Freeze<Mock<IApiClient>>();
 
-        _handler = new BulkApplicationActionCommandHandler(_apiClientMock.Object);
+        _logger = _fixture.Freeze<Mock<ILogger<BulkApplicationActionCommandHandler>>>().Object;
+
+        _handler = new BulkApplicationActionCommandHandler(_apiClientMock.Object, _logger);
     }
 
     [Fact]

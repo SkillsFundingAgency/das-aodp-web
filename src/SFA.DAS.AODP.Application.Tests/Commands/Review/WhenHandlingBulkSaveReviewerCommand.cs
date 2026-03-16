@@ -1,5 +1,6 @@
 ﻿using AutoFixture;
 using AutoFixture.AutoMoq;
+using Microsoft.Extensions.Logging;
 using Moq;
 using SFA.DAS.AODP.Application.Commands.Review;
 using SFA.DAS.AODP.Domain.Interfaces;
@@ -13,6 +14,7 @@ public class BulkSaveReviewerCommandHandlerTests
     private readonly IFixture _fixture;
     private readonly Mock<IApiClient> _apiClientMock;
     private readonly BulkSaveReviewerCommandHandler _handler;
+    private readonly ILogger<BulkSaveReviewerCommandHandler> _logger;
 
     public BulkSaveReviewerCommandHandlerTests()
     {
@@ -20,7 +22,9 @@ public class BulkSaveReviewerCommandHandlerTests
 
         _apiClientMock = _fixture.Freeze<Mock<IApiClient>>();
 
-        _handler = new BulkSaveReviewerCommandHandler(_apiClientMock.Object);
+        _logger = _fixture.Freeze<Mock<ILogger<BulkSaveReviewerCommandHandler>>>().Object;
+
+        _handler = new BulkSaveReviewerCommandHandler(_apiClientMock.Object, _logger);
     }
 
     [Fact]
