@@ -443,6 +443,12 @@ public class RolloverController : ControllerBase
             return View("EnterRolloverFundingApprovalEndDate", model);
         }
 
+        return CheckingData();
+    }
+
+    public IActionResult CheckingData()
+    {
+        Thread.Sleep(3000);
         return RedirectToAction(nameof(InitialChecksExport));
     }
 
@@ -450,8 +456,6 @@ public class RolloverController : ControllerBase
     [Route("/Review/Rollover/InitialChecksExport")]
     public async Task<IActionResult> InitialChecksExport()
     {
-        // Mock DB call
-        await Task.Delay(3000);
         return View();
     }
 
