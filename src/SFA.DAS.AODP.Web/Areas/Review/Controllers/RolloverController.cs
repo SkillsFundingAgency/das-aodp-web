@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using SFA.DAS.AODP.Application.Queries.Import;
 using SFA.DAS.AODP.Application.Queries.Review.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
@@ -9,6 +10,7 @@ using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Extensions;
+using System.Composition;
 using System.Diagnostics.CodeAnalysis;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
@@ -441,11 +443,15 @@ public class RolloverController : ControllerBase
             return View("EnterRolloverFundingApprovalEndDate", model);
         }
 
-        return CheckingData();
+        return RedirectToAction(nameof(InitialChecksExport));
     }
 
-    public IActionResult CheckingData()
+    [HttpGet]
+    [Route("/Review/Rollover/InitialChecksExport")]
+    public async Task<IActionResult> InitialChecksExport()
     {
+        // Mock DB call
+        await Task.Delay(3000);
         return View();
     }
 
