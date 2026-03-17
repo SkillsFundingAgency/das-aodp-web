@@ -62,6 +62,11 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         {
             var viewModel = await BuildIndexViewModelAsync(query, selectAll);
 
+            ShowNotificationIfKeyExists(
+                    BulkActionApplications.SuccessKey,
+                    ViewNotificationMessageType.Success,
+                    BulkActionApplications.SuccessMessage);
+
             return View(viewModel);
         }
 
@@ -212,7 +217,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             return RedirectToAction(nameof(BulkApplicationError));
         }
 
-        [HttpGet]
         [HttpGet]
         [Route("review/application-reviews/bulk-error")]
         public IActionResult BulkApplicationError()
@@ -546,7 +550,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
             if (reviewerUpdateResult.DuplicateReviewerError)
             {
-                ModelState.AddModelError(model.ReviewerFieldName, "Reviewer 1 and 2 must be different people.");
+                ModelState.AddModelError(model.ReviewerFieldName, ValidationMessages.Reviewer1Reviewer2Conflict);
 
                 var review = await Send(new GetApplicationForReviewByIdQuery(model.ApplicationReviewId));
 
