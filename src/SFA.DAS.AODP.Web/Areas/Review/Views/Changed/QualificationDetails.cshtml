@@ -10,6 +10,8 @@
         Action = "Index",
         Controller = "Changed"
     };
+
+    var isReadOnly = false;
 }
 
 @await Html.PartialAsync("_BackLinkPartial", backLinkModel)
@@ -17,7 +19,7 @@
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
 <span class="govuk-caption-xl">
-    @(Model.IsApplicationCompleted ? "Completed qualification" : "Qualification with changes")
+    @(Model.IsQualificationCompleted ? "Completed qualification" : "Qualification with changes")
 </span>
 <h1 class="govuk-heading-xl">Qualification Details</h1>
 
@@ -185,7 +187,7 @@
             </div>
         }
 
-        @if (!Model.IsApplicationCompleted)
+        @if (!isReadOnly)
         {
             <form asp-controller="Changed" asp-action="QualificationDetails" method="post">
                 @Html.HiddenFor(m => m.Version)
