@@ -6,13 +6,10 @@
 
 @{
     ViewData["Title"] = "Funding review decision";
-    bool validForSubmit = true;
 }
 
-@if (Model.Status == ApplicationStatus.NotApproved && Model.OfferFundingDetails.Count > 0)
+@if (Model.Messages.Any())
 {
-    validForSubmit = false;
-
     <div class="govuk-notification-banner" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
         <div class="govuk-notification-banner__header">
             <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
@@ -20,72 +17,13 @@
             </h2>
         </div>
         <div class="govuk-notification-banner__content">
-            <p class="govuk-notification-banner__heading">
-                The application status is 'Not approved', but there are approved offers for the application.
-                <br /> <br />
-                Please review the funding decision.
-            </p>
+            @foreach (var message in Model.Messages)
+            {
+                <p class="govuk-notification-banner__heading">@message</p>
+            }
         </div>
     </div>
 }
-else if (Model.Status != ApplicationStatus.NotApproved && Model.Status != ApplicationStatus.Approved)
-{
-    validForSubmit = false;
-
-    <div class="govuk-notification-banner" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
-        <div class="govuk-notification-banner__header">
-            <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
-                Important
-            </h2>
-        </div>
-        <div class="govuk-notification-banner__content">
-            <p class="govuk-notification-banner__heading">
-                The application status is not valid.
-                <br /> <br />
-                Please either approve or reject the application for funding before informing the AO.
-            </p>
-        </div>
-    </div>
-}
-else if (Model.RelatedQualification == null && Model.Approved)
-{
-    validForSubmit = false;
-
-    <div class="govuk-notification-banner" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
-        <div class="govuk-notification-banner__header">
-            <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
-                Important
-            </h2>
-        </div>
-        <div class="govuk-notification-banner__content">
-            <p class="govuk-notification-banner__heading">
-                <span>
-                    The application's QAN does not match any regulated qualification.
-                </span>
-            </p>
-        </div>
-    </div>
-}
-else if (Model.RelatedQualification != null && Model.RelatedQualification.Status != ProcessStatus.DecisionRequired)
-{
-    validForSubmit = false;
-
-    <div class="govuk-notification-banner" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
-        <div class="govuk-notification-banner__header">
-            <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
-                Important
-            </h2>
-        </div>
-        <div class="govuk-notification-banner__content">
-            <p class="govuk-notification-banner__heading">
-                <span>
-                    The Ofqual qualification status is not valid to confirm the decision. The current qualification status is: @Model.RelatedQualification.Status.
-                </span>
-            </p>
-        </div>
-    </div>
-}
-
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
@@ -222,7 +160,14 @@ else if (Model.RelatedQualification != null && Model.RelatedQualification.Status
                           asp-Controller="ApplicationsReview" method="post">
 
                         <div class="govuk-form-group govuk-!-margin-bottom-0">
-                            <govuk-button class="govuk-button" type="submit" disabled="@(!validForSubmit)">Inform AO of decision</govuk-button>
+                            @if (Model.CanSubmit)
+                            {
+                                <govuk-button class="govuk-button" type="submit">Inform AO of decision</govuk-button>
+                            }
+                            else
+                            {
+                                <govuk-button class="govuk-button" type="submit" disabled>Inform AO of decision</govuk-button>
+                            }
                             <a class="govuk-button govuk-button--secondary"
                                asp-area="Review"
                                asp-action="ViewApplication"

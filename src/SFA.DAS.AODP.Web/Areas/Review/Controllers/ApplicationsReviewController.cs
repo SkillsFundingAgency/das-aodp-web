@@ -255,8 +255,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             var offers = await Send(new GetFundingOffersQuery());
             var review = await Send(new GetQfauFeedbackForApplicationReviewConfirmationQuery(applicationReviewId));
 
-            var model = QfauFundingDecisionViewModel.Map(review, offers);
-            model.ApplicationReviewId = applicationReviewId;
+            var model = QfauFundingDecisionViewModel.Map(applicationReviewId, review, offers);
 
             return View(model);
         }
