@@ -10,7 +10,6 @@ namespace SFA.DAS.AODP.Web.Models.BulkActions
     [ExcludeFromCodeCoverage]
     public abstract class ApplicationsBulkActionPageViewModel 
     {
-        [MinLength(1, ErrorMessage = ValidationMessages.ApplicationsBulkAction.NoApplicationsSelected)]
         public List<Guid> SelectedApplicationReviewIds { get; set; } = new();
 
         public List<SelectListItem> ReviewerOptions { get; set; } = new();

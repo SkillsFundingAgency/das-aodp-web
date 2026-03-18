@@ -129,7 +129,7 @@ public class ApplicationsReviewControllerBulkActionTests
 
         var redirect = Assert.IsType<RedirectToActionResult>(result);
         Assert.Equal(nameof(ApplicationsReviewController.Index), redirect.ActionName);
-        Assert.True((bool)_controller.TempData[BulkActionApplications.SuccessKey]!);
+        Assert.True((bool)_controller.TempData[BulkActionApplications.BulkActionSuccessKey]!);
     }
 
     [Fact]
@@ -372,7 +372,7 @@ public class ApplicationsReviewControllerBulkActionTests
 
         var redirect = Assert.IsType<RedirectToActionResult>(result);
         Assert.Equal(nameof(ApplicationsReviewController.Index), redirect.ActionName);
-        Assert.True((bool)_controller.TempData[BulkActionApplications.SuccessKey]!);
+        Assert.True((bool)_controller.TempData[BulkActionApplications.BulkActionSuccessKey]!);
     }
 
     [Fact]

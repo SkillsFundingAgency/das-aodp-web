@@ -53,10 +53,23 @@
 
     string ModifyQueryStringValue(string p_Name, string p_NewValue)
     {
-
         var nameValues = HttpUtility.ParseQueryString(ViewContext.HttpContext.Request.QueryString.ToString());
         nameValues.Set(p_Name, p_NewValue);
-        string url = ViewContext.HttpContext.Request.Path;
+
+        string url;
+
+        if (!string.IsNullOrWhiteSpace(Model.ActionName) &&
+            !string.IsNullOrWhiteSpace(Model.ControllerName))
+        {
+            url = Url.Action(
+                Model.ActionName,
+                Model.ControllerName,
+                new { area = ViewContext.RouteData.Values["area"] })!;
+        }
+        else
+        {
+            url = ViewContext.HttpContext.Request.Path.ToString();
+        }
 
         string updatedQueryString = "?" + nameValues.ToString();
         return url + updatedQueryString;
@@ -68,7 +81,7 @@
     {
 
         int previousPage = Model.CurrentPage - 1;
-        string previusPageUrl = ModifyQueryStringValue("Page", previousPage.ToString());
+        string previusPageUrl = ModifyQueryStringValue("PageNumber", previousPage.ToString());
 
         <div class="govuk-pagination__prev">
             <a class="govuk-link govuk-pagination__link" href="@previusPageUrl" rel="prev">
@@ -94,7 +107,7 @@
             }
             else
             {
-                string pageUrl = ModifyQueryStringValue("Page", block.ToString());
+                string pageUrl = ModifyQueryStringValue("PageNumber", block.ToString());
 
                 <li class="govuk-pagination__item  @(Model.CurrentPage == block ? "govuk-pagination__item--current" : "")">
                     <a class="govuk-link govuk-pagination__link" href="@pageUrl" aria-label="Page @block">
@@ -108,7 +121,7 @@
         @if (Model.CurrentPage < Model.MaxPageNumber)
         {
             int nextPage = Model.CurrentPage + 1;
-            string nextPageUrl = ModifyQueryStringValue("Page", nextPage.ToString());
+            string nextPageUrl = ModifyQueryStringValue("PageNumber", nextPage.ToString());
 
             <div class="govuk-pagination__next">
                 <a class="govuk-link govuk-pagination__link" href="@nextPageUrl" rel="next">

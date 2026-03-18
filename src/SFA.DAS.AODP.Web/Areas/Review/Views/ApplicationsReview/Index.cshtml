@@ -146,12 +146,13 @@
             </div>
 
         </form>
+        <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
 
         @if (Model.Applications.Count != 0 && Model.TotalItems.HasValue)
         {
             int startNumber = (Model.PageNumber - 1) * Model.RecordsPerPage + 1;
             int endNumber = Math.Min(Model.PageNumber * Model.RecordsPerPage, Model.TotalItems.Value);
-
+            <h3 class="govuk-heading-m">Applications</h3>
             <p class="govuk-heading-s">Viewing @startNumber-@endNumber of @Model.TotalItems qualifications</p>
         }
 
@@ -292,7 +293,7 @@
                     CurrentPage = Model.PageNumber,
                     MaxPageNumber = (int)Math.Ceiling((double)Model.TotalItems / Model.RecordsPerPage),
                     ActionName = "Index",
-                    ControllerName = nameof(ApplicationsReviewController)
+                    ControllerName = nameof(ApplicationsReviewController).Replace("Controller", "")
                 };
             }
             <p class="govuk-body">Navigating to another page clears this selection. If you want to comment or assign actions to results on this page, do so before clicking on another page.</p>

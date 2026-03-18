@@ -63,9 +63,14 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             var viewModel = await BuildIndexViewModelAsync(query, selectAll);
 
             ShowNotificationIfKeyExists(
-                    BulkActionApplications.SuccessKey,
-                    ViewNotificationMessageType.Success,
-                    BulkActionApplications.SuccessMessage);
+                BulkActionApplications.BulkActionSuccessKey,
+                ViewNotificationMessageType.Success,
+                BulkActionApplications.BulkActionSuccessMessage);
+
+            ShowNotificationIfKeyExists(
+                BulkActionApplications.SaveReviewersSuccessKey,
+                ViewNotificationMessageType.Success,
+                BulkActionApplications.SaveReviewersSuccessMessage);
 
             return View(viewModel);
         }
@@ -76,6 +81,18 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             ApplicationsBulkActionPostModel model,
             ApplicationsReviewQuery applicationQuery)
         {
+            if (model.SelectedApplicationReviewIds.Count == 0)
+            {
+                var message = model.BulkActionInputViewModel?.SubmitAction switch
+                {
+                    SubmitAction.Assign => ValidationMessages.ApplicationsBulkAction.NoApplicationsSelectedForReviewers,
+                    SubmitAction.Message => ValidationMessages.ApplicationsBulkAction.NoApplicationsSelectedForAction,
+                    _ => ValidationMessages.ApplicationsBulkAction.NoApplicationsSelectedForAction
+                };
+
+                ModelState.AddModelError(nameof(model.SelectedApplicationReviewIds), message);
+            }
+
 
             if (!ModelState.IsValid)
             {
@@ -129,7 +146,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                             var result = await Send(command);
                             if (result.ErrorCount == 0)
                             {
-                                TempData[BulkActionApplications.SuccessKey] = true;
+                                TempData[BulkActionApplications.SaveReviewersSuccessKey] = true;
                                 return RedirectToAction(nameof(Index), applicationQuery.ToRouteValues());
                             }
 
@@ -169,7 +186,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
                             if(result.ErrorCount == 0)
                             {
-                                TempData[BulkActionApplications.SuccessKey] = true;
+                                TempData[BulkActionApplications.BulkActionSuccessKey] = true;
                                 return RedirectToAction(nameof(Index), applicationQuery.ToRouteValues());
                             }
 
