@@ -3,10 +3,15 @@
     public class QualificationCandidate
     {
         public string? QualificationNumber { get; set; }
-        public string? Title { get; set; }
+        public Guid QualificationVersionId { get; set; }
+        public string? QualificationName { get; set; }
         public string? AwardingOrganisation { get; set; }
         public string? FundingOfferId { get; set; }
-        public string? FundingOffer { get; set; }
+        public string? FundingOfferName { get; set; }
         public DateTime? FundingApprovalEndDate { get; set; }
+
+        public Guid RolloverCandidateId { get; set; }
+        public bool IsActive { get; set; }
+        public string? AcademicYear { get; init; }
     }
 }

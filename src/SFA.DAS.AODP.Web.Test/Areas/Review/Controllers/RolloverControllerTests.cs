@@ -344,7 +344,7 @@ public class RolloverControllerTests
             .ReturnsAsync(new BaseMediatrResponse<GetRolloverWorkflowCandidatesCountQueryResponse>
             {
                 Success = true,
-                Value = new GetRolloverWorkflowCandidatesCountQueryResponse { TotalRecords = 5}
+                Value = new GetRolloverWorkflowCandidatesCountQueryResponse { TotalRecords = 5 }
             });
 
         var session = CreateEmptySession();
@@ -699,11 +699,10 @@ public class RolloverControllerTests
             {
                 RolloverCandidates = new List<RolloverCandidate>
                 {
-                new RolloverCandidate
-                {
-                    Qan = "12345",
-                    Title = "Test Qualification"
-                }
+                    new RolloverCandidate
+                    {
+                        QualificationNumber = "12345"
+                    }
                 }
             }
         });

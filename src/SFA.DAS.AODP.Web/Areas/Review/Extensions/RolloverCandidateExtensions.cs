@@ -1,5 +1,4 @@
-﻿using Azure;
-using SFA.DAS.AODP.Application.Queries.Review.Rollover;
+﻿using SFA.DAS.AODP.Application.Queries.Review.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Extensions
@@ -13,7 +12,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Extensions
                 .Select(g => new FundingStream
                 {
                     Id = g.First().FundingOfferId!,
-                    Name = g.First().FundingOffer!
+                    Name = g.First().FundingOfferName!
                 })
                 .ToList();
         }
@@ -24,17 +23,21 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Extensions
 
             foreach (var item in items)
             {
-                var candidate = rolloverCandidates.Where(x => x.Qan == item.QualificationNumber).FirstOrDefault();
+                var candidate = rolloverCandidates.Where(x => x.QualificationNumber == item.QualificationNumber).FirstOrDefault();
 
                 if (candidate != null)
                     list.Add(new QualificationCandidate
                     {
-                        QualificationNumber = candidate.Qan,
-                        Title = candidate.Title,
+                        QualificationNumber = candidate.QualificationNumber,
                         FundingOfferId = candidate.FundingOfferId.ToString(),
-                        FundingOffer = candidate.FundingOffer,
-                        AwardingOrganisation = candidate.AwardingOrganisation,
-                        FundingApprovalEndDate = candidate.FundingApprovalEndDate
+                        FundingOfferName = candidate.FundingOfferName,
+                        AcademicYear = candidate.AcademicYear,
+                        RolloverCandidateId = candidate.Id,
+                        QualificationVersionId = candidate.QualificationVersionId,
+                        IsActive = candidate.IsActive,
+                        AwardingOrganisation = item.AwardingOrganisation,
+                        FundingApprovalEndDate = item.FundingApprovalEndDate,                        
+                        QualificationName = item.QualificationName
                     });
             }
 
