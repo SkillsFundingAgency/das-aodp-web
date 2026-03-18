@@ -93,7 +93,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 ModelState.AddModelError(nameof(model.SelectedApplicationReviewIds), message);
             }
 
-
+                            
             if (!ModelState.IsValid)
             {
                 var viewModel = await BuildIndexViewModelAsync(

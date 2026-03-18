@@ -129,7 +129,7 @@ public class ApplicationsReviewControllerBulkActionTests
 
         var redirect = Assert.IsType<RedirectToActionResult>(result);
         Assert.Equal(nameof(ApplicationsReviewController.Index), redirect.ActionName);
-        Assert.True((bool)_controller.TempData[BulkActionApplications.BulkActionSuccessKey]!);
+        Assert.True((bool)_controller.TempData[BulkActionApplications.SaveReviewersSuccessKey]!);
     }
 
     [Fact]
