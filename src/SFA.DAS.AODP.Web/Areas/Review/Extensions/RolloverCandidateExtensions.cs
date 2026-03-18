@@ -29,12 +29,11 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Extensions
                     list.Add(new QualificationCandidate
                     {
                         QualificationNumber = candidate.QualificationNumber,
-                        FundingOfferId = candidate.FundingOfferId.ToString(),
+                        FundingOfferId = candidate.FundingOfferId,
                         FundingOfferName = candidate.FundingOfferName,
                         AcademicYear = candidate.AcademicYear,
                         RolloverCandidateId = candidate.Id,
                         QualificationVersionId = candidate.QualificationVersionId,
-                        IsActive = candidate.IsActive,
                         AwardingOrganisation = item.AwardingOrganisation,
                         FundingApprovalEndDate = item.FundingApprovalEndDate,                        
                         QualificationName = item.QualificationName

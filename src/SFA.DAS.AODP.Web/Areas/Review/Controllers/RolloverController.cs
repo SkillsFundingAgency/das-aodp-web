@@ -3,6 +3,8 @@ using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SFA.DAS.AODP.Application.Commands.Application.Review;
+using SFA.DAS.AODP.Application.Commands.Rollover;
 using SFA.DAS.AODP.Application.Queries.Import;
 using SFA.DAS.AODP.Application.Queries.Review.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
@@ -12,7 +14,9 @@ using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Extensions;
+using SFA.DAS.AODP.Web.Helpers.User;
 using System.Diagnostics.CodeAnalysis;
+using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers;
@@ -27,13 +31,20 @@ public class RolloverController : ControllerBase
     private readonly ICsvFileReader _csvFileReader;
     private readonly IValidator<RolloverEligibilityDatesViewModel> _rolloverEligibilityDatesViewModeValidator;
     private readonly IValidator<RolloverFundingApprovalEndDateViewModel> _rolloverFundingApprovalEndDateViewModelViewModeValidator;
+    private readonly IUserHelperService _userHelperService;
 
-    public RolloverController(ILogger<RolloverController> logger, IMediator mediator, IValidator<RolloverEligibilityDatesViewModel> validatorEligibilityDates, IValidator<RolloverFundingApprovalEndDateViewModel> validatorApprovalEndDate, ICsvFileReader csvFileReader) : base(mediator, logger)
+    public RolloverController(ILogger<RolloverController> logger,
+        IMediator mediator,
+        IValidator<RolloverEligibilityDatesViewModel> validatorEligibilityDates,
+        IValidator<RolloverFundingApprovalEndDateViewModel> validatorApprovalEndDate,
+        ICsvFileReader csvFileReader,
+        IUserHelperService userHelperService) : base(mediator, logger)
     {
         _logger = logger;
         _rolloverEligibilityDatesViewModeValidator = validatorEligibilityDates;
         _rolloverFundingApprovalEndDateViewModelViewModeValidator = validatorApprovalEndDate;
         _csvFileReader = csvFileReader;
+        _userHelperService = userHelperService;
     }
 
     [HttpGet]
@@ -277,7 +288,7 @@ public class RolloverController : ControllerBase
         {
             model.ReturnUrl ??= returnAction ?? nameof(CheckData);
         }
-        
+
         return View("SelectCandidates", model);
     }
 
@@ -298,7 +309,7 @@ public class RolloverController : ControllerBase
         return model.SelectedOption switch
         {
             SelectCandidatesForRollover.ImportAList => RedirectToAction(nameof(ImportCandidatesList)),
-            SelectCandidatesForRollover.GenerateAList  => RedirectToAction(nameof(RolloverQueryBuilder)),
+            SelectCandidatesForRollover.GenerateAList => RedirectToAction(nameof(RolloverQueryBuilder)),
             _ => View()
         };
     }
@@ -430,7 +441,7 @@ public class RolloverController : ControllerBase
     public async Task<IActionResult> FundingStreamInclusionExclusion(FundingStreamInclusionExclusionViewModel vm, string action)
     {
         var session = GetSessionModel();
-        var validIds = new List<string>();
+        var validIds = new List<Guid>();
 
         if (session.RolloverFundingStream != null)
         {
@@ -470,12 +481,25 @@ public class RolloverController : ControllerBase
 
     [HttpGet]
     [Route("/Review/Rollover/EnterRolloverEligibilityDates")]
-    public async Task<IActionResult> EnterRolloverEligibilityDates() => View();
+    public async Task<IActionResult> EnterRolloverEligibilityDates()
+    {
+        var session = GetSessionModel();
+        var model = new RolloverEligibilityDatesViewModel();
+
+        model.FundingEndDate = session.RolloverEligibilityDates?.FundingEndDate
+                               ?? model.FundingEndDate;
+
+        model.OperationalEndDate = session.RolloverEligibilityDates?.OperationalEndDate
+                                   ?? model.OperationalEndDate;
+
+        return View(model);
+    }
 
     [HttpPost]
     [Route("/Review/Rollover/EnterRolloverEligibilityDates")]
     public async Task<IActionResult> EnterRolloverEligibilityDates(RolloverEligibilityDatesViewModel model)
     {
+        var session = GetSessionModel();
         var validation = await _rolloverEligibilityDatesViewModeValidator.ValidateAsync(model);
         validation.AddToModelState(ModelState);
 
@@ -484,6 +508,14 @@ public class RolloverController : ControllerBase
             return View("EnterRolloverEligibilityDates", model);
         }
 
+        session.RolloverEligibilityDates = new RolloverEligibilityDates
+        {
+            FundingEndDate = model.FundingEndDate,
+            OperationalEndDate = model.OperationalEndDate
+        };
+
+        SaveSessionModel(session);
+
         return RedirectToAction(nameof(EnterRolloverFundingApprovalEndDate));
     }
 
@@ -491,13 +523,20 @@ public class RolloverController : ControllerBase
     [Route("/Review/Rollover/EnterRolloverFundingApprovalEndDate")]
     public IActionResult EnterRolloverFundingApprovalEndDate()
     {
-        return View();
+        var session = GetSessionModel();
+        var model = new RolloverFundingApprovalEndDateViewModel();
+
+        model.MaxApprovalEndDate = session.RolloverFundingApprovalEndDate
+                               ?? model.MaxApprovalEndDate;
+
+        return View(model);
     }
 
     [HttpPost]
     [Route("/Review/Rollover/EnterRolloverFundingApprovalEndDate")]
     public async Task<IActionResult> EnterRolloverFundingApprovalEndDate(RolloverFundingApprovalEndDateViewModel model)
     {
+        var session = GetSessionModel();
         var validation = await _rolloverFundingApprovalEndDateViewModelViewModeValidator.ValidateAsync(model);
 
         validation.AddToModelState(ModelState);
@@ -506,6 +545,44 @@ public class RolloverController : ControllerBase
         {
             return View("EnterRolloverFundingApprovalEndDate", model);
         }
+
+        session.RolloverFundingApprovalEndDate = new RolloverFundingApprovalEndDate
+        {
+            Day = model.MaxApprovalEndDate?.Day,
+            Month = model.MaxApprovalEndDate?.Month,
+            Year = model.MaxApprovalEndDate?.Year,
+        };
+
+        SaveSessionModel(session);
+
+        var candidates = session.RolloverCandidates ?? new List<QualificationCandidate>();
+        var eligibility = session.RolloverEligibilityDates;
+        var stream = session.RolloverFundingStream;
+
+        var academicYear = candidates
+            .Select(c => c.AcademicYear)
+            .FirstOrDefault(y => !string.IsNullOrWhiteSpace(y));
+
+        var candidateIds = candidates
+            .Select(c => c.RolloverCandidateId)
+            .Distinct()
+            .ToList();
+
+        var fundingOfferIds = (stream?.SelectedIds ?? Enumerable.Empty<Guid>())
+            .Distinct()
+            .ToList();
+
+        var response = await Send(new CreateRolloverWorkflowRunCommand()
+        {
+            AcademicYear = academicYear,
+            SelectionMethod = SelectionMethod.FileUpload,
+            FundingEndDateEligibilityThreshold = session.RolloverEligibilityDates?.FundingEndDate?.ToDateTime(),
+            OperationalEndDateEligibilityThreshold = session.RolloverEligibilityDates?.OperationalEndDate?.ToDateTime(),
+            MaximumApprovalFundingEndDate = session.RolloverFundingApprovalEndDate?.ToDateTime(),
+            RolloverCandidateIds = candidateIds,
+            FundingOfferIds = fundingOfferIds,
+            CreatedByUserName = _userHelperService.GetUserDisplayName()
+        });
 
         return RedirectToAction(nameof(EnterRolloverFundingApprovalEndDate));
     }
