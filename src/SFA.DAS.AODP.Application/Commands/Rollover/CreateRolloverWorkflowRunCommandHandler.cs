@@ -27,6 +27,7 @@ namespace SFA.DAS.AODP.Application.Commands.Rollover
             {
                 response.Success = false;
                 response.ErrorMessage = ex.Message;
+                response.Value = null;
             }
 
             return response;

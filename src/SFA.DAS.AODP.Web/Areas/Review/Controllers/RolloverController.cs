@@ -3,6 +3,7 @@ using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using SFA.DAS.AODP.Application.Commands.Application.Review;
 using SFA.DAS.AODP.Application.Commands.Rollover;
 using SFA.DAS.AODP.Application.Queries.Import;
@@ -572,9 +573,9 @@ public class RolloverController : ControllerBase
             .Distinct()
             .ToList();
 
-        var response = await Send(new CreateRolloverWorkflowRunCommand()
+        var command = new CreateRolloverWorkflowRunCommand()
         {
-            AcademicYear = academicYear,
+            AcademicYear = academicYear!,
             SelectionMethod = SelectionMethod.FileUpload,
             FundingEndDateEligibilityThreshold = session.RolloverEligibilityDates?.FundingEndDate?.ToDateTime(),
             OperationalEndDateEligibilityThreshold = session.RolloverEligibilityDates?.OperationalEndDate?.ToDateTime(),
@@ -582,7 +583,9 @@ public class RolloverController : ControllerBase
             RolloverCandidateIds = candidateIds,
             FundingOfferIds = fundingOfferIds,
             CreatedByUserName = _userHelperService.GetUserDisplayName()
-        });
+        };
+
+        var response = await Send(command);
 
         return RedirectToAction(nameof(EnterRolloverFundingApprovalEndDate));
     }
