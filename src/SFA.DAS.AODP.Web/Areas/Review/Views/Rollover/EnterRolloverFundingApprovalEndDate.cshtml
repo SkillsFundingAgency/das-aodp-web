@@ -22,72 +22,108 @@
 
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
-<h1 class="govuk-heading-l">@ViewData["Title"]</h1>
+<div id="allSection">
 
-<form asp-area="Review" asp-controller="Rollover" asp-action="EnterRolloverFundingApprovalEndDate" method="post" novalidate="novalidate">
+    <h1 class="govuk-heading-l">@ViewData["Title"]</h1>
 
-    <!-- Max Approval End Date -->
-    <div class="govuk-form-group" @(maxApprovalEndDateGroupError ? "govuk-form-group--error" : "")">
-        <fieldset class="govuk-fieldset" role="group" aria-describedby="max-approval-end-date-hint">
-            <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
-                <h2 class="govuk-fieldset__heading">Maximum approval end date</h2>
-            </legend>
+    <form asp-area="Review" asp-controller="Rollover" asp-action="EnterRolloverFundingApprovalEndDate" method="post" novalidate="novalidate" id="rolloverForm">
 
-            <div id="max-approval-end-date-hint" class="govuk-hint">
-                For example, 31 8 2027
-            </div>
+        <!-- Max Approval End Date -->
+        <div class="govuk-form-group" @(maxApprovalEndDateGroupError ? "govuk-form-group--error" : "")">
+            <fieldset class="govuk-fieldset" role="group" aria-describedby="max-approval-end-date-hint">
+                <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                    <h2 class="govuk-fieldset__heading">Maximum approval end date</h2>
+                </legend>
 
-            @if (maxApprovalEndDateGroupError)
-            {
-                <span id="max-approval-end-date-error" class="govuk-error-message">
-                    <span class="govuk-visually-hidden">Error:</span>
-                    @if (ViewData.ModelState["MaxApprovalEndDate"].Errors.Any())
-                    {
-                        @ViewData.ModelState["MaxApprovalEndDate"].Errors[0].ErrorMessage
-                    }
-                    else if (ViewData.ModelState["MaxApprovalEndDate.Day"].Errors.Any())
-                    {
-                        @ViewData.ModelState["MaxApprovalEndDate.Day"].Errors[0].ErrorMessage
-                    }
-                    else if (ViewData.ModelState["MaxApprovalEndDate.Month"].Errors.Any())
-                    {
-                        @ViewData.ModelState["MaxApprovalEndDate.Month"].Errors[0].ErrorMessage
-                    }
-                    else if (ViewData.ModelState["MaxApprovalEndDate.Year"].Errors.Any())
-                    {
-                        @ViewData.ModelState["MaxApprovalEndDate.Year"].Errors[0].ErrorMessage
-                    }
-                </span>
-            }
+                <div id="max-approval-end-date-hint" class="govuk-hint">
+                    For example, 31 8 2027
+                </div>
 
-            <div class="govuk-date-input">
-                <div class="govuk-date-input__item">
-                    <div class="govuk-form-group">
-                        <label class="govuk-label govuk-date-input__label" for="MaxApprovalEndDate_Day">Day</label>
-                        <input class="govuk-input govuk-date-input__input govuk-input--width-2 @(maxApprovalEndDateDayError ? "govuk-input--error" : "")"
-                               asp-for="MaxApprovalEndDate.Day" maxlength="2" type="text" autocomplete="off" />
+                @if (maxApprovalEndDateGroupError)
+                {
+                    <span id="max-approval-end-date-error" class="govuk-error-message">
+                        <span class="govuk-visually-hidden">Error:</span>
+                        @if (ViewData.ModelState["MaxApprovalEndDate"].Errors.Any())
+                        {
+                            @ViewData.ModelState["MaxApprovalEndDate"].Errors[0].ErrorMessage
+                        }
+                        else if (ViewData.ModelState["MaxApprovalEndDate.Day"].Errors.Any())
+                        {
+                            @ViewData.ModelState["MaxApprovalEndDate.Day"].Errors[0].ErrorMessage
+                        }
+                        else if (ViewData.ModelState["MaxApprovalEndDate.Month"].Errors.Any())
+                        {
+                            @ViewData.ModelState["MaxApprovalEndDate.Month"].Errors[0].ErrorMessage
+                        }
+                        else if (ViewData.ModelState["MaxApprovalEndDate.Year"].Errors.Any())
+                        {
+                            @ViewData.ModelState["MaxApprovalEndDate.Year"].Errors[0].ErrorMessage
+                        }
+                    </span>
+                }
+
+                <div class="govuk-date-input">
+                    <div class="govuk-date-input__item">
+                        <div class="govuk-form-group">
+                            <label class="govuk-label govuk-date-input__label" for="MaxApprovalEndDate_Day">Day</label>
+                            <input class="govuk-input govuk-date-input__input govuk-input--width-2 @(maxApprovalEndDateDayError ? "govuk-input--error" : "")"
+                                   asp-for="MaxApprovalEndDate.Day" maxlength="2" type="text" autocomplete="off" />
+                        </div>
+                    </div>
+                    <div class="govuk-date-input__item">
+                        <div class="govuk-form-group">
+                            <label class="govuk-label govuk-date-input__label" for="MaxApprovalEndDate_Month">Month</label>
+                            <input class="govuk-input govuk-date-input__input govuk-input--width-2 @(maxApprovalEndDateMonthError ? "govuk-input--error" : "")"
+                                   asp-for="MaxApprovalEndDate.Month" maxlength="2" type="text" autocomplete="off" />
+                        </div>
+                    </div>
+                    <div class="govuk-date-input__item">
+                        <div class="govuk-form-group">
+                            <label class="govuk-label govuk-date-input__label" for="MaxApprovalEndDate_Year">Year</label>
+                            <input class="govuk-input govuk-date-input__input govuk-input--width-4 @(maxApprovalEndDateYearError ? "govuk-input--error" : "")"
+                                   asp-for="MaxApprovalEndDate.Year" maxlength="4" type="text" autocomplete="off" />
+                        </div>
                     </div>
                 </div>
-                <div class="govuk-date-input__item">
-                    <div class="govuk-form-group">
-                        <label class="govuk-label govuk-date-input__label" for="MaxApprovalEndDate_Month">Month</label>
-                        <input class="govuk-input govuk-date-input__input govuk-input--width-2 @(maxApprovalEndDateMonthError ? "govuk-input--error" : "")"
-                               asp-for="MaxApprovalEndDate.Month" maxlength="2" type="text" autocomplete="off" />
-                    </div>
-                </div>
-                <div class="govuk-date-input__item">
-                    <div class="govuk-form-group">
-                        <label class="govuk-label govuk-date-input__label" for="MaxApprovalEndDate_Year">Year</label>
-                        <input class="govuk-input govuk-date-input__input govuk-input--width-4 @(maxApprovalEndDateYearError ? "govuk-input--error" : "")"
-                               asp-for="MaxApprovalEndDate.Year" maxlength="4" type="text" autocomplete="off" />
-                    </div>
-                </div>
-            </div>
-        </fieldset>
+            </fieldset>
+        </div>
+
+        <p class="govuk-hint">This will export a CSV file to your device.</p>
+
+        <govuk-button type="submit">Continue</govuk-button>
+
+    </form>
+
+</div>
+
+<div id="loadingContainer" class="govuk-grid-row" style="display:none;">
+    <div class="govuk-grid-column-one-half">
+        <h1 class="govuk-heading-l">Checking data against funding streams</h1>
+        <img src="/assets/images/spinner.svg"
+             alt="Loading"
+             style="width:50px">
     </div>
+</div>
 
-    <p class="govuk-hint">This will export a CSV file to your device.</p>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('rolloverForm');
+        const allSection = document.getElementById('allSection');
+        const loadingContainer = document.getElementById('loadingContainer');
 
-    <govuk-button type="submit">Continue</govuk-button>
+        if (!form || !allSection || !loadingContainer) return;
 
-</form>
+        // Ensure loader is hidden on initial page load
+        loadingContainer.style.display = 'none';
+
+        form.addEventListener('submit', () => {
+
+            // Hide the whole form section
+            allSection.style.display = 'none';
+
+            // Show spinner loading screen
+            loadingContainer.style.display = 'block';
+
+        }, { once: true });
+    });
+</script>

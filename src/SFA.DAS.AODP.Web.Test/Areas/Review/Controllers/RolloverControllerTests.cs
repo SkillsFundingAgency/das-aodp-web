@@ -16,6 +16,7 @@ using SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.User;
+using SFA.DAS.AODP.Web.Validators;
 
 namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers;
 
@@ -655,21 +656,6 @@ public class RolloverControllerTests
     }
 
     [Fact]
-    public async Task EnterRolloverEligibilityDates_Get_ReturnsViewAndSetsTitleAsync()
-    {
-        // Arrange
-        var session = CreateEmptySession();
-        var controller = CreateControllerWithSession(session);
-
-        // Act
-        var result = await controller.EnterRolloverEligibilityDates();
-        var viewResult = Assert.IsType<ViewResult>(result);
-
-        // Assert
-        Assert.Null(viewResult.ViewName); // default view
-    }
-
-    [Fact]
     public async Task UploadQualificationCandidates_ShouldRedirect_WhenValidMatchesFound()
     {
         // Arrange
@@ -1173,6 +1159,82 @@ public class RolloverControllerTests
 
         // Assert
         Assert.Null(viewResult.ViewName); // default view
+    }
+
+    [Fact]
+    public async Task EnterRolloverEligibilityDates_ReturnsView_WithModelPrefilledFromSession()
+    {
+        // Arrange
+        var expectedFunding = new RolloverEligibilityDate { Day = 10, Month = 2, Year = 2027 };
+        var expectedOperational = new RolloverEligibilityDate { Day = 20, Month = 4, Year = 2027 };
+
+        var sessionModel = new Rollover
+        {
+            RolloverEligibilityDates = new RolloverEligibilityDates
+            {
+                FundingEndDate = expectedFunding,
+                OperationalEndDate = expectedOperational
+            }
+        };
+
+        var session = CreateEmptySession();
+        session.SetString("RolloverSession", JsonConvert.SerializeObject(sessionModel));
+
+        var controller = CreateControllerWithSession(session);
+
+        // Act
+        var result = await controller.EnterRolloverEligibilityDates();
+        var viewResult = Assert.IsType<ViewResult>(result);
+
+        // Assert — default view (no explicit view name)
+        Assert.Null(viewResult.ViewName);
+
+        // Assert — model is populated from session
+        var model = Assert.IsType<RolloverEligibilityDatesViewModel>(viewResult.Model);
+        Assert.NotNull(model);
+
+        Assert.NotNull(model.FundingEndDate);
+        Assert.Equal(expectedFunding.Day, model.FundingEndDate.Day);
+        Assert.Equal(expectedFunding.Month, model.FundingEndDate.Month);
+        Assert.Equal(expectedFunding.Year, model.FundingEndDate.Year);
+
+        Assert.NotNull(model.OperationalEndDate);
+        Assert.Equal(expectedOperational.Day, model.OperationalEndDate.Day);
+        Assert.Equal(expectedOperational.Month, model.OperationalEndDate.Month);
+        Assert.Equal(expectedOperational.Year, model.OperationalEndDate.Year);
+    }
+
+    [Fact]
+    public async Task EnterRolloverEligibilityDates_ReturnsView_WhenModelStateInvalid()
+    {
+        // Arrange
+        var model = new RolloverEligibilityDatesViewModel
+        {
+            FundingEndDate = new RolloverEligibilityDate { Day = 0, Month = 0, Year = 0 }, // invalid example
+            OperationalEndDate = new RolloverEligibilityDate { Day = 0, Month = 0, Year = 0 }
+        };
+
+        _eligibilityDatesValidatorMock
+            .Setup(v => v.ValidateAsync(model, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult(new[]
+            {
+            new ValidationFailure(nameof(model.FundingEndDate), "Required"),
+            new ValidationFailure(nameof(model.OperationalEndDate), "Required")
+            }));
+
+        var session = CreateEmptySession();
+        var controller = CreateControllerWithSession(session);
+
+        // Act
+        var result = await controller.EnterRolloverEligibilityDates(model);
+
+        // Assert
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.Equal("EnterRolloverEligibilityDates", view.ViewName);
+        Assert.Same(model, view.Model);
+
+        // also ensure validator was invoked
+        _eligibilityDatesValidatorMock.Verify(v => v.ValidateAsync(model, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

@@ -587,7 +587,20 @@ public class RolloverController : ControllerBase
 
         var response = await Send(command);
 
-        return RedirectToAction(nameof(EnterRolloverFundingApprovalEndDate));
+        return CheckingData();
+    }
+
+    public IActionResult CheckingData()
+    {
+        Thread.Sleep(3000);
+        return RedirectToAction(nameof(InitialChecksExport));
+    }
+
+    [HttpGet]
+    [Route("/Review/Rollover/InitialChecksExport")]
+    public async Task<IActionResult> InitialChecksExport()
+    {
+        return View();
     }
 
     private Rollover GetSessionModel()
