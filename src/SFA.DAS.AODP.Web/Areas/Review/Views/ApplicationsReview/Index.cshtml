@@ -222,7 +222,7 @@
                     <tbody class="govuk-table__body">
                         @foreach (var item in Model.Applications.OrderByDescending(a => a.LastUpdated))
                         {
-                            var isChecked = Model.SelectedApplicationReviewIds.Contains(item.Id);
+                            var isChecked = Model.SelectedApplicationReviewIds.Contains(item.ApplicationReviewId);
                             var theModel = new MultiSelectCheckboxCellViewModel
                             (
                                 item.ApplicationReviewId,

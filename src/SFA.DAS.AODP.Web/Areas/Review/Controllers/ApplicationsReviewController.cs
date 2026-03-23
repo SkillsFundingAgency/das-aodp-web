@@ -870,7 +870,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
             if (selectAll)
             {
-                viewModel.SelectedApplicationReviewIds = viewModel.Applications.Select(a => a.Id).Distinct().ToList();
+                viewModel.SelectedApplicationReviewIds = viewModel.Applications.Select(a => a.ApplicationReviewId).Distinct().ToList();
             }
 
             viewModel.BulkActionOptions = BulkMessageActionOptions.Build();
