@@ -51,10 +51,35 @@
 
 @{
 
-    string ModifyQueryStringValue(string p_Name, string p_NewValue)
+    string ModifyQueryStringValue(string pageParamName, string newPageValue)
     {
-        var nameValues = HttpUtility.ParseQueryString(ViewContext.HttpContext.Request.QueryString.ToString());
-        nameValues.Set(p_Name, p_NewValue);
+        var query = HttpUtility.ParseQueryString(string.Empty);
+
+        if (Model.RouteValues != null)
+        {
+            foreach (var kvp in Model.RouteValues)
+            {
+                if (kvp.Value == null)
+                    continue;
+
+                if (kvp.Value is System.Collections.IEnumerable values && kvp.Value is not string)
+                {
+                    foreach (var item in values)
+                    {
+                        if (item != null)
+                        {
+                            query.Add(kvp.Key, item.ToString());
+                        }
+                    }
+                }
+                else
+                {
+                    query.Add(kvp.Key, kvp.Value.ToString());
+                }
+            }
+        }
+
+        query.Set(pageParamName, newPageValue);
 
         string url;
 
@@ -64,15 +89,16 @@
             url = Url.Action(
                 Model.ActionName,
                 Model.ControllerName,
-                new { area = ViewContext.RouteData.Values["area"] })!;
+                new { area = ViewContext.RouteData.Values["area"] }
+            )!;
         }
         else
         {
             url = ViewContext.HttpContext.Request.Path.ToString();
         }
 
-        string updatedQueryString = "?" + nameValues.ToString();
-        return url + updatedQueryString;
+        var queryString = query.ToString();
+        return string.IsNullOrEmpty(queryString) ? url : url + "?" + queryString;
     }
 }
 
@@ -81,10 +107,10 @@
     {
 
         int previousPage = Model.CurrentPage - 1;
-        string previusPageUrl = ModifyQueryStringValue("PageNumber", previousPage.ToString());
+        string previousPageUrl = ModifyQueryStringValue("PageNumber", previousPage.ToString());
 
         <div class="govuk-pagination__prev">
-            <a class="govuk-link govuk-pagination__link" href="@previusPageUrl" rel="prev">
+            <a class="govuk-link govuk-pagination__link" href="@previousPageUrl" rel="prev">
                 <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
                     <path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z"></path>
                 </svg>
