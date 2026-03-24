@@ -41,6 +41,13 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             ProcessStatus.NoActionRequired,
         ];
 
+        private List<string> BulkUpdateAllowedStatuses { get; set; } = new List<string>()
+        {
+            ProcessStatus.DecisionRequired,
+            ProcessStatus.NoActionRequired,
+            ProcessStatus.OnHold
+        };
+
         public enum NewQualDataKeys { InvalidPageParams, CommentSaved}
 
         public ChangedController(ILogger<ChangedController> logger, IOptions<AodpConfiguration> configuration, IMediator mediator, IUserHelperService userHelperService) : base(mediator, logger)
@@ -238,9 +245,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     Title = e.Title ?? "",
                     FailureReason = e.ErrorType switch
                     {
-                        BulkUpdateQualificationsErrorType.Missing => "Qualification not found.",
-                        BulkUpdateQualificationsErrorType.StatusUpdateFailed => "Status update failed.",
-                        BulkUpdateQualificationsErrorType.HistoryFailed => "Status updated but history was not updated.",
+                        BulkQualificationErrorType.Missing => "Qualification not found.",
+                        BulkQualificationErrorType.StatusUpdateFailed => "Status update failed.",
+                        BulkQualificationErrorType.HistoryFailed => "Status updated but history was not updated.",
                         _ => "Unknown error."
                     }
                 }).ToList();

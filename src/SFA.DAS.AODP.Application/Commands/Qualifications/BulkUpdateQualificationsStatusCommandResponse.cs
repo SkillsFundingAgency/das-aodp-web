@@ -10,19 +10,20 @@ namespace SFA.DAS.AODP.Application.Commands.Qualifications
         public int RequestedCount { get; init; }
         public int UpdatedCount { get; init; }
         public int ErrorCount { get; init; }
-        public IReadOnlyCollection<BulkUpdateQualificationsErrorDto> Errors { get; init; } = [];
+        public IReadOnlyCollection<BulkQualificationErrorDto> Errors { get; init; }
+            = Array.Empty<BulkQualificationErrorDto>();
     }
 
     [ExcludeFromCodeCoverage]
-    public class BulkUpdateQualificationsErrorDto
+    public class BulkQualificationErrorDto
     {
         public Guid QualificationId { get; init; }
         public string Qan { get; init; } = default!;
         public string Title { get; init; } = default!;
-        public BulkUpdateQualificationsErrorType ErrorType { get; init; }
+        public BulkQualificationErrorType ErrorType { get; init; }
     }
 
-    public enum BulkUpdateQualificationsErrorType
+    public enum BulkQualificationErrorType
     {
         Missing = 1,
         StatusUpdateFailed = 2,

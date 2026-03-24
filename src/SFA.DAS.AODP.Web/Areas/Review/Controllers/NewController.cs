@@ -321,9 +321,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     Title = e.Title ?? "",
                     FailureReason = e.ErrorType switch
                     {
-                        BulkUpdateQualificationsErrorType.Missing => "Qualification not found",
-                        BulkUpdateQualificationsErrorType.StatusUpdateFailed => "Status update failed",
-                        BulkUpdateQualificationsErrorType.HistoryFailed => "Status updated but history was not updated",
+                        BulkQualificationErrorType.Missing => "Qualification not found",
+                        BulkQualificationErrorType.StatusUpdateFailed => "Status update failed",
+                        BulkQualificationErrorType.HistoryFailed => "Status updated but history was not updated",
                         _ => "Unknown error."
                     }
                 }).ToList();

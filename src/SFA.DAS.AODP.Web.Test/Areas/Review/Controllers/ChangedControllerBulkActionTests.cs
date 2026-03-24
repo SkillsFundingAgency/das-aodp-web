@@ -305,15 +305,15 @@ public class ChangedControllerBulkActionTests
                 Value = new BulkUpdateQualificationStatusCommandResponse
                 {
                     ErrorCount = 1,
-                    Errors = new List<BulkUpdateQualificationsErrorDto>
+                    Errors = new List<BulkQualificationErrorDto>
                     {
                     new()
-                    {
-                        QualificationId = selectedIds[0],
+                        {
+                            QualificationId = selectedIds[0],
                         Qan = "12345678",
                         Title = "Test qualification",
-                        ErrorType = BulkUpdateQualificationsErrorType.Missing
-                    }
+                        ErrorType = BulkQualificationErrorType.Missing
+                        }
                     }
                 }
             });
@@ -337,7 +337,7 @@ public class ChangedControllerBulkActionTests
             {
                 ProcessStatusId = processStatusId,
                 Comment = "bulk comment"
-            }
+    }
         };
 
         var query = new QualificationQuery
@@ -354,14 +354,14 @@ public class ChangedControllerBulkActionTests
                 Value = new BulkUpdateQualificationStatusCommandResponse
                 {
                     ErrorCount = 1,
-                    Errors = new List<BulkUpdateQualificationsErrorDto>
+                    Errors = new List<BulkQualificationErrorDto>
                     {
                     new()
                     {
                         QualificationId = selectedIds[0],
                         Qan = "12345678",
                         Title = "Test qualification",
-                        ErrorType = BulkUpdateQualificationsErrorType.Missing
+                        ErrorType = BulkQualificationErrorType.Missing
                     }
                     }
                 }
@@ -406,14 +406,14 @@ public class ChangedControllerBulkActionTests
                 Value = new BulkUpdateQualificationStatusCommandResponse
                 {
                     ErrorCount = 1,
-                    Errors = new List<BulkUpdateQualificationsErrorDto>
+                    Errors = new List<BulkQualificationErrorDto>
                     {
                     new()
                     {
                         QualificationId = selectedIds[0],
                         Qan = "12345678",
                         Title = "Test qualification",
-                        ErrorType = BulkUpdateQualificationsErrorType.Missing
+                        ErrorType = BulkQualificationErrorType.Missing
                     }
                     }
                 }
@@ -495,14 +495,14 @@ public class ChangedControllerBulkActionTests
                 Value = new BulkUpdateQualificationStatusCommandResponse
                 {
                     ErrorCount = 1,
-                    Errors = new List<BulkUpdateQualificationsErrorDto>
+                    Errors = new List<BulkQualificationErrorDto>
                     {
                     new()
                     {
                         QualificationId = qualificationId,
                         Qan = "12345678",
                         Title = "Missing qualification",
-                        ErrorType = BulkUpdateQualificationsErrorType.Missing
+                        ErrorType = BulkQualificationErrorType.Missing
                     }
                     }
                 }
@@ -546,14 +546,14 @@ public class ChangedControllerBulkActionTests
                 Value = new BulkUpdateQualificationStatusCommandResponse
                 {
                     ErrorCount = 1,
-                    Errors = new List<BulkUpdateQualificationsErrorDto>
+                    Errors = new List<BulkQualificationErrorDto>
                     {
                     new()
                     {
                         QualificationId = qualificationId,
                         Qan = "12345678",
                         Title = "History failure qualification",
-                        ErrorType = BulkUpdateQualificationsErrorType.HistoryFailed
+                        ErrorType = BulkQualificationErrorType.HistoryFailed
                     }
                     }
                 }
@@ -597,14 +597,14 @@ public class ChangedControllerBulkActionTests
                 Value = new BulkUpdateQualificationStatusCommandResponse
                 {
                     ErrorCount = 1,
-                    Errors = new List<BulkUpdateQualificationsErrorDto>
+                    Errors = new List<BulkQualificationErrorDto>
                     {
                     new()
                     {
                         QualificationId = qualificationId,
                         Qan = "12345678",
                         Title = "Unknown failure qualification",
-                        ErrorType = (BulkUpdateQualificationsErrorType)999
+                        ErrorType = (BulkQualificationErrorType)999
                     }
                     }
                 }
@@ -696,7 +696,7 @@ public class ChangedControllerBulkActionTests
         {
             SelectedQualificationIds = new List<Guid> { qualificationId },
             BulkAction = new QualificationsBulkActionPageViewModel.QualificationsBulkActionInputViewModel
-            {
+        {
                 ProcessStatusId = Guid.NewGuid(),
                 Comment = "bulk comment"
             }
@@ -712,14 +712,14 @@ public class ChangedControllerBulkActionTests
                 Value = new BulkUpdateQualificationStatusCommandResponse
                 {
                     ErrorCount = 1,
-                    Errors = new List<BulkUpdateQualificationsErrorDto>
+                    Errors = new List<BulkQualificationErrorDto>
                     {
                     new()
                     {
                         QualificationId = qualificationId,
                         Qan = "12345678",
                         Title = "Status failure qualification",
-                        ErrorType = BulkUpdateQualificationsErrorType.StatusUpdateFailed
+                        ErrorType = BulkQualificationErrorType.StatusUpdateFailed
                     }
                     }
                 }

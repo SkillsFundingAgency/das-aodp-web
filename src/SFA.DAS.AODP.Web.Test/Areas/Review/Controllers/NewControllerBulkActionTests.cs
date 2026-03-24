@@ -204,14 +204,14 @@ public class NewControllerBulkActionTests
                 Value = new BulkUpdateQualificationStatusCommandResponse
                 {
                     ErrorCount = 1,
-                    Errors = new List<BulkUpdateQualificationsErrorDto>
+                    Errors = new List<BulkQualificationErrorDto>
                     {
                         new()
                         {
                             QualificationId = id,
                             Qan = "12345678",
                             Title = "Test qualification",
-                            ErrorType = BulkUpdateQualificationsErrorType.Missing
+                            ErrorType = BulkQualificationErrorType.Missing
                         }
                     }
                 }
