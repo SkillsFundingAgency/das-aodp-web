@@ -1,4 +1,5 @@
 ﻿@using GovUk.Frontend.AspNetCore
+@using SFA.DAS.AODP.Web.Views.Shared
 @{
     Layout = "_GovUkPageTemplate";
 }
@@ -73,6 +74,13 @@
         <link rel="stylesheet" href="/stylesheets/application.min.css">
     </environment>
 
+}
+
+@section BeforeContent{
+    @if (ViewBag.BackLinkModel is BackLinkModel { CanRender: true } model)
+    {
+        <a class="govuk-back-link" href="@Url.Action(action: model.Action, controller: model.Controller, values: new { Area = model.Area })"></a>
+    }
 }
 
 @RenderBody()

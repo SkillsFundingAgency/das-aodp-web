@@ -396,18 +396,33 @@ public class RolloverController : ControllerBase
     [ValidateAntiForgeryToken]
     public IActionResult SelectAwardingOrganisations(SelectAwardingOrganisationsViewModel model, string action)
     {
-        if (!ModelState.IsValid)
+        ModelState.Clear();
+
+        if (model.SelectionType is AwardingOrganisationSelectionType.None)
         {
+            ModelState.Remove(nameof(model.SelectedAwardingOrganisations));
+
+            ModelState.AddModelError(nameof(model.SelectionType), "Select if you want to rollover all awarding organisations or only a selection");
+
             return View(model);
         }
 
-        if (action == "selectAll")
+        if (model.SelectionType is AwardingOrganisationSelectionType.SpecificSelection)
         {
-            ModelState.Clear();
+            if (model.SelectedAwardingOrganisations.Count <= 0)
+            {
+                ModelState.AddModelError($"{nameof(model.SelectedAwardingOrganisations)}", "You must select at least one awarding organisation");
+                return View(model);
+            }
         }
 
-        return View(model);
+        return RedirectToAction(nameof(CheckYourAnswers));
+    }
 
-        //return RedirectToAction(nameof(SelectSectorSubjectArea));
+    [HttpGet]
+    public IActionResult CheckYourAnswers()
+    {
+        var model = new CheckYourAnswersViewModel();
+        return View(model);
     }
 }

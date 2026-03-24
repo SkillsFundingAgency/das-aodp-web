@@ -23,7 +23,7 @@
 
     <form-group asp-for="@Model.SelectedAwardingOrganisations">
 
-        <fieldset class="govuk-fieldset" aria-describedby="levels-hint @(hasGroupError ? "awarding-organisation-error" : "")">
+        <fieldset class="govuk-fieldset" aria-describedby="awarding-organisation-hint @(hasGroupError ? "awarding-organisation-error" : "")">
             
             <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
                 <h1 class="govuk-fieldset__heading">
@@ -33,7 +33,7 @@
             
             @if (ViewData.ModelState.ContainsKey(nameof(Model.SelectionType)))
             {
-                <p id="levels-error" class="govuk-error-message">
+                <p id="awarding-organisations-error" class="govuk-error-message">
                     <span class="govuk-visually-hidden">Error:</span>@ViewData.ModelState[nameof(Model.SelectionType)]?.Errors.FirstOrDefault()?.ErrorMessage
                 </p>
             }
@@ -47,7 +47,7 @@
                            name="@nameof(Model.SelectionType)"
                            value="@nameof(AwardingOrganisationSelectionType.All)"/>
                     <label class="govuk-label govuk-radios__label" for="@nameof(AwardingOrganisation)_All">
-                        Rollover all @Model.AwardingOrganisations.Count SSAs
+                        Rollover all @Model.AwardingOrganisations.Count awarding organisations
                     </label>
                 </div>
 
@@ -60,7 +60,7 @@
                            value="@nameof(AwardingOrganisationSelectionType.SpecificSelection)"
                            data-aria-controls="conditional-sector-subject-areas-specific-selection"/>
                     <label class="govuk-label govuk-radios__label" for="@nameof(AwardingOrganisation)_SpecificSelection">
-                        Rollover a selection of SSAs
+                        Rollover a selection of awarding organisations
                     </label>
                 </div>
             </div>

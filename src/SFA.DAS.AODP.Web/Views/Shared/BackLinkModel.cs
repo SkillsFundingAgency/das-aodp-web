@@ -29,4 +29,6 @@ public record BackLinkModel
     public string? Action { get; set; }
 
     public string? Text { get; set; } = "Back";
+
+    public bool CanRender => !string.IsNullOrEmpty(Controller) && !string.IsNullOrEmpty(Action);
 }

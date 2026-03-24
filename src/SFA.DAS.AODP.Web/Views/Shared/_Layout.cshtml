@@ -1,6 +1,7 @@
 ﻿@using GovUk.Frontend.AspNetCore
 @using System.Linq
 @using SFA.DAS.AODP.Web.Authentication
+@using SFA.DAS.AODP.Web.Views.Shared
 @{
     Layout = "_GovUkPageTemplate";
     var userClaims = UserClaimsHelper.GetUserClaims(ViewContext.HttpContext);
@@ -194,6 +195,14 @@
     </environment>
 
 }
+
+@section BeforeContent {
+    @if (ViewBag.BackLinkModel is BackLinkModel { CanRender: true } model)
+    {
+        <a class="govuk-back-link" href="@Url.Action(action: model.Action, controller: model.Controller, values: new { Area = model.Area })">Back</a>
+    }
+}
+
 <!-- Google Tag Manager (noscript) -->
 <noscript>
     <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MHLR3QZ9"
