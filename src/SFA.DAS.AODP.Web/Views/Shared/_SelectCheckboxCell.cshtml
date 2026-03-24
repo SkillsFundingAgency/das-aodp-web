@@ -1,0 +1,18 @@
+﻿@using SFA.DAS.AODP.Web.Models.BulkActions
+@model MultiSelectCheckboxCellViewModel
+
+<td class="govuk-table__cell govuk-table__cell--center">
+    <div class="govuk-checkboxes govuk-checkboxes--small">
+        <div class="govuk-checkboxes__item">
+            <input class="govuk-checkboxes__input"
+                   type="checkbox"
+                   name="@Model.SelectedIdsFieldName"
+                   value="@Model.Id"
+                   checked="@(Model.IsChecked ? "checked" : null)"
+                   id="sel-@Model.Id" />
+            <label class="govuk-label govuk-checkboxes__label" for="sel-@Model.Id">
+                <span class="govuk-visually-hidden">Select @Model.Title</span>
+            </label>
+        </div>
+    </div>
+</td>
