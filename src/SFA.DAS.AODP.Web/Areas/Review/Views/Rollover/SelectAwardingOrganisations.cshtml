@@ -1,0 +1,95 @@
+﻿@using SFA.DAS.AODP.Models.Qualifications
+@using SFA.DAS.AODP.Web.Areas.Review.Controllers
+@using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover
+@using SFA.DAS.AODP.Web.Views.Shared
+@model SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.SelectAwardingOrganisationsViewModel
+@{
+    ViewData["Title"] = "Select awarding organisations (AO)";
+    var backLinkModel = new BackLinkModel
+    {
+        Action = "SelectSectorSubjectArea",
+        Controller = nameof(RolloverController),
+        Area = "Review"
+    };
+
+    var hasGroupError = ViewData.ModelState.ContainsKey("AwardingOrganisations");
+}
+
+@await Html.PartialAsync("_BackLinkPartial", backLinkModel)
+
+<form asp-controller="Rollover" asp-action="SelectAwardingOrganisations" method="post">
+    
+    @await Html.PartialAsync("_ValidationSummaryPartial")
+
+    <form-group asp-for="@Model.SelectedAwardingOrganisations">
+
+        <fieldset class="govuk-fieldset" aria-describedby="levels-hint @(hasGroupError ? "awarding-organisation-error" : "")">
+            
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+                <h1 class="govuk-fieldset__heading">
+                    @ViewData["Title"]
+                </h1>
+            </legend>
+            
+            @if (ViewData.ModelState.ContainsKey(nameof(Model.SelectionType)))
+            {
+                <p id="levels-error" class="govuk-error-message">
+                    <span class="govuk-visually-hidden">Error:</span>@ViewData.ModelState[nameof(Model.SelectionType)]?.Errors.FirstOrDefault()?.ErrorMessage
+                </p>
+            }
+
+            <div class="govuk-radios" data-module="govuk-radios">
+                <div class="govuk-radios__item">
+                    <input class="govuk-radios__input"
+                           asp-for="SelectionType"
+                           id="@nameof(Model.SelectionType)"
+                           type="radio"
+                           name="@nameof(Model.SelectionType)"
+                           value="@nameof(AwardingOrganisationSelectionType.All)"/>
+                    <label class="govuk-label govuk-radios__label" for="@nameof(AwardingOrganisation)_All">
+                        Rollover all @Model.AwardingOrganisations.Count SSAs
+                    </label>
+                </div>
+
+                <div class="govuk-radios__item">
+                    <input class="govuk-radios__input"
+                           asp-for="SelectionType"
+                           id="@nameof(Model.SelectionType)-1"
+                           type="radio"
+                           name="@nameof(Model.SelectionType)"
+                           value="@nameof(AwardingOrganisationSelectionType.SpecificSelection)"
+                           data-aria-controls="conditional-sector-subject-areas-specific-selection"/>
+                    <label class="govuk-label govuk-radios__label" for="@nameof(AwardingOrganisation)_SpecificSelection">
+                        Rollover a selection of SSAs
+                    </label>
+                </div>
+            </div>
+            
+            <div class="govuk-radios__conditional" id="conditional-sector-subject-areas-specific-selection">
+
+                <form-group asp-for="@Model.SelectedAwardingOrganisations">
+                    <fieldset class="govuk-fieldset" role="group">
+                            
+                        @if (ViewData.ModelState.ContainsKey(nameof(Model.SelectedAwardingOrganisations)))
+                        {
+                            <p id="awarding-organisation-error" class="govuk-error-message">
+                                <span class="govuk-visually-hidden">Error:</span>@ViewData.ModelState[nameof(Model.SelectedAwardingOrganisations)]?.Errors.First().ErrorMessage
+                            </p>
+                        }
+
+                        <div id="awarding-organisation-hint" class="govuk-hint">
+                            Select all that apply
+                        </div>
+
+                        <button type="submit" name="action" value="selectAll" class="govuk-button govuk-button--secondary">
+                            Select all
+                        </button>
+
+                        <checkboxes asp-for="@Model.SelectedAwardingOrganisations" items="@Model.AwardingOrganisations"></checkboxes>
+                    </fieldset>
+                </form-group>
+            </div>
+        </fieldset>
+    </form-group>
+    <govuk-button>Continue</govuk-button>
+</form>

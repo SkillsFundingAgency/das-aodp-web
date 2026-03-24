@@ -9,6 +9,7 @@ using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.Qualification;
 using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Models.Qualifications;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Helpers.User;
@@ -252,7 +253,7 @@ public class NewControllerTests
             },
             ProcStatus = new GetQualificationDetailsQueryResponse.ProcessStatus { Id = Guid.NewGuid(), Name = "Decision Required" },
             Stage = new GetQualificationDetailsQueryResponse.LifecycleStage { Id = Guid.NewGuid(), Name = "Draft" },
-            Organisation = new GetQualificationDetailsQueryResponse.AwardingOrganisation { Id = Guid.NewGuid(), NameOfqual = "AO" },
+            Organisation = new AwardingOrganisation { Id = Guid.NewGuid(), NameOfqual = "AO" },
             Version = 1,
             LastUpdatedDate = DateTime.UtcNow,
             UiLastUpdatedDate = DateTime.UtcNow,
@@ -346,7 +347,7 @@ public class NewControllerTests
             },
             ProcStatus = new GetQualificationDetailsQueryResponse.ProcessStatus { Id = Guid.NewGuid(), Name = "Decision Required" },
             Stage = new GetQualificationDetailsQueryResponse.LifecycleStage { Id = Guid.NewGuid(), Name = "Draft" },
-            Organisation = new GetQualificationDetailsQueryResponse.AwardingOrganisation { Id = Guid.NewGuid(), NameOfqual = "AO" },
+            Organisation = new AwardingOrganisation { Id = Guid.NewGuid(), NameOfqual = "AO" },
             Version = 1,
             LastUpdatedDate = DateTime.UtcNow,
             UiLastUpdatedDate = DateTime.UtcNow,

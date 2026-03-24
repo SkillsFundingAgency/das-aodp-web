@@ -1,0 +1,54 @@
+﻿@using SFA.DAS.AODP.Web.Areas.Review.Controllers
+@using SFA.DAS.AODP.Web.Views.Shared
+@model SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.SelectQualificationLevelsViewModel
+@{
+    ViewData["Title"] = "Select level(s)";
+    var backLinkModel = new BackLinkModel
+    {
+        Action = "SelectCandidates",
+        Controller = nameof(RolloverController),
+        Area = "Review"
+    };
+
+    var hasGroupError = ViewData.ModelState.ContainsKey("Levels");
+}
+
+@await Html.PartialAsync("_BackLinkPartial", backLinkModel)
+
+<form asp-controller="Rollover" asp-action="SelectLevels" method="post">
+    
+    @await Html.PartialAsync("_ValidationSummaryPartial")
+
+    <form-group asp-for="@Model.SelectedLevels">
+
+        <fieldset class="govuk-fieldset" aria-describedby="levels-hint @(hasGroupError ? "levels-error" : "")">
+            
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+                <h1 class="govuk-fieldset__heading">
+                    @ViewData["Title"]
+                </h1>
+            </legend>
+            
+            @if (ViewData.ModelState.ContainsKey(nameof(Model.SelectedLevels)))
+            {
+                <p id="levels-error" class="govuk-error-message">
+                    <span class="govuk-visually-hidden">Error:</span>@ViewData.ModelState[nameof(Model.SelectedLevels)]?.Errors.First().ErrorMessage
+                </p>
+            }
+
+            <div id="levels-hint" class="govuk-hint">
+                Select all that apply
+            </div>
+
+            <button type="submit" name="action" value="selectAll" class="govuk-button govuk-button--secondary">
+                Select all
+            </button>
+            
+            <checkboxes asp-for="@Model.SelectedLevels" items="@Model.Levels"></checkboxes>
+
+        </fieldset>
+    </form-group>
+
+    <govuk-button>Continue</govuk-button>
+</form>
+

@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using DocumentFormat.OpenXml.Vml.Spreadsheet;
+using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,8 +9,11 @@ using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Extensions;
+using System;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
+using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.ValueObjects;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers;
 
@@ -283,5 +287,127 @@ public class RolloverController : ControllerBase
         {
             LogException(ex);
         }
+    }
+
+    [HttpPost]
+    [Route("/Review/Rollover/SelectLevels")]
+    [ValidateAntiForgeryToken]
+    public IActionResult SelectLevels(SelectQualificationLevelsViewModel model, string action)
+    {
+
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        if (action == "selectAll")
+        {
+            model.SelectedLevels = QualificationLevel.All.ToList();
+            ModelState.Clear();
+            return View(model);
+        }
+
+        return RedirectToAction(nameof(SelectTypes));
+    }
+
+
+    [HttpGet]
+    [Route("/Review/Rollover/SelectLevels")]
+    public IActionResult SelectLevels()
+    {
+        var model = new SelectQualificationLevelsViewModel();
+        return View(model);
+    }
+
+    [HttpGet]
+    [Route("/Review/Rollover/SelectTypes")]
+    public IActionResult SelectTypes()
+    {
+        var model = new SelectQualificationTypesViewModel();
+        return View(model);
+    }
+
+    [HttpPost]
+    [Route("/Review/Rollover/SelectTypes")]
+    [ValidateAntiForgeryToken]
+    public IActionResult SelectTypes(SelectQualificationTypesViewModel model, string action)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        if (action == "selectAll")
+        {
+            model.SelectedTypes = QualificationType.All.ToList();
+            ModelState.Clear();
+            return View(model);
+        }
+
+        return RedirectToAction(nameof(SelectSectorSubjectArea));
+    }
+
+    [HttpGet]
+    [Route("/Review/Rollover/SelectSectorSubjectArea")]
+    public IActionResult SelectSectorSubjectArea()
+    {
+        var model = new SelectSectorSubjectAreasModel();
+        return View(model);
+    }
+
+    [HttpPost]
+    [Route("/Review/Rollover/SelectSectorSubjectArea")]
+    [ValidateAntiForgeryToken]
+    public IActionResult SelectSectorSubjectArea(SelectSectorSubjectAreasModel model)
+    {
+        ModelState.Clear();
+
+        if (model.SelectionType is SectorSubjectAreaSelectionType.None)
+        {
+            ModelState.Remove(nameof(model.SelectedSectorSubjectAreas));
+
+            ModelState.AddModelError(nameof(model.SelectionType), "Select if you want to rollover all SSAs or only a selection");
+
+            return View(model);
+        }
+
+        if (model.SelectionType is SectorSubjectAreaSelectionType.SpecificSelection)
+        {
+            if (model.SelectedSectorSubjectAreas.Count <= 0)
+            {
+                ModelState.AddModelError($"{nameof(model.SelectedSectorSubjectAreas)}", "You must select at least one SSA");
+                return View(model);
+            }
+        }
+
+        return RedirectToAction(nameof(SelectAwardingOrganisations));
+    }
+
+    [HttpGet]
+    [Route("/Review/Rollover/SelectAwardingOrganisations")]
+    public IActionResult SelectAwardingOrganisations()
+    {
+        var model = new SelectAwardingOrganisationsViewModel();
+        return View(model);
+    }
+
+    [HttpPost]
+    [Route("/Review/Rollover/SelectAwardingOrganisations")]
+    [ValidateAntiForgeryToken]
+    public IActionResult SelectAwardingOrganisations(SelectAwardingOrganisationsViewModel model, string action)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        if (action == "selectAll")
+        {
+            ModelState.Clear();
+        }
+
+        return View(model);
+
+        //return RedirectToAction(nameof(SelectSectorSubjectArea));
     }
 }

@@ -76,6 +76,7 @@
 
 	<PropertyGroup>
 		<DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
+		<UserSecretsId>bd638dc4-8934-455d-bf76-2d3b4c52255c</UserSecretsId>
 	</PropertyGroup>
 
 	<Target Name="EnsureBundleRuns" BeforeTargets="ResolveStaticWebAssets;_GenerateStaticWebAssetsManifest;ProcessStaticWebAssets;ComputeFilesToPublish;Build">

@@ -1,0 +1,93 @@
+﻿@using Microsoft.AspNetCore.Mvc.ModelBinding
+@using SFA.DAS.AODP.Web.Areas.Review.Controllers
+@using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover
+@using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.ValueObjects
+@using SFA.DAS.AODP.Web.Views.Shared
+@model SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.SelectSectorSubjectAreasModel
+@{
+    ViewData["Title"] = "Select sector subject areas (SSA)";
+    var backLinkModel = new BackLinkModel
+    {
+        Action = "SelectTypes",
+        Controller = nameof(RolloverController),
+        Area = "Review"
+    };
+}
+
+@await Html.PartialAsync("_BackLinkPartial", backLinkModel)
+
+<form asp-controller="Rollover" asp-action="SelectSectorSubjectArea" asp-area="Review" method="post" novalidate>
+    
+    @await Html.PartialAsync("_ValidationSummaryPartial")
+
+    <form-group asp-for="@Model.SelectionType">
+        <fieldset class="govuk-fieldset">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+                <h1 class="govuk-fieldset__heading">
+                    @ViewData["Title"]
+                </h1>
+            </legend>
+            
+            @if (ViewData.ModelState.ContainsKey(nameof(Model.SelectionType)))
+            {
+                <p id="levels-error" class="govuk-error-message">
+                    <span class="govuk-visually-hidden">Error:</span>@ViewData.ModelState[nameof(Model.SelectionType)]?.Errors.FirstOrDefault()?.ErrorMessage
+                </p>
+            }
+
+            <div class="govuk-radios" data-module="govuk-radios">
+                <div class="govuk-radios__item">
+                    <input class="govuk-radios__input"
+                           asp-for="SelectionType"
+                           id="@nameof(Model.SelectionType)"
+                           type="radio"
+                           name="@nameof(Model.SelectionType)"
+                           value="@nameof(SectorSubjectAreaSelectionType.All)"/>
+                    <label class="govuk-label govuk-radios__label" for="@nameof(SectorSubjectArea)_All">
+                        Rollover all @Model.SectorSubjectAreas.Count SSAs
+                    </label>
+                </div>
+
+                <div class="govuk-radios__item">
+                    <input class="govuk-radios__input"
+                           asp-for="SelectionType"
+                           id="@nameof(Model.SelectionType)-1"
+                           type="radio"
+                           name="@nameof(Model.SelectionType)"
+                           value="@nameof(SectorSubjectAreaSelectionType.SpecificSelection)"
+                           data-aria-controls="conditional-sector-subject-areas-specific-selection"/>
+                    <label class="govuk-label govuk-radios__label" for="@nameof(SectorSubjectArea)_SpecificSelection">
+                        Rollover a selection of SSAs
+                    </label>
+                </div>
+
+                <div class="govuk-radios__conditional" id="conditional-sector-subject-areas-specific-selection">
+
+                    <form-group asp-for="@Model.SelectedSectorSubjectAreas">
+                        <fieldset class="govuk-fieldset" role="group">
+                            
+                            @if (ViewData.ModelState.ContainsKey(nameof(Model.SelectedSectorSubjectAreas)))
+                            {
+                                <p id="sector-subject-areas-error" class="govuk-error-message">
+                                    <span class="govuk-visually-hidden">Error:</span>@ViewData.ModelState[nameof(Model.SelectedSectorSubjectAreas)]?.Errors.First().ErrorMessage
+                                </p>
+                            }
+
+                            <div id="sector-subject-areas-hint" class="govuk-hint">
+                                Select all that apply
+                            </div>
+
+                            <button type="submit" name="action" value="selectAll" class="govuk-button govuk-button--secondary">
+                                Select all
+                            </button>
+
+                            <checkboxes asp-for="@Model.SelectedSectorSubjectAreas" items="@Model.SectorSubjectAreas"></checkboxes>
+
+                        </fieldset>
+                    </form-group>
+                </div>
+            </div>
+        </fieldset>
+    </form-group>
+    <govuk-button>Continue</govuk-button>
+</form>

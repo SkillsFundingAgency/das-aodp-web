@@ -5,9 +5,26 @@ namespace SFA.DAS.AODP.Web.Views.Shared;
 [ExcludeFromCodeCoverage]
 public record BackLinkModel
 {
-    public string? Area { get; set; } 
+    private string? _controller;
+    public string? Area { get; set; }
 
-    public string? Controller { get; set; } 
+    public string? Controller
+    {
+        get => _controller;
+        set
+        {
+            if (!string.IsNullOrEmpty(value))
+            {
+                if (value.EndsWith("Controller"))
+                {
+                    _controller = value.Replace("Controller", "");
+                    return;
+                }
+            }
+
+            _controller = value;
+        }
+    }
 
     public string? Action { get; set; }
 

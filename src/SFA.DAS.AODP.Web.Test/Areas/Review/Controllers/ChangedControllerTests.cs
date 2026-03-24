@@ -14,6 +14,7 @@ using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 using System.Security.Claims;
+using SFA.DAS.AODP.Models.Qualifications;
 
 namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers;
 
@@ -76,7 +77,7 @@ public class ChangedControllerTests
             ProcStatus = new GetQualificationDetailsQueryResponse.ProcessStatus { Id = Guid.NewGuid(), Name = "Decision Required" },
             Version = 1,
             Stage = new GetQualificationDetailsQueryResponse.LifecycleStage { Id = Guid.NewGuid(), Name = "Draft" },
-            Organisation = new GetQualificationDetailsQueryResponse.AwardingOrganisation { Id = Guid.NewGuid(), NameOfqual = "Test Org" },
+            Organisation = new AwardingOrganisation { Id = Guid.NewGuid(), NameOfqual = "Test Org" },
             LastUpdatedDate = DateTime.UtcNow,
             UiLastUpdatedDate = DateTime.UtcNow,
             InsertedDate = DateTime.UtcNow
