@@ -20,7 +20,7 @@ public sealed class AllowedCharactersAttribute : ValidationAttribute
             TimeSpan.FromMilliseconds(100));
 
     public AllowedCharactersAttribute(TextCharacterProfile profile)
-        :base("{0} contains invalid characters.") 
+        :base("{0} contains invalid characters") 
     {
         _profile = profile;
     }

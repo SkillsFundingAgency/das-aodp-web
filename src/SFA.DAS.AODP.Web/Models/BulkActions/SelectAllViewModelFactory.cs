@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using SFA.DAS.AODP.Models.Application;
 
 namespace SFA.DAS.AODP.Web.Models.BulkActions
 {
@@ -38,5 +39,40 @@ namespace SFA.DAS.AODP.Web.Models.BulkActions
                     RouteValues = routeValues
                 };
             }
+
+        public static SelectAllCheckboxesViewModel ForApplications(
+            int currentPage,
+            int recordsPerPage,
+            string controllerName,
+            string? applicationSearch,
+            string? awardingOrganisationSearch,
+            string? reviewerSelection,
+            IEnumerable<ApplicationStatus>? status
+            )
+        {
+            var routeValues = new Dictionary<string, object?>();
+
+            if (!string.IsNullOrWhiteSpace(applicationSearch))
+                routeValues["applicationSearch"] = applicationSearch;
+
+            if (!string.IsNullOrWhiteSpace(awardingOrganisationSearch))
+                routeValues["awardingOrganisationSearch"] = awardingOrganisationSearch;
+
+            if (!string.IsNullOrWhiteSpace(reviewerSelection))
+                routeValues["reviewerSelection"] = reviewerSelection;
+
+            if (status != null && status.Any())
+                routeValues["status"] = status;
+
+            return new SelectAllCheckboxesViewModel
+            {
+                CurrentPage = currentPage,
+                RecordsPerPage = recordsPerPage,
+                Controller = controllerName,
+                Action = "Index",
+                Area = "Review",
+                RouteValues = routeValues
+            };
+        }
     }
 }

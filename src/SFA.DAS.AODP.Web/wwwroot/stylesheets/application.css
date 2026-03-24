@@ -200,3 +200,27 @@
         margin-bottom: 0;
         white-space: nowrap;
     }
+
+/* center content within the table cell */
+.checkbox-cell {
+    text-align: center;
+}
+
+    .checkbox-cell .govuk-checkboxes {
+        display: inline-block;
+    }
+
+    .checkbox-cell .govuk-checkboxes__item {
+        padding-left: 0;
+        margin-bottom: 0;
+    }
+
+    .checkbox-cell .govuk-checkboxes__input {
+        width: auto !important;
+        position: static;
+        margin: 0;
+    }
+
+    .checkbox-cell .govuk-checkboxes__label {
+        padding-left: 0;
+    }

@@ -17,7 +17,7 @@ namespace SFA.DAS.AODP.Web.Models.BulkActions
         /// <summary>
         /// The ids of qualifications selected in the list/table.
         /// </summary>
-        [MinLength(1, ErrorMessage = ValidationMessages.QualificationsBulkActionNoQualificationsSelected)]
+        [MinLength(1, ErrorMessage = ValidationMessages.QualificationsBulkAction.NoQualificationsSelected)]
         public List<Guid> SelectedQualificationIds { get; set; } = new();
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace SFA.DAS.AODP.Web.Models.BulkActions
         public class QualificationsBulkActionInputViewModel
         {
             [Display(Name = "Status")]
-            [Required(ErrorMessage = ValidationMessages.QualificationsBulkActionStatusRequired)]
+            [Required(ErrorMessage = ValidationMessages.QualificationsBulkAction.StatusRequired)]
             public Guid? ProcessStatusId { get; set; }
 
             [AllowedCharacters(TextCharacterProfile.FreeText)]

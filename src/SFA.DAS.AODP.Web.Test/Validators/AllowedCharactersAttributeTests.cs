@@ -66,7 +66,7 @@ public class AllowedCharactersAttributeTests
         var result = attribute.GetValidationResult(InvalidPersonName, CreateContext(NameField));
 
         Assert.NotEqual(ValidationResult.Success, result);
-        Assert.Equal($"{NameField} contains invalid characters.", result!.ErrorMessage);
+        Assert.Equal($"{NameField} contains invalid characters", result!.ErrorMessage);
     }
 
     [Fact]

@@ -1,19 +1,23 @@
 ﻿@using SFA.DAS.AODP.Web.Areas.Review.Controllers
+@using SFA.DAS.AODP.Web.Factories
 @using SFA.DAS.AODP.Web.Models.BulkActions
 @using SFA.DAS.AODP.Web.Models.Qualifications
 @model SFA.DAS.AODP.Web.Models.Qualifications.NewQualificationsViewModel
 @{
     ViewData["Title"] = "New Qualifications";
+    var backLinkModel = BackLinkModelFactory.Dashboard();
 }
+@await Html.PartialAsync("_BackLinkPartial", backLinkModel)
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 <partial name="_ValidationSummaryPartial" />
+
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-full" id="guide-contents">
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-full">
                 <h2 class="govuk-heading-l">New Qualifications</h2>
-                <p class="govuk-body">Review qualifications that have been newly regulated by Ofqual.</p>
+                <p class="govuk-body">Review and manage qualifications that have been newly regulated by Ofqual.</p>
                 <p class="govuk-body">You can filter results to view only what you need, and comment and assign actions in bulk, or individually.</p>
             </div>
         </div>

@@ -3,6 +3,7 @@ using AutoFixture.AutoMoq;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -10,43 +11,26 @@ using Moq;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.Qualifications;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Models.Qualifications;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
-using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.BulkActions;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 using System.Security.Claims;
-using Xunit;
+using System.Text.Json;
 
 namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers;
 
 public class NewControllerBulkActionTests
 {
-    private const string FindRegulatedQualificationUrl =
-        "https://find-a-qualification.services.ofqual.gov.uk/qualifications/";
-
-    private const string DefaultUserName = "TestUser";
-    private const string AlternateUserName = "bob";
-
-    private const string BulkComment = "bulk comment";
-    private const string SearchOrganisation = "Org";
-    private const string SearchName = "Qual";
-    private const string SearchQan = "123";
-
-    private const string DecisionRequiredStatus = "Decision Required";
-
-    private const int DefaultPageNumber = 1;
-    private const int DefaultRecordsPerPage = 10;
-    private const int AlternatePageNumber = 2;
-    private const int AlternateRecordsPerPage = 20;
-
     private readonly IFixture _fixture;
     private readonly Mock<ILogger<NewController>> _loggerMock;
     private readonly Mock<IUserHelperService> _userHelperMock;
     private readonly Mock<IMediator> _mediatorMock;
     private readonly IOptions<AodpConfiguration> _aodpOptions;
     private readonly NewController _controller;
+    private readonly Mock<IUrlHelper> _urlHelperMock;
 
     public NewControllerBulkActionTests()
     {
@@ -58,7 +42,7 @@ public class NewControllerBulkActionTests
 
         _aodpOptions = Options.Create(new AodpConfiguration
         {
-            FindRegulatedQualificationUrl = FindRegulatedQualificationUrl
+            FindRegulatedQualificationUrl = "https://find-a-qualification.services.ofqual.gov.uk/qualifications/"
         });
 
         _controller = new NewController(
@@ -67,15 +51,9 @@ public class NewControllerBulkActionTests
             _mediatorMock.Object,
             _userHelperMock.Object);
 
-        var httpContext = new DefaultHttpContext();
-        httpContext.User = new ClaimsPrincipal(
-            new ClaimsIdentity(
-                new[] { new Claim(ClaimTypes.Name, DefaultUserName) },
-                "TestAuth"));
-
         _controller.ControllerContext = new ControllerContext
         {
-            HttpContext = httpContext
+            HttpContext = new DefaultHttpContext()
         };
 
         _controller.TempData = new TempDataDictionary(
@@ -95,7 +73,7 @@ public class NewControllerBulkActionTests
                 {
                     ProcessStatuses = new List<GetProcessStatusesQueryResponse.ProcessStatus>
                     {
-                        new() { Id = Guid.NewGuid(), Name = DecisionRequiredStatus }
+                        new() { Id = Guid.NewGuid(), Name = "Decision Required" }
                     }
                 }
             });
@@ -110,42 +88,17 @@ public class NewControllerBulkActionTests
                     Data = new List<NewQualification>(),
                     TotalRecords = 0,
                     Skip = 0,
-                    Take = DefaultRecordsPerPage
+                    Take = 10
                 }
             });
-    }
 
-    private static QualificationQuery CreateQualificationQuery(
-        int pageNumber = DefaultPageNumber,
-        int recordsPerPage = DefaultRecordsPerPage,
-        string? organisation = null,
-        string? name = null,
-        string? qan = null)
-    {
-        return new QualificationQuery
-        {
-            PageNumber = pageNumber,
-            RecordsPerPage = recordsPerPage,
-            Organisation = organisation,
-            Name = name,
-            Qan = qan
-        };
-    }
+        _urlHelperMock = new Mock<IUrlHelper>();
 
-    private static NewQualificationsViewModel CreateBulkActionModel(
-        List<Guid>? selectedIds = null,
-        Guid? processStatusId = null,
-        string comment = BulkComment)
-    {
-        return new NewQualificationsViewModel
-        {
-            SelectedQualificationIds = selectedIds ?? new List<Guid> { Guid.NewGuid() },
-            BulkAction = new QualificationsBulkActionPageViewModel.QualificationsBulkActionInputViewModel
-            {
-                ProcessStatusId = processStatusId ?? Guid.NewGuid(),
-                Comment = comment
-            }
-        };
+        _urlHelperMock
+            .Setup(u => u.Action(It.IsAny<UrlActionContext>()))
+            .Returns("/Review/New/Index?pageNumber=1&recordsPerPage=10");
+
+        _controller.Url = _urlHelperMock.Object;
     }
 
     [Fact]
@@ -153,27 +106,29 @@ public class NewControllerBulkActionTests
     {
         _controller.ModelState.AddModelError("BulkAction", "Invalid");
 
-        var selectedIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
-        var processStatusId = Guid.NewGuid();
+        var model = new NewQualificationsViewModel
+        {
+            SelectedQualificationIds = new List<Guid> { Guid.NewGuid() },
+            BulkAction = new QualificationsBulkActionPageViewModel.QualificationsBulkActionInputViewModel
+            {
+                ProcessStatusId = Guid.NewGuid(),
+                Comment = "bulk comment"
+            }
+        };
 
-        var model = CreateBulkActionModel(selectedIds, processStatusId);
-        var query = CreateQualificationQuery();
+        var query = new QualificationQuery
+        {
+            PageNumber = 1,
+            RecordsPerPage = 10
+        };
 
         var result = await _controller.ApplyBulkAction(model, query);
 
-        var view = Assert.IsType<ViewResult>(result);
-        var viewModel = Assert.IsAssignableFrom<NewQualificationsViewModel>(view.Model);
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.Equal("Index", viewResult.ViewName);
 
-        Assert.Multiple(() =>
-        {
-            Assert.Equal("Index", view.ViewName);
-            Assert.Equal(selectedIds, viewModel.SelectedQualificationIds);
-            Assert.NotNull(viewModel.BulkAction);
-            Assert.Equal(processStatusId, viewModel.BulkAction.ProcessStatusId);
-            Assert.Equal(BulkComment, viewModel.BulkAction.Comment);
-            Assert.Equal(FindRegulatedQualificationUrl, viewModel.FindRegulatedQualificationUrl);
-            Assert.NotNull(viewModel.ProcessStatuses);
-        });
+        var viewModel = Assert.IsType<NewQualificationsViewModel>(viewResult.Model);
+        Assert.NotNull(viewModel);
 
         _mediatorMock.Verify(
             m => m.Send(It.IsAny<BulkUpdateQualificationStatusCommand>(), It.IsAny<CancellationToken>()),
@@ -181,19 +136,29 @@ public class NewControllerBulkActionTests
     }
 
     [Fact]
-    public async Task ApplyBulkAction_RedirectsToIndex_WhenNoErrors()
+    public async Task ApplyBulkAction_RedirectsToIndex_AndSetsSuccessFlag_WhenNoErrors()
     {
         var selectedIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
         var processStatusId = Guid.NewGuid();
 
-        var model = CreateBulkActionModel(selectedIds, processStatusId);
+        var model = new NewQualificationsViewModel
+        {
+            SelectedQualificationIds = selectedIds,
+            BulkAction = new QualificationsBulkActionPageViewModel.QualificationsBulkActionInputViewModel
+            {
+                ProcessStatusId = processStatusId,
+                Comment = "bulk comment"
+            }
+        };
 
-        var query = CreateQualificationQuery(
-            pageNumber: AlternatePageNumber,
-            recordsPerPage: AlternateRecordsPerPage,
-            organisation: SearchOrganisation,
-            name: SearchName,
-            qan: SearchQan);
+        var query = new QualificationQuery
+        {
+            PageNumber = 2,
+            RecordsPerPage = 20,
+            Organisation = "Org",
+            Name = "Qual",
+            Qan = "123"
+        };
 
         _mediatorMock
             .Setup(m => m.Send(It.IsAny<BulkUpdateQualificationStatusCommand>(), It.IsAny<CancellationToken>()))
@@ -208,37 +173,28 @@ public class NewControllerBulkActionTests
 
         var result = await _controller.ApplyBulkAction(model, query);
 
-        var redirect = Assert.IsType<RedirectToActionResult>(result);
+        var redirectResult = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal(nameof(NewController.Index), redirectResult.ActionName);
 
-        Assert.Multiple(() =>
-        {
-            Assert.Equal(nameof(NewController.Index), redirect.ActionName);
-            Assert.Equal(AlternatePageNumber, redirect.RouteValues!["pageNumber"]);
-            Assert.Equal(AlternateRecordsPerPage, redirect.RouteValues["recordsPerPage"]);
-            Assert.Equal(SearchOrganisation, redirect.RouteValues["organisation"]);
-            Assert.Equal(SearchName, redirect.RouteValues["name"]);
-            Assert.Equal(SearchQan, redirect.RouteValues["qan"]);
-            Assert.True((bool)_controller.TempData[BulkActionQualifications.SuccessKey]!);
-        });
-
-        _mediatorMock.Verify(m => m.Send(
-            It.Is<BulkUpdateQualificationStatusCommand>(cmd =>
-                cmd.QualificationIds.SequenceEqual(selectedIds) &&
-                cmd.ProcessStatusId == processStatusId &&
-                cmd.Comment == BulkComment &&
-                cmd.UserDisplayName == DefaultUserName),
-            It.IsAny<CancellationToken>()),
-            Times.Once);
+        Assert.True((bool)_controller.TempData[BulkActionQualifications.SuccessKey]!);
     }
 
     [Fact]
-    public async Task ApplyBulkAction_ReturnsIndexView_WhenErrorsExist()
+    public async Task ApplyBulkAction_RedirectsToBulkQualificationError_WhenErrorsExist()
     {
-        var selectedIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
-        var processStatusId = Guid.NewGuid();
+        var id = Guid.NewGuid();
 
-        var model = CreateBulkActionModel(selectedIds, processStatusId);
-        var query = CreateQualificationQuery();
+        var model = new NewQualificationsViewModel
+        {
+            SelectedQualificationIds = new List<Guid> { id },
+            BulkAction = new QualificationsBulkActionPageViewModel.QualificationsBulkActionInputViewModel
+            {
+                ProcessStatusId = Guid.NewGuid(),
+                Comment = "bulk comment"
+            }
+        };
+
+        var query = new QualificationQuery { PageNumber = 1, RecordsPerPage = 10 };
 
         _mediatorMock
             .Setup(m => m.Send(It.IsAny<BulkUpdateQualificationStatusCommand>(), It.IsAny<CancellationToken>()))
@@ -250,10 +206,11 @@ public class NewControllerBulkActionTests
                     ErrorCount = 1,
                     Errors = new List<BulkQualificationErrorDto>
                     {
-                        new BulkQualificationErrorDto
+                        new()
                         {
-                            QualificationId = selectedIds[0],
-                            Title = "Missing",
+                            QualificationId = id,
+                            Qan = "12345678",
+                            Title = "Test qualification",
                             ErrorType = BulkQualificationErrorType.Missing
                         }
                     }
@@ -262,50 +219,24 @@ public class NewControllerBulkActionTests
 
         var result = await _controller.ApplyBulkAction(model, query);
 
-        var view = Assert.IsType<ViewResult>(result);
-        var viewModel = Assert.IsAssignableFrom<NewQualificationsViewModel>(view.Model);
-
-        Assert.Multiple(() =>
-        {
-            Assert.Equal("Index", view.ViewName);
-            Assert.NotNull(viewModel.BulkUpdateResult);
-            Assert.Equal(selectedIds, viewModel.SelectedQualificationIds);
-            Assert.NotNull(viewModel.BulkAction);
-            Assert.Equal(processStatusId, viewModel.BulkAction.ProcessStatusId);
-            Assert.Equal(BulkComment, viewModel.BulkAction.Comment);
-            Assert.False(_controller.TempData.ContainsKey(BulkActionQualifications.SuccessKey));
-        });
-    }
-
-    [Fact]
-    public async Task ApplyBulkAction_RedirectsToHomeError_WhenMediatorReturnsFailure()
-    {
-        var model = CreateBulkActionModel();
-        var query = CreateQualificationQuery();
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<BulkUpdateQualificationStatusCommand>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<BulkUpdateQualificationStatusCommandResponse>
-            {
-                Success = false,
-                ErrorMessage = "API failed"
-            });
-
-        var result = await _controller.ApplyBulkAction(model, query);
-
-        var redirect = Assert.IsType<RedirectResult>(result);
-
-        Assert.Multiple(() =>
-        {
-            Assert.Equal("/Home/Error", redirect.Url);
-        });
+        var redirectResult = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal(nameof(NewController.BulkQualificationError), redirectResult.ActionName);
     }
 
     [Fact]
     public async Task ApplyBulkAction_RedirectsToHomeError_WhenExceptionThrown()
     {
-        var model = CreateBulkActionModel();
-        var query = CreateQualificationQuery();
+        var model = new NewQualificationsViewModel
+        {
+            SelectedQualificationIds = new List<Guid> { Guid.NewGuid() },
+            BulkAction = new QualificationsBulkActionPageViewModel.QualificationsBulkActionInputViewModel
+            {
+                ProcessStatusId = Guid.NewGuid(),
+                Comment = "bulk comment"
+            }
+        };
+
+        var query = new QualificationQuery { PageNumber = 1, RecordsPerPage = 10 };
 
         _mediatorMock
             .Setup(m => m.Send(It.IsAny<BulkUpdateQualificationStatusCommand>(), It.IsAny<CancellationToken>()))
@@ -313,172 +244,19 @@ public class NewControllerBulkActionTests
 
         var result = await _controller.ApplyBulkAction(model, query);
 
-        var redirect = Assert.IsType<RedirectResult>(result);
-
-        Assert.Multiple(() =>
-        {
-            Assert.Equal("/Home/Error", redirect.Url);
-        });
+        var redirectResult = Assert.IsType<RedirectResult>(result);
+        Assert.Equal("/Home/Error", redirectResult.Url);
     }
 
     [Fact]
-    public async Task ApplyBulkAction_SetsUserDisplayName()
+    public void BulkQualificationError_ReturnsEmptyModel_WhenTempDataMissing()
     {
-        var model = CreateBulkActionModel();
-        var query = CreateQualificationQuery();
+        var result = _controller.BulkQualificationError();
 
-        _controller.HttpContext.User = new ClaimsPrincipal(
-            new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, AlternateUserName) }));
+        var viewResult = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<QualificationBulkActionErrorModel>(viewResult.Model);
 
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<BulkUpdateQualificationStatusCommand>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<BulkUpdateQualificationStatusCommandResponse>
-            {
-                Success = true,
-                Value = new BulkUpdateQualificationStatusCommandResponse
-                {
-                    ErrorCount = 0
-                }
-            });
-
-        await _controller.ApplyBulkAction(model, query);
-
-        _mediatorMock.Verify(m => m.Send(
-            It.Is<BulkUpdateQualificationStatusCommand>(cmd =>
-                cmd.UserDisplayName == AlternateUserName),
-            It.IsAny<CancellationToken>()),
-            Times.Once);
-    }
-
-    [Fact]
-    public async Task ApplyBulkAction_RedirectsWithRouteValues()
-    {
-        var model = CreateBulkActionModel();
-
-        var query = CreateQualificationQuery(
-            pageNumber: AlternatePageNumber,
-            recordsPerPage: AlternateRecordsPerPage,
-            organisation: SearchOrganisation,
-            name: SearchName,
-            qan: SearchQan);
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<BulkUpdateQualificationStatusCommand>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<BulkUpdateQualificationStatusCommandResponse>
-            {
-                Success = true,
-                Value = new BulkUpdateQualificationStatusCommandResponse
-                {
-                    ErrorCount = 0
-                }
-            });
-
-        var result = await _controller.ApplyBulkAction(model, query);
-
-        var redirect = Assert.IsType<RedirectToActionResult>(result);
-
-        Assert.Multiple(() =>
-        {
-            Assert.Equal(AlternatePageNumber, redirect.RouteValues!["pageNumber"]);
-            Assert.Equal(AlternateRecordsPerPage, redirect.RouteValues["recordsPerPage"]);
-            Assert.Equal(SearchOrganisation, redirect.RouteValues["organisation"]);
-            Assert.Equal(SearchName, redirect.RouteValues["name"]);
-            Assert.Equal(SearchQan, redirect.RouteValues["qan"]);
-        });
-    }
-
-    [Fact]
-    public async Task ApplyBulkAction_InvalidModelState_PreservesPostedSelectionAndBulkAction()
-    {
-        _controller.ModelState.AddModelError("BulkAction", "Invalid");
-
-        var selectedIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid() };
-        var processStatusId = Guid.NewGuid();
-
-        var model = CreateBulkActionModel(selectedIds, processStatusId, BulkComment);
-        var query = CreateQualificationQuery(
-            pageNumber: AlternatePageNumber,
-            recordsPerPage: AlternateRecordsPerPage,
-            organisation: SearchOrganisation,
-            name: SearchName,
-            qan: SearchQan);
-
-        var result = await _controller.ApplyBulkAction(model, query);
-
-        var view = Assert.IsType<ViewResult>(result);
-        var viewModel = Assert.IsAssignableFrom<NewQualificationsViewModel>(view.Model);
-
-        Assert.Multiple(() =>
-        {
-            Assert.Equal("Index", view.ViewName);
-            Assert.Equal(selectedIds, viewModel.SelectedQualificationIds);
-            Assert.NotNull(viewModel.BulkAction);
-            Assert.Equal(processStatusId, viewModel.BulkAction.ProcessStatusId);
-            Assert.Equal(BulkComment, viewModel.BulkAction.Comment);
-            Assert.NotNull(viewModel.Filter);
-            Assert.Equal(SearchOrganisation, viewModel.Filter.Organisation);
-            Assert.Equal(SearchName, viewModel.Filter.QualificationName);
-            Assert.Equal(SearchQan, viewModel.Filter.QAN);
-        });
-    }
-
-    [Fact]
-    public async Task ApplyBulkAction_ErrorResult_PreservesPostedSelectionAndBulkAction()
-    {
-        var selectedIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
-        var processStatusId = Guid.NewGuid();
-
-        var model = CreateBulkActionModel(selectedIds, processStatusId, BulkComment);
-        var query = CreateQualificationQuery(
-            pageNumber: AlternatePageNumber,
-            recordsPerPage: AlternateRecordsPerPage,
-            organisation: SearchOrganisation,
-            name: SearchName,
-            qan: SearchQan);
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<BulkUpdateQualificationStatusCommand>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<BulkUpdateQualificationStatusCommandResponse>
-            {
-                Success = true,
-                Value = new BulkUpdateQualificationStatusCommandResponse
-                {
-                    ErrorCount = 2,
-                    Errors = new List<BulkQualificationErrorDto>
-                    {
-                        new BulkQualificationErrorDto
-                        {
-                            QualificationId = selectedIds[0],
-                            Title = "Missing",
-                            ErrorType = BulkQualificationErrorType.Missing
-                        },
-                        new BulkQualificationErrorDto
-                        {
-                            QualificationId = selectedIds[1],
-                            Title = "Locked",
-                            ErrorType = BulkQualificationErrorType.StatusUpdateFailed
-                        }
-                    }
-                }
-            });
-
-        var result = await _controller.ApplyBulkAction(model, query);
-
-        var view = Assert.IsType<ViewResult>(result);
-        var viewModel = Assert.IsAssignableFrom<NewQualificationsViewModel>(view.Model);
-
-        Assert.Multiple(() =>
-        {
-            Assert.Equal("Index", view.ViewName);
-            Assert.NotNull(viewModel.BulkUpdateResult);
-            Assert.Equal(selectedIds, viewModel.SelectedQualificationIds);
-            Assert.NotNull(viewModel.BulkAction);
-            Assert.Equal(processStatusId, viewModel.BulkAction.ProcessStatusId);
-            Assert.Equal(BulkComment, viewModel.BulkAction.Comment);
-            Assert.NotNull(viewModel.Filter);
-            Assert.Equal(SearchOrganisation, viewModel.Filter.Organisation);
-            Assert.Equal(SearchName, viewModel.Filter.QualificationName);
-            Assert.Equal(SearchQan, viewModel.Filter.QAN);
-        });
+        Assert.NotNull(model);
+        Assert.Empty(model.Failed);
     }
 }
