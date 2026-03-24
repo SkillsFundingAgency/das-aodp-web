@@ -76,10 +76,10 @@
 
 }
 
-@section BeforeContent{
+@section BeforeContent {
     @if (ViewBag.BackLinkModel is BackLinkModel { CanRender: true } model)
     {
-        <a class="govuk-back-link" href="@Url.Action(action: model.Action, controller: model.Controller, values: new { Area = model.Area })"></a>
+        await Html.RenderPartialAsync("_BackLinkPartial", model);
     }
 }
 
