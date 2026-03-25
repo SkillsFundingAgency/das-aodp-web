@@ -1,13 +1,15 @@
-﻿using Azure;
-using DocumentFormat.OpenXml.Spreadsheet;
+﻿using Azure.Identity;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
+using SFA.DAS.AODP.Application;
+using SFA.DAS.AODP.Application.Commands.Application.Application;
 using SFA.DAS.AODP.Application.Commands.Application.Review;
+using SFA.DAS.AODP.Application.Commands.Review;
 using SFA.DAS.AODP.Application.Queries.Application.Form;
+using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Application.Queries.Review;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Application;
@@ -18,10 +20,16 @@ using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApproval;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Enums;
+using SFA.DAS.AODP.Web.Extensions;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Application;
+using SFA.DAS.AODP.Web.Models.Applications;
+using SFA.DAS.AODP.Web.Models.BulkActions;
+using SFA.DAS.AODP.Web.Models.BulkActions.Options;
 using SFA.DAS.AODP.Web.Models.RelatedLinks;
+using SFA.DAS.AODP.Web.Validators.Messages;
 using System.IO.Compression;
+using System.Text.Json;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
@@ -49,64 +57,205 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         }
 
         [Route("review/application-reviews")]
-        public async Task<IActionResult> Index(ApplicationsReviewListViewModel model)
+        public async Task<IActionResult> Index(
+            ApplicationsReviewQuery query, 
+            bool selectAll = false)
         {
-            string userType = _userHelperService.GetUserType().ToString();
-            model.FindRegulatedQualificationUrl = _aodpConfiguration.Value.FindRegulatedQualificationUrl;
-            GetApplicationsForReviewQueryResponse response;
+            var viewModel = await BuildIndexViewModelAsync(query, selectAll);
 
-            bool hasSearchErrors =
-                    ModelState.GetFieldValidationState(nameof(model.ApplicationSearch)) == ModelValidationState.Invalid ||
-                    ModelState.GetFieldValidationState(nameof(model.AwardingOrganisationSearch)) == ModelValidationState.Invalid;
+            ShowNotificationIfKeyExists(
+                BulkActionApplications.BulkActionSuccessKey,
+                ViewNotificationMessageType.Success,
+                BulkActionApplications.BulkActionSuccessMessage);
 
-            if (hasSearchErrors)
+            ShowNotificationIfKeyExists(
+                BulkActionApplications.SaveReviewersSuccessKey,
+                ViewNotificationMessageType.Success,
+                BulkActionApplications.SaveReviewersSuccessMessage);
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [Route("/review/application-reviews/bulk-action")]
+        public async Task<IActionResult> ApplyBulkAction(
+            ApplicationsBulkActionPostModel model,
+            ApplicationsReviewQuery applicationQuery)
+        {
+            if (model.SelectedApplicationReviewIds.Count == 0)
             {
-                response = new GetApplicationsForReviewQueryResponse();
-
-                response.AvailableReviewers =
-                    string.IsNullOrWhiteSpace(model.AvailableReviewersJson)
-                        ? new List<UserOption>()
-                        : JsonConvert.DeserializeObject<List<UserOption>>(model.AvailableReviewersJson)
-                            ?? new List<UserOption>();
-            }
-            else
-            {
-                response = await Send(new GetApplicationsForReviewQuery()
+                var message = model.BulkActionInputViewModel?.SubmitAction switch
                 {
-                    ReviewUser = userType,
-                    ApplicationStatuses = model.Status?.Select(s => s.ToString()).ToList(),
-                    ApplicationsWithNewMessages = model.Status?.Contains(ApplicationStatus.NewMessage) == true,
-                    ApplicationSearch = model.ApplicationSearch,
-                    AwardingOrganisationSearch = model.AwardingOrganisationSearch,
-                    ReviewerSearch = model.ReviewerSearch,
-                    UnassignedOnly = model.UnassignedOnly,
-                    Limit = model.ItemsPerPage,
-                    Offset = model.ItemsPerPage * (model.Page - 1)
-                });
+                    SubmitAction.Assign => ValidationMessages.ApplicationsBulkAction.NoApplicationsSelectedForReviewers,
+                    SubmitAction.Message => ValidationMessages.ApplicationsBulkAction.NoApplicationsSelectedForAction,
+                    _ => ValidationMessages.ApplicationsBulkAction.NoApplicationsSelectedForAction
+                };
+
+                ModelState.AddModelError(nameof(model.SelectedApplicationReviewIds), message);
             }
 
-            model.MapApplications(response);
-            model.UserType = userType;
+                            
+            if (!ModelState.IsValid)
+            {
+                var viewModel = await BuildIndexViewModelAsync(
+                    applicationQuery,
+                    selectAll: false,
+                    postedModel: model);
 
-            model.AvailableReviewersJson = JsonConvert.SerializeObject(response.AvailableReviewers);
+                return View("Index", viewModel);
+            }
+            try
+            {
+                switch (model.BulkActionInputViewModel.SubmitAction)
+                {
+                    case SubmitAction.Assign:
+                        {
+                            _logger.LogInformation(
+                                "WEB CONTROLLER: Bulk Assign selected. Count={Count}, Reviewer1={Reviewer1}, Reviewer2={Reviewer2}",
+                                model.SelectedApplicationReviewIds?.Count,
+                                model.BulkActionInputViewModel?.Reviewer1,
+                                model.BulkActionInputViewModel?.Reviewer2);
 
-            return View(model);
+
+                            var input = model.BulkActionInputViewModel;
+
+                            var reviewer1Selection = input.Reviewer1?.Trim();
+                            var reviewer2Selection = input.Reviewer2?.Trim();
+
+                            var command = new BulkSaveReviewerCommand
+                            {
+                                ApplicationReviewIds = model.SelectedApplicationReviewIds ?? new List<Guid>(),
+
+                                Reviewer1Set = !string.IsNullOrWhiteSpace(reviewer1Selection),
+                                Reviewer2Set = !string.IsNullOrWhiteSpace(reviewer2Selection),
+
+                                Reviewer1 = string.IsNullOrWhiteSpace(reviewer1Selection) ||
+                                    reviewer1Selection == ReviewerDropdown.UnassignedValue
+                                    ? null
+                                    : reviewer1Selection,
+
+                                Reviewer2 = string.IsNullOrWhiteSpace(reviewer2Selection) ||
+                                    reviewer2Selection == ReviewerDropdown.UnassignedValue
+                                    ? null
+                                    : reviewer2Selection,
+
+                                UserType = _userHelperService.GetUserType().ToString(),
+                                SentByEmail = _userHelperService.GetUserEmail(),
+                                SentByName = _userHelperService.GetUserDisplayName()
+                            };
+
+                            var result = await Send(command);
+                            if (result.ErrorCount == 0)
+                            {
+                                TempData[BulkActionApplications.SaveReviewersSuccessKey] = true;
+                                return RedirectToAction(nameof(Index), applicationQuery.ToRouteValues());
+                            }
+
+                            var failed = result.Errors.Select(e => new ApplicationBulkActionErrorItemViewModel
+                            {
+                                ReferenceNumber = e.ReferenceNumber,
+                                Qan = e.Qan ?? string.Empty,
+                                Title = e.Title,
+                                AwardingOrganisation = e.AwardingOrganisation,
+                                FailureReason = e.ErrorType switch
+                                {
+                                    BulkReviewerErrorType.Missing => "Application not found.",
+                                    BulkReviewerErrorType.Conflict => "Reviewer 1 and 2 must be different users.",
+                                    BulkReviewerErrorType.MessageFailed => "Reviewer updated but message failed to send.",
+                                    _ => "The application could not be updated."
+                                }
+                            }).ToList();
+
+                            return HandleApplicationBulkErrors(failed, applicationQuery);
+                        }
+
+                    case SubmitAction.Message:
+                        {
+                            _logger.LogInformation(
+                                "WEB CONTROLLER: Bulk Message selected. Count={Count}, ActionType={ActionType}",
+                                model.SelectedApplicationReviewIds?.Count,
+                                model.BulkActionInputViewModel?.BulkActionType);
+
+                            var result = await Send(new BulkApplicationActionCommand
+                            {
+                                ApplicationReviewIds = model.SelectedApplicationReviewIds,
+                                ActionType = model.BulkActionInputViewModel.BulkActionType!.Value,
+                                UserType = _userHelperService.GetUserType().ToString(),
+                                SentByEmail = _userHelperService.GetUserEmail(),
+                                SentByName = _userHelperService.GetUserDisplayName()
+                            });
+
+                            if(result.ErrorCount == 0)
+                            {
+                                TempData[BulkActionApplications.BulkActionSuccessKey] = true;
+                                return RedirectToAction(nameof(Index), applicationQuery.ToRouteValues());
+                            }
+
+                            var failed = result.Errors.Select(e => new ApplicationBulkActionErrorItemViewModel
+                            {
+                                ReferenceNumber = e.ReferenceNumber,
+                                Title = e.Title,
+                                AwardingOrganisation = e.AwardingOrganisation,
+                                Qan = e.Qan,
+                                FailureReason = e.ErrorType switch
+                                {
+                                    BulkApplicationActionErrorType.InvalidAction => "Invalid action.",
+                                    BulkApplicationActionErrorType.UpdateFailed => "Update failed.",
+                                    _ => "Unknown error."
+                                }
+                            }).ToList();
+
+                            return HandleApplicationBulkErrors(failed, applicationQuery);
+                        }
+
+                    default:
+                        return Redirect("/Home/Error");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+                return Redirect("/Home/Error");
+            }
+        }
+
+        private IActionResult HandleApplicationBulkErrors(
+            List<ApplicationBulkActionErrorItemViewModel> failed,
+            ApplicationsReviewQuery query)
+        {
+            var errorModel = new ApplicationBulkActionErrorModel
+            {
+                Failed = failed,
+                BackLinkText = "Go back to Applications",
+                BackLinkUrl = Url.Action(nameof(Index), query.ToRouteValues())!
+            };
+
+            TempData[BulkActionApplications.Errors] = JsonSerializer.Serialize(errorModel);
+
+            return RedirectToAction(nameof(BulkApplicationError));
+        }
+
+        [HttpGet]
+        [Route("review/application-reviews/bulk-error")]
+        public IActionResult BulkApplicationError()
+        {
+            var json = TempData[BulkActionApplications.Errors] as string;
+
+            if (string.IsNullOrEmpty(json))
+            {
+                return View("Error");
+            }
+
+            var model = JsonSerializer.Deserialize<ApplicationBulkActionErrorModel>(json);
+            return View("BulkApplicationError", model);
         }
 
         [HttpPost]
         [Route("review/application-reviews")]
-        public async Task<IActionResult> Search(ApplicationsReviewListViewModel model)
+        public async Task<IActionResult> Search(ApplicationsReviewQuery query)
         {
-            return RedirectToAction(nameof(Index), new ApplicationsReviewListViewModel()
-            {
-                Page = 1,
-                ItemsPerPage = model.ItemsPerPage,
-                ApplicationSearch = model.ApplicationSearch,
-                AwardingOrganisationSearch = model.AwardingOrganisationSearch,
-                Status = model.Status,
-                ReviewerSelection = model.ReviewerSelection,
-                AvailableReviewersJson = model.AvailableReviewersJson
-            });
+            query.PageNumber = 1;
+            return RedirectToAction(nameof(Index), query);
         }
 
 
@@ -409,15 +558,17 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     SentByName = _userHelperService.GetUserDisplayName(),
                     ReviewerFieldName = model.ReviewerFieldName,
 
-                    ReviewerValue = string.IsNullOrWhiteSpace(model.ReviewerValue)
-                        ? null : model.ReviewerValue,
+                    ReviewerValue = string.IsNullOrWhiteSpace(model.ReviewerValue) ||
+                                    model.ReviewerValue == ReviewerDropdown.UnassignedValue
+                        ? null
+                        : model.ReviewerValue,
 
                     UserType = _userHelperService.GetUserType().ToString()
                 });
 
             if (reviewerUpdateResult.DuplicateReviewerError)
             {
-                ModelState.AddModelError(model.ReviewerFieldName, "Reviewer 1 and 2 must be different people.");
+                ModelState.AddModelError(model.ReviewerFieldName, ValidationMessages.Reviewer1Reviewer2Conflict);
 
                 var review = await Send(new GetApplicationForReviewByIdQuery(model.ApplicationReviewId));
 
@@ -692,6 +843,46 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             {
                 return Url.Action("Index", "ApplicationsReview", new { area = "Review" });
             }
+        }
+
+        private async Task<ApplicationsReviewListViewModel> BuildIndexViewModelAsync(
+            ApplicationsReviewQuery applicationQuery,
+            bool selectAll = false,
+            ApplicationsBulkActionPostModel? postedModel = null)
+        { 
+
+            var userType = _userHelperService.GetUserType().ToString();
+            
+            var response = await Send(applicationQuery.ToGetApplicationsForReviewQuery(userType));
+
+            var viewModel = new ApplicationsReviewListViewModel
+            {
+                PageNumber = applicationQuery.PageNumber,
+                RecordsPerPage = applicationQuery.RecordsPerPage,
+                ApplicationSearch = applicationQuery.ApplicationSearch,
+                AwardingOrganisationSearch = applicationQuery.AwardingOrganisationSearch,
+                ReviewerSelection = applicationQuery.ReviewerSelection,
+                Status = applicationQuery.Status ?? new List<ApplicationStatus>(),
+                UserType = userType,
+                FindRegulatedQualificationUrl = _aodpConfiguration.Value.FindRegulatedQualificationUrl
+            };
+
+            viewModel.MapApplications(response);
+
+            if (selectAll)
+            {
+                viewModel.SelectedApplicationReviewIds = viewModel.Applications.Select(a => a.ApplicationReviewId).Distinct().ToList();
+            }
+
+            viewModel.BulkActionOptions = BulkMessageActionOptions.Build();
+
+            if (postedModel is not null)
+            {
+                viewModel.SelectedApplicationReviewIds = postedModel.SelectedApplicationReviewIds ?? new();
+                viewModel.BulkActionInputViewModel = postedModel.BulkActionInputViewModel ?? new();
+            }
+
+            return viewModel;
         }
     }
 }

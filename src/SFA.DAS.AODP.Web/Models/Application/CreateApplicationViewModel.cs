@@ -3,9 +3,11 @@ using SFA.DAS.AODP.Web.Validators.Attributes;
 using SFA.DAS.AODP.Web.Validators.Messages;
 using SFA.DAS.AODP.Web.Validators.Patterns;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SFA.DAS.AODP.Web.Models.Application
 {
+    [ExcludeFromCodeCoverage]
     public class CreateApplicationViewModel
     {
         public Guid OrganisationId { get; set; }

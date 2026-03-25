@@ -2,9 +2,11 @@
 using SFA.DAS.AODP.Domain.Interfaces;
 using SFA.DAS.AODP.Domain.Models;
 using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SFA.DAS.AODP.Domain.Qualifications.Requests
 {
+    [ExcludeFromCodeCoverage]
     public class GetChangedQualificationsApiRequest : IGetApiRequest
     {
         public int Skip { get; set; }
@@ -50,7 +52,7 @@ namespace SFA.DAS.AODP.Domain.Qualifications.Requests
                     queryParams.Add("QAN", QAN);
                 }
 
-                if (ProcessStatusFilter != null && ProcessStatusFilter.ProcessStatusIds.Any())
+                if (ProcessStatusFilter?.ProcessStatusIds?.Count > 0)
                 {
                     var ids = string.Join(",", ProcessStatusFilter.ProcessStatusIds);
                     ids = Uri.EscapeDataString(ids);
