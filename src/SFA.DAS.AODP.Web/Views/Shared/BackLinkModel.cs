@@ -13,13 +13,10 @@ public record BackLinkModel
         get => _controller;
         set
         {
-            if (!string.IsNullOrEmpty(value))
+            if (!string.IsNullOrEmpty(value) && value.EndsWith("Controller"))
             {
-                if (value.EndsWith("Controller"))
-                {
-                    _controller = value.Replace("Controller", "");
-                    return;
-                }
+                _controller = value.Replace("Controller", "");
+                return;
             }
 
             _controller = value;
