@@ -18,11 +18,11 @@
     var maxApprovalEndDateGroupError = maxApprovalEndDateDayError || maxApprovalEndDateMonthError || maxApprovalEndDateYearError;
 }
 
-@await Html.PartialAsync("_BackLinkPartial", backLinkModel)
-
-<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
-
 <div id="allSection">
+
+    @await Html.PartialAsync("_BackLinkPartial", backLinkModel)
+
+    <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
     <h1 class="govuk-heading-l">@ViewData["Title"]</h1>
 
@@ -66,21 +66,21 @@
                     <div class="govuk-date-input__item">
                         <div class="govuk-form-group">
                             <label class="govuk-label govuk-date-input__label" for="MaxApprovalEndDate_Day">Day</label>
-                            <input class="govuk-input govuk-date-input__input govuk-input--width-2 @(maxApprovalEndDateDayError ? "govuk-input--error" : "")"
+                            <input id="maxApprovalEndDateDay" class="govuk-input govuk-date-input__input govuk-input--width-2 @(maxApprovalEndDateDayError ? "govuk-input--error" : "")"
                                    asp-for="MaxApprovalEndDate.Day" maxlength="2" type="text" autocomplete="off" />
                         </div>
                     </div>
                     <div class="govuk-date-input__item">
                         <div class="govuk-form-group">
                             <label class="govuk-label govuk-date-input__label" for="MaxApprovalEndDate_Month">Month</label>
-                            <input class="govuk-input govuk-date-input__input govuk-input--width-2 @(maxApprovalEndDateMonthError ? "govuk-input--error" : "")"
+                            <input id="maxApprovalEndDateMonth" class="govuk-input govuk-date-input__input govuk-input--width-2 @(maxApprovalEndDateMonthError ? "govuk-input--error" : "")"
                                    asp-for="MaxApprovalEndDate.Month" maxlength="2" type="text" autocomplete="off" />
                         </div>
                     </div>
                     <div class="govuk-date-input__item">
                         <div class="govuk-form-group">
                             <label class="govuk-label govuk-date-input__label" for="MaxApprovalEndDate_Year">Year</label>
-                            <input class="govuk-input govuk-date-input__input govuk-input--width-4 @(maxApprovalEndDateYearError ? "govuk-input--error" : "")"
+                            <input id="maxApprovalEndDateYear" class="govuk-input govuk-date-input__input govuk-input--width-4 @(maxApprovalEndDateYearError ? "govuk-input--error" : "")"
                                    asp-for="MaxApprovalEndDate.Year" maxlength="4" type="text" autocomplete="off" />
                         </div>
                     </div>
@@ -112,18 +112,28 @@
         const form = document.getElementById('rolloverForm');
         const allSection = document.getElementById('allSection');
         const loadingContainer = document.getElementById('loadingContainer');
+        
+        const day = document.getElementById('maxApprovalEndDateDay');
+        const month = document.getElementById('maxApprovalEndDateMonth');
+        const year = document.getElementById('maxApprovalEndDateYear');
 
-        if (!form || !allSection || !loadingContainer) return;
-
-        // Ensure loader is hidden on initial page load
         loadingContainer.style.display = 'none';
 
         form.addEventListener('submit', () => {
 
-            // Hide the whole form section
-            allSection.style.display = 'none';
+            if (!day.value.trim() || !month.value.trim() || !year.value.trim()) {
+                return;
+            }
+            
+            const d = Number(day.value);
+            const m = Number(month.value);
+            const y = Number(year.value);
 
-            // Show spinner loading screen
+            if (!Number.isInteger(d) || !Number.isInteger(m) || !Number.isInteger(y)) {
+                return;
+            }
+
+            allSection.style.display = 'none';
             loadingContainer.style.display = 'block';
 
         }, { once: true });
