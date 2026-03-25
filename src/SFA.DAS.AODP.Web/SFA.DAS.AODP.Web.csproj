@@ -74,6 +74,10 @@
 		<None Include="bundleconfig.json" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Validators\NewFolder\" />
+	</ItemGroup>
+
 	<PropertyGroup>
 		<DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
 	</PropertyGroup>

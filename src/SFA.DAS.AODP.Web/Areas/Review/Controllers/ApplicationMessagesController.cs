@@ -1,10 +1,10 @@
 ﻿using Azure;
+using DocumentFormat.OpenXml.EMMA;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Application.Application;
-using SFA.DAS.AODP.Authentication.DfeSignInApi.Models;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Exceptions;
 using SFA.DAS.AODP.Models.Settings;
@@ -16,8 +16,7 @@ using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Extensions;
 using SFA.DAS.AODP.Web.Helpers.File;
 using SFA.DAS.AODP.Web.Helpers.User;
-using StackExchange.Redis;
-using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
+using SFA.DAS.AODP.Web.Models.RelatedLinks;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers;
@@ -43,7 +42,7 @@ public class ApplicationMessagesController : ControllerBase
     }
 
     [HttpGet]
-    [Route("review/{applicationReviewId}/messages")]
+    [Route("review/{applicationReviewId}/messages", Name = RouteNames.Review_ApplicationMessages)]
     public async Task<IActionResult> ApplicationMessagesAsync(Guid applicationReviewId)
     {
         var applicationId = await GetApplicationIdWithAccessValidationAsync(applicationReviewId);
@@ -80,8 +79,9 @@ public class ApplicationMessagesController : ControllerBase
         {
             ApplicationReviewId = applicationReviewId,
             TimelineMessages = timelineMessages,
-            UserType = UserType
+            UserType = UserType,
         };
+        model.SetLinks(Url, UserType, new RelatedLinksContext { ApplicationReviewId = applicationReviewId });
 
         if (TempData.ContainsKey("EditMessage"))
         {
@@ -113,6 +113,7 @@ public class ApplicationMessagesController : ControllerBase
     {
         model.FileSettings = _formBuilderSettings;
         var applicationId = await GetApplicationIdWithAccessValidationAsync(model.ApplicationReviewId);
+        model.SetLinks(Url, UserType, new RelatedLinksContext { ApplicationReviewId = model.ApplicationReviewId });
 
         if (!ModelState.IsValid)
         {
