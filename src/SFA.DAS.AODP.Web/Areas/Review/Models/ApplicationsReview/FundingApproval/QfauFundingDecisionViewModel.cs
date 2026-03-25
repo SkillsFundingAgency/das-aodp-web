@@ -76,7 +76,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
 
             var qualificationStatus = model.RelatedQualification?.Status;
 
-            if (model.Status == ApplicationStatus.NotApproved && model.OfferFundingDetails.Any())
+            if (model.Status == ApplicationStatus.NotApproved && model.OfferFundingDetails.Count > 0)
             {
                 messages.Add(FundingDecisionMessages.NotApprovedWithOffers);
             }
@@ -94,7 +94,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
             }
 
             model.Messages = messages;
-            model.CanSubmit = !messages.Any();
+            model.CanSubmit = ! (messages.Count > 0);
 
             return model;
         }
