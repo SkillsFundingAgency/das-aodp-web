@@ -88,8 +88,55 @@ public class RolloverController : ControllerBase
     [Route("/Review/Rollover/UploadQualifications")]
     public IActionResult UploadQualifications()
     {
-        ViewData["Title"] = "Upload qualifications to RollOver";
         return View();
+    }
+
+    [HttpPost]
+    [Route("/Review/Rollover/UploadQualifications")]
+    public async Task<IActionResult> UploadQualifications([FromForm] RolloverUploadQualificationsViewModel model)
+    {
+        var session = GetSessionModel();
+
+        if (model.File == null && session.RolloverFundingExtensionCandidates != null)
+        {
+            return RedirectToAction("RolloverSummary");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var file = await _csvFileReader.FileReadAsync(
+            model.File,
+            FundingExtensionCandidateColumns.Required,
+            FundingExtensionCandidateMapper.Map
+        );
+
+        if (!file.IsValid)
+        {
+            foreach (var error in file.Errors)
+                ModelState.AddModelError(nameof(model.File), error);
+
+            return View(model);
+        }
+
+        var response = new GetRolloverCandidatesQueryResponse();
+
+        try
+        {
+            response = await Send(new GetRolloverCandidatesQuery());
+        }
+        catch (Exception ex)
+        {
+            LogException(ex);
+        }
+
+        session.RolloverFundingExtensionCandidates = new();
+
+        SaveSessionModel(session);
+
+        return RedirectToAction("RolloverSummary");
     }
 
     [HttpGet]
@@ -430,7 +477,6 @@ public class RolloverController : ControllerBase
 
         return View(model);
     }
-
 
     [HttpPost]
     [Route("/Review/Rollover/FundingStreamInclusionExclusion")]

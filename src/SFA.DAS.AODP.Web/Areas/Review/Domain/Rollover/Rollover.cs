@@ -11,6 +11,7 @@ public record Rollover
     public RolloverPreviousData? PreviousData { get; set; }
     public RolloverSelectCandidates? SelectCandidates { get; set; }
     public List<QualificationCandidate> RolloverCandidates { get; set; } = new();
+    public RolloverFundingExtensionCandidates? RolloverFundingExtensionCandidates { get; set; }
     public RolloverFundingStream? RolloverFundingStream { get; set; }
     public RolloverEligibilityDates? RolloverEligibilityDates { get; set; }
     public RolloverFundingApprovalEndDate? RolloverFundingApprovalEndDate { get; set; }
