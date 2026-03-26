@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Enums;
+using SFA.DAS.AODP.Web.Models.RelatedLinks;
 using SFA.DAS.AODP.Web.Models.TimelineComponents;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -11,7 +13,7 @@ using System.Globalization;
 namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationMessage;
 
 
-public class ApplicationMessagesViewModel
+public class ApplicationMessagesViewModel : IHasRelatedLinks
 {
     public Guid ApplicationReviewId { get; set; }
     public string Hint => (UserType == UserType.Qfau) ?
@@ -35,6 +37,13 @@ public class ApplicationMessagesViewModel
 
     public FileUploadSetting? FileSettings { get; set; }
     public List<IFormFile> Files { get; set; } = new();
+
+    public IReadOnlyList<RelatedLink> RelatedLinks { get; private set; } = [];
+
+    public void SetLinks(IUrlHelper url, UserType userType, RelatedLinksContext ctx)
+        => RelatedLinks =
+        RelatedLinksBuilder.Build
+            (url, RelatedLinksPage.ReviewApplicationMessages, userType, ctx);
 
     public class MessageActions
     {

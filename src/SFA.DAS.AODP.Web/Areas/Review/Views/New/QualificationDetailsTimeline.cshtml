@@ -1,16 +1,23 @@
-﻿@model SFA.DAS.AODP.Web.Models.Qualifications.QualificationDetailsTimelineViewModel
+﻿@using SFA.DAS.AODP.Web.Views.Shared
+@model SFA.DAS.AODP.Web.Models.Qualifications.QualificationDetailsTimelineViewModel
 
 @{
     ViewData["Title"] = "Qualification Details";
+
+    var backLinkModel = new BackLinkModel
+    {
+        Action = "Index",
+        Controller = "New",
+        Text = "Return to qualifications"
+    };
 }
-<a class="govuk-back-link"
-   asp-controller="New"
-   asp-action="Index">
-    Return to qualifications
-</a>
+
+@await Html.PartialAsync("_BackLinkPartial", backLinkModel)
+
 <span class="govuk-caption-xl">
     Newly regulated qualification
 </span>
+
 <h1 class="govuk-heading-xl">Qualification Details</h1>
 
 <div class="govuk-tabs" data-module="govuk-tabs">

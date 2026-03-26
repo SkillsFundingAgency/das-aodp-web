@@ -46,10 +46,10 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
             var expectedUserType = UserType.Ofqual;
             _userHelperServiceMock.Setup(x => x.GetUserType()).Returns(expectedUserType);
 
-            var expectedModel = new ApplicationsReviewListViewModel
+            var expectedModel = new Models.Applications.ApplicationsReviewQuery
             {
-                Page = 2,
-                ItemsPerPage = 10,
+                PageNumber = 2,
+                RecordsPerPage = 10,
                 ApplicationSearch = "Test Search",
                 AwardingOrganisationSearch = "Test AO",
                 Status = new List<ApplicationStatus> { ApplicationStatus.InReview, ApplicationStatus.Approved },
@@ -107,8 +107,8 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
                     q.AwardingOrganisationSearch == expectedModel.AwardingOrganisationSearch &&
                     q.ApplicationStatuses.SequenceEqual(expectedModel.Status.Select(s => s.ToString())) &&
                     q.ApplicationsWithNewMessages == expectedModel.Status.Contains(ApplicationStatus.NewMessage) &&
-                    q.Limit == expectedModel.ItemsPerPage &&
-                    q.Offset == expectedModel.ItemsPerPage * (expectedModel.Page - 1) &&
+                    q.Limit == expectedModel.RecordsPerPage &&
+                    q.Offset == expectedModel.RecordsPerPage * (expectedModel.PageNumber - 1) &&
                     q.ReviewerSearch == "Bob Smith" &&
                     q.UnassignedOnly == false),
                 It.IsAny<CancellationToken>()),
