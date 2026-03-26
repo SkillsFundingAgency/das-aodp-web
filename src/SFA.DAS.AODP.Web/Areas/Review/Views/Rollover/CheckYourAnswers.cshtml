@@ -14,3 +14,28 @@
 }
 
 <h1 class="govuk-heading-l">@ViewData["Title"]</h1>
+
+<dl class="govuk-summary-list govuk-!-margin-bottom-9">
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+            Level(s)
+        </dt>
+        <dd class="govuk-summary-list__value">
+            @foreach (var level in @Model.Levels)
+            {
+                @level.ToString()<br />
+            }
+        </dd>
+    </div>
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+            Type(s)
+        </dt>
+        <dd class="govuk-summary-list__value">
+            @foreach (var type in @Model.Types)
+            {
+                @type.ToString()<br />
+            }
+        </dd>
+    </div>
+</dl>

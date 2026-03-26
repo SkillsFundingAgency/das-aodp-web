@@ -8,7 +8,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 [ExcludeFromCodeCoverage]
 public record SelectAwardingOrganisationsViewModel
 {
-    //[MustNotBeEmpty(ErrorMessage = "Select the awarding organisation you want to rollover")]
     public List<AwardingOrganisation> SelectedAwardingOrganisations { get; set; } = [];
 
     public List<CheckboxItem> AwardingOrganisations { get; set; } = new List<CheckboxItem>

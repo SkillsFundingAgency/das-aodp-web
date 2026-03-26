@@ -2,12 +2,14 @@
 using SFA.DAS.AODP.Web.TagHelpers;
 using SFA.DAS.AODP.Web.Validators.Attributes;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Mvc;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 
 [ExcludeFromCodeCoverage]
 public record SelectQualificationLevelsViewModel
 {
+    [BindProperty]
     [MustNotBeEmpty(ErrorMessage = "Select the qualification levels you want to rollover")]
     public List<QualificationLevel> SelectedLevels { get; set; } = [];
 

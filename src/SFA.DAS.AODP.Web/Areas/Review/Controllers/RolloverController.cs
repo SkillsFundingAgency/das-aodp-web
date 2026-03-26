@@ -294,7 +294,6 @@ public class RolloverController : ControllerBase
     [ValidateAntiForgeryToken]
     public IActionResult SelectLevels(SelectQualificationLevelsViewModel model, string action)
     {
-
         if (!ModelState.IsValid)
         {
             return View(model);
@@ -307,6 +306,12 @@ public class RolloverController : ControllerBase
             return View(model);
         }
 
+        var session = GetSessionModel();
+
+        session.QueryBuilderFilters.SetLevels(model.SelectedLevels);
+
+        SaveSessionModel(session);
+
         return RedirectToAction(nameof(SelectTypes));
     }
 
@@ -316,6 +321,12 @@ public class RolloverController : ControllerBase
     public IActionResult SelectLevels()
     {
         var model = new SelectQualificationLevelsViewModel();
+        var session = GetSessionModel();
+        if (session.QueryBuilderFilters.Levels.Count > 0)
+        {
+            model.SelectedLevels = session.QueryBuilderFilters.Levels.ToList();
+        }
+
         return View(model);
     }
 
@@ -344,6 +355,12 @@ public class RolloverController : ControllerBase
             return View(model);
         }
 
+        var session = GetSessionModel();
+
+        session.QueryBuilderFilters.SetTypes(model.SelectedTypes);
+
+        SaveSessionModel(session);
+
         return RedirectToAction(nameof(SelectSectorSubjectArea));
     }
 
@@ -360,6 +377,8 @@ public class RolloverController : ControllerBase
     [ValidateAntiForgeryToken]
     public IActionResult SelectSectorSubjectArea(SelectSectorSubjectAreasModel model)
     {
+        var session = GetSessionModel();
+
         ModelState.Clear();
 
         if (model.SelectionType is SectorSubjectAreaSelectionType.None)
@@ -379,6 +398,10 @@ public class RolloverController : ControllerBase
                 return View(model);
             }
         }
+
+        session.QueryBuilderFilters.SetSectorSubjectAreas(model.SelectedSectorSubjectAreas);
+
+        SaveSessionModel(session);
 
         return RedirectToAction(nameof(SelectAwardingOrganisations));
     }
@@ -416,13 +439,25 @@ public class RolloverController : ControllerBase
             }
         }
 
+        var session = GetSessionModel();
+
+        session.QueryBuilderFilters.SetAwardingOrganisations(model.SelectedAwardingOrganisations);
+
+        SaveSessionModel(session);
+
         return RedirectToAction(nameof(CheckYourAnswers));
     }
 
     [HttpGet]
     public IActionResult CheckYourAnswers()
     {
-        var model = new CheckYourAnswersViewModel();
+        var session = GetSessionModel();
+        var model = new CheckYourAnswersViewModel
+        {
+            Levels = session.QueryBuilderFilters.Levels.ToList(),
+            Types = session.QueryBuilderFilters.Types.ToList()
+        };
+
         return View(model);
     }
 }
