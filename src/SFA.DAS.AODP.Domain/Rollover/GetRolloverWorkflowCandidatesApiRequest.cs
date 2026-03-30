@@ -2,7 +2,7 @@
 
 namespace SFA.DAS.AODP.Domain.Rollover;
 
-public class GetRolloverCandidatesApiRequest : IGetApiRequest
+public class GetRolloverWorkflowCandidatesApiRequest : IGetApiRequest
 {
-    public string GetUrl => "api/rollover/rollovercandidates";
+    public string GetUrl => "api/rollover/rolloverworkflowcandidates";
 }

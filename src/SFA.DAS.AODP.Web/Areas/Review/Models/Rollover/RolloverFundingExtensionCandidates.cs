@@ -2,7 +2,7 @@
 {
     public class RolloverFundingExtensionCandidates
     {
-        public List<FundingExtensionCandidate> FundingExtensionCandidatesValid { get; set; } = new();
-        public List<FundingExtensionCandidate> FundingExtensionCandidatesInValid { get; set; } = new();
+        public List<FundingExtensionCandidate> FundingExtensionCandidates { get; set; } = new();
+        public FundingExtensionCandidateValidation? FundingExtensionCandidateValidation { get; set; }
     }
 }

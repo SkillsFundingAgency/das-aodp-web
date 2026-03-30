@@ -121,16 +121,20 @@ public class RolloverController : ControllerBase
             return View(model);
         }
 
-        var response = new GetRolloverCandidatesQueryResponse();
+        var responseRolloverCandidates = new GetRolloverCandidatesQueryResponse();
+        var responseRolloverWorkflowCandidates = new GetRolloverWorkflowCandidatesQueryResponse();
 
         try
         {
-            response = await Send(new GetRolloverCandidatesQuery());
+            responseRolloverCandidates = await Send(new GetRolloverCandidatesQuery());
+            responseRolloverWorkflowCandidates = await Send(new GetRolloverWorkflowCandidatesQuery());
         }
         catch (Exception ex)
         {
             LogException(ex);
         }
+
+        //var matchedCsv = RolloverCandidateExtensions.FilterCandidates(file.Items, response.RolloverCandidates);
 
         session.RolloverFundingExtensionCandidates = new();
 
