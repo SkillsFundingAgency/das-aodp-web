@@ -130,7 +130,7 @@ public class RolloverController : ControllerBase
             responseRolloverCandidates = await Send(new GetRolloverCandidatesQuery());
             responseRolloverWorkflowCandidates = await Send(new GetRolloverWorkflowCandidatesQuery());
 
-            var candidates = new List<SFA.DAS.AODP.Models.Rollover.FundingExtensionCandidate>();
+            var candidates = new List<AODP.Models.Rollover.FundingExtensionCandidate>();
             var rolloverCandidates = responseRolloverCandidates.RolloverCandidates;
             var rolloverWorkflowCandidates = responseRolloverWorkflowCandidates.RolloverWorkflowCandidates;
             var rolloverRun = new RolloverWorkflowRun
