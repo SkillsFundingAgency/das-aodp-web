@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.Rollover;
 using SFA.DAS.AODP.Application.Queries.Import;
 using SFA.DAS.AODP.Application.Queries.Review.Rollover;
+using SFA.DAS.AODP.Application.Validators;
 using SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Extensions;
 using SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover;
@@ -128,6 +129,18 @@ public class RolloverController : ControllerBase
         {
             responseRolloverCandidates = await Send(new GetRolloverCandidatesQuery());
             responseRolloverWorkflowCandidates = await Send(new GetRolloverWorkflowCandidatesQuery());
+
+            var candidates = new List<SFA.DAS.AODP.Models.Rollover.FundingExtensionCandidate>();
+            var rolloverCandidates = responseRolloverCandidates.RolloverCandidates;
+            var rolloverWorkflowCandidates = responseRolloverWorkflowCandidates.RolloverWorkflowCandidates;
+            var rolloverRun = new RolloverWorkflowRun
+            { 
+                WorkflowRunId = responseRolloverWorkflowCandidates.WorkflowRunId,
+                FundingEndDateEligibilityThreshold = responseRolloverWorkflowCandidates.FundingEndDateEligibilityThreshold,
+                MaximumApprovalFundingEndDate = responseRolloverWorkflowCandidates.MaximumApprovalFundingEndDate,
+                OperationalEndDateEligibilityThreshold = responseRolloverWorkflowCandidates.OperationalEndDateEligibilityThreshold
+            };
+            var result = RolloverUploadQualificationsValidator.Validate(candidates, rolloverCandidates, rolloverWorkflowCandidates, rolloverRun);
         }
         catch (Exception ex)
         {
