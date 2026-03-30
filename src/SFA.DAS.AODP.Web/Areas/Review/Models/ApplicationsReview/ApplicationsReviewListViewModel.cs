@@ -12,7 +12,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
     public class ApplicationsReviewListViewModel :ApplicationsBulkActionPageViewModel
     {
         public List<Application> Applications { get; set; } = new();
-        public int? TotalItems { get; set; }
+        public int TotalItems { get; set; }
 
         public int PageNumber { get; set; } = 1;
         public int RecordsPerPage { get; set; } = 10;

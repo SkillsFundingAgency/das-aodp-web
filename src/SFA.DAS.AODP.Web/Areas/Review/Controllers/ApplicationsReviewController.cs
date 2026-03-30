@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using System.ComponentModel.DataAnnotations;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -22,8 +23,10 @@ using SFA.DAS.AODP.Web.Models.BulkActions.Options;
 using SFA.DAS.AODP.Web.Models.RelatedLinks;
 using SFA.DAS.AODP.Web.Validators.Messages;
 using System.IO.Compression;
-using System.Text.Json;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Newtonsoft.Json;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 {
@@ -860,19 +863,41 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 FindRegulatedQualificationUrl = _aodpConfiguration.Value.FindRegulatedQualificationUrl
             };
 
-            viewModel.MapApplications(response);
+            var validationResults = new List<ValidationResult>();
+            Validator.TryValidateObject(viewModel, new ValidationContext(viewModel), validationResults,
+                validateAllProperties: true);
 
-            if (selectAll)
+            if (validationResults.Any())
             {
-                viewModel.SelectedApplicationReviewIds = viewModel.Applications.Select(a => a.ApplicationReviewId).Distinct().ToList();
+                response = new GetApplicationsForReviewQueryResponse();
+
+                response.AvailableReviewers =
+                    string.IsNullOrWhiteSpace(viewModel.AvailableReviewersJson)
+                        ? new List<UserOption>()
+                        : JsonConvert.DeserializeObject<List<UserOption>>(viewModel.AvailableReviewersJson)
+                          ?? new List<UserOption>();
+
+                foreach (var validationResult in validationResults)
+                {
+                    ModelState.AddModelError(validationResult.ErrorMessage!.Split(' ').First(), validationResult.ErrorMessage!);
+                }
             }
-
-            viewModel.BulkActionOptions = BulkMessageActionOptions.Build();
-
-            if (postedModel is not null)
+            else
             {
-                viewModel.SelectedApplicationReviewIds = postedModel.SelectedApplicationReviewIds ?? new();
-                viewModel.BulkActionInputViewModel = postedModel.BulkActionInputViewModel ?? new();
+                viewModel.MapApplications(response);
+
+                if (selectAll)
+                {
+                    viewModel.SelectedApplicationReviewIds = viewModel.Applications.Select(a => a.ApplicationReviewId).Distinct().ToList();
+                }
+
+                viewModel.BulkActionOptions = BulkMessageActionOptions.Build();
+
+                if (postedModel is not null)
+                {
+                    viewModel.SelectedApplicationReviewIds = postedModel.SelectedApplicationReviewIds ?? new();
+                    viewModel.BulkActionInputViewModel = postedModel.BulkActionInputViewModel ?? new();
+                }
             }
 
             return viewModel;

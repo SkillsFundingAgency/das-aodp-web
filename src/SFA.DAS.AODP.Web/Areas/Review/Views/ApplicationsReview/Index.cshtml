@@ -13,7 +13,6 @@
 }
 @await Html.PartialAsync("_BackLinkPartial", backLinkModel)
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
-<partial name="_ValidationSummaryPartial" />
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-full" id="guide-contents">
@@ -149,10 +148,10 @@
         </form>
         <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
 
-        @if (Model.Applications.Count != 0 && Model.TotalItems.HasValue)
+        @if (Model.Applications.Count != 0 && Model.TotalItems > 0)
         {
             int startNumber = (Model.PageNumber - 1) * Model.RecordsPerPage + 1;
-            int endNumber = Math.Min(Model.PageNumber * Model.RecordsPerPage, Model.TotalItems.Value);
+            int endNumber = Math.Min(Model.PageNumber * Model.RecordsPerPage, Model.TotalItems);
             <h3 class="govuk-heading-m">Applications</h3>
             <p class="govuk-heading-s">Viewing @startNumber-@endNumber of @Model.TotalItems qualifications</p>
         }
