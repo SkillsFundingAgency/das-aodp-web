@@ -102,7 +102,7 @@ public class AllowedCharactersAttributeTests
     [Fact]
     public void QualificationTitle_ValidTitle_ReturnsSuccess()
     {
-        var attribute = new AllowedCharactersAttribute(TextCharacterProfile.QualificationTitle);
+        var attribute = new AllowedCharactersAttribute(TextCharacterProfile.Title);
 
         var result = attribute.GetValidationResult(ValidQualificationTitle, CreateContext());
 
