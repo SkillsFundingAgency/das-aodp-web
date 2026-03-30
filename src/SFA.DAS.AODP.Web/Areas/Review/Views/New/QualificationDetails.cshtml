@@ -20,7 +20,7 @@
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
 <span class="govuk-caption-xl">
-    @(Model.IsApplicationCompleted ? "Completed qualification" : "Newly regulated qualification")
+    @(Model.IsQualificationCompleted ? "Completed qualification" : "Newly regulated qualification")
 </span>
 <h1 class="govuk-heading-xl">Qualification Details</h1>
 
@@ -113,9 +113,7 @@
                 <govuk-summary-list-row-key>Operational start date</govuk-summary-list-row-key>
                 <govuk-summary-list-row-value>@Model.OperationalStartDate.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)</govuk-summary-list-row-value>
             </govuk-summary-list-row>
-            @if (!Model.IsApplicationCompleted)
-            {
-                <govuk-summary-list-row>
+            <govuk-summary-list-row>
                     <govuk-summary-list-row-key>Operational end date</govuk-summary-list-row-key>
                     @if (Model.OperationalEndDate.HasValue)
                     {
@@ -126,7 +124,6 @@
                         <govuk-summary-list-row-value></govuk-summary-list-row-value>
                     }
                 </govuk-summary-list-row>
-            }
             @if (Model.Applications?.Any() ?? false)
             {
                 var idx = 1;
@@ -152,10 +149,7 @@
             }
         </govuk-summary-list>
 
-        @* Actions (editable) are only shown when not completed *@
-        @if (!Model.IsApplicationCompleted)
-        {
-            <form asp-controller="New" asp-action="QualificationDetails" method="post">
+        <form asp-controller="New" asp-action="QualificationDetails" method="post">
                 @Html.HiddenFor(m => m.Qual.Qan)
 
                 <div class="govuk-form-group">
@@ -202,6 +196,5 @@
                     }
                 </div>
             </form>
-        }
     </div>
 </div>

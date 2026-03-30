@@ -77,7 +77,8 @@ namespace SFA.DAS.AODP.Infrastructure.File
             var items = _blobContainerClient.GetBlobs(
                 BlobTraits.Metadata,
                 BlobStates.None,
-                prefix: folderName);
+                prefix: folderName,
+                CancellationToken.None);
 
             var result = new List<UploadedBlob>();
 

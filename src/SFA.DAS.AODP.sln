@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.12.35527.113
+# Visual Studio Version 18
+VisualStudioVersion = 18.2.11430.68 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SFA.DAS.AODP.Web", "SFA.DAS.AODP.Web\SFA.DAS.AODP.Web.csproj", "{5BDD99DB-D039-4BD9-ADC1-AB11592CDD64}"
 EndProject
@@ -30,6 +30,11 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SFA.DAS.AODP.Infrastructure.UnitTests", "SFA.DAS.AODP.Infrastructure.Tests\SFA.DAS.AODP.Infrastructure.UnitTests.csproj", "{B61120BF-895B-4BF4-A434-8843DCDAE387}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SFA.DAS.AODP.Web.UnitTests", "SFA.DAS.AODP.Web.Test\SFA.DAS.AODP.Web.UnitTests.csproj", "{AEFB0897-37B5-42BD-816E-C22B264FD659}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4DC77F5D-0252-4CC2-A2E4-DFE0FE14FE7F}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -97,5 +102,8 @@ Global
 		{309839DB-8912-442B-B11C-66427AC8E565} = {BA8DFD76-658F-428A-AB17-34EEAA6C860D}
 		{B61120BF-895B-4BF4-A434-8843DCDAE387} = {BA8DFD76-658F-428A-AB17-34EEAA6C860D}
 		{AEFB0897-37B5-42BD-816E-C22B264FD659} = {BA8DFD76-658F-428A-AB17-34EEAA6C860D}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {857D3F3F-3CE5-4EC4-995A-1EB2129E16F5}
 	EndGlobalSection
 EndGlobal
