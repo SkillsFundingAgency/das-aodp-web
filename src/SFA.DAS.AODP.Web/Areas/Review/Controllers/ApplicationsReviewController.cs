@@ -23,7 +23,6 @@ using SFA.DAS.AODP.Web.Models.BulkActions.Options;
 using SFA.DAS.AODP.Web.Models.RelatedLinks;
 using SFA.DAS.AODP.Web.Validators.Messages;
 using System.IO.Compression;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Newtonsoft.Json;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 using JsonSerializer = System.Text.Json.JsonSerializer;
