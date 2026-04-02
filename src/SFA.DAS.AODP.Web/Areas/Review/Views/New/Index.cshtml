@@ -169,6 +169,7 @@
                                             <partial name="~/Views/Shared/_SelectColumnHeader.cshtml" />
                                             <th class="govuk-table__header">QAN</th>
                                             <th class="govuk-table__header">Qualification Title</th>
+                                            <th class="govuk-table__header">Eligibility status</th>
                                             <th class="govuk-table__header">Age Group(s)</th>
                                         </tr>
                                     </thead>
@@ -201,6 +202,7 @@
                                                         @qualification.Title
                                                     </a>
                                                 </td>
+                                                <td class="govuk-table__cell">@qualification.EligibilityStatus</td>
                                                 <td class="govuk-table__cell">@qualification.AgeGroup</td>
                                             </tr>
                                         }

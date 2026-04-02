@@ -59,7 +59,8 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
                 Reference = s.Reference,
                 Status = s.Status,
                 Title = s.Title,                
-                AgeGroup = s.AgeGroup
+                AgeGroup = s.AgeGroup,
+                EligibilityStatus = (s.EligibleForFunding ?? false) ? "Eligible" : "Not eligible"
             }).ToList();
             viewModel.Filter = qualificationQuery.ToQualificationFilterViewModel();
             viewModel.JobStatusViewModel = new JobStatusViewModel()

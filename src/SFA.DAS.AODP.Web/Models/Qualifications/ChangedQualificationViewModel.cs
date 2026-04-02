@@ -15,7 +15,8 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
         public string SectorSubjectArea { get; set; } = string.Empty;
         public string? VersionFieldChanges { get; set; }
         public string ChangedFieldNames { get; set; } = string.Empty;
-        public string Status { get; set; } = string.Empty;
+        public string ProcessStatus { get; set; } = string.Empty;
+        public string EligibilityStatus { get; set; } = string.Empty;
         public string Priority
         {
             get
@@ -27,7 +28,7 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
         private string MapChangedFieldsToPriority()
         {
             var priority = "Green";
-            if (!string.IsNullOrWhiteSpace(priority) && Status != ActionTypeEnum.NoActionRequired)
+            if (!string.IsNullOrWhiteSpace(priority) && ProcessStatus != ActionTypeEnum.NoActionRequired)
             {
                 var changedFields = ChangedFieldNames.Split(',').Select(s => s.Trim()).ToList();
                 var redChanges = new List<string>() { "Level", "SSA", "GLH" };

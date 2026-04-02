@@ -180,6 +180,7 @@
                                                 <th class="govuk-table__header">QAN</th>
                                                 <th class="govuk-table__header">Qualification Title</th>
                                                 <th class="govuk-table__header">Changes</th>
+                                                <th class="govuk-table__header">Eligibility status</th>
                                                 <th class="govuk-table__header">Priority / Status</th>
                                             </tr>
                                         </thead>
@@ -217,7 +218,8 @@
                                                         </a>
                                                     </td>
                                                     <td class="govuk-table__cell">@qualification.ChangedFieldNames</td>
-                                                    <td class="govuk-table__cell">@qualification.Status</td>
+                                                    <td class="govuk-table__cell">@qualification.EligibilityStatus</td>
+                                                    <td class="govuk-table__cell">@qualification.ProcessStatus</td>
                                                 </tr>
                                             }
                                         </tbody>

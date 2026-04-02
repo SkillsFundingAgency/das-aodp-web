@@ -1,0 +1,22 @@
+﻿@model SFA.DAS.AODP.Web.Models.Qualifications.EligibleForFundingStatus
+
+@if (Model.IsEligible)
+{
+    <div class="govuk-body">Eligible</div>
+}
+else
+{
+    <div class="govuk-body">
+        <h3 class="govuk-body">@Model.SummaryMessage</h3>
+        
+        @if (Model.HasMultipleReasons)
+        {
+            <ul class="govuk-list govuk-list--bullet">
+                @foreach (var reason in Model.IneligibleReasons)
+                {
+                    <li>@reason</li>
+                }
+            </ul>
+        }
+    </div>
+}
