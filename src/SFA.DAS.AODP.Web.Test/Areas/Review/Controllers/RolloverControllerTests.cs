@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using FluentValidation.Results;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -634,26 +635,86 @@ public class RolloverControllerTests
         Assert.Equal("Rollover Query Builder", viewResult.ViewData["Title"]);
     }
 
+
     [Fact]
-    public void EnterRolloverEligibilityDates_Get_ReturnsViewAndSetsTitle()
+    public async Task EnterRolloverEligibilityDates_ReturnsViewResult()
     {
+        // Arrange
+
         // Act
-        var result = _controller.EnterRolloverEligibilityDates();
+        var result = await _controller.EnterRolloverEligibilityDates();
 
         // Assert
-        Assert.IsType<ViewResult>(result);
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.Null(viewResult.ViewName); // using default view
+    }
+
+
+    [Fact]
+    public async Task EnterRolloverEligibilityDates_WhenModelIsValid_RedirectsToFundingApprovalEndDate()
+    {
+        // Arrange
+        var model = new RolloverEligibilityDatesViewModel();
+        var validationResult = new ValidationResult(); // no errors => valid
+
+        _eligibilityDatesValidatorMock
+            .Setup(v => v.ValidateAsync(model, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(validationResult);
+
+        // Act
+        var result = await _controller.EnterRolloverEligibilityDates(model);
+
+        // Assert
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal(nameof(RolloverController.EnterRolloverFundingApprovalEndDate), redirect.ActionName);
+        _eligibilityDatesValidatorMock.Verify(v => v.ValidateAsync(model, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
-    public void EnterRolloverFundingApprovalEndDate_Get_SetsCorrectTitle()
+    public async Task EnterRolloverEligibilityDates_WhenModelIsInvalid_ReturnsViewWithModel()
     {
+        // Arrange
+        var model = new RolloverEligibilityDatesViewModel();
+
+        var failures = new[]
+        {
+            new ValidationFailure("StartDate", "Start date is required."),
+            new ValidationFailure("EndDate", "End date must be after start date.")
+        };
+        var validationResult = new ValidationResult(failures);
+
+        _eligibilityDatesValidatorMock
+            .Setup(v => v.ValidateAsync(model, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(validationResult);
+
+        // Act
+        var result = await _controller.EnterRolloverEligibilityDates(model);
+
+        // Assert
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.Equal("EnterRolloverEligibilityDates", view.ViewName); // explicit view name in action
+        Assert.Same(model, view.Model);
+
+        // Ensure ModelState contains the errors added via AddToModelState
+        Assert.False(_controller.ModelState.IsValid);
+        Assert.True(_controller.ModelState.ContainsKey("StartDate"));
+        Assert.True(_controller.ModelState.ContainsKey("EndDate"));
+
+        _eligibilityDatesValidatorMock.Verify(v => v.ValidateAsync(model, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+
+    [Fact]
+    public void EnterRolloverFundingApprovalEndDate_ReturnsViewResult()
+    {
+        // Arrange
+
         // Act
         var result = _controller.EnterRolloverFundingApprovalEndDate();
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
-        Assert.True(viewResult.ViewData.ContainsKey("Title"));
-        Assert.Equal("Set the end date for funding extension", viewResult.ViewData["Title"]);
+        Assert.Null(viewResult.ViewName); // using default view
     }
 
     private class TestSession : ISession

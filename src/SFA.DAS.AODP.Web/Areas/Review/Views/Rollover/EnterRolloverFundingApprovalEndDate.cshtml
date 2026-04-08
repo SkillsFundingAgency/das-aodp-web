@@ -18,76 +18,124 @@
     var maxApprovalEndDateGroupError = maxApprovalEndDateDayError || maxApprovalEndDateMonthError || maxApprovalEndDateYearError;
 }
 
-@await Html.PartialAsync("_BackLinkPartial", backLinkModel)
+<div id="allSection">
 
-<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+    @await Html.PartialAsync("_BackLinkPartial", backLinkModel)
 
-<h1 class="govuk-heading-xl">@ViewData["Title"]</h1>
+    <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
-<form asp-area="Review" asp-controller="Rollover" asp-action="EnterRolloverFundingApprovalEndDate" method="post" novalidate="novalidate">
+    <h1 class="govuk-heading-l">@ViewData["Title"]</h1>
 
-    <!-- Max Approval End Date -->
-    <div class="govuk-form-group" @(maxApprovalEndDateGroupError ? "govuk-form-group--error" : "")">
-        <fieldset class="govuk-fieldset" role="group" aria-describedby="max-approval-end-date-hint">
-            <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
-                <h2 class="govuk-fieldset__heading">Maximum approval end date</h2>
-            </legend>
+    <form asp-area="Review" asp-controller="Rollover" asp-action="EnterRolloverFundingApprovalEndDate" method="post" novalidate="novalidate" id="rolloverForm">
 
-            <div id="max-approval-end-date-hint" class="govuk-hint">
-                For example, 31 8 2027
-            </div>
+        <!-- Max Approval End Date -->
+        <div class="govuk-form-group" @(maxApprovalEndDateGroupError ? "govuk-form-group--error" : "")">
+            <fieldset class="govuk-fieldset" role="group" aria-describedby="max-approval-end-date-hint">
+                <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                    <h2 class="govuk-fieldset__heading">Maximum approval end date</h2>
+                </legend>
 
-            @if (maxApprovalEndDateGroupError)
-            {
-                <span id="max-approval-end-date-error" class="govuk-error-message">
-                    <span class="govuk-visually-hidden">Error:</span>
-                    @if (ViewData.ModelState["MaxApprovalEndDate"].Errors.Any())
-                    {
-                        @ViewData.ModelState["MaxApprovalEndDate"].Errors[0].ErrorMessage
-                    }
-                    else if (ViewData.ModelState["MaxApprovalEndDate.Day"].Errors.Any())
-                    {
-                        @ViewData.ModelState["MaxApprovalEndDate.Day"].Errors[0].ErrorMessage
-                    }
-                    else if (ViewData.ModelState["MaxApprovalEndDate.Month"].Errors.Any())
-                    {
-                        @ViewData.ModelState["MaxApprovalEndDate.Month"].Errors[0].ErrorMessage
-                    }
-                    else if (ViewData.ModelState["MaxApprovalEndDate.Year"].Errors.Any())
-                    {
-                        @ViewData.ModelState["MaxApprovalEndDate.Year"].Errors[0].ErrorMessage
-                    }
-                </span>
+                <div id="max-approval-end-date-hint" class="govuk-hint">
+                    For example, 31 8 2027
+                </div>
+
+                @if (maxApprovalEndDateGroupError)
+                {
+                    <span id="max-approval-end-date-error" class="govuk-error-message">
+                        <span class="govuk-visually-hidden">Error:</span>
+                        @if (ViewData.ModelState["MaxApprovalEndDate"].Errors.Any())
+                        {
+                            @ViewData.ModelState["MaxApprovalEndDate"].Errors[0].ErrorMessage
+                        }
+                        else if (ViewData.ModelState["MaxApprovalEndDate.Day"].Errors.Any())
+                        {
+                            @ViewData.ModelState["MaxApprovalEndDate.Day"].Errors[0].ErrorMessage
+                        }
+                        else if (ViewData.ModelState["MaxApprovalEndDate.Month"].Errors.Any())
+                        {
+                            @ViewData.ModelState["MaxApprovalEndDate.Month"].Errors[0].ErrorMessage
+                        }
+                        else if (ViewData.ModelState["MaxApprovalEndDate.Year"].Errors.Any())
+                        {
+                            @ViewData.ModelState["MaxApprovalEndDate.Year"].Errors[0].ErrorMessage
+                        }
+                    </span>
+                }
+
+                <div class="govuk-date-input">
+                    <div class="govuk-date-input__item">
+                        <div class="govuk-form-group">
+                            <label class="govuk-label govuk-date-input__label" for="MaxApprovalEndDate_Day">Day</label>
+                            <input id="maxApprovalEndDateDay" class="govuk-input govuk-date-input__input govuk-input--width-2 @(maxApprovalEndDateDayError ? "govuk-input--error" : "")"
+                                   asp-for="MaxApprovalEndDate.Day" maxlength="2" type="text" autocomplete="off" />
+                        </div>
+                    </div>
+                    <div class="govuk-date-input__item">
+                        <div class="govuk-form-group">
+                            <label class="govuk-label govuk-date-input__label" for="MaxApprovalEndDate_Month">Month</label>
+                            <input id="maxApprovalEndDateMonth" class="govuk-input govuk-date-input__input govuk-input--width-2 @(maxApprovalEndDateMonthError ? "govuk-input--error" : "")"
+                                   asp-for="MaxApprovalEndDate.Month" maxlength="2" type="text" autocomplete="off" />
+                        </div>
+                    </div>
+                    <div class="govuk-date-input__item">
+                        <div class="govuk-form-group">
+                            <label class="govuk-label govuk-date-input__label" for="MaxApprovalEndDate_Year">Year</label>
+                            <input id="maxApprovalEndDateYear" class="govuk-input govuk-date-input__input govuk-input--width-4 @(maxApprovalEndDateYearError ? "govuk-input--error" : "")"
+                                   asp-for="MaxApprovalEndDate.Year" maxlength="4" type="text" autocomplete="off" />
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+        </div>
+
+        <p class="govuk-hint">This will export a CSV file to your device.</p>
+
+        <govuk-button type="submit">Continue</govuk-button>
+
+    </form>
+
+</div>
+
+<div id="loadingContainer" style="display:none;">
+    <div style="width: fit-content; text-align: left;">
+        <h1 class="govuk-heading-l">
+            Checking data
+        </h1>
+        <img src="/assets/images/spinner.svg"
+             alt="Loading"
+             style="display: block; margin: 0 auto; width: 50px;">
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('rolloverForm');
+        const allSection = document.getElementById('allSection');
+        const loadingContainer = document.getElementById('loadingContainer');
+        
+        const day = document.getElementById('maxApprovalEndDateDay');
+        const month = document.getElementById('maxApprovalEndDateMonth');
+        const year = document.getElementById('maxApprovalEndDateYear');
+
+        loadingContainer.style.display = 'none';
+
+        form.addEventListener('submit', () => {
+
+            if (!day.value.trim() || !month.value.trim() || !year.value.trim()) {
+                return;
+            }
+            
+            const d = Number(day.value);
+            const m = Number(month.value);
+            const y = Number(year.value);
+
+            if (!Number.isInteger(d) || !Number.isInteger(m) || !Number.isInteger(y)) {
+                return;
             }
 
-            <div class="govuk-date-input">
-                <div class="govuk-date-input__item">
-                    <div class="govuk-form-group">
-                        <label class="govuk-label govuk-date-input__label" for="MaxApprovalEndDate_Day">Day</label>
-                        <input class="govuk-input govuk-date-input__input govuk-input--width-2 @(maxApprovalEndDateDayError ? "govuk-input--error" : "")"
-                               asp-for="MaxApprovalEndDate.Day" maxlength="2" type="text" autocomplete="off" />
-                    </div>
-                </div>
-                <div class="govuk-date-input__item">
-                    <div class="govuk-form-group">
-                        <label class="govuk-label govuk-date-input__label" for="MaxApprovalEndDate_Month">Month</label>
-                        <input class="govuk-input govuk-date-input__input govuk-input--width-2 @(maxApprovalEndDateMonthError ? "govuk-input--error" : "")"
-                               asp-for="MaxApprovalEndDate.Month" maxlength="2" type="text" autocomplete="off" />
-                    </div>
-                </div>
-                <div class="govuk-date-input__item">
-                    <div class="govuk-form-group">
-                        <label class="govuk-label govuk-date-input__label" for="MaxApprovalEndDate_Year">Year</label>
-                        <input class="govuk-input govuk-date-input__input govuk-input--width-4 @(maxApprovalEndDateYearError ? "govuk-input--error" : "")"
-                               asp-for="MaxApprovalEndDate.Year" maxlength="4" type="text" autocomplete="off" />
-                    </div>
-                </div>
-            </div>
-        </fieldset>
-    </div>
+            allSection.style.display = 'none';
+            loadingContainer.style.display = 'block';
 
-    <p class="govuk-hint">This will export a CSV file to your device.</p>
-
-    <govuk-button type="submit">Continue</govuk-button>
-
-</form>
+        }, { once: true });
+    });
+</script>

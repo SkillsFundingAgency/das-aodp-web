@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using SFA.DAS.AODP.Application.Queries.Import;
 using SFA.DAS.AODP.Application.Queries.Review.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
@@ -9,6 +10,7 @@ using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Extensions;
+using System.Composition;
 using System.Diagnostics.CodeAnalysis;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
@@ -386,11 +388,6 @@ public class RolloverController : ControllerBase
     }
 
     [ExcludeFromCodeCoverage]
-    [HttpGet]
-    [Route("/Review/Rollover/EnterRolloverEligibilityDates")]
-    public IActionResult EnterRolloverEligibilityDates() => View();
-
-    [ExcludeFromCodeCoverage]
     private List<FundingStream> GetFundingStreams()
     {
         return new List<FundingStream>
@@ -407,10 +404,29 @@ public class RolloverController : ControllerBase
         };
     }
 
+    [HttpGet]
+    [Route("/Review/Rollover/EnterRolloverEligibilityDates")]
+    public async Task<IActionResult> EnterRolloverEligibilityDates() => View();
+
+    [HttpPost]
+    [Route("/Review/Rollover/EnterRolloverEligibilityDates")]
+    public async Task<IActionResult> EnterRolloverEligibilityDates(RolloverEligibilityDatesViewModel model)
+    {
+        var validation = await _rolloverEligibilityDatesViewModeValidator.ValidateAsync(model);
+        validation.AddToModelState(ModelState);
+
+        if (!ModelState.IsValid)
+        {
+            return View("EnterRolloverEligibilityDates", model);
+        }
+
+        return RedirectToAction(nameof(EnterRolloverFundingApprovalEndDate));
+    }
+
+    [HttpGet]
     [Route("/Review/Rollover/EnterRolloverFundingApprovalEndDate")]
     public IActionResult EnterRolloverFundingApprovalEndDate()
     {
-        ViewData["Title"] = "Set the end date for funding extension";
         return View();
     }
 
@@ -427,7 +443,20 @@ public class RolloverController : ControllerBase
             return View("EnterRolloverFundingApprovalEndDate", model);
         }
 
-        return RedirectToAction(nameof(EnterRolloverFundingApprovalEndDate));
+        return CheckingData();
+    }
+
+    public IActionResult CheckingData()
+    {
+        Thread.Sleep(3000);
+        return RedirectToAction(nameof(InitialChecksExport));
+    }
+
+    [HttpGet]
+    [Route("/Review/Rollover/InitialChecksExport")]
+    public async Task<IActionResult> InitialChecksExport()
+    {
+        return View();
     }
 
     private Rollover GetSessionModel()
