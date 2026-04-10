@@ -783,7 +783,6 @@ public class ChangedControllerTests
             Assert.Equal(SearchName, model.Filter.QualificationName);
             Assert.Equal(SearchOrganisation, model.Filter.Organisation);
             Assert.Equal(SearchQan, model.Filter.QAN);
-            Assert.Equal(DefaultFindQualificationUrl, model.FindRegulatedQualificationUrl);
         });
     }
 

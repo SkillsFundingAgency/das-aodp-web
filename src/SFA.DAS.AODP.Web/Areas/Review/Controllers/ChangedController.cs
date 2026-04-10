@@ -503,7 +503,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
             vm.ProcessStatuses = [.. statuses];
             vm.SetBulkActionStatusOptions(statuses.Select(s => (s.Id, s.Name ?? "")));
-            vm.FindRegulatedQualificationUrl = _aodpConfiguration.Value.FindRegulatedQualificationUrl;
 
             if (postedModel != null)
             {

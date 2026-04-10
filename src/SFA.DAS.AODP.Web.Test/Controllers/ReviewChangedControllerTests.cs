@@ -77,7 +77,6 @@ public class ReviewChangedControllerTests
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
         var model = Assert.IsAssignableFrom<ChangedQualificationsViewModel>(viewResult.ViewData.Model);
-        Assert.Equal(_aodpOptions.Value.FindRegulatedQualificationUrl, model.FindRegulatedQualificationUrl);
     }
 
     [Fact]
@@ -112,7 +111,6 @@ public class ReviewChangedControllerTests
         Assert.Equal(queryResponse.Value.Data[0].Status, model.ChangedQualifications[0].Status);
         Assert.Equal(queryResponse.Value.Data[0].AwardingOrganisation, model.ChangedQualifications[0].AwardingOrganisation);
         Assert.Equal(queryResponse.Value.Data[0].Status, model.ChangedQualifications[0].Status);
-        Assert.Equal(_aodpOptions.Value.FindRegulatedQualificationUrl, model.FindRegulatedQualificationUrl);
     }
 
     [Fact]

@@ -111,7 +111,6 @@ public class NewControllerTests
         Assert.Multiple(() =>
         {
             Assert.Empty(model.NewQualifications);
-            Assert.Equal(FindRegulatedQualificationUrl, model.FindRegulatedQualificationUrl);
             Assert.NotNull(model.Filter);
             Assert.NotNull(model.ProcessStatuses);
         });
@@ -168,7 +167,6 @@ public class NewControllerTests
         {
             Assert.Single(model.NewQualifications);
             Assert.Equal(QualificationTitle, model.NewQualifications.First().Title);
-            Assert.Equal(FindRegulatedQualificationUrl, model.FindRegulatedQualificationUrl);
             Assert.NotNull(model.Filter);
             Assert.NotNull(model.ProcessStatuses);
         });

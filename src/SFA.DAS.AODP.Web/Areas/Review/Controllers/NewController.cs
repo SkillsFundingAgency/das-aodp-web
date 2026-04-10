@@ -434,8 +434,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 vm = new NewQualificationsViewModel();
             }
 
-            vm.FindRegulatedQualificationUrl = _aodpConfiguration.Value.FindRegulatedQualificationUrl;
-
             vm.Filter = qualificationQuery.ToQualificationFilterViewModel();
 
             vm.ProcessStatuses = [.. statuses];
