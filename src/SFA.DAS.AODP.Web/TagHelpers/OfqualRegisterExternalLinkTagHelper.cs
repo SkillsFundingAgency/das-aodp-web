@@ -1,8 +1,4 @@
-﻿using Microsoft.AspNetCore.Razor.TagHelpers;
-using Microsoft.Extensions.Options;
-using SFA.DAS.AODP.Models.Settings;
-
-namespace SFA.DAS.AODP.Web.TagHelpers;
+﻿namespace SFA.DAS.AODP.Web.TagHelpers;
 
 /// <summary>
 /// Defines a TagHelper that renders an anchor tag with GDS styling, linking to the Ofqual Register for a specified qualification reference.

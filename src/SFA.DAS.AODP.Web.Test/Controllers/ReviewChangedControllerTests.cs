@@ -23,10 +23,6 @@ public class ReviewChangedControllerTests
     private readonly Mock<IUserHelperService> _userHelper;
     private readonly Mock<IMediator> _mediatorMock;
     private readonly ChangedController _controller;
-    private readonly IOptions<AodpConfiguration> _aodpOptions = Options.Create(new AodpConfiguration
-    {
-        FindRegulatedQualificationUrl = "https://find-a-qualification.services.ofqual.gov.uk/qualifications/"
-    });
 
     public ReviewChangedControllerTests()
     {
@@ -35,7 +31,7 @@ public class ReviewChangedControllerTests
         _userHelper = _fixture.Freeze<Mock<IUserHelperService>>();
         _mediatorMock = _fixture.Freeze<Mock<IMediator>>();
 
-        _controller = new ChangedController(_loggerMock.Object, _aodpOptions, _mediatorMock.Object, _userHelper.Object);
+        _controller = new ChangedController(_loggerMock.Object, _mediatorMock.Object, _userHelper.Object);
 
         _userHelper
             .Setup(u => u.GetUserRoles())

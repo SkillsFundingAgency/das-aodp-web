@@ -33,7 +33,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         private readonly ILogger<ChangedController> _logger;
         private readonly IMediator _mediator;
         private readonly IUserHelperService _userHelperService;
-        private readonly IOptions<AodpConfiguration> _aodpConfiguration;
 
         private List<string> ReviewerAllowedStatuses { get; set; } =
         [
@@ -50,10 +49,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
         public enum NewQualDataKeys { InvalidPageParams, CommentSaved}
 
-        public ChangedController(ILogger<ChangedController> logger, IOptions<AodpConfiguration> configuration, IMediator mediator, IUserHelperService userHelperService) : base(mediator, logger)
+        public ChangedController(ILogger<ChangedController> logger, IMediator mediator, IUserHelperService userHelperService) : base(mediator, logger)
         {
             _logger = logger;
-            _aodpConfiguration = configuration;
             _mediator = mediator;
             this._userHelperService = userHelperService;
         }

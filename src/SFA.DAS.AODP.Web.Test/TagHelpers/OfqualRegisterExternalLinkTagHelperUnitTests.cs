@@ -59,6 +59,7 @@ public class OfqualRegisterExternalLinkTagHelperUnitTests : TagHelpersUnitTestBa
 
         var html = writer.ToString();
 
+        Assert.Equal("_blank", tagHelperOutput.Attributes["target"].Value.ToString());
         Assert.Equal("<a class=\"govuk-link\" target=\"_blank\" href=\"https://find-a-qualification.services.ofqual.gov.uk/qualifications/12345\">12345</a>", html);
     }
 
@@ -87,11 +88,12 @@ public class OfqualRegisterExternalLinkTagHelperUnitTests : TagHelpersUnitTestBa
 
         var html = writer.ToString();
 
+        Assert.Equal("12345", tagHelperOutput.Attributes["target"].Value.ToString());
         Assert.Equal("<a class=\"govuk-link\" target=\"12345\" href=\"https://find-a-qualification.services.ofqual.gov.uk/qualifications/12345\">12345</a>", html);
     }
 
     [Fact]
-    public async Task Process_QualificationReferenceNotPassed_ThrowNullReferenceException()
+    public async Task Process_QualificationReferenceNotPassed_ThrowException()
     {
         // Arrange
         var tagHelper = new OfqualRegisterExternalLinkTagHelper(Options.Create(new AodpConfiguration
@@ -106,13 +108,15 @@ public class OfqualRegisterExternalLinkTagHelperUnitTests : TagHelpersUnitTestBa
         await Assert.ThrowsAsync<TagHelperRenderingException>(() => tagHelper.ProcessAsync(tagHelperContext, tagHelperOutput));
     }
 
-    [Fact]
-    public async Task Process_ConfigNotSet_ThrowNullReferenceException()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public async Task Process_ConfigNotSet_ThrowException(string? url)
     {
         // Arrange
         var tagHelper = new OfqualRegisterExternalLinkTagHelper(Options.Create(new AodpConfiguration
         {
-            FindRegulatedQualificationUrl = string.Empty!,
+            FindRegulatedQualificationUrl = url!,
         }));
 
         var tagHelperContext = GenerateTagHelperContext(OfqualRegisterExternalLinkTagHelper.TagName);

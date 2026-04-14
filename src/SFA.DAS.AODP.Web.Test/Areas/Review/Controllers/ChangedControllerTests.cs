@@ -57,7 +57,7 @@ public class ChangedControllerTests
 
     private ChangedController CreateController()
     {
-        var controller = new ChangedController(_logger.Object, _options, _mediator.Object, _userHelper.Object);
+        var controller = new ChangedController(_logger.Object, _mediator.Object, _userHelper.Object);
 
         var httpContext = new DefaultHttpContext();
         var claims = new[] { new Claim(ClaimTypes.Name, DefaultUserName) };
