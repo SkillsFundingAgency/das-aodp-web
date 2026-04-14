@@ -202,9 +202,7 @@
                                                     <td class="govuk-table__cell">
                                                         @if (!string.IsNullOrWhiteSpace(qualification.QualificationReference))
                                                         {
-                                                            var baseUrl = Model.FindRegulatedQualificationUrl ?? string.Empty;
-                                                            var fullUrl = $"{baseUrl}{qualification.QualificationReference}";
-                                                            <a href="@fullUrl" target="_blank">@qualification.QualificationReference</a>
+                                                            <ofqual-register qualification-reference="@qualification.QualificationReference" />
                                                         }
                                                     </td>
                                                     <td class="govuk-table__cell">
