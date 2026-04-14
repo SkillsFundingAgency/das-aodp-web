@@ -38,7 +38,7 @@ public class OfqualRegisterExternalLinkTagHelper(IOptions<AodpConfiguration> aod
 
         if (string.IsNullOrEmpty(QualificationReference))
         {
-            throw new NullReferenceException("The 'qualification-reference' attribute must be provided and cannot be empty.");
+            throw new TagHelperRenderingException(nameof(OfqualRegisterExternalLinkTagHelper), "The 'qualification-reference' attribute must be provided and cannot be empty.");
         }
 
         if (OpensInNamedTab)
@@ -52,7 +52,7 @@ public class OfqualRegisterExternalLinkTagHelper(IOptions<AodpConfiguration> aod
 
         if (string.IsNullOrEmpty(_aodpConfiguration.FindRegulatedQualificationUrl))
         {
-            throw new NullReferenceException("The 'FindRegulatedQualificationUrl' configuration value must be provided and cannot be empty.");
+            throw new TagHelperRenderingException(nameof(OfqualRegisterExternalLinkTagHelper), "The 'FindRegulatedQualificationUrl' configuration value must be provided and cannot be empty.");
         }
 
         output.Attributes.SetAttribute("href", $"{_aodpConfiguration.FindRegulatedQualificationUrl}{QualificationReference}");
