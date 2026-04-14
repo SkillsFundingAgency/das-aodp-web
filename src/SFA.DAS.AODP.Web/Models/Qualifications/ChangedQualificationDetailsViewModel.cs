@@ -47,6 +47,7 @@ public class ChangedQualificationDetailsViewModel
     public bool OfferedInEngland { get; set; }
     public bool OfferedInNi { get; set; }
     public bool? OfferedInternationally { get; set; }
+    public bool? IntentionToSeekFundingInEngland { get; set; }
     public string? Specialism { get; set; }
     public string? Pathways { get; set; }
     public string? AssessmentMethods { get; set; }
@@ -75,6 +76,8 @@ public class ChangedQualificationDetailsViewModel
     public bool? EighteenPlus { get; set; }
     public bool? NineteenPlus { get; set; }
     public string? ImportStatus { get; set; }
+    public bool? EligibleForFunding { get; set; }
+    public string? FundingEligibilityFailedFields { get; set; }
     public EligibleForFundingStatus? EligibleForFundingStatus { get; set; }
     public virtual LifecycleStage Stage { get; set; } = null!;
     public virtual AwardingOrganisation Organisation { get; set; } = null!;
@@ -249,6 +252,7 @@ public class ChangedQualificationDetailsViewModel
             OfferedInEngland = entity.OfferedInEngland,
             OfferedInNi = entity.OfferedInNi,
             OfferedInternationally = entity.OfferedInternationally,
+            IntentionToSeekFundingInEngland = entity.IntentionToSeekFundingInEngland, 
             Specialism = entity.Specialism,
             Pathways = entity.Pathways,
             AssessmentMethods = entity.AssessmentMethods,
@@ -277,6 +281,8 @@ public class ChangedQualificationDetailsViewModel
             EighteenPlus = entity.EighteenPlus,
             NineteenPlus = entity.NineteenPlus,
             ImportStatus = entity.ImportStatus,
+            EligibleForFunding = entity.EligibleForFunding,
+            FundingEligibilityFailedFields = entity.FundingEligibilityFailedFields,
             EligibleForFundingStatus = new EligibleForFundingStatus(entity.EligibleForFunding ?? false, entity.FundingEligibilityFailedFields),
             Stage = new LifecycleStage
             {
@@ -301,7 +307,6 @@ public class ChangedQualificationDetailsViewModel
                 QualificationName = entity.Qual.QualificationName,
                 Versions = (List<ChangedQualificationDetailsViewModel>)entity.Qual.Versions.Select(i => new ChangedQualificationDetailsViewModel()
                 {
-
                     Id = i.Id,
                     QualificationId = i.QualificationId,
                     VersionFieldChangesId = i.VersionFieldChangesId,
@@ -332,6 +337,7 @@ public class ChangedQualificationDetailsViewModel
                     OfferedInEngland = i.OfferedInEngland,
                     OfferedInNi = i.OfferedInNi,
                     OfferedInternationally = i.OfferedInternationally,
+                    IntentionToSeekFundingInEngland = i.IntentionToSeekFundingInEngland,
                     Specialism = i.Specialism,
                     Pathways = i.Pathways,
                     AssessmentMethods = i.AssessmentMethods,
@@ -360,6 +366,9 @@ public class ChangedQualificationDetailsViewModel
                     EighteenPlus = i.EighteenPlus,
                     NineteenPlus = i.NineteenPlus,
                     ImportStatus = i.ImportStatus,
+                    EligibleForFunding = i.EligibleForFunding,
+                    EligibleForFundingStatus = new EligibleForFundingStatus(i.EligibleForFunding ?? false, i.FundingEligibilityFailedFields),
+                    FundingEligibilityFailedFields = i.FundingEligibilityFailedFields,
                     Stage = new LifecycleStage
                     {
                         Id = i.Stage.Id,
@@ -381,7 +390,8 @@ public class ChangedQualificationDetailsViewModel
                         Id = entity.Qual.Id,
                         Qan = entity.Qual.Qan,
                         QualificationName = entity.Qual.QualificationName
-                    }
+                    },
+                    
 
 
                 }).ToList()

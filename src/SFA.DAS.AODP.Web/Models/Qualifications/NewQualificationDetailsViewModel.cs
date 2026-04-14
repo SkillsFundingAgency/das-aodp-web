@@ -65,6 +65,8 @@ public class NewQualificationDetailsViewModel
     public bool? EighteenPlus { get; set; }
     public bool? NineteenPlus { get; set; }
     public string? ImportStatus { get; set; }
+
+    public bool? EligibleForFunding { get; set; }
     public EligibleForFundingStatus? EligibleForFundingStatus { get; set; }
     public virtual LifecycleStage Stage { get; set; } = null!;
     public virtual AwardingOrganisation Organisation { get; set; } = null!;
@@ -217,6 +219,7 @@ public class NewQualificationDetailsViewModel
             EighteenPlus = entity.EighteenPlus,
             NineteenPlus = entity.NineteenPlus,
             ImportStatus = entity.ImportStatus,
+            EligibleForFunding = entity.EligibleForFunding,
             EligibleForFundingStatus = new EligibleForFundingStatus(
                 entity.EligibleForFunding, 
                 entity.FundingEligibilityFailedFields),

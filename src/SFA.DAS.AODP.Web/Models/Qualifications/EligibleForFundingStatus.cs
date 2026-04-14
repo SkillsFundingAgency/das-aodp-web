@@ -1,4 +1,6 @@
-﻿namespace SFA.DAS.AODP.Web.Models.Qualifications
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+
+namespace SFA.DAS.AODP.Web.Models.Qualifications
 {
     public class EligibleForFundingStatus
     {
@@ -34,5 +36,20 @@
         public string SummaryMessage => HasSingleReason
             ? $"Not eligible because {IneligibleReasons[0]}"
             : "Not eligible because:";
+
+        public string ToDisplayString(string separator = "<br/>")
+        {
+            if (IsEligible || IneligibleReasons.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            if (HasSingleReason)
+            {
+                return SummaryMessage;
+            }
+
+            return $"{SummaryMessage}{separator}{separator}{string.Join(separator, IneligibleReasons)}";
+        }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using CsvHelper.Configuration;
-using CsvHelper.Configuration.Attributes;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,6 +19,7 @@ using SFA.DAS.AODP.Web.Mappers;
 using SFA.DAS.AODP.Web.Models.BulkActions;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 using System.Globalization;
+using System.Text;
 using System.Text.Json;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
@@ -166,21 +166,21 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
                 var latestVersionNumber = qualificationWithVersions.Qual.Versions.Max(i => i.Version) ?? 0;
 
-                var currentVersion = qualificationWithVersions.Qual.Versions.Where(i => i.Version == latestVersionNumber).First();
+                var currentVersion = qualificationWithVersions.Qual.Versions.First(i => i.Version == latestVersionNumber);
                 if (latestVersionNumber > 1)
                 {
                     for (int? i = latestVersionNumber; i > 1; i--)
                     {
                         if (i != latestVersionNumber)
-                            currentVersion = qualificationWithVersions.Qual.Versions.Where(v => v.Version == i).FirstOrDefault();
-                        var previousVersion = qualificationWithVersions.Qual.Versions.Where(v => v.Version == i - 1).FirstOrDefault();
+                            currentVersion = qualificationWithVersions.Qual.Versions.FirstOrDefault(v => v.Version == i);
+                        var previousVersion = qualificationWithVersions.Qual.Versions.FirstOrDefault(v => v.Version == i - 1);
                         var keyFieldsChanges = currentVersion?.ChangedFieldNames?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [];
 
                         if (currentVersion == null || previousVersion == null) continue;
 
                         GetKeyFieldChanges(currentVersion, previousVersion, keyFieldsChanges);
 
-                        if (currentVersion.KeyFieldChanges.Any())
+                        if (currentVersion.KeyFieldChanges.Count > 0)
                         {
                             var notes = BuildChangeString(currentVersion);
                             discussionHistoryDetailsResult.QualificationDiscussionHistories.Add(new()
@@ -191,8 +191,27 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                                 Timestamp = currentVersion.InsertedTimestamp
                             });
                         }
+
+                        if (!string.IsNullOrEmpty(currentVersion.FundingEligibilityFailedFields))
+                        {
+                            var fundingStatus = new EligibleForFundingStatus(
+                                currentVersion.EligibleForFunding,
+                                currentVersion.FundingEligibilityFailedFields
+                            );
+
+                            var fundingNotes = fundingStatus.ToDisplayString("<br/>");
+                            if (!string.IsNullOrWhiteSpace(fundingNotes))
+                            {
+                                discussionHistoryDetailsResult.QualificationDiscussionHistories.Add(new()
+                                {
+                                    Notes = fundingNotes,
+                                    Title = "Change",
+                                    UserDisplayName = "OFQUAL Import",
+                                    Timestamp = currentVersion.InsertedTimestamp
+                                });
+                            }
+                        }
                     }
-                }
                 discussionHistoryDetailsResult.Qan = qualificationReference;
                 return View(discussionHistoryDetailsResult);
             }
@@ -284,14 +303,13 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
         private static string BuildChangeString(ChangedQualificationDetailsViewModel qualVersion)
         {
-            string comment = "";
+            var sb = new StringBuilder();
             foreach (var item in qualVersion.KeyFieldChanges)
             {
-                comment += item.Name + "<br/>Was:" + item.Was + "<br/>"
-            + "Now:" + item.Now + "<br/><br/>"
-                ;
+                sb.Append(item.Name + " changed from " + item.Was + " to " + item.Now + "<br/>");
             }
-            return comment;
+
+            return sb.ToString();
         }
 
         [Route("/Review/Changed/QualificationDetails")]
@@ -342,6 +360,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             {
                 switch (item)
                 {
+                    case "EligibleForFunding":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Eligible For Funding", Was = previousVersion.EligibleForFunding.ToString(), Now = latestVersion.EligibleForFunding.ToString() });
+                        break;
                     case "OrganisationName":
                         latestVersion.KeyFieldChanges.Add(new() { Name = "Organisation Name", Was = previousVersion.Organisation.NameOfqual, Now = latestVersion.Organisation.NameOfqual });
                         break;
@@ -366,6 +387,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     case "OfferedInEngland":
                         latestVersion.KeyFieldChanges.Add(new() { Name = "Offered In England", Was = previousVersion.OfferedInEngland.ToString(), Now = latestVersion.OfferedInEngland.ToString() });
                         break;
+                    case "IntentionToSeekFundingInEngland":
+                        latestVersion.KeyFieldChanges.Add(new() { Name = "Intention To Seek Funding In England", Was = previousVersion.IntentionToSeekFundingInEngland.ToString(), Now = latestVersion.IntentionToSeekFundingInEngland.ToString() });
+                        break;
                     case "PreSixteen":
                         latestVersion.KeyFieldChanges.Add(new() { Name = "Pre-Sixteen", Was = previousVersion.PreSixteen.ToString(), Now = latestVersion.PreSixteen.ToString() });
                         break;
@@ -378,13 +402,13 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     case "NineteenPlus":
                         latestVersion.KeyFieldChanges.Add(new() { Name = "Nineteen Plus", Was = previousVersion.NineteenPlus.ToString(), Now = latestVersion.NineteenPlus.ToString() });
                         break;
-                    case "GLH":
+                    case "Glh":
                         latestVersion.KeyFieldChanges.Add(new() { Name = "Guided learning hours (GLH)", Was = previousVersion.Glh.ToString(), Now = latestVersion.Glh.ToString() });
                         break;
                     case "MinimumGlh":
                         latestVersion.KeyFieldChanges.Add(new() { Name = "Minimum GLH", Was = previousVersion.MinimumGlh.ToString(), Now = latestVersion.MinimumGlh.ToString() });
                         break;
-                    case "TQT":
+                    case "Tqt":
                         latestVersion.KeyFieldChanges.Add(new() { Name = "Total qualification time (TQT)", Was = previousVersion.Tqt.ToString(), Now = latestVersion.Tqt.ToString() });
                         break;
                     case "OperationalEndDate":
