@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Razor.TagHelpers;
-using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
-using SFA.DAS.AODP.Models.Application;
+using SFA.DAS.AODP.Models.Qualifications;
 using System.ComponentModel;
 
 namespace SFA.DAS.AODP.Web.Models.Qualifications;

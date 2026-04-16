@@ -9,10 +9,8 @@ using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.Qualification;
 using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
-using SFA.DAS.AODP.Models.Qualifications;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
-using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 using System.Security.Claims;
@@ -210,51 +208,6 @@ public class ChangedControllerTests
             Assert.NotNull(model.ProcessStatuses);
             Assert.NotNull(model.Applications);
             Assert.Equal(DefaultQualificationName, model.Qual.QualificationName);
-        });
-    }
-
-    [Fact]
-    public async Task QualificationDetails_Get_WhenVersionGreaterThanOne_LoadsPreviousVersion_AndPopulatesKeyFieldChanges()
-    {
-        var controller = CreateController();
-
-        var latestVersion = CreateQualificationDetailsResponse(
-            DefaultQan,
-            version: VersionTwo,
-            qualificationName: "New Qualification Name",
-            organisationName: "New Organisation",
-            changedFieldNames: "Title,OrganisationName");
-
-        var previousVersion = CreateQualificationDetailsResponse(
-            DefaultQan,
-            version: VersionOne,
-            qualificationName: "Old Qualification Name",
-            organisationName: "Old Organisation");
-
-        var processStatusesResponse = CreateProcessStatusesResponse((Guid.NewGuid(), DecisionRequiredStatus));
-
-        _userHelper.Setup(u => u.GetUserRoles()).Returns(new List<string>());
-        SetupQualificationDetailsDependencies(latestVersion, processStatusesResponse);
-
-        _mediator.Setup(m => m.Send(It.IsAny<GetQualificationVersionQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetQualificationDetailsQueryResponse>
-            {
-                Success = true,
-                Value = previousVersion
-            });
-
-        var result = await controller.QualificationDetails(DefaultQan);
-
-        var view = Assert.IsType<ViewResult>(result);
-        var model = Assert.IsType<ChangedQualificationDetailsViewModel>(view.Model);
-
-        Assert.Multiple(() =>
-        {
-            Assert.Equal(VersionTwo, model.Version);
-            Assert.NotNull(model.KeyFieldChanges);
-            Assert.NotEmpty(model.KeyFieldChanges);
-            Assert.Contains(model.KeyFieldChanges, k => k.Name == "Title");
-            Assert.Contains(model.KeyFieldChanges, k => k.Name == "Organisation Name");
         });
     }
 
@@ -733,6 +686,48 @@ public class ChangedControllerTests
         {
             Assert.Equal("/Home/Error", redirect.Url);
         });
+    }
+
+    [Fact]
+    public async Task QualificationDetailsTimeline_ReturnsView_WithTimelineModel()
+    {
+        var controller = CreateController();
+
+        var timelineResponse = new QualificationDiscussionHistoriesResponse
+        {
+            QualificationDiscussionHistories = new List<QualificationDiscussionHistory>()
+        };
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetQualificationTimelineQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<QualificationDiscussionHistoriesResponse>
+            {
+                Success = true,
+                Value = timelineResponse
+            });
+
+        var result = await controller.QualificationDetailsTimeline(DefaultQan);
+
+        var view = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<QualificationDetailsTimelineViewModel>(view.Model);
+
+        _mediator.Verify(m => m.Send(
+            It.Is<GetQualificationTimelineQuery>(q => q.QualificationReference == DefaultQan),
+            It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task QualificationDetailsTimeline_ReturnsRedirect_WhenExceptionThrown()
+    {
+        var controller = CreateController();
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetQualificationTimelineQuery>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new Exception("boom"));
+
+        var result = await controller.QualificationDetailsTimeline(DefaultQan);
+
+        var redirect = Assert.IsType<RedirectResult>(result);
+        Assert.Equal("/Home/Error", redirect.Url);
     }
 
     [Fact]

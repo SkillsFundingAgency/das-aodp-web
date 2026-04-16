@@ -245,9 +245,15 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     return Redirect("/Home/Error");
                 }
 
-                QualificationDetailsTimelineViewModel result = await Send(new GetDiscussionHistoriesForQualificationQuery { QualificationReference = qualificationReference });
-                result.Qan = qualificationReference;
-                return View(result);
+                var response = await Send(new GetQualificationTimelineQuery 
+                { 
+                    QualificationReference = qualificationReference 
+                });
+
+                var viewModel = (QualificationDetailsTimelineViewModel)response;
+                viewModel.Qan = qualificationReference;
+
+                return View(viewModel);
             }
             catch (Exception ex)
             {

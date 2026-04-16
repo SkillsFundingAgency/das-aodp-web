@@ -5,16 +5,18 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications;
 
 public class QualificationDetailsTimelineViewModel
 {
-    public List<QualificationDiscussionHistory> QualificationDiscussionHistories { get; set; } = new List<QualificationDiscussionHistory>();
+    public List<QualificationDiscussionHistoryViewModel> QualificationDiscussionHistories { get; set; } = new List<QualificationDiscussionHistoryViewModel>();
     public string Qan { get; set; } = string.Empty;
-    public static implicit operator QualificationDetailsTimelineViewModel(GetDiscussionHistoriesForQualificationQueryResponse model)
+    public static implicit operator QualificationDetailsTimelineViewModel(QualificationDiscussionHistoriesResponse model)
     {
-        return new QualificationDetailsTimelineViewModel()
+        return new QualificationDetailsTimelineViewModel
         {
-            QualificationDiscussionHistories = [.. model.QualificationDiscussionHistories]
+            QualificationDiscussionHistories = model.QualificationDiscussionHistories
+                .Select(x => (QualificationDiscussionHistoryViewModel)x)
+                .ToList()
         };
     }
-    public partial class QualificationDiscussionHistory
+    public partial class QualificationDiscussionHistoryViewModel
     {
         public Guid Id { get; set; }
         public Guid QualificationId { get; set; }
@@ -23,7 +25,7 @@ public class QualificationDetailsTimelineViewModel
         public string? Notes { get; set; }
         public DateTime? Timestamp { get; set; }
         public string? Title { get; set; }
-        public virtual ActionType ActionType { get; set; } = null!;
+        public virtual ActionTypeViewModel ActionType { get; set; } = null!;
         public string FormattedTimestamp
         {
             get => Timestamp is null ? "" :
@@ -32,9 +34,9 @@ public class QualificationDetailsTimelineViewModel
                     + Timestamp.Value.ToString("HH:mm", CultureInfo.InvariantCulture);
         }
 
-        public static implicit operator QualificationDiscussionHistory(GetDiscussionHistoriesForQualificationQueryResponse.QualificationDiscussionHistory model)
+        public static implicit operator QualificationDiscussionHistoryViewModel(QualificationDiscussionHistory model)
         {
-            return new QualificationDiscussionHistory
+            return new QualificationDiscussionHistoryViewModel
             {
                 Id = model.Id,
                 QualificationId = model.QualificationId,
@@ -43,7 +45,7 @@ public class QualificationDetailsTimelineViewModel
                 Notes = model.Notes,
                 Timestamp = model.Timestamp,
                 Title = model.Title,
-                ActionType = new ActionType
+                ActionType = new ActionTypeViewModel
                 {
                     Id = model.ActionType.Id,
                     Description = model.ActionType.Description,
@@ -51,7 +53,7 @@ public class QualificationDetailsTimelineViewModel
             };
         }
     }
-    public class ActionType
+    public class ActionTypeViewModel
     {
         public Guid Id { get; set; }
         public string? Description { get; set; }

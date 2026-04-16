@@ -1,6 +1,4 @@
-﻿using DocumentFormat.OpenXml.Spreadsheet;
-
-namespace SFA.DAS.AODP.Web.Models.Qualifications
+﻿namespace SFA.DAS.AODP.Models.Qualifications
 {
     public class EligibleForFundingStatus
     {
@@ -30,26 +28,17 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
                     .ToList();
         }
 
-        public bool HasMultipleReasons => IneligibleReasons.Count > 1;
-        public bool HasSingleReason => IneligibleReasons.Count == 1;
-
-        public string SummaryMessage => HasSingleReason
-            ? $"Not eligible because {IneligibleReasons[0]}"
-            : "Not eligible because:";
-
-        public string ToDisplayString(string separator = "<br/>")
+        public string ToDisplayString()
         {
             if (IsEligible || IneligibleReasons.Count == 0)
             {
                 return string.Empty;
             }
 
-            if (HasSingleReason)
-            {
-                return SummaryMessage;
-            }
-
-            return $"{SummaryMessage}{separator}{separator}{string.Join(separator, IneligibleReasons)}";
+            return TimelineFormattingHelper.ToDisplayString(
+                IneligibleReasons,
+                "Not eligible because ",
+                "Not eligible because:");
         }
     }
 }
