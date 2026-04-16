@@ -1,5 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
+	<PropertyGroup>
+		<AssemblyName>SFA.DAS.AODP.Web</AssemblyName>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<Compile Remove="Areas\Funding\Data\**" />
 		<Compile Remove="Areas\Funding\Models\**" />

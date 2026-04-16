@@ -64,12 +64,10 @@ public class NewControllerTests
     private readonly Mock<ILogger<NewController>> _logger = new();
     private readonly Mock<IMediator> _mediator = new();
     private readonly Mock<IUserHelperService> _userHelper = new();
-    private readonly IOptions<AodpConfiguration> _options =
-        Options.Create(new AodpConfiguration { FindRegulatedQualificationUrl = FindRegulatedQualificationUrl });
-
+   
     private NewController CreateController()
     {
-        var controller = new NewController(_logger.Object, _options, _mediator.Object, _userHelper.Object);
+        var controller = new NewController(_logger.Object, _mediator.Object, _userHelper.Object);
 
         var httpContext = new DefaultHttpContext();
         controller.ControllerContext = new ControllerContext { HttpContext = httpContext };
@@ -111,7 +109,6 @@ public class NewControllerTests
         Assert.Multiple(() =>
         {
             Assert.Empty(model.NewQualifications);
-            Assert.Equal(FindRegulatedQualificationUrl, model.FindRegulatedQualificationUrl);
             Assert.NotNull(model.Filter);
             Assert.NotNull(model.ProcessStatuses);
         });
@@ -168,7 +165,6 @@ public class NewControllerTests
         {
             Assert.Single(model.NewQualifications);
             Assert.Equal(QualificationTitle, model.NewQualifications.First().Title);
-            Assert.Equal(FindRegulatedQualificationUrl, model.FindRegulatedQualificationUrl);
             Assert.NotNull(model.Filter);
             Assert.NotNull(model.ProcessStatuses);
         });
