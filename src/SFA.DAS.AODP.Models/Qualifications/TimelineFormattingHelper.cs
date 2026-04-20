@@ -1,7 +1,9 @@
-﻿using System.Text;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Text;
 
 namespace SFA.DAS.AODP.Models.Qualifications;
 
+[ExcludeFromCodeCoverage]
 public static class TimelineFormattingHelper
 {
     public static string ToDisplayString(List<string> items, string singleItemPrefix, string multipleItemsTitle)

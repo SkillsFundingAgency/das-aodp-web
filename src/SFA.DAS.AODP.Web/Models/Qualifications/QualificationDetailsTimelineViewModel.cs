@@ -3,6 +3,7 @@ using System.Globalization;
 
 namespace SFA.DAS.AODP.Web.Models.Qualifications;
 
+[ExcludeFromCodeCoverage]
 public class QualificationDetailsTimelineViewModel
 {
     public List<QualificationDiscussionHistoryViewModel> QualificationDiscussionHistories { get; set; } = new List<QualificationDiscussionHistoryViewModel>();

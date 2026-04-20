@@ -1,4 +1,5 @@
 ﻿using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
+using SFA.DAS.AODP.Application.Services;
 using SFA.DAS.AODP.Domain.Interfaces;
 using SFA.DAS.AODP.Infrastructure.ApiClient;
 using SFA.DAS.AODP.Infrastructure.Extensions;
@@ -28,6 +29,8 @@ public static class AddServiceRegistrationsExtension
         services.AddScoped<IUserHelperService, UserHelperService>();
 
         services.AddSingleton<IMessageFileValidationService, MessageFileValidationService>();
+
+        services.AddTransient<IQualificationTimelineHistoryBuilder, QualificationTimelineHistoryBuilder>();
 
         return services;
     }

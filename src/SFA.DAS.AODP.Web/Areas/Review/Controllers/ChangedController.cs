@@ -2,16 +2,13 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using SFA.DAS.AODP.Application.Commands.Qualification;
 using SFA.DAS.AODP.Application.Commands.Qualifications;
-using SFA.DAS.AODP.Application.Commands.Review;
 using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Application.Services;
 using SFA.DAS.AODP.Models.Qualifications;
-using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Authentication;
-using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Extensions;
 using SFA.DAS.AODP.Web.Helpers.User;
@@ -19,7 +16,6 @@ using SFA.DAS.AODP.Web.Mappers;
 using SFA.DAS.AODP.Web.Models.BulkActions;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 using System.Globalization;
-using System.Text;
 using System.Text.Json;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
@@ -33,6 +29,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         private readonly ILogger<ChangedController> _logger;
         private readonly IMediator _mediator;
         private readonly IUserHelperService _userHelperService;
+        private readonly IQualificationTimelineHistoryBuilder _qualificationTimelineHistoryBuilder;
 
         private List<string> ReviewerAllowedStatuses { get; set; } =
         [
@@ -49,11 +46,17 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
         public enum NewQualDataKeys { InvalidPageParams, CommentSaved}
 
-        public ChangedController(ILogger<ChangedController> logger, IMediator mediator, IUserHelperService userHelperService) : base(mediator, logger)
+        public ChangedController(
+                ILogger<ChangedController> logger, 
+                IMediator mediator, 
+                IUserHelperService userHelperService, 
+                IQualificationTimelineHistoryBuilder  qualificationTimelineHistoryBuilder
+            ) : base(mediator, logger)
         {
             _logger = logger;
             _mediator = mediator;
             this._userHelperService = userHelperService;
+            _qualificationTimelineHistoryBuilder = qualificationTimelineHistoryBuilder;
         }
 
         public async Task<IActionResult> Index(QualificationQuery qualificationQuery, bool selectAll = false)
@@ -284,9 +287,10 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 if (latestVersion.Version > 1)
                 {
                     var previousVersion = await Send(new GetQualificationVersionQuery() { QualificationReference = qualificationReference, Version = latestVersion.Version - 1 });
+                    var currentVersionForComparison = await Send(new GetQualificationVersionQuery() { QualificationReference = qualificationReference, Version = latestVersion.Version });
 
-                    var keyFieldsChanges = latestVersion?.ChangedFieldNames?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [];
-                    GetKeyFieldChanges(latestVersion, previousVersion, keyFieldsChanges);
+                    latestVersion.KeyFieldChanges = _qualificationTimelineHistoryBuilder.GetKeyFieldChanges(
+                        previousVersion, currentVersionForComparison);
                 }
                 return View(latestVersion);
             }
@@ -294,82 +298,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             {
                 LogException(ex);
                 return Redirect("/Home/Error");
-                ;
-            }
-        }
-
-        private static void GetKeyFieldChanges(ChangedQualificationDetailsViewModel latestVersion, ChangedQualificationDetailsViewModel previousVersion, string[] keyFieldsChanges)
-        {
-            foreach (var item in keyFieldsChanges)
-            {
-                switch (item)
-                {
-                    case "EligibleForFunding":
-                        latestVersion.KeyFieldChanges.Add(new() { Name = "eligible for funding", Was = previousVersion.EligibleForFunding.ToString(), Now = latestVersion.EligibleForFunding.ToString() });
-                        break;
-                    case "OrganisationName":
-                        latestVersion.KeyFieldChanges.Add(new() { Name = "organisation name", Was = previousVersion.Organisation.NameOfqual, Now = latestVersion.Organisation.NameOfqual });
-                        break;
-                    case "Title":
-                        latestVersion.KeyFieldChanges.Add(new() { Name = "title", Was = previousVersion.Qual.QualificationName, Now = latestVersion.Qual.QualificationName });
-                        break;
-                    case "Level":
-                        latestVersion.KeyFieldChanges.Add(new() { Name = "level", Was = previousVersion.Level.ToString(), Now = latestVersion.Level.ToString() });
-                        break;
-                    case "Type":
-                        latestVersion.KeyFieldChanges.Add(new() { Name = "type", Was = previousVersion.Type, Now = latestVersion.Type });
-                        break;
-                    case "TotalCredits":
-                        latestVersion.KeyFieldChanges.Add(new() { Name = "total credits", Was = previousVersion.TotalCredits.ToString(), Now = latestVersion.TotalCredits.ToString() });
-                        break;
-                    case "Ssa":
-                        latestVersion.KeyFieldChanges.Add(new() { Name = "SSA", Was = previousVersion.Ssa.ToString(), Now = latestVersion.Ssa.ToString() });
-                        break;
-                    case "GradingType":
-                        latestVersion.KeyFieldChanges.Add(new() { Name = "grading type", Was = previousVersion.GradingType?.ToString(), Now = latestVersion.GradingType?.ToString() });
-                        break;
-                    case "OfferedInEngland":
-                        latestVersion.KeyFieldChanges.Add(new() { Name = "offered in england", Was = previousVersion.OfferedInEngland.ToString(), Now = latestVersion.OfferedInEngland.ToString() });
-                        break;
-                    case "IntentionToSeekFundingInEngland":
-                        latestVersion.KeyFieldChanges.Add(new() { Name = "intention to eeek funding in england", Was = previousVersion.IntentionToSeekFundingInEngland.ToString(), Now = latestVersion.IntentionToSeekFundingInEngland.ToString() });
-                        break;
-                    case "PreSixteen":
-                        latestVersion.KeyFieldChanges.Add(new() { Name = "pre-sixteen", Was = previousVersion.PreSixteen.ToString(), Now = latestVersion.PreSixteen.ToString() });
-                        break;
-                    case "SixteenToEighteen":
-                        latestVersion.KeyFieldChanges.Add(new() { Name = "sixteen to eighteen", Was = previousVersion.SixteenToEighteen.ToString(), Now = latestVersion.SixteenToEighteen.ToString() });
-                        break;
-                    case "EighteenPlus":
-                        latestVersion.KeyFieldChanges.Add(new() { Name = "eighteen plus", Was = previousVersion.EighteenPlus.ToString(), Now = latestVersion.EighteenPlus.ToString() });
-                        break;
-                    case "NineteenPlus":
-                        latestVersion.KeyFieldChanges.Add(new() { Name = "nineteen plus", Was = previousVersion.NineteenPlus.ToString(), Now = latestVersion.NineteenPlus.ToString() });
-                        break;
-                    case "Glh":
-                        latestVersion.KeyFieldChanges.Add(new() { Name = "guided learning hours (GLH)", Was = previousVersion.Glh.ToString(), Now = latestVersion.Glh.ToString() });
-                        break;
-                    case "MinimumGlh":
-                        latestVersion.KeyFieldChanges.Add(new() { Name = "minimum glh", Was = previousVersion.MinimumGlh.ToString(), Now = latestVersion.MinimumGlh.ToString() });
-                        break;
-                    case "Tqt":
-                        latestVersion.KeyFieldChanges.Add(new() { Name = "total qualification time (TQT)", Was = previousVersion.Tqt.ToString(), Now = latestVersion.Tqt.ToString() });
-                        break;
-                    case "OperationalEndDate":
-                        latestVersion.KeyFieldChanges.Add(new() { Name = "operational end date", Was = String.Format("{0:MM/dd/yy hh:mm}", previousVersion.OperationalEndDate.ToString()), Now = String.Format("{0:MM/dd/yy HH:mm}", latestVersion.OperationalEndDate.ToString()) });
-                        break;
-                    case "LastUpdatedDate":
-                        latestVersion.KeyFieldChanges.Add(new() { Name = "last updated date", Was = String.Format("{0:MM/dd/yy hh:mm}", previousVersion.LastUpdatedDate.ToString()), Now = String.Format("{0:MM/dd/yy HH:mm}", latestVersion.LastUpdatedDate.ToString()) });
-                        break;
-                    case "Version":
-                        latestVersion.KeyFieldChanges.Add(new() { Name = "version", Was = previousVersion.Version.ToString(), Now = latestVersion.Version.ToString() });
-                        break;
-                    case "OfferedInternationally":
-                        latestVersion.KeyFieldChanges.Add(new() { Name = "offered internationally", Was = previousVersion.OfferedInternationally.ToString(), Now = latestVersion.OfferedInternationally.ToString() });
-                        break;
-                    default:
-                        break;
-                }
             }
         }
 

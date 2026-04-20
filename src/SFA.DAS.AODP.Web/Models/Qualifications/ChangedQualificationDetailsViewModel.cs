@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Razor.TagHelpers;
-using SFA.DAS.AODP.Application.Queries.Qualifications;
+﻿using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Models.Qualifications;
 using SFA.DAS.AODP.Web.Enums;
 using System.ComponentModel;
@@ -7,6 +6,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace SFA.DAS.AODP.Web.Models.Qualifications;
 
+[ExcludeFromCodeCoverage]
 public class ChangedQualificationDetailsViewModel
 {
     public Guid Id { get; set; }
@@ -159,7 +159,7 @@ public class ChangedQualificationDetailsViewModel
         }
     }
 
-    public List<KeyFieldChanges> KeyFieldChanges { get; set; } = new();
+    public List<FieldChange> KeyFieldChanges { get; set; } = new();
     public partial class LifecycleStage
     {
         public Guid Id { get; set; }
@@ -405,11 +405,4 @@ public class ChangedQualificationDetailsViewModel
 
         };
     }
-}
-
-public class KeyFieldChanges
-{
-    public string? Was { get; set; }
-    public string? Now { get; set; }
-    public string? Name { get; set; }
 }

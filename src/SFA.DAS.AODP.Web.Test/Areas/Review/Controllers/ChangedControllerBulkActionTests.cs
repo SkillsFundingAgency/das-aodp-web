@@ -11,6 +11,7 @@ using Moq;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.Qualifications;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Application.Services;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Helpers.User;
@@ -29,6 +30,7 @@ public class ChangedControllerBulkActionTests
     private readonly Mock<IMediator> _mediatorMock;
     private readonly ChangedController _controller;
     private readonly Mock<IUrlHelper> _urlHelperMock;
+    private readonly Mock<IQualificationTimelineHistoryBuilder> _timelineBuilder;
 
     public ChangedControllerBulkActionTests()
     {
@@ -37,11 +39,13 @@ public class ChangedControllerBulkActionTests
         _loggerMock = _fixture.Freeze<Mock<ILogger<ChangedController>>>();
         _userHelperMock = _fixture.Freeze<Mock<IUserHelperService>>();
         _mediatorMock = _fixture.Freeze<Mock<IMediator>>();
+        _timelineBuilder = _fixture.Freeze<Mock<IQualificationTimelineHistoryBuilder>>();
 
         _controller = new ChangedController(
             _loggerMock.Object,
             _mediatorMock.Object,
-            _userHelperMock.Object);
+            _userHelperMock.Object,
+            _timelineBuilder.Object);
 
         _controller.ControllerContext = new ControllerContext
         {

@@ -2,6 +2,7 @@
 
 namespace SFA.DAS.AODP.Web.Models.Qualifications
 {
+    [ExcludeFromCodeCoverage]
     public class ChangedQualificationViewModel
     {
         public Guid QualificationId { get; set; }

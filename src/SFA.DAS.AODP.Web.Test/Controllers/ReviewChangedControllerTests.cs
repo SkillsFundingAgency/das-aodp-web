@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Application.Services;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Helpers.User;
@@ -23,6 +24,7 @@ public class ReviewChangedControllerTests
     private readonly Mock<IUserHelperService> _userHelper;
     private readonly Mock<IMediator> _mediatorMock;
     private readonly ChangedController _controller;
+    private readonly Mock<IQualificationTimelineHistoryBuilder> _timelineBuilder;
 
     public ReviewChangedControllerTests()
     {
@@ -30,8 +32,11 @@ public class ReviewChangedControllerTests
         _loggerMock = _fixture.Freeze<Mock<ILogger<ChangedController>>>();
         _userHelper = _fixture.Freeze<Mock<IUserHelperService>>();
         _mediatorMock = _fixture.Freeze<Mock<IMediator>>();
+        _mediatorMock = _fixture.Freeze<Mock<IMediator>>();
+        _timelineBuilder = _fixture.Freeze<Mock<IQualificationTimelineHistoryBuilder>>();
 
-        _controller = new ChangedController(_loggerMock.Object, _mediatorMock.Object, _userHelper.Object);
+        _controller = new ChangedController(_loggerMock.Object, _mediatorMock.Object, _userHelper.Object,
+            _timelineBuilder.Object);
 
         _userHelper
             .Setup(u => u.GetUserRoles())
@@ -43,10 +48,10 @@ public class ReviewChangedControllerTests
             Value = new GetProcessStatusesQueryResponse
             {
                 ProcessStatuses = new List<GetProcessStatusesQueryResponse.ProcessStatus>
-            {
-                new() { Id = Guid.NewGuid(), Name = "Decision Required" },
-                new() { Id = Guid.NewGuid(), Name = "No Action Required" }
-            }
+                {
+                    new() { Id = Guid.NewGuid(), Name = "Decision Required" },
+                    new() { Id = Guid.NewGuid(), Name = "No Action Required" }
+                }
             }
         };
 

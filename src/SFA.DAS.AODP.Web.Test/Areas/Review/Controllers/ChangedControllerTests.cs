@@ -9,6 +9,7 @@ using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.Qualification;
 using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Application.Services;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Helpers.User;
@@ -46,6 +47,7 @@ public class ChangedControllerTests
     private readonly Mock<IMediator> _mediator = new();
     private readonly Mock<IUserHelperService> _userHelper = new();
     private readonly Mock<ILogger<ChangedController>> _logger = new();
+    private readonly Mock<IQualificationTimelineHistoryBuilder> _timelineBuilder = new();
 
     private readonly IOptions<AodpConfiguration> _options =
         Options.Create(new AodpConfiguration
@@ -55,7 +57,7 @@ public class ChangedControllerTests
 
     private ChangedController CreateController()
     {
-        var controller = new ChangedController(_logger.Object, _mediator.Object, _userHelper.Object);
+        var controller = new ChangedController(_logger.Object, _mediator.Object, _userHelper.Object, _timelineBuilder.Object);
 
         var httpContext = new DefaultHttpContext();
         var claims = new[] { new Claim(ClaimTypes.Name, DefaultUserName) };
