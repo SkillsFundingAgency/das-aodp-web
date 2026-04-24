@@ -9,6 +9,7 @@ using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Exceptions;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Models.Users;
+using SFA.DAS.AODP.Web.Areas.Apply.Storage;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationMessage;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Constants;
@@ -64,13 +65,11 @@ public class ApplicationMessagesController : ControllerBase
                 SentByEmail = message.SentByEmail,
                 UserType = UserType,
                 MessageType = message.MessageType,
-                Files = timelineFiles.Where(t => t.FullPath.StartsWith($"messages/{applicationId}/{message.MessageId}")).Select(a => new ApplicationMessageViewModel.File()
+                Files = timelineFiles.Where(t => t.FullPath.StartsWith(ApplicationMessageStoragePaths.MessageFiles(applicationId, message.MessageId))).Select(a => new ApplicationMessageViewModel.File()
                 {
                     FileDisplayName = a.FileNameWithPrefix,
                     FullPath = a.FullPath,
                     FormUrl = Url.Action(nameof(ApplicationReviewMessageFileDownload), "ApplicationMessages", new { applicationReviewId }),
-                    CanDownload = a.ScanStatus.IsDownloadAllowed(),
-                    StatusText = a.ScanStatus.ToUserFacingText(),
                 }).ToList()
             });
         }
@@ -223,7 +222,7 @@ public class ApplicationMessagesController : ControllerBase
     {
         var applicationId = await GetApplicationIdWithAccessValidationAsync(applicationReviewId);
 
-        if (!filePath.StartsWith($"messages/{applicationId}/{messageId}/"))
+        if (!filePath.StartsWith(ApplicationMessageStoragePaths.MessageFiles(applicationId, messageId)))
         {
             return BadRequest();
         }
@@ -268,12 +267,13 @@ public class ApplicationMessagesController : ControllerBase
         foreach (var file in files ?? [])
         {
             using var stream = file.OpenReadStream();
-            await _fileService.UploadFileAsync($"messages/{applicationId}/{messageId}", file.FileName, stream, file.ContentType, metadata.Reference.ToString().PadLeft(6, '0'));
+            await _fileService.UploadFileAsync(
+                ApplicationMessageStoragePaths.MessageFiles(applicationId, messageId), file.FileName, stream, file.ContentType, metadata.Reference.ToString().PadLeft(6, '0'));
         }
     }
 
     private async Task<List<UploadedBlob>> GetApplicationMessageFilesAsync(Guid applicationId)
     {
-        return _fileService.ListBlobs($"messages/{applicationId}");
+        return _fileService.ListBlobs(ApplicationMessageStoragePaths.MessageRoot(applicationId));
     }
 }

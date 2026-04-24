@@ -15,117 +15,101 @@ namespace SFA.DAS.AODP.Infrastructure.UnitTests.File
         private readonly Fixture _fixture = new();
         private readonly BlobStorageSettings _blobStorageSettings;
         private readonly FormBuilderSettings _formBuilderSettings;
+
         private readonly Mock<BlobServiceClient> _blobServiceClient = new();
+        private readonly Mock<BlobContainerClient> _safeContainer = new();
+        private readonly Mock<BlobContainerClient> _quarantineContainer = new();
+
         private BlobStorageFileService _sut;
 
         public BlobStorageFileServiceTests()
         {
-            _blobStorageSettings = _fixture.Create<BlobStorageSettings>();
+            _blobStorageSettings = new BlobStorageSettings
+            {
+                QuarantineContainerName = "quarantine",
+                SafeContainerName = "safe"
+            };
+
             _formBuilderSettings = new FormBuilderSettings
             {
                 MaxUploadFileSize = 10,
                 UploadFileTypesAllowed = new List<string> { ".docx" }
             };
-            var importBlobStorageSettings = _fixture.Create<ImportBlobStorageSettings>();
+
             var importFileUploadSettings = _fixture.Create<ImportFileUploadSettings>();
 
-            var clientFactoryMock = new Mock<Microsoft.Extensions.Azure.IAzureClientFactory<BlobServiceClient>>();
-            clientFactoryMock
-                .Setup(f => f.CreateClient(It.IsAny<string>()))
-                .Returns(_blobServiceClient.Object);
+            _blobServiceClient
+                .Setup(c => c.GetBlobContainerClient("quarantine"))
+                .Returns(_quarantineContainer.Object);
 
-            _sut = new(_blobServiceClient.Object, clientFactoryMock.Object, Options.Create(_blobStorageSettings), Options.Create(importBlobStorageSettings), _formBuilderSettings, importFileUploadSettings);
+            _blobServiceClient
+                .Setup(c => c.GetBlobContainerClient("safe"))
+                .Returns(_safeContainer.Object);
+
+            _quarantineContainer
+                .Setup(c => c.CreateIfNotExists(
+                    It.IsAny<PublicAccessType>(),
+                    It.IsAny<IDictionary<string, string>>(),
+                    It.IsAny<CancellationToken>()));
+
+            _safeContainer
+                .Setup(c => c.CreateIfNotExists(
+                    It.IsAny<PublicAccessType>(),
+                    It.IsAny<IDictionary<string, string>>(),
+                    It.IsAny<CancellationToken>()));
+
+            _sut = new BlobStorageFileService(
+                _blobServiceClient.Object,
+                Options.Create(_blobStorageSettings),
+                _formBuilderSettings,
+                importFileUploadSettings);
         }
 
+        
         [Fact]
-        public async Task UploadFileAsync_UploadsFileWithMetadata()
+        public async Task UploadFileAsync_UploadsFileToQuarantineWithMetadata()
         {
-            // Arrange
-            string folderName = _fixture.Create<string>();
-            string fileName = "Test.docx";
-            Stream stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes("Test file content"));
-            string? contentType = _fixture.Create<string>();
-            string fileNamePrefix = _fixture.Create<string>();
+            var prefix = "messages";
+            var fileName = "Test.docx";
+            var stream = new MemoryStream("Test".Select(c => (byte)c).ToArray());
+            var contentType = "application/msword";
+            var fileNamePrefix = "Prefix";
 
-            Mock<BlobContainerClient> blobContainerClient = new();
-            Mock<BlobClient> blobClient = new();
+            var blobClient = new Mock<BlobClient>();
 
+            _quarantineContainer
+                .Setup(c => c.GetBlobClient(It.IsAny<string>()))
+                .Returns(blobClient.Object);
 
-            _blobServiceClient.Setup(b => b.GetBlobContainerClient(_blobStorageSettings.FileUploadContainerName)).Returns(blobContainerClient.Object);
-            blobContainerClient.Setup(b => b.GetBlobClient(It.IsAny<string>())).Returns(blobClient.Object);
+            await _sut.UploadFileAsync(prefix, fileName, stream, contentType, fileNamePrefix);
 
-            // Act
-            await _sut.UploadFileAsync(folderName, fileName, stream, contentType, fileNamePrefix);
 
             // Assert
-            blobClient.Verify(b => b.UploadAsync(
-                stream,
-                It.IsAny<BlobHttpHeaders>(),
-                It.IsAny<Dictionary<string, string>>(),
-                default,
-                default,
-                default,
-                default,
-                default
-            ), Times.Once());
-
-            blobClient.Verify(b => b.UploadAsync(
-             It.IsAny<Stream>(),
-             It.Is<BlobHttpHeaders>(h => h.ContentType == contentType),
-             It.IsAny<Dictionary<string, string>>(),
-             default,
-             default,
-             default,
-             default,
-             default
-            ), Times.Once());
-
-
-            blobClient.Verify(b => b.UploadAsync(
-             It.IsAny<Stream>(),
-               It.IsAny<BlobHttpHeaders>(),
-               It.Is<Dictionary<string, string>>(d => d[BlobStorageFileService.FileNameMetadataKey] == fileName),
-               default,
-               default,
-               default,
-               default,
-               default
-           ), Times.Once());
-
-            blobClient.Verify(b => b.UploadAsync(
-              It.IsAny<Stream>(),
-                It.IsAny<BlobHttpHeaders>(),
-                It.Is<Dictionary<string, string>>(d => d[BlobStorageFileService.FileExtensionsMetadataKey] == ".docx"),
-                default,
-                default,
-                default,
-                default,
-                default
-            ), Times.Once());
-
-
-            blobClient.Verify(b => b.UploadAsync(
-             It.IsAny<Stream>(),
-               It.IsAny<BlobHttpHeaders>(),
-               It.Is<Dictionary<string, string>>(d => d[BlobStorageFileService.FilePrefixMetadataKey] == fileNamePrefix),
-               default,
-               default,
-               default,
-               default,
-               default
-            ), Times.Once());
+            blobClient.Verify(b =>
+                b.UploadAsync(
+                    It.IsAny<Stream>(),
+                    It.Is<BlobUploadOptions>(o =>
+                        o.Metadata[BlobStorageFileService.FileNameMetadataKey] == fileName &&
+                        o.Metadata[BlobStorageFileService.FileExtensionsMetadataKey] == ".docx" &&
+                        o.Metadata[BlobStorageFileService.FilePrefixMetadataKey] == fileNamePrefix &&
+                        o.HttpHeaders!.ContentType == contentType),
+                    default),
+                Times.Once);
         }
 
-        [Fact]
-        public async Task ListBlobs_ReturnsFiles()
+
+
+        
+[Fact]
+        public void ListBlobs_ReturnsSafeBlobs()
         {
-            string folderName = _fixture.Create<string>();
-            string fileName = "Test.docx";
-            string extension = ".docx";
-            string fileNamePrefix = _fixture.Create<string>();
+            var prefix = "messages";
+            var fileName = "Test.docx";
+            var extension = ".docx";
+            var fileNamePrefix = "Prefix";
 
             var blobItem = BlobsModelFactory.BlobItem(
-                name: fileName,
+                name: $"{prefix}/{fileName}",
                 metadata: new Dictionary<string, string>
                 {
                     { BlobStorageFileService.FileNameMetadataKey, fileName },
@@ -134,112 +118,108 @@ namespace SFA.DAS.AODP.Infrastructure.UnitTests.File
                 });
 
             var page = Page<BlobItem>.FromValues(
-                [blobItem],
-                continuationToken: null,
-                new Mock<Response>().Object);
+                new[] { blobItem },
+                null,
+                Mock.Of<Response>());
 
-            var pages = Pageable<BlobItem>.FromPages([page]);
+            var pageable = Pageable<BlobItem>.FromPages(new[] { page });
 
-            Mock<BlobContainerClient> blobContainerClient = BlobTestFactory.CreateContainer(pages);
-            Mock<BlobClient> blobClient = BlobTestFactory.CreateBlob();
+            
+            _safeContainer.Setup(c =>
+                c.GetBlobs(
+                    BlobTraits.Metadata,
+                    BlobStates.None,
+                    prefix,
+                    default))
+                .Returns(pageable);
 
-            _blobServiceClient
-                .Setup(b => b.GetBlobContainerClient(_blobStorageSettings.FileUploadContainerName))
-                .Returns(blobContainerClient.Object);
+            var result = _sut.ListBlobs(prefix);
 
-            blobContainerClient
-                .Setup(b => b.GetBlobClient(fileName))
-                .Returns(blobClient.Object);
-
-            var result = _sut.ListBlobs(folderName);
-
-            Assert.NotEmpty(result);
-            Assert.Single(result);
-
-            var resultBlobItem = result.First();
-
-            Assert.Equal(fileName, resultBlobItem.FileName);
-            Assert.Equal(fileName, resultBlobItem.FullPath);
-            Assert.Equal(extension, resultBlobItem.Extension);
-            Assert.Equal(fileNamePrefix, resultBlobItem.FileNamePrefix);
+            var blob = Assert.Single(result);
+            Assert.Equal(fileName, blob.FileName);
+            Assert.Equal($"{prefix}/{fileName}", blob.FullPath);
+            Assert.Equal(extension, blob.Extension);
+            Assert.Equal(fileNamePrefix, blob.FileNamePrefix);
         }
 
-        [Fact]
-        public async Task GetBlobDetails_ReturnsBlobDetails()
+
+        
+public async Task GetBlobDetails_ReturnsMetadataFromSafe()
         {
-            // Arrange
-            string fileName = "Test.docx";
-            string extension = ".docx";
-            string fileNamePrefix = _fixture.Create<string>();
+            var blobPath = "messages/Test.docx";
+            var fileNamePrefix = "Prefix";
 
-            var responseMock = new Mock<Response>();
+            var properties = BlobsModelFactory.BlobProperties(
+                metadata: new Dictionary<string, string>
+                {
+                    { BlobStorageFileService.FileNameMetadataKey, "Test.docx" },
+                    { BlobStorageFileService.FileExtensionsMetadataKey, ".docx" },
+                    { BlobStorageFileService.FilePrefixMetadataKey, fileNamePrefix }
+                });
 
-            Mock<BlobContainerClient> blobContainerClient = new();
-            Mock<BlobClient> blobClient = new();
+            var blobClient = new Mock<BlobClient>();
+            blobClient
+                .Setup(b => b.GetPropertiesAsync(null, default))
+                .ReturnsAsync(Response.FromValue(properties, Mock.Of<Response>()));
 
-            var blobItem = BlobsModelFactory.BlobItem(name: fileName);
+            _safeContainer
+                .Setup(c => c.GetBlobClient(blobPath))
+                .Returns(blobClient.Object);
 
-            var blobItemProperties = BlobsModelFactory.BlobProperties(metadata: new Dictionary<string, string>()
-            {
-                { BlobStorageFileService.FileNameMetadataKey, fileName },
-                { BlobStorageFileService.FileExtensionsMetadataKey, Path.GetExtension(fileName) },
-                { BlobStorageFileService.FilePrefixMetadataKey, fileNamePrefix }
-            });
+            var result = await _sut.GetBlobDetails(blobPath);
 
-            _blobServiceClient.Setup(b => b.GetBlobContainerClient(_blobStorageSettings.FileUploadContainerName)).Returns(blobContainerClient.Object);
-
-            blobContainerClient.Setup(b => b.GetBlobClient(fileName)).Returns(blobClient.Object);
-
-            blobClient.Setup(b => b.GetPropertiesAsync(null, default)).ReturnsAsync(Response.FromValue(blobItemProperties, responseMock.Object));
-
-            // Act
-            var result = await _sut.GetBlobDetails(fileName);
-
-            // Assert
-            Assert.Equal(fileName, result.FileName);
-            Assert.Equal(fileName, result.FullPath);
-            Assert.Equal(extension, result.Extension);
+            Assert.Equal("Test.docx", result.FileName);
+            Assert.Equal(blobPath, result.FullPath);
+            Assert.Equal(".docx", result.Extension);
             Assert.Equal(fileNamePrefix, result.FileNamePrefix);
         }
 
+
+        
         [Fact]
-        public async Task OpenReadStreamAsync_ReturnsStream()
+        public async Task OpenReadStreamAsync_ReadsFromSafe()
         {
-            // Arrange
-            string fileName = "Test.docx";
-            Stream stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes("Test file content"));
+            var blobPath = "messages/Test.docx";
+            var stream = new MemoryStream();
 
-            Mock<BlobContainerClient> blobContainerClient = new();
-            Mock<BlobClient> blobClient = new();
+            var blobClient = new Mock<BlobClient>();
+            
+            blobClient
+                .Setup(b => b.OpenReadAsync(0, default, default, default))
+                .ReturnsAsync(stream);
 
-            _blobServiceClient.Setup(b => b.GetBlobContainerClient(_blobStorageSettings.FileUploadContainerName)).Returns(blobContainerClient.Object);
-            blobContainerClient.Setup(b => b.GetBlobClient(fileName)).Returns(blobClient.Object);
 
-            blobClient.Setup(b => b.OpenReadAsync(0, default, default, default)).ReturnsAsync(stream);
+            _safeContainer
+                .Setup(c => c.GetBlobClient(blobPath))
+                .Returns(blobClient.Object);
 
-            // Act
-            var result = await _sut.OpenReadStreamAsync(fileName);
+            var result = await _sut.OpenReadStreamAsync(blobPath);
 
-            // Assert
             Assert.Equal(stream, result);
         }
 
+
+       
         [Fact]
-        public async Task DeleteFileAsync_CallsDeleteAsyncOnBlobClient()
+        public async Task DeleteFileAsync_DeletesFromSafe()
         {
-            // Arrange
-            string fileName = "Test.docx";
+            var blobPath = "messages/Test.docx";
 
-            Mock<BlobContainerClient> blobContainerClient = new();
-            Mock<BlobClient> blobClient = new();
+            var blobClient = new Mock<BlobClient>();
 
-            _blobServiceClient.Setup(b => b.GetBlobContainerClient(_blobStorageSettings.FileUploadContainerName)).Returns(blobContainerClient.Object);
-            blobContainerClient.Setup(b => b.GetBlobClient(fileName)).Returns(blobClient.Object);
-            // Act
-            await _sut.DeleteFileAsync(fileName);
+            _safeContainer
+                .Setup(c => c.GetBlobClient(blobPath))
+                .Returns(blobClient.Object);
 
-            // Assert
-            blobClient.Verify(b => b.DeleteAsync(DeleteSnapshotsOption.IncludeSnapshots, null,default), Times.Once);
+            await _sut.DeleteFileAsync(blobPath);
+
+            blobClient.Verify(b =>
+                b.DeleteIfExistsAsync(
+                    DeleteSnapshotsOption.IncludeSnapshots,
+                    null,
+                    default),
+                Times.Once);
         }
+
     }
 }

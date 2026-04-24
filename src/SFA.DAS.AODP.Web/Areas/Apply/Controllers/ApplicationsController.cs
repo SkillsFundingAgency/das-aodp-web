@@ -7,6 +7,7 @@ using SFA.DAS.AODP.Application.Queries.Application.Form;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Application;
+using SFA.DAS.AODP.Web.Areas.Apply.Storage;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Enums;
@@ -491,17 +492,28 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
                 foreach (var file in question.Answer?.FormFiles ?? [])
                 {
                     using var stream = file.OpenReadStream();
-                    await _fileService.UploadFileAsync($"{viewModel.ApplicationId}/{question.Id}", file.FileName, stream, file.ContentType, prefix);
+                    await _fileService.UploadFileAsync(ApplicationStoragePaths.QuestionFiles(viewModel.ApplicationId, question.Id), file.FileName, stream, file.ContentType, prefix);
                 }
             }
         }
 
         private async Task DeleteApplicationFiles(Guid applicationId)
         {
-            var files = _fileService.ListBlobs(applicationId.ToString());
-            foreach (var file in files)
+            var prefixes = new[]
             {
-                await _fileService.DeleteFileAsync(file.FullPath);
+                ApplicationMessageStoragePaths.MessageRoot(applicationId),
+                ApplicationStoragePaths.ApplicationRoot(applicationId)
+            };
+
+
+            foreach (var prefix in prefixes)
+            {
+                var files = _fileService.ListBlobs(prefix);
+
+                foreach (var file in files)
+                {
+                    await _fileService.DeleteFileAsync(file.FullPath);
+                }
             }
         }
 

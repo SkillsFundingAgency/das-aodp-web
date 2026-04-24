@@ -5,6 +5,7 @@ using SFA.DAS.AODP.Application.Commands.Import;
 using SFA.DAS.AODP.Application.Queries.Import;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Web.Areas.Admin.Models;
+using SFA.DAS.AODP.Web.Areas.Admin.Storage;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.User;
@@ -259,12 +260,13 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
 
             try
             {
-                var folderName = JobNames.Pldns.ToString();
                 var contentType = model.File.ContentType;
+                var pldnsPrefix = ImportStoragePaths.PldnsFolder;
+                var pldnsFileName = ImportStoragePaths.PldnsFileName;
                 var fileNamePrefix = _userHelperService.GetUserDisplayName() ?? string.Empty;
 
                 using var stream = model.File.OpenReadStream();
-                await _fileService.UploadXlsxFileAsync(folderName, "Pldns.xlsx", stream, contentType, fileNamePrefix);
+                await _fileService.UploadXlsxFileAsync(pldnsPrefix, pldnsFileName, stream, contentType, fileNamePrefix);
             }
             catch (Exception ex)
             {
@@ -302,12 +304,13 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
 
             try
             {
-                var folderName = JobNames.DefundingList.ToString();
+                var defundingListPrefix = ImportStoragePaths.DefundingListFolder;
+                var defundingListFileName = ImportStoragePaths.DefundingListFileName;    
                 var contentType = model.File.ContentType;
                 var fileNamePrefix = _userHelperService.GetUserDisplayName() ?? string.Empty;
 
                 using var stream = model.File.OpenReadStream();
-                await _fileService.UploadXlsxFileAsync(folderName, "DefundingList.xlsx", stream, contentType, fileNamePrefix);
+                await _fileService.UploadXlsxFileAsync(defundingListPrefix, defundingListFileName, stream, contentType, fileNamePrefix);
             }
             catch (Exception ex)
             {

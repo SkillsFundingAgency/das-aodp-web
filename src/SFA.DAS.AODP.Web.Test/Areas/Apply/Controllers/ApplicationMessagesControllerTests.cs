@@ -15,6 +15,7 @@ using SFA.DAS.AODP.Models.Exceptions;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Areas.Apply.Controllers;
 using SFA.DAS.AODP.Web.Areas.Apply.Models;
+using SFA.DAS.AODP.Web.Areas.Apply.Storage;
 using SFA.DAS.AODP.Web.Helpers.File;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.RelatedLinks;
@@ -95,7 +96,7 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Apply.Controllers
             // Assert
             Assert.IsType<RedirectToActionResult>(result);
 
-            _fileService.Verify(f => f.UploadFileAsync($"messages/{applicationId}/{msgResponse.Value.Id}", It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>()));
+            _fileService.Verify(f => f.UploadFileAsync(ApplicationMessageStoragePaths.MessageFiles(applicationId, msgResponse.Value.Id), It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>()));
             _fileService.Verify(f => f.UploadFileAsync(It.IsAny<string>(), fileName, It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>()));
             _fileService.Verify(f => f.UploadFileAsync(It.IsAny<string>(), It.IsAny<string>(), stream, It.IsAny<string>(), It.IsAny<string>()));
             _fileService.Verify(f => f.UploadFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>(), contentType, It.IsAny<string>()));

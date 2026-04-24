@@ -1,8 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using SFA.DAS.AODP.Application.Commands.Application.Review;
 using SFA.DAS.AODP.Application.Commands.Review;
 using SFA.DAS.AODP.Application.Queries.Application.Form;
@@ -11,6 +11,7 @@ using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Models.Users;
+using SFA.DAS.AODP.Web.Areas.Apply.Storage;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApproval;
 using SFA.DAS.AODP.Web.Authentication;
@@ -22,8 +23,8 @@ using SFA.DAS.AODP.Web.Models.BulkActions;
 using SFA.DAS.AODP.Web.Models.BulkActions.Options;
 using SFA.DAS.AODP.Web.Models.RelatedLinks;
 using SFA.DAS.AODP.Web.Validators.Messages;
+using System.ComponentModel.DataAnnotations;
 using System.IO.Compression;
-using Newtonsoft.Json;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
@@ -709,7 +710,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             var applicationId = await GetApplicationIdWithAccessValidation(applicationReviewId);
             var form = await Send(new GetFormPreviewByIdQuery(applicationId));
             var applicationDetails = await Send(new GetApplicationFormByReviewIdQuery(applicationReviewId));
-            var files = _fileService.ListBlobs(applicationId.ToString());
+            var files = _fileService.ListBlobs(ApplicationStoragePaths.ApplicationRoot(applicationId));
 
             var vm = ApplicationReadOnlyDetailsViewModel.Map(form, applicationDetails, files);
             vm.ApplicationReviewId = applicationReviewId;
@@ -723,7 +724,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         public async Task<IActionResult> ApplicationFileDownload(ApplicationFileDownloadViewModel model)
         {
             var applicationId = await GetApplicationIdWithAccessValidation(model.ApplicationReviewId);
-            if (!model.FilePath.StartsWith(applicationId.ToString()))
+            if (!model.FilePath.StartsWith(ApplicationStoragePaths.ApplicationRoot(applicationId)))
             {
                 return BadRequest();
             }
@@ -739,7 +740,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         public async Task<IActionResult> DownloadAllApplicationFiles(Guid applicationReviewId)
         {
             var applicationId = await GetApplicationIdWithAccessValidation(applicationReviewId);
-            var files = _fileService.ListBlobs(applicationId.ToString());
+            var files = _fileService.ListBlobs(ApplicationStoragePaths.ApplicationRoot(applicationId));
 
             if (files == null || !files.Any())
             {

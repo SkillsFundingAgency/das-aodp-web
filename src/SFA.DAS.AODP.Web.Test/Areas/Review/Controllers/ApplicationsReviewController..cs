@@ -13,6 +13,7 @@ using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Models.Users;
+using SFA.DAS.AODP.Web.Areas.Apply.Storage;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview;
 using SFA.DAS.AODP.Web.Helpers.User;
@@ -143,7 +144,7 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
                 Value = new GetApplicationMetadataByIdQueryResponse { Reference = 12345 }
             };
 
-            _fileServiceMock.Setup(fs => fs.ListBlobs(applicationId.ToString())).Returns(files);
+            _fileServiceMock.Setup(fs => fs.ListBlobs(ApplicationStoragePaths.ApplicationRoot(applicationId))).Returns(files);
             _fileServiceMock.Setup(fs => fs.OpenReadStreamAsync(It.IsAny<string>()))
                 .ReturnsAsync(new MemoryStream(System.Text.Encoding.UTF8.GetBytes("Test file content")));
 
@@ -216,7 +217,7 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
             };
 
 
-            _fileServiceMock.Setup(fs => fs.ListBlobs(applicationId.ToString())).Returns(files);
+            _fileServiceMock.Setup(fs => fs.ListBlobs(ApplicationStoragePaths.ApplicationRoot(applicationId))).Returns(files);
             _fileServiceMock.Setup(fs => fs.OpenReadStreamAsync(It.IsAny<string>()))
                 .ThrowsAsync(new Exception("File service error"));
 
@@ -246,7 +247,7 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
             };
 
 
-            _fileServiceMock.Setup(fs => fs.ListBlobs(applicationId.ToString())).Returns(files);
+            _fileServiceMock.Setup(fs => fs.ListBlobs(ApplicationStoragePaths.ApplicationRoot(applicationId))).Returns(files);
             _fileServiceMock.Setup(fs => fs.OpenReadStreamAsync(It.IsAny<string>()))
                 .ReturnsAsync((Stream)null);
 
