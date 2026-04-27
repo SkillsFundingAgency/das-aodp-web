@@ -64,8 +64,8 @@ public class QualificationTimelineHistoryBuilderTests
         var result = _builder.GetKeyFieldChanges(latest, previous);
 
         Assert.Equal(2, result.Count);
-        Assert.Contains(result, x => x.Name == "title");
-        Assert.Contains(result, x => x.Name == "organisation name");
+        Assert.Contains(result, x => x.Name == "Title");
+        Assert.Contains(result, x => x.Name == "Organisation name");
     }
 
     [Theory]
@@ -220,8 +220,8 @@ public class QualificationTimelineHistoryBuilderTests
         Assert.Equal(2, result.Count);
         Assert.All(result, x => Assert.Equal(ChangeTitle, x.Title));
         Assert.All(result, x => Assert.Equal(OfqualImportUser, x.UserDisplayName));
-        Assert.Contains(result, x => x.Timestamp == VersionTwoTimestamp && x.Notes.Contains("title changed from"));
-        Assert.Contains(result, x => x.Timestamp == VersionTwoTimestamp && !string.IsNullOrWhiteSpace(x.Notes) && !x.Notes.Contains("title changed from"));
+        Assert.Contains(result, x => x.Timestamp == VersionTwoTimestamp && x.Notes.Contains("Title changed from"));
+        Assert.Contains(result, x => x.Timestamp == VersionTwoTimestamp && !string.IsNullOrWhiteSpace(x.Notes) && !x.Notes.Contains("Title changed from"));
     }
 
     [Fact]
@@ -250,27 +250,27 @@ public class QualificationTimelineHistoryBuilderTests
     #region Test Data
     public static IEnumerable<object[]> RecognisedFieldCases()
     {
-        yield return new object[] { "EligibleForFunding", "eligible for funding", "True", "False" };
-        yield return new object[] { "OrganisationName", "organisation name", OrganisationNameOld, OrganisationNameNew };
-        yield return new object[] { "Title", "title", QualificationNameOld, QualificationNameNew };
-        yield return new object[] { "Level", "level", "level 1", "level 2" };
-        yield return new object[] { "Type", "type", TypeOld, TypeNew };
-        yield return new object[] { "TotalCredits", "total credits", "10", "20" };
+        yield return new object[] { "EligibleForFunding", "Eligible for funding", "True", "False" };
+        yield return new object[] { "OrganisationName", "Organisation name", OrganisationNameOld, OrganisationNameNew };
+        yield return new object[] { "Title", "Title", QualificationNameOld, QualificationNameNew };
+        yield return new object[] { "Level", "Level", "level 1", "level 2" };
+        yield return new object[] { "Type", "Type", TypeOld, TypeNew };
+        yield return new object[] { "TotalCredits", "Total credits", "10", "20" };
         yield return new object[] { "Ssa", "SSA", "ssa 1", "ssa 2" };
-        yield return new object[] { "GradingType", "grading type", GradingTypeOld, GradingTypeNew };
-        yield return new object[] { "OfferedInEngland", "offered in england", "True", "False" };
-        yield return new object[] { "IntentionToSeekFundingInEngland", "intention to seek funding in england", "False", "True" };
-        yield return new object[] { "PreSixteen", "pre-sixteen", "False", "True" };
-        yield return new object[] { "SixteenToEighteen", "sixteen to eighteen", "True", "False" };
-        yield return new object[] { "EighteenPlus", "eighteen plus", "False", "True" };
-        yield return new object[] { "NineteenPlus", "nineteen plus", "True", "False" };
-        yield return new object[] { "Glh", "guided learning hours (GLH)", "100", "200" };
-        yield return new object[] { "MinimumGlh", "minimum glh", "90", "95" };
-        yield return new object[] { "Tqt", "total qualification time (TQT)", "120", "240" };
-        yield return new object[] { "OperationalEndDate", "operational end date", "12/31/26 14:30", "01/31/27 09:15" };
-        yield return new object[] { "LastUpdatedDate", "last updated date", "01/01/26 10:00", "01/02/26 10:00" };
-        yield return new object[] { "Version", "version", "1", "2" };
-        yield return new object[] { "OfferedInternationally", "offered internationally", "False", "True" };
+        yield return new object[] { "GradingType", "Grading type", GradingTypeOld, GradingTypeNew };
+        yield return new object[] { "OfferedInEngland", "Offered in England", "True", "False" };
+        yield return new object[] { "IntentionToSeekFundingInEngland", "Intention to seek funding in England", "False", "True" };
+        yield return new object[] { "PreSixteen", "Pre-sixteen", "False", "True" };
+        yield return new object[] { "SixteenToEighteen", "Sixteen to eighteen", "True", "False" };
+        yield return new object[] { "EighteenPlus", "Eighteen plus", "False", "True" };
+        yield return new object[] { "NineteenPlus", "Nineteen plus", "True", "False" };
+        yield return new object[] { "Glh", "Guided learning hours (GLH)", "100", "200" };
+        yield return new object[] { "MinimumGlh", "Minimum GLH", "90", "95" };
+        yield return new object[] { "Tqt", "Total qualification time (TQT)", "120", "240" };
+        yield return new object[] { "OperationalEndDate", "Operational end date", "12/31/26 14:30", "01/31/27 09:15" };
+        yield return new object[] { "LastUpdatedDate", "Last updated date", "01/01/26 10:00", "01/02/26 10:00" };
+        yield return new object[] { "Version", "Version", "1", "2" };
+        yield return new object[] { "OfferedInternationally", "Offered internationally", "False", "True" };
     }
 
     public static IEnumerable<object?[]> FundingEntryCases()
@@ -341,6 +341,7 @@ public class QualificationTimelineHistoryBuilderTests
             Tqt = tqt,
             OperationalEndDate = operationalEndDate,
             OfferedInternationally = offeredInternationally,
+            Name = qualificationName,
             Qual = new GetQualificationDetailsQueryResponse.Qualification
             {
                 Id = Guid.NewGuid(),

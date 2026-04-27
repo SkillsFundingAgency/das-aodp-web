@@ -97,14 +97,14 @@ namespace SFA.DAS.AODP.Application.Services
 
                     case "OfferedInEngland":
                         changes.Add(new FieldChange(
-                            "Offered in england",
+                            "Offered in England",
                             previousVersion.OfferedInEngland.ToString(),
                             latestVersion.OfferedInEngland.ToString()));
                         break;
 
                     case "IntentionToSeekFundingInEngland":
                         changes.Add(new FieldChange(
-                            "Intention to seek funding in england",
+                            "Intention to seek funding in England",
                             previousVersion.IntentionToSeekFundingInEngland?.ToString(),
                             latestVersion.IntentionToSeekFundingInEngland?.ToString()));
                         break;
