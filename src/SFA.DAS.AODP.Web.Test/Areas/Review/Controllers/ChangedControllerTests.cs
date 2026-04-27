@@ -57,7 +57,7 @@ public class ChangedControllerTests
 
     private ChangedController CreateController()
     {
-        var controller = new ChangedController(_logger.Object, _options, _mediator.Object, _userHelper.Object);
+        var controller = new ChangedController(_logger.Object, _mediator.Object, _userHelper.Object);
 
         var httpContext = new DefaultHttpContext();
         var claims = new[] { new Claim(ClaimTypes.Name, DefaultUserName) };
@@ -783,7 +783,6 @@ public class ChangedControllerTests
             Assert.Equal(SearchName, model.Filter.QualificationName);
             Assert.Equal(SearchOrganisation, model.Filter.Organisation);
             Assert.Equal(SearchQan, model.Filter.QAN);
-            Assert.Equal(DefaultFindQualificationUrl, model.FindRegulatedQualificationUrl);
         });
     }
 

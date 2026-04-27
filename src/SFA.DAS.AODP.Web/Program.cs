@@ -112,6 +112,8 @@ internal class Program
             app.UseHsts(); // Use the configured HSTS options
         }
 
+        app.UseGovUkFrontend();
+
         // Add security headers middleware
         app.Use(async (context, next) =>
         {

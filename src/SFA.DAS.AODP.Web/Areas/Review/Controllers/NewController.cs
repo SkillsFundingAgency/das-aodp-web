@@ -31,7 +31,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         private readonly ILogger<NewController> _logger;
         private readonly IMediator _mediator;
         private readonly IUserHelperService _userHelperService;
-        private readonly IOptions<AodpConfiguration> _aodpConfiguration;
         private List<string> ReviewerAllowedStatuses { get; set; } = new List<string>()
         {
             ProcessStatus.DecisionRequired,
@@ -39,12 +38,11 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         };
         public enum NewQualDataKeys { InvalidPageParams, CommentSaved}
 
-        public NewController(ILogger<NewController> logger, IOptions<AodpConfiguration> configuration, IMediator mediator, IUserHelperService userHelperService) : base(mediator, logger)
+        public NewController(ILogger<NewController> logger, IMediator mediator, IUserHelperService userHelperService) : base(mediator, logger)
         {
             _logger = logger;
             _mediator = mediator;
             _userHelperService = userHelperService;
-            _aodpConfiguration = configuration;
         }
 
         [Route("/Review/New/Index")]
@@ -434,8 +432,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             {
                 vm = new NewQualificationsViewModel();
             }
-
-            vm.FindRegulatedQualificationUrl = _aodpConfiguration.Value.FindRegulatedQualificationUrl;
 
             vm.Filter = qualificationQuery.ToQualificationFilterViewModel();
 

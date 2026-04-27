@@ -4,18 +4,23 @@ using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Models.BulkActions;
+using SFA.DAS.AODP.Web.Validators.Attributes;
+using SFA.DAS.AODP.Web.Validators.Patterns;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
 {
     public class ApplicationsReviewListViewModel :ApplicationsBulkActionPageViewModel
     {
         public List<Application> Applications { get; set; } = new();
-        public int? TotalItems { get; set; }
+        public int TotalItems { get; set; }
 
         public int PageNumber { get; set; } = 1;
         public int RecordsPerPage { get; set; } = 10;
 
+        [AllowedCharacters(TextCharacterProfile.Title)]
         public string? ApplicationSearch { get; set; }
+
+        [AllowedCharacters(TextCharacterProfile.Title)]
         public string? AwardingOrganisationSearch { get; set; }
         public string? ReviewerSelection { get; set; }
         public bool UnassignedOnly =>
@@ -30,6 +35,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
         public List<ApplicationStatus> Status { get; set; }
         public string UserType { get; set; }
         public string FindRegulatedQualificationUrl { get; set; } = string.Empty;
+
+        public string AvailableReviewersJson { get; set; } = string.Empty;
 
         public class Application
         {

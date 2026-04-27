@@ -68,7 +68,9 @@
                         {
 
                             <tr class="govuk-table__row">
-                                <td class="govuk-table__cell">@qualification.Qan</td>
+                                <td class="govuk-table__cell">
+                                    <ofqual-register qualification-reference="@qualification.Qan" />
+                                </td>
                                 <td class="govuk-table__cell">
                                     <a class="govuk-link" href="@Url.Action("QualificationDetails", "New", new { area = "Review", qualificationReference = qualification.Qan, returnTo = "QualificationSearch" })">
                                         @qualification.QualificationName
