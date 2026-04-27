@@ -41,42 +41,42 @@ namespace SFA.DAS.AODP.Application.Services
                 {
                     case "EligibleForFunding":
                         changes.Add(new FieldChange(
-                            "eligible for funding",
+                            "Eligible for funding",
                             previousVersion.EligibleForFunding?.ToString(),
                             latestVersion.EligibleForFunding?.ToString()));
                         break;
 
                     case "OrganisationName":
                         changes.Add(new FieldChange(
-                            "organisation name",
+                            "Organisation name",
                             previousVersion.Organisation?.NameOfqual,
                             latestVersion.Organisation?.NameOfqual));
                         break;
 
                     case "Title":
                         changes.Add(new FieldChange(
-                            "title",
-                            previousVersion.Qual?.QualificationName,
-                            latestVersion.Qual?.QualificationName));
+                            "Title",
+                            previousVersion.Name,
+                            latestVersion.Name));
                         break;
 
                     case "Level":
                         changes.Add(new FieldChange(
-                            "level",
+                            "Level",
                             previousVersion.Level?.ToString(),
                             latestVersion.Level?.ToString()));
                         break;
 
                     case "Type":
                         changes.Add(new FieldChange(
-                            "type",
+                            "Type",
                             previousVersion.Type,
                             latestVersion.Type));
                         break;
 
                     case "TotalCredits":
                         changes.Add(new FieldChange(
-                            "total credits",
+                            "Total credits",
                             previousVersion.TotalCredits?.ToString(),
                             latestVersion.TotalCredits?.ToString()));
                         break;
@@ -90,98 +90,98 @@ namespace SFA.DAS.AODP.Application.Services
 
                     case "GradingType":
                         changes.Add(new FieldChange(
-                            "grading type",
+                            "Grading type",
                             previousVersion.GradingType?.ToString(),
                             latestVersion.GradingType?.ToString()));
                         break;
 
                     case "OfferedInEngland":
                         changes.Add(new FieldChange(
-                            "offered in england",
+                            "Offered in england",
                             previousVersion.OfferedInEngland.ToString(),
                             latestVersion.OfferedInEngland.ToString()));
                         break;
 
                     case "IntentionToSeekFundingInEngland":
                         changes.Add(new FieldChange(
-                            "intention to seek funding in england",
+                            "Intention to seek funding in england",
                             previousVersion.IntentionToSeekFundingInEngland?.ToString(),
                             latestVersion.IntentionToSeekFundingInEngland?.ToString()));
                         break;
 
                     case "PreSixteen":
                         changes.Add(new FieldChange(
-                            "pre-sixteen",
+                            "Pre-sixteen",
                             previousVersion.PreSixteen?.ToString(),
                             latestVersion.PreSixteen?.ToString()));
                         break;
 
                     case "SixteenToEighteen":
                         changes.Add(new FieldChange(
-                            "sixteen to eighteen",
+                            "Sixteen to eighteen",
                             previousVersion.SixteenToEighteen?.ToString(),
                             latestVersion.SixteenToEighteen?.ToString()));
                         break;
 
                     case "EighteenPlus":
                         changes.Add(new FieldChange(
-                            "eighteen plus",
+                            "Eighteen plus",
                             previousVersion.EighteenPlus?.ToString(),
                             latestVersion.EighteenPlus?.ToString()));
                         break;
 
                     case "NineteenPlus":
                         changes.Add(new FieldChange(
-                            "nineteen plus",
+                            "Nineteen plus",
                             previousVersion.NineteenPlus?.ToString(),
                             latestVersion.NineteenPlus?.ToString()));
                         break;
 
                     case "Glh":
                         changes.Add(new FieldChange(
-                            "guided learning hours (GLH)",
+                            "Guided learning hours (GLH)",
                             previousVersion.Glh?.ToString(),
                             latestVersion.Glh?.ToString()));
                         break;
 
                     case "MinimumGlh":
                         changes.Add(new FieldChange(
-                            "minimum glh",
+                            "Minimum GLH",
                             previousVersion.MinimumGlh?.ToString(),
                             latestVersion.MinimumGlh?.ToString()));
                         break;
 
                     case "Tqt":
                         changes.Add(new FieldChange(
-                            "total qualification time (TQT)",
+                            "Total qualification time (TQT)",
                             previousVersion.Tqt?.ToString(),
                             latestVersion.Tqt?.ToString()));
                         break;
 
                     case "OperationalEndDate":
                         changes.Add(new FieldChange(
-                            "operational end date",
+                            "Operational end date",
                             previousVersion.OperationalEndDate?.ToString(DateTimeFormat),
                             latestVersion.OperationalEndDate?.ToString(DateTimeFormat)));
                         break;
 
                     case "LastUpdatedDate":
                         changes.Add(new FieldChange(
-                            "last updated date",
+                            "Last updated date",
                             previousVersion.LastUpdatedDate.ToString(DateTimeFormat),
                             latestVersion.LastUpdatedDate.ToString(DateTimeFormat)));
                         break;
 
                     case "Version":
                         changes.Add(new FieldChange(
-                            "version",
+                            "Version",
                             previousVersion.Version?.ToString(),
                             latestVersion.Version?.ToString()));
                         break;
 
                     case "OfferedInternationally":
                         changes.Add(new FieldChange(
-                            "offered internationally",
+                            "Offered internationally",
                             previousVersion.OfferedInternationally?.ToString(),
                             latestVersion.OfferedInternationally?.ToString()));
                         break;
