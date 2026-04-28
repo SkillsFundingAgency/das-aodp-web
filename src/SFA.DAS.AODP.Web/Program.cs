@@ -6,16 +6,14 @@ using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Extensions.Startup;
 using SFA.DAS.AODP.Web.Validators;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using FluentValidation.Validators;
 using FluentValidation;
 using Microsoft.FeatureManagement;
 using SFA.DAS.AODP.Web.Models.OutputFile;
 using FeatureManagementOptions = SFA.DAS.AODP.Web.FeatureManagement.FeatureManagementOptions;
 
 [ExcludeFromCodeCoverage]
-internal class Program
+public partial class Program
 {
     private static void Main(string[] args)
     {
@@ -111,34 +109,9 @@ internal class Program
             app.UseHsts(); // Use the configured HSTS options
         }
 
+        app.UseMiddleware<SecurityHeadersMiddleware>();
+
         app.UseGovUkFrontend();
-
-        // Add security headers middleware
-        app.Use(async (context, next) =>
-        {
-            // Prevent MIME type sniffing
-            context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
-
-            // Prevent the page from being embedded in an iframe except same-origin
-            context.Response.Headers.Append("X-Frame-Options", "SAMEORIGIN");
-
-            // Enable XSS protection
-            context.Response.Headers.Append("X-XSS-Protection", "1; mode=block");
-
-            // Define a strict Content Security Policy
-            context.Response.Headers.Append("Content-Security-Policy",
-                "default-src 'self'; " +
-                "script-src 'self' 'unsafe-inline' https://*.googletagmanager.com; " +
-                "style-src 'self' 'unsafe-inline'; " +
-                "connect-src 'self' http://localhost:* https://localhost:* ws://localhost:* wss://localhost:* https://*.google-analytics.com; " +
-                "font-src 'self' data:; " +
-                "img-src 'self';");
-
-            // Restrict browser features
-            context.Response.Headers.Append("Permissions-Policy", "geolocation=(), microphone=(), camera=()");
-
-            await next();
-        });
 
         app
             .UseHealthChecks("/ping")
@@ -190,4 +163,6 @@ internal class Program
 
         endpoints.MapDefaultControllerRoute();
     }
+
+    
 }
