@@ -566,7 +566,7 @@ public class RolloverControllerTests
 
         // assert redirect
         var redirect = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal(nameof(RolloverController.ImportCandidatesList), redirect.ActionName);
+        Assert.Equal(nameof(RolloverController.UploadQualificationCandidates), redirect.ActionName);
 
         // assert
         Assert.True(session.TryGetValue("RolloverSession", out var bytes));
@@ -605,20 +605,6 @@ public class RolloverControllerTests
         Assert.NotNull(saved.SelectCandidates);
         Assert.Equal(SelectCandidatesForRollover.GenerateAList, saved.SelectCandidates.SelectedOption);
         Assert.Equal("r2", saved.SelectCandidates.ReturnUrl);
-    }
-
-    [Fact]
-    public void ImportCandidatesList_Get_SetsTitle()
-    {
-        // arrange
-        var controller = CreateControllerWithSession(new TestSession());
-
-        // act
-        var result = controller.ImportCandidatesList();
-
-        // assert
-        var viewResult = Assert.IsType<ViewResult>(result);
-        Assert.Equal("Import Candidates List ", viewResult.ViewData["Title"]);
     }
 
     [Fact]

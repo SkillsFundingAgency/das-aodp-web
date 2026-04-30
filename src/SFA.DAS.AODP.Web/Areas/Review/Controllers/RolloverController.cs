@@ -292,18 +292,10 @@ public class RolloverController : ControllerBase
 
         return model.SelectedOption switch
         {
-            SelectCandidatesForRollover.ImportAList => RedirectToAction(nameof(ImportCandidatesList)),
+            SelectCandidatesForRollover.ImportAList => RedirectToAction(nameof(UploadQualificationCandidates)),
             SelectCandidatesForRollover.GenerateAList  => RedirectToAction(nameof(RolloverQueryBuilder)),
             _ => View()
         };
-    }
-
-    [HttpGet]
-    [Route("/Review/Rollover/ImportCandidatesList")]
-    public IActionResult ImportCandidatesList()
-    {
-        ViewData["Title"] = "Import Candidates List ";
-        return View();
     }
 
     [HttpGet]
