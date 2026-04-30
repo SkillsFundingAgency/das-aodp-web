@@ -135,12 +135,13 @@ public class FormsController : ControllerBase
     {
         try
         {
+            if (!ModelState.IsValid) return View(editFormVersionViewModel);
+
             if (editFormVersionViewModel.AdditionalFormActions.Publish != default)
             {
                 var command = new PublishFormVersionCommand(editFormVersionViewModel.Id);
                 await Send(command);
                 TempData[UpdateKeys.FormPublished.ToString()] = true;
-
             }
             else if (editFormVersionViewModel.AdditionalFormActions.UnPublish != default)
             {
@@ -158,7 +159,6 @@ public class FormsController : ControllerBase
 
                 TempData[UpdateTempDataKeys.FocusItemId.ToString()] = command.SectionId.ToString();
                 TempData[UpdateTempDataKeys.Directon.ToString()] = OrderDirection.Up.ToString();
-
             }
             else if (editFormVersionViewModel.AdditionalFormActions.MoveDown != default)
             {
@@ -185,8 +185,6 @@ public class FormsController : ControllerBase
                 viewModel.Description = editFormVersionViewModel.Description;
                 viewModel.DescriptionHTML = MarkdownHelper.ToGovUkHtml(viewModel.Description);
                 ViewBag.AutoFocusOnUpdateDescriptionButton = true;
-
-
 
                 return View(viewModel);
             }

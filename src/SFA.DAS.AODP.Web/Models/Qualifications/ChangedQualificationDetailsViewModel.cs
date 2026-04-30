@@ -85,7 +85,7 @@ public class ChangedQualificationDetailsViewModel
     public List<OfferFundingDetails> FundingDetails { get; set; } = new();
     public bool? FundingsOffersOutcomeStatus { get; set; }
     public List<ApplicationModel> Applications { get; set; } = new();
-    public bool IsApplicationCompleted => string.Equals(Stage?.Name, "Completed", System.StringComparison.OrdinalIgnoreCase);
+    public bool IsQualificationCompleted => string.Equals(Stage?.Name, "Completed", System.StringComparison.OrdinalIgnoreCase);
 
     public class OfferFundingDetails
     {

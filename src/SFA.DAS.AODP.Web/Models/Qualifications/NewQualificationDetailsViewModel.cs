@@ -74,7 +74,7 @@ public class NewQualificationDetailsViewModel
     public List<OfferFundingDetails> FundingDetails { get; set; } = new();
     public List<ApplicationModel> Applications { get; set; } = new();
     public bool? FundingsOffersOutcomeStatus { get; set; }
-    public bool IsApplicationCompleted => string.Equals(Stage?.Name, "Completed", System.StringComparison.OrdinalIgnoreCase);
+    public bool IsQualificationCompleted => string.Equals(Stage?.Name, "Completed", System.StringComparison.OrdinalIgnoreCase);
 
     public string BackArea { get; set; } = "Review";
     public string BackController { get; set; } = "New";

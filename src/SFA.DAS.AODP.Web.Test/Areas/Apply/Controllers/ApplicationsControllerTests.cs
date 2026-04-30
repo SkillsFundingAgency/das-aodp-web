@@ -1,6 +1,8 @@
 ﻿using AutoFixture;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -547,6 +549,77 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
             Assert.IsType<ApplicationFormPreviewViewModel>(view.Model);
         }
 
+        [Fact]
+        public async Task ViewApplication_SetsRelatedLinks()
+        {
+            // Arrange
+            var organisationId = Guid.NewGuid();
+            var applicationId = Guid.NewGuid();
+            var formVersionId = Guid.NewGuid();
 
+            // Make sure Url is available for RelatedLinksBuilder (uses RouteUrl)
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext()
+            };
+            var url = new Mock<IUrlHelper>();
+            url.Setup(u => u.RouteUrl(It.IsAny<UrlRouteContext>())).Returns("/fake-url");
+            _controller.Url = url.Object;
+
+            // User type used by SetLinks
+            _userHelperMock
+                .Setup(u => u.GetUserType())
+                .Returns(SFA.DAS.AODP.Models.Users.UserType.AwardingOrganisation);
+
+            // Build responses and force matching section IDs so Map(...) doesn't throw
+            var formsResponse = _fixture.Create<GetApplicationFormByIdQueryResponse>();
+            var statusResponse = _fixture.Create<GetApplicationFormStatusByApplicationIdQueryResponse>();
+
+            var sectionId = Guid.NewGuid();
+
+            formsResponse.Sections = new List<GetApplicationFormByIdQueryResponse.Section>
+            {
+                _fixture.Build<GetApplicationFormByIdQueryResponse.Section>()
+                    .With(s => s.Id, sectionId)
+                    .With(s => s.Order, 1)
+                    .Create()
+            };
+
+            statusResponse.Sections = new List<GetApplicationFormStatusByApplicationIdQueryResponse.Section>
+            {
+                _fixture.Build<GetApplicationFormStatusByApplicationIdQueryResponse.Section>()
+                    .With(s => s.SectionId, sectionId)
+                    .With(s => s.TotalPages, 1)
+                    .With(s => s.SkippedPages, 0) // must be != TotalPages so it isn't skipped
+                    .With(s => s.PagesRemaining, 1)
+                    .Create()
+            };
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationFormByIdQuery>(), default))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationFormByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = formsResponse
+                });
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationFormStatusByApplicationIdQuery>(), default))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationFormStatusByApplicationIdQueryResponse>
+                {
+                    Success = true,
+                    Value = statusResponse
+                });
+
+            // Act
+            var result = await _controller.ViewApplication(organisationId, applicationId, formVersionId);
+
+            // Assert
+            var view = Assert.IsType<ViewResult>(result);
+            var model = Assert.IsType<ApplicationFormViewModel>(view.Model);
+
+            Assert.NotNull(model.RelatedLinks);
+            Assert.NotEmpty(model.RelatedLinks);
+        }
     }
 }

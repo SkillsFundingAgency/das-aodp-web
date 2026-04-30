@@ -49,7 +49,7 @@
             </tr>
         </thead>
         <tbody class="govuk-table__body">
-            @if(Model.Pages.Count() >= 1)
+            @if (Model.Pages != null && Model.Pages.Any())
             {
                 @foreach (var (item, i) in Model.Pages.OrderBy(o => o.Order).Select((v, i) => (v, i)))
                 {

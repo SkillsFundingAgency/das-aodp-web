@@ -1,82 +1,67 @@
 ﻿@using SFA.DAS.AODP.Web.Models.Import
+@using SFA.DAS.AODP.Web.Views.Shared
 @model ImportRequestViewModel
-@inject IFeatureManager FeatureManager
-
-@using System.Security.Claims
-@using Microsoft.FeatureManagement
-@using SFA.DAS.AODP.Web.FeatureManagement
 @{
-	ViewData["Title"] = "Import Data";
+    ViewData["Title"] = "Import Data";
+
+    var backLinkModel = new BackLinkModel
+    {
+        Action = "Index",
+        Controller = "Home",
+        Area = "Review",
+        Text = "Back to qualifications"
+    };
 }
 
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
-<div class="govuk-width-container">
-	<main class="govuk-main-wrapper">
-		<div class="govuk-grid-row">
-			<div class="govuk-grid-column-two-thirds">
+@await Html.PartialAsync("_BackLinkPartial", backLinkModel)
 
-                <a class="govuk-back-link" asp-action="Index" asp-controller="Home" asp-area="Review">
-                    Back to qualifications
-                </a>
+<h1 class="govuk-heading-1">Qualifications you need to import</h1>
 
-                <h1 class="govuk-heading-1">Qualifications you need to import</h1>
+<form asp-controller="Import" asp-action="SelectImport" asp-area="Admin" method="post">
 
-                <form asp-controller="Import" asp-action="SelectImport" asp-area="Admin" method="post">
+    @Html.AntiForgeryToken()
 
-                     @Html.AntiForgeryToken()
+    <div class="govuk-form-group">
+        <govuk-radios asp-for="ImportType">
+            <govuk-radios-fieldset>
+                <govuk-radios-fieldset-legend is-page-heading="false" class="govuk-fieldset__legend--s">
+                    <div class="govuk-hint" id="ImportType-hint">
+                        Select one option
+                    </div>
+                </govuk-radios-fieldset-legend>
 
-                    <div class="govuk-form-group">
-                        <govuk-radios asp-for="ImportType">
-                            <govuk-radios-fieldset>
-                                <govuk-radios-fieldset-legend is-page-heading="false" class="govuk-fieldset__legend--s">
-                                    <div class="govuk-hint" id="ImportType-hint">
-                                        Select one option
-                                    </div>
-                                </govuk-radios-fieldset-legend>
+                @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.ImportType))
 
-                                @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.ImportType))
-
-                                <govuk-radios-item value="Regulated Qualifications">
-                                    Regulated Qualifications
-                                    <govuk-radios-hint class="govuk-hint govuk-radios__hint govuk-!-static-padding-0">
-                                        This includes qualifications with changes from Ofqual
-                                    </govuk-radios-hint>
-                                </govuk-radios-item>
-                                <govuk-radios-item value="Funded Qualifications">
-                                    Funded Qualifications
-                                    <govuk-radios-hint class="govuk-hint govuk-radios__hint govuk-!-static-padding-0">
-                                        This includes both currently approved and archived qualifications
-                                    </govuk-radios-hint>
-                                </govuk-radios-item>
-                                @if (await FeatureManager.IsEnabledAsync(nameof(Feature.DefundingListImport)))
-                                {
-                                    <govuk-radios-item value="Defunding list">
-                                        Defunding list
-                                    </govuk-radios-item>
-                                }
-                                @if (await FeatureManager.IsEnabledAsync(nameof(Feature.PldnsImport)))
-                                {
-                                    <govuk-radios-item value="Pldns">
-                                        Policy last date for new starters (PLDNS) list
-                                    </govuk-radios-item>
-                                }
+                <govuk-radios-item value="Regulated Qualifications">
+                    Regulated Qualifications
+                    <govuk-radios-hint class="govuk-hint govuk-radios__hint govuk-!-static-padding-0">
+                        This includes qualifications with changes from Ofqual
+                    </govuk-radios-hint>
+                </govuk-radios-item>
+                <govuk-radios-item value="Funded Qualifications">
+                    Funded Qualifications
+                    <govuk-radios-hint class="govuk-hint govuk-radios__hint govuk-!-static-padding-0">
+                        This includes both currently approved and archived qualifications
+                    </govuk-radios-hint>
+                </govuk-radios-item>
+                <govuk-radios-item value="Defunding list">
+                    Defunding list
+                </govuk-radios-item>
+                <govuk-radios-item value="Pldns">
+                    Policy last date for new starters (PLDNS) list
+                </govuk-radios-item>
+                                
                
-                            </govuk-radios-fieldset>
-                        </govuk-radios>
-                    </div>
+            </govuk-radios-fieldset>
+        </govuk-radios>
+    </div>
 
-                    <div class="govuk-grid-row">
-                        <div class="govuk-form-group">
-                            <govuk-button type="submit">Continue</govuk-button>
-                            <a class="govuk-button govuk-button--secondary" asp-action="Index" asp-controller="Home" asp-area="Review">
-                                Back to qualifications
-                            </a>
-                        </div>
-                    </div>
-                </form>
-
-			</div>
-		</div>
-	</main>
-</div>
+    <div class="govuk-form-group">
+        <govuk-button type="submit">Continue</govuk-button>
+        <a class="govuk-button govuk-button--secondary" asp-action="Index" asp-controller="Home" asp-area="Review">
+            Back to qualifications
+        </a>
+    </div>
+</form>
