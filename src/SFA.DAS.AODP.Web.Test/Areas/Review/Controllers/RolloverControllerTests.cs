@@ -596,7 +596,7 @@ public class RolloverControllerTests
 
         // assert
         var redirect = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal(nameof(RolloverController.RolloverQueryBuilder), redirect.ActionName);
+        Assert.Equal(nameof(RolloverController.SelectLevels), redirect.ActionName);
 
         Assert.True(session.TryGetValue("RolloverSession", out var bytes));
         var json = System.Text.Encoding.UTF8.GetString(bytes);
