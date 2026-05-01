@@ -16,7 +16,8 @@ public record SelectQualificationLevelsViewModel
     public List<CheckboxItem> Levels => QualificationLevel.All.Select(o => new CheckboxItem
     {
         LabelText = o.Name,
-        Value = o.Name
+        Value = o.Name,
+        IsChecked = SelectedLevels.Contains(o)
     }).ToList();
 }
 

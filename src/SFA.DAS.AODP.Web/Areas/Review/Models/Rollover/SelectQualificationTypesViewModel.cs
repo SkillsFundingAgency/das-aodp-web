@@ -14,6 +14,7 @@ public record SelectQualificationTypesViewModel
     public List<CheckboxItem> Types => QualificationType.All.Select(o => new CheckboxItem
     {
         LabelText = o.Name,
-        Value = o.Name
+        Value = o.Name,
+        IsChecked = SelectedTypes.Contains(o)
     }).ToList();
 }

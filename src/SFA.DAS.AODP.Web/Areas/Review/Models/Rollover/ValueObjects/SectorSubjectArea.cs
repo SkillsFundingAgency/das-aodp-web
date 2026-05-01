@@ -78,7 +78,7 @@ public record SectorSubjectArea
         Linguistics, TeachingAndLecturing, DirectLearningSupport, FoundationsLearningLife,
         PreparationForWork, AccountingAndFinance, Administration, BusinessManagement,
         MarketingAndSales, LawAndLegalServices
-    };
+    }.OrderBy(o => o.Name).ToList();
 
     private static readonly IReadOnlyDictionary<string, SectorSubjectArea> CodeLookup = All.ToDictionary(x => x.Code);
 

@@ -456,8 +456,7 @@ public class RolloverController : ControllerBase
         }
         catch (Exception ex)
         {
-            LogException(ex);
-            return new Rollover();
+            throw;
         }
     }
 
@@ -519,6 +518,12 @@ public class RolloverController : ControllerBase
     public IActionResult SelectTypes()
     {
         var model = new SelectQualificationTypesViewModel();
+        var session = GetSessionModel();
+        if (session.QueryBuilderFilters.Types.Count > 0)
+        {
+            model.SelectedTypes = session.QueryBuilderFilters.Types.ToList();
+        }
+
         return View(model);
     }
 
@@ -552,7 +557,13 @@ public class RolloverController : ControllerBase
     [Route("/Review/Rollover/SelectSectorSubjectArea")]
     public IActionResult SelectSectorSubjectArea()
     {
+        var session = GetSessionModel();
         var model = new SelectSectorSubjectAreasModel();
+
+        if (session.QueryBuilderFilters.SectorSubjectAreas.Count > 0)
+        {
+            model.SelectedSectorSubjectAreas = session.QueryBuilderFilters.SectorSubjectAreas.ToList();
+        }
         return View(model);
     }
 

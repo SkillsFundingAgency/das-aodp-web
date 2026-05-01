@@ -12,7 +12,8 @@ public record SelectSectorSubjectAreasModel
     public List<CheckboxItem> SectorSubjectAreas => SectorSubjectArea.All.Select(o => new CheckboxItem
     {
         LabelText = o.Name,
-        Value = o.Name
+        Value = o.Name,
+        IsChecked = SelectedSectorSubjectAreas.Contains(o)
     }).ToList();
 
     public SectorSubjectAreaSelectionType SelectionType { get; set; }

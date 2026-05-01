@@ -15,15 +15,12 @@ public record QualificationLevel
 
     public string Name { get; set; } = null!;
 
-    public QualificationLevel(string name)
-    {
-        Name = name;
-    }
+    public QualificationLevel(string name) => Name = name;
 
     public static readonly IReadOnlyCollection<QualificationLevel> All = new List<QualificationLevel>
     {
-        EntryLevel,Level1, Level1Or2, Level2, Level3, Level4, Level5, Level6, Level7
-    };
+        EntryLevel, Level1, Level1Or2, Level2, Level3, Level4, Level5, Level6, Level7
+    }.OrderBy(o => o.Name).ToList();
 
     public static bool TryParse(string? value, out QualificationLevel? result)
     {
