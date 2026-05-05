@@ -11,7 +11,6 @@ using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Exceptions;
 using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Areas.Apply.Models;
-using SFA.DAS.AODP.Web.Areas.Apply.Storage;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Enums;

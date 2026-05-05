@@ -1,6 +1,5 @@
 ﻿
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.Aodp.Domain.Files;
 using SFA.DAS.AODP.Application.Commands.Application.Application;
@@ -11,9 +10,7 @@ using SFA.DAS.AODP.Infrastructure.Common.IO;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Exceptions;
 using SFA.DAS.AODP.Models.Users;
-using SFA.DAS.AODP.Web.Areas.Apply.Storage;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationMessage;
-using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Extensions;

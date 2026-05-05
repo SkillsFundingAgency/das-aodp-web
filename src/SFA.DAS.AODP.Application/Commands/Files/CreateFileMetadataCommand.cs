@@ -1,7 +1,9 @@
 ﻿using MediatR;
 using SFA.DAS.Aodp.Domain.Files;
+using System.Diagnostics.CodeAnalysis;
 namespace SFA.DAS.AODP.Application.Commands.Files
 {
+    [ExcludeFromCodeCoverage]
     public class CreateFileMetadataCommand : IRequest<BaseMediatrResponse<EmptyResponse>>
     {
         public FileCategory FileCategory { get; init; }

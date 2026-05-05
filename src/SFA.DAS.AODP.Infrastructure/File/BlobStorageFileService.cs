@@ -25,7 +25,7 @@ namespace SFA.DAS.AODP.Infrastructure.File
             FileCategory category,
             FileContext? context,
             string fileName,
-            string contentType,
+            string? contentType,
             Stream stream)
         {
             var location = _fileStorageLocationPolicy.Resolve(category, context);
@@ -57,13 +57,11 @@ namespace SFA.DAS.AODP.Infrastructure.File
         }
 
 
-        public async Task<Stream> OpenReadStreamAsync(string containerName, string blobPath)
+        public async Task<Stream> OpenReadStreamAsync(string? containerName, string? blobPath)
         {
-            if (string.IsNullOrWhiteSpace(containerName))
-                throw new ArgumentException(nameof(containerName));
 
-            if (string.IsNullOrWhiteSpace(blobPath))
-                throw new ArgumentException(nameof(blobPath));
+            ArgumentException.ThrowIfNullOrWhiteSpace(containerName);
+            ArgumentException.ThrowIfNullOrWhiteSpace(blobPath);
 
             var containerClient =
                 _blobServiceClient.GetBlobContainerClient(containerName);

@@ -10,12 +10,10 @@ namespace SFA.DAS.AODP.Web.Validators
     public class FileValidator : IAnswerValidator
     {
         private readonly FormBuilderSettings _formBuilderSettings;
-        private readonly IFileService _fileService;
 
-        public FileValidator(IOptions<FormBuilderSettings> formBuilderSettings, IFileService fileService)
+        public FileValidator(IOptions<FormBuilderSettings> formBuilderSettings)
         {
             _formBuilderSettings = formBuilderSettings.Value;
-            _fileService = fileService;
         }
         public List<QuestionType> QuestionTypes => [QuestionType.File];
 
@@ -24,7 +22,7 @@ namespace SFA.DAS.AODP.Web.Validators
             var required = question.Required;
 
             var existingFilesCount = model.Questions
-                .First(question => question.Id == question.Id)
+                .First(q => q.Id == question.Id)
                 .UploadedFiles.Count;
 
             if (required && existingFilesCount == 0 && (answer == null || answer.FormFiles == null || answer.FormFiles.Count == 0))

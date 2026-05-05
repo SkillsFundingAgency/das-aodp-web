@@ -1,5 +1,8 @@
-﻿namespace SFA.DAS.AODP.Application.Queries.Files
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace SFA.DAS.AODP.Application.Queries.Files
 {
+    [ExcludeFromCodeCoverage]
     public class FileMetadataDto
     {
         public Guid FileId { get; init; }

@@ -12,7 +12,6 @@ using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Infrastructure.Common.IO;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Application;
-using SFA.DAS.AODP.Web.Areas.Apply.Storage;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Enums;
@@ -334,7 +333,7 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
 
                 var commandResponse = await Send(command);
 
-                await HandleFileUploads(model, cachedApplicationPage);
+                await HandleFileUploads(model);
 
                 bool endSection = command.Routing?.EndSection == true || cachedApplicationPage.TotalSectionPages == cachedApplicationPage.Order;
                 if (endSection) return RedirectToAction(nameof(ViewApplicationSection), new { organisationId = model.OrganisationId, applicationId = model.ApplicationId, sectionId = model.SectionId, formVersionId = model.FormVersionId });
@@ -515,8 +514,7 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
 
 
         private async Task HandleFileUploads(
-            ApplicationPageViewModel viewModel,
-            GetApplicationPageByIdQueryResponse response)
+            ApplicationPageViewModel viewModel)
         {
             foreach (var question in viewModel.Questions
                 .Where(q => q.Type == AODP.Models.Forms.QuestionType.File))

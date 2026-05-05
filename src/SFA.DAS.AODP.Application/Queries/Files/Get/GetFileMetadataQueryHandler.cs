@@ -13,12 +13,25 @@ namespace SFA.DAS.AODP.Application.Queries.Files.Get
             _apiClient = apiClient;
         }
 
-        public async Task<BaseMediatrResponse<GetFileMetadataQueryResponse>> Handle(GetFileMetadataQuery request, CancellationToken cancellationToken)
+        public async Task<BaseMediatrResponse<GetFileMetadataQueryResponse>> Handle(
+             GetFileMetadataQuery request,
+             CancellationToken cancellationToken)
         {
             var response = new BaseMediatrResponse<GetFileMetadataQueryResponse>();
+
             try
             {
-                var result = await _apiClient.PostWithResponseCode<GetFileMetadataQueryResponse>(new GetFileMetadataApiRequest { Data = request});
+                var result = await _apiClient
+                    .PostWithResponseCode<GetFileMetadataQueryResponse>(
+                        new GetFileMetadataApiRequest { Data = request });
+
+                if (result == null)
+                {
+                    response.Success = false;
+                    response.ErrorMessage = "File metadata service returned no data.";
+                    return response;
+                }
+
                 response.Value = result;
                 response.Success = true;
             }

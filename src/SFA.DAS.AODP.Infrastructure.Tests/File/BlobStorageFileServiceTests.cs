@@ -156,11 +156,13 @@ namespace SFA.DAS.AODP.Infrastructure.UnitTests.File
         [InlineData("container", null)]
         [InlineData("container", "")]
         public async Task OpenReadStreamAsync_Throws_For_Invalid_Arguments(
-            string container,
-            string path)
+            string? container,
+            string? path)
         {
-            await Assert.ThrowsAsync<ArgumentException>(() =>
-                _sut.OpenReadStreamAsync(container, path));
+
+            await Assert.ThrowsAnyAsync<ArgumentException>(() =>
+                    _sut.OpenReadStreamAsync(container!, path!));
+
         }
     }
 }

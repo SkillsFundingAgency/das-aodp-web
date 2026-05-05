@@ -2,9 +2,11 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SFA.DAS.AODP.Infrastructure.File;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SFA.DAS.AODP.Infrastructure.Extensions
 {
+    [ExcludeFromCodeCoverage]
     public static class AddFileServiceExtensions
     {
         public static IServiceCollection AddFileService(

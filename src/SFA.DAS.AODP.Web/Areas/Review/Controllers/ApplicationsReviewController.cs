@@ -11,7 +11,6 @@ using SFA.DAS.AODP.Application.Queries.Review;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Models.Users;
-using SFA.DAS.AODP.Web.Areas.Apply.Storage;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApproval;
 using SFA.DAS.AODP.Web.Authentication;
@@ -773,7 +772,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 ApplicationId = applicationId
             });
 
-            if (!fileMetadataResponse.Files.Any())
+            if (fileMetadataResponse.Files.Count() == 0)
             {
                 throw new InvalidOperationException(
                     $"No files found for applicationId {applicationId}");

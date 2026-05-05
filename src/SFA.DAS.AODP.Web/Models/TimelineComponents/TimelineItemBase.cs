@@ -1,5 +1,6 @@
 ﻿namespace SFA.DAS.AODP.Web.Models.TimelineComponents;
 
+[ExcludeFromCodeCoverage]
 public abstract class TimelineItemBase
 {
     public Guid Id { get; set; }

@@ -13,7 +13,6 @@ public class FileValidatorTests
 {
     private readonly FormBuilderSettings _formBuilderSettings;
     private readonly FileValidator _sut;
-    private readonly Mock<IFileService> _fileService = new();
 
     public FileValidatorTests()
     {
@@ -25,8 +24,7 @@ public class FileValidatorTests
         };
 
         _sut = new FileValidator(
-            Options.Create(_formBuilderSettings),
-            _fileService.Object);
+            Options.Create(_formBuilderSettings));
     }
 
     private static ApplicationPageViewModel BuildModel(Guid questionId, int uploadedCount)
