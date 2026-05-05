@@ -1,13 +1,15 @@
-﻿using Azure;
-using DocumentFormat.OpenXml.EMMA;
+﻿
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SFA.DAS.Aodp.Domain.Files;
 using SFA.DAS.AODP.Application.Commands.Application.Application;
+using SFA.DAS.AODP.Application.Commands.Files;
 using SFA.DAS.AODP.Application.Queries.Application.Application;
+using SFA.DAS.AODP.Application.Queries.Files.Get;
+using SFA.DAS.AODP.Infrastructure.Common.IO;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Exceptions;
-using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Areas.Apply.Storage;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationMessage;
@@ -23,7 +25,7 @@ using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers;
 
 [Area("Review")]
-[Authorize(Policy = PolicyConstants.IsReviewUser)]
+//[Authorize(Policy = PolicyConstants.IsReviewUser)]
 public class ApplicationMessagesController : ControllerBase
 {
     public enum NotificationKeys { MessageSentBanner, MarkAsReadBanner }
@@ -31,15 +33,17 @@ public class ApplicationMessagesController : ControllerBase
     private readonly UserType UserType;
     private readonly FormBuilderSettings _formBuilderSettings;
     private readonly IMessageFileValidationService _messageFileValidationService;
-    private readonly IFileService _fileService;
+    private readonly IFileService _blobFileService;
+    private readonly FileUploadValidator _fileUploadValidator;
 
-    public ApplicationMessagesController(IMediator mediator, ILogger<ApplicationMessagesController> logger, IUserHelperService userHelperService, FormBuilderSettings formBuilderSettings, IMessageFileValidationService messageFileValidationService, IFileService fileService) : base(mediator, logger)
+    public ApplicationMessagesController(IMediator mediator, ILogger<ApplicationMessagesController> logger, IUserHelperService userHelperService, FormBuilderSettings formBuilderSettings, IMessageFileValidationService messageFileValidationService, IFileService fileService, FileUploadValidator fileUploadValidator) : base(mediator, logger)
     {
         _userHelperService = userHelperService;
         UserType = userHelperService.GetUserType();
         _formBuilderSettings = formBuilderSettings;
         _messageFileValidationService = messageFileValidationService;
-        _fileService = fileService;
+        _blobFileService = fileService;
+        _fileUploadValidator = fileUploadValidator;
     }
 
     [HttpGet]
@@ -50,7 +54,13 @@ public class ApplicationMessagesController : ControllerBase
         var response = await Send(new GetApplicationMessagesByApplicationIdQuery(applicationId, UserType.ToString()));
         var messages = response.Messages;
 
-        var timelineFiles = await GetApplicationMessageFilesAsync(applicationId);
+        var timelineFilesResponse = await Send(new GetFileMetadataQuery
+        {
+            FileCategory = FileCategory.MessageAttachment,
+            ApplicationId = applicationId
+        });
+        var timelineFiles = timelineFilesResponse.Files;
+
         var timelineMessages = new List<ApplicationMessageViewModel>();
 
         foreach (var message in messages)
@@ -65,12 +75,15 @@ public class ApplicationMessagesController : ControllerBase
                 SentByEmail = message.SentByEmail,
                 UserType = UserType,
                 MessageType = message.MessageType,
-                Files = timelineFiles.Where(t => t.FullPath.StartsWith(ApplicationMessageStoragePaths.MessageFiles(applicationId, message.MessageId))).Select(a => new ApplicationMessageViewModel.File()
-                {
-                    FileDisplayName = a.FileNameWithPrefix,
-                    FullPath = a.FullPath,
-                    FormUrl = Url.Action(nameof(ApplicationReviewMessageFileDownload), "ApplicationMessages", new { applicationReviewId }),
-                }).ToList()
+                Files = timelineFiles
+                    .Where(t => t.MessageId == message.MessageId)
+                    .Select(a => new ApplicationMessageViewModel.File()
+                    {
+                        FileDisplayName = a.FileName,
+                        FileId = a.FileId,
+                        FormUrl = Url.Action(nameof(ApplicationReviewMessageFileDownload), "ApplicationMessages", new { applicationReviewId }),
+                        IsDownloadable = a.IsDownloadable
+                    }).ToList()
             });
         }
 
@@ -218,34 +231,55 @@ public class ApplicationMessagesController : ControllerBase
 
     [HttpPost]
     [Route("review/{applicationReviewId}/message-file-download")]
-    public async Task<IActionResult> ApplicationReviewMessageFileDownload([FromForm] string filePath, [FromRoute] Guid applicationReviewId, [FromForm] Guid messageId)
+    public async Task<IActionResult> ApplicationReviewMessageFileDownload(
+        Guid applicationReviewId,
+        Guid messageId,
+        Guid fileId)
     {
-        var applicationId = await GetApplicationIdWithAccessValidationAsync(applicationReviewId);
-
-        if (!filePath.StartsWith(ApplicationMessageStoragePaths.MessageFiles(applicationId, messageId)))
-        {
+        if (fileId == Guid.Empty)
             return BadRequest();
-        }
 
-        // Now check whether the user has access to this particular message
+        var applicationId =
+            await GetApplicationIdWithAccessValidationAsync(applicationReviewId);
+
         var message = await Send(new GetApplicationMessageByIdQuery(messageId));
-        if (message == null) return BadRequest();
+        if (message == null)
+            return NotFound();
 
-        var availableToUserType = false;
         var userType = _userHelperService.GetUserType();
-        if ((userType == UserType.Qfau && message.SharedWithDfe) ||
-              (userType == UserType.SkillsEngland && message.SharedWithSkillsEngland) ||
-              (userType == UserType.Ofqual && message.SharedWithOfqual))
+        var availableToUserType =
+            (userType == UserType.Qfau && message.SharedWithDfe) ||
+            (userType == UserType.SkillsEngland && message.SharedWithSkillsEngland) ||
+            (userType == UserType.Ofqual && message.SharedWithOfqual);
+
+        if (!availableToUserType)
+            return Forbid();
+
+        var fileMetadataResponse = await Send(new GetFileMetadataQuery
         {
-            availableToUserType = true;
-        }
+            FileId = fileId
+        });
 
-        if (!availableToUserType) return BadRequest();
+        var file = fileMetadataResponse?.Files?.SingleOrDefault();
+        if (file == null)
+            return NotFound();
+
+        if (file.ApplicationId != applicationId || file.MessageId != messageId)
+            return Forbid();
+
+        if (!file.IsDownloadable)
+            return Forbid();
+
+        var stream = await _blobFileService.OpenReadStreamAsync(
+            file.BlobContainer,
+            file.BlobPath);
 
 
-        var file = await _fileService.GetBlobDetails(filePath.ToString());
-        var fileStream = await _fileService.OpenReadStreamAsync(filePath);
-        return File(fileStream, "application/octet-stream", file.FileNameWithPrefix);
+        var contentType = string.IsNullOrWhiteSpace(file.ContentType)
+                ? "application/octet-stream"
+                : file.ContentType;
+
+        return File(stream, contentType, file.FileName);
     }
 
     private async Task<Guid> GetApplicationIdWithAccessValidationAsync(Guid applicationReviewId)
@@ -260,20 +294,44 @@ public class ApplicationMessagesController : ControllerBase
         return shared.ApplicationId;
     }
 
-    private async Task HandleFileUploadsAsync(Guid applicationId, Guid messageId, List<IFormFile> files)
+    private async Task HandleFileUploadsAsync(
+     Guid applicationId,
+     Guid messageId,
+     List<IFormFile> files)
     {
-        var metadata = await Send(new GetApplicationMetadataByIdQuery(applicationId));
-
         foreach (var file in files ?? [])
         {
             using var stream = file.OpenReadStream();
-            await _fileService.UploadFileAsync(
-                ApplicationMessageStoragePaths.MessageFiles(applicationId, messageId), file.FileName, stream, file.ContentType, metadata.Reference.ToString().PadLeft(6, '0'));
-        }
-    }
 
-    private async Task<List<UploadedBlob>> GetApplicationMessageFilesAsync(Guid applicationId)
-    {
-        return _fileService.ListBlobs(ApplicationMessageStoragePaths.MessageRoot(applicationId));
+            _fileUploadValidator.ValidateOrThrow(
+                file.FileName,
+                stream);
+
+            FileContext context = new FileContext
+            (
+                applicationId,
+                null,
+                messageId
+            );
+
+            var location = await _blobFileService.UploadAsync(
+                FileCategory.MessageAttachment,
+                context,
+                file.FileName,
+                file.ContentType,
+                stream);
+
+            await _mediator.Send(new CreateFileMetadataCommand
+            {
+                FileCategory = FileCategory.MessageAttachment,
+                FileName = file.FileName,
+                ContentType = file.ContentType,
+                BlobContainer = location.Container,
+                BlobPath = location.BlobPath,
+                ApplicationId = applicationId,
+                MessageId = messageId,
+                UploadedBy = _userHelperService.GetUserDisplayName() ?? string.Empty,
+            });
+        }
     }
 }

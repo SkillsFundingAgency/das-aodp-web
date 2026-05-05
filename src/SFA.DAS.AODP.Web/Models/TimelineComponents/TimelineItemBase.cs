@@ -16,7 +16,8 @@ public abstract class TimelineItemBase
     public class File
     {
         public required string FileDisplayName { get; init; }
-        public required string FullPath { get; init; }
+        public Guid FileId { get; init; }
         public required string FormUrl { get; init; }
+        public bool IsDownloadable { get; set; } = false;
     }
 }

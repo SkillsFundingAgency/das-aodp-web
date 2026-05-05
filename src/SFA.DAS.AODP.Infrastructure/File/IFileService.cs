@@ -1,16 +1,20 @@
 ﻿
 
 
+using SFA.DAS.Aodp.Domain.Files;
+
 namespace SFA.DAS.AODP.Infrastructure.File
 {
     public interface IFileService
     {
-        Task DeleteFileAsync(string filePath);
-        Task<UploadedBlob> GetBlobDetails(string fileName);
-        List<UploadedBlob> ListBlobs(string folderName);   
-        Task<Stream> OpenReadStreamAsync(string filePath);
-        Task UploadFileAsync(string folderName, string fileName, Stream stream, string? contentType, string fileNamePrefix);
-        Task UploadXlsxFileAsync(string folderName, string fileName, Stream stream, string? contentType, string fileNamePrefix);
 
+        public Task<Stream> OpenReadStreamAsync(string containerName, string blobPath);
+
+        public Task<FileStorageLocation> UploadAsync(
+            FileCategory category,
+            FileContext? context,
+            string fileName,
+            string? contentType,
+            Stream stream);
     }
 }

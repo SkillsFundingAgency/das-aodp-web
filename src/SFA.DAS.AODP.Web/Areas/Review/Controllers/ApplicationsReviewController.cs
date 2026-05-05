@@ -1,15 +1,15 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using SFA.DAS.Aodp.Domain.Files;
 using SFA.DAS.AODP.Application.Commands.Application.Review;
 using SFA.DAS.AODP.Application.Commands.Review;
 using SFA.DAS.AODP.Application.Queries.Application.Form;
+using SFA.DAS.AODP.Application.Queries.Files.Get;
 using SFA.DAS.AODP.Application.Queries.Review;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Application;
-using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Areas.Apply.Storage;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview;
@@ -40,7 +40,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         }
         private readonly IUserHelperService _userHelperService;
         private readonly UserType UserType;
-        private readonly IFileService _fileService;
+        private readonly IFileService _blobService;
         private readonly IOptions<AodpConfiguration> _aodpConfiguration;
         private const string DefaultQANValidationMessage = "Invalid Qualification Number.";
 
@@ -48,7 +48,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         {
             _userHelperService = userHelperService;
             UserType = userHelperService.GetUserType();
-            _fileService = fileService;
+            _blobService = fileService;
             _aodpConfiguration = aodpConfiguration;
         }
 
@@ -710,7 +710,14 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             var applicationId = await GetApplicationIdWithAccessValidation(applicationReviewId);
             var form = await Send(new GetFormPreviewByIdQuery(applicationId));
             var applicationDetails = await Send(new GetApplicationFormByReviewIdQuery(applicationReviewId));
-            var files = _fileService.ListBlobs(ApplicationStoragePaths.ApplicationRoot(applicationId));
+            
+            var filesResponse = await Send(new GetFileMetadataQuery
+            {
+                FileCategory = FileCategory.QuestionUpload,
+                ApplicationId = applicationId
+            });
+
+            var files = filesResponse.Files;
 
             var vm = ApplicationReadOnlyDetailsViewModel.Map(form, applicationDetails, files);
             vm.ApplicationReviewId = applicationReviewId;
@@ -718,34 +725,60 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             return View(vm);
         }
 
-        [Authorize(Policy = PolicyConstants.IsReviewUser)]
+        //[Authorize(Policy = PolicyConstants.IsReviewUser)]
         [HttpPost]
         [Route("review/application-reviews/{applicationReviewId}/details")]
-        public async Task<IActionResult> ApplicationFileDownload(ApplicationFileDownloadViewModel model)
+        public async Task<IActionResult> ApplicationFileDownload( ApplicationFileDownloadViewModel model)
         {
-            var applicationId = await GetApplicationIdWithAccessValidation(model.ApplicationReviewId);
-            if (!model.FilePath.StartsWith(ApplicationStoragePaths.ApplicationRoot(applicationId)))
-            {
-                return BadRequest();
-            }
+            var applicationId =
+                await GetApplicationIdWithAccessValidation(model.ApplicationReviewId);
 
-            var file = await _fileService.GetBlobDetails(model.FilePath.ToString());
-            var fileStream = await _fileService.OpenReadStreamAsync(model.FilePath);
-            return File(fileStream, "application/octet-stream", file.FileNameWithPrefix);
+            var fileResponse = await Send(new GetFileMetadataQuery
+            {
+                FileId = model.FileId
+            });
+
+            var file = fileResponse?.Files?.SingleOrDefault();
+
+            if (file == null)
+                return NotFound();
+
+            if (file.ApplicationId != applicationId)
+                return Forbid();
+
+            if (!file.IsDownloadable)
+                return Forbid();
+
+            var stream = await _blobService.OpenReadStreamAsync(
+                file.BlobContainer,
+                file.BlobPath);
+
+            var contentType = string.IsNullOrWhiteSpace(file.ContentType)
+                ? "application/octet-stream"
+                : file.ContentType;
+
+            return File(stream, contentType, file.FileName);
         }
 
-        [Authorize(Policy = PolicyConstants.IsReviewUser)]
+        //[Authorize(Policy = PolicyConstants.IsReviewUser)]
         [HttpPost]
         [Route("review/application-reviews/{applicationReviewId}/files")]
         public async Task<IActionResult> DownloadAllApplicationFiles(Guid applicationReviewId)
         {
             var applicationId = await GetApplicationIdWithAccessValidation(applicationReviewId);
-            var files = _fileService.ListBlobs(ApplicationStoragePaths.ApplicationRoot(applicationId));
 
-            if (files == null || !files.Any())
+            var fileMetadataResponse = await Send(new GetFileMetadataQuery
             {
-                throw new InvalidOperationException($"No files found for applicationId {applicationId}");
+                FileCategory = FileCategory.QuestionUpload,
+                ApplicationId = applicationId
+            });
+
+            if (!fileMetadataResponse.Files.Any())
+            {
+                throw new InvalidOperationException(
+                    $"No files found for applicationId {applicationId}");
             }
+            var files = fileMetadataResponse.Files;
 
             using (var memoryStream = new MemoryStream())
             {
@@ -753,30 +786,38 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 {
                     foreach (var file in files)
                     {
-                        var fileStream = await _fileService.OpenReadStreamAsync(file.FullPath);
-
-                        if (fileStream != null)
+                        if (!file.IsDownloadable)
                         {
-                            var entry = archive.CreateEntry(file.FileNameWithPrefix);
-
-                            using (var entryStream = entry.Open())
-                            {
-                                await fileStream.CopyToAsync(entryStream);
-                            }
+                            continue;
                         }
-                        else
+
+                        var fileStream = await _blobService.OpenReadStreamAsync(
+                                file.BlobContainer,
+                                file.BlobPath);
+
+
+                        if (fileStream == null)
                         {
-                            throw new IOException($"Could not open stream for {file.FullPath}");
+                            throw new IOException(
+                                $"Could not open stream for fileId {file.FileId}");
+                        }
+
+                        var entry = archive.CreateEntry(file.FileName);
+
+                        using (var entryStream = entry.Open())
+                        {
+                            await fileStream.CopyToAsync(entryStream);
                         }
                     }
                 }
 
                 memoryStream.Seek(0, SeekOrigin.Begin);
 
-                var applicationMetadata = await Send(new GetApplicationMetadataByIdQuery(applicationId));
+                var applicationMetadata =
+                    await Send(new GetApplicationMetadataByIdQuery(applicationId));
 
-                string formattedDateTime = DateTime.Now.ToString("ddMMyyyy-HHmmss");
-                string zipFileName = $"{applicationMetadata.Reference}-{formattedDateTime}-allfiles.zip";
+                string zipFileName =
+                    $"{applicationMetadata.Reference}-{DateTime.Now:ddMMyyyy-HHmmss}-allfiles.zip";
 
                 return File(memoryStream.ToArray(), "application/zip", zipFileName);
             }
@@ -901,5 +942,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
             return viewModel;
         }
+
+       
     }
 }

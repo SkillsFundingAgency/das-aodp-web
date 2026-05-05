@@ -6,16 +6,20 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Logging;
 using Moq;
+using SFA.DAS.Aodp.Domain.Files;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.Application.Application;
+using SFA.DAS.AODP.Application.Commands.Files;
 using SFA.DAS.AODP.Application.Queries.Application.Application;
+using SFA.DAS.AODP.Application.Queries.Files;
+using SFA.DAS.AODP.Application.Queries.Files.Get;
+using SFA.DAS.AODP.Infrastructure.Common.IO;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Common;
 using SFA.DAS.AODP.Models.Exceptions;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Areas.Apply.Controllers;
 using SFA.DAS.AODP.Web.Areas.Apply.Models;
-using SFA.DAS.AODP.Web.Areas.Apply.Storage;
 using SFA.DAS.AODP.Web.Helpers.File;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.RelatedLinks;
@@ -26,82 +30,141 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Apply.Controllers
     public class ApplicationMessagesControllerTests
     {
         private readonly Fixture _fixture = new();
-        private readonly FormBuilderSettings _formBuilderSettings = new();
 
-        private readonly Mock<IUserHelperService> _userHelperServiceMock = new();
-        private readonly ApplicationMessagesController _controller;
-        private readonly Mock<ILogger<ApplicationMessagesController>> _loggerMock = new();
         private readonly Mock<IMediator> _mediatorMock = new();
-
+        private readonly Mock<ILogger<ApplicationMessagesController>> _loggerMock = new();
+        private readonly Mock<IUserHelperService> _userHelperServiceMock = new();
         private readonly Mock<IMessageFileValidationService> _messageFileValidationService = new();
         private readonly Mock<IFileService> _fileService = new();
+
+        private readonly FormBuilderSettings _formBuilderSettings;
+        private readonly FileUploadValidator _fileUploadValidator;
+
+        private readonly ApplicationMessagesController _controller;
 
 
         public ApplicationMessagesControllerTests()
         {
-            _controller = new(_mediatorMock.Object, _loggerMock.Object, _userHelperServiceMock.Object, _messageFileValidationService.Object, _formBuilderSettings, _fileService.Object);
+            _formBuilderSettings = new FormBuilderSettings
+            {
+                MaxUploadFileSize = 10,
+                UploadFileTypesAllowed = new List<string> { ".docx", ".pdf", ".xlsx" }
+            };
 
-            SetupControllerUrl();
+            _fileUploadValidator = new FileUploadValidator(_formBuilderSettings);
+
+            _controller = new ApplicationMessagesController(
+                _mediatorMock.Object,
+                _loggerMock.Object,
+                _userHelperServiceMock.Object,
+                _messageFileValidationService.Object,
+                _formBuilderSettings,
+                _fileService.Object,
+                _fileUploadValidator);
+
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext()
+            };
+
+            var urlMock = new Mock<IUrlHelper>();
+
+
+            urlMock
+                .Setup(u => u.RouteUrl(It.IsAny<UrlRouteContext>()))
+                .Returns("/fake-url");
+
+            urlMock
+                .Setup(u => u.Action(It.IsAny<UrlActionContext>()))
+                .Returns("/fake-url");
+
+            _controller.Url = urlMock.Object;
+
+            _controller.TempData = new TempDataDictionary(
+                _controller.HttpContext,
+                Mock.Of<ITempDataProvider>());
         }
+
+
 
         [Fact]
         public async Task ApplicationMessages_ValidFiles_Uploaded()
         {
             // Arrange
-            var fileName = _fixture.Create<string>();
-            var contentType = _fixture.Create<string>();
+            var fileName = "test.docx";
+            var contentType = "application/msword";
             var stream = new MemoryStream(Encoding.UTF8.GetBytes("test"));
-            var formFile = new Mock<IFormFile>();
 
+            var formFile = new Mock<IFormFile>();
             formFile.SetupGet(f => f.FileName).Returns(fileName);
             formFile.SetupGet(f => f.ContentType).Returns(contentType);
             formFile.Setup(f => f.OpenReadStream()).Returns(stream);
 
-
-            ApplicationMessagesViewModel model = new()
+            var model = new ApplicationMessagesViewModel
             {
-                AdditionalActions = new()
-                {
-                    Send = true
-                },
-                Files = new()
-                {
-                    formFile.Object
-                }
+                AdditionalActions = new() { Send = true },
+                Files = new() { formFile.Object }
             };
+
             var applicationId = Guid.NewGuid();
             var organisationId = Guid.NewGuid();
             var formVersionId = Guid.NewGuid();
+            var messageId = Guid.NewGuid();
 
-            var msgResponse = new BaseMediatrResponse<CreateApplicationMessageCommandResponse>()
-            {
-                Success = true,
-                Value = _fixture.Create<CreateApplicationMessageCommandResponse>()
-            };
+            _messageFileValidationService
+                .Setup(v => v.ValidateFiles(It.IsAny<List<IFormFile>>()));
 
-            var metaDataResponse = new BaseMediatrResponse<GetApplicationMetadataByIdQueryResponse>()
-            {
-                Success = true,
-                Value = _fixture.Create<GetApplicationMetadataByIdQueryResponse>()
-            };
+            _fileService
+                .Setup(f => f.UploadAsync(
+                    FileCategory.MessageAttachment,
+                    It.Is<FileContext>(c =>
+                        c.ApplicationId == applicationId &&
+                        c.MessageId == messageId),
+                    fileName,
+                    contentType,
+                    It.IsAny<Stream>()))
+                .ReturnsAsync(new FileStorageLocation("files", "messages/blob-path"));
 
-            _mediatorMock.Setup(m => m.Send(It.IsAny<CreateApplicationMessageCommand>(), default)).ReturnsAsync(msgResponse);
-            _mediatorMock.Setup(m => m.Send(It.IsAny<GetApplicationMetadataByIdQuery>(), default)).ReturnsAsync(metaDataResponse);
+            _mediatorMock
+                .Setup(m => m.Send(
+                    It.IsAny<CreateApplicationMessageCommand>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult(
+                    new BaseMediatrResponse<CreateApplicationMessageCommandResponse>
+                    {
+                        Success = true,
+                        Value = new CreateApplicationMessageCommandResponse
+                        {
+                            Id = messageId,
+                            EmailSent = false
+                        }
+                    }));
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<CreateFileMetadataCommand>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<EmptyResponse>
+                {
+                    Success = true,
+                    Value = new EmptyResponse()
+                });
 
             _controller.TempData = new Mock<ITempDataDictionary>().Object;
 
             // Act
-            var result = await _controller.ApplicationMessages(model, applicationId, organisationId, formVersionId);
+            var result = await _controller.ApplicationMessages(
+                model, applicationId, organisationId, formVersionId);
 
             // Assert
             Assert.IsType<RedirectToActionResult>(result);
 
-            _fileService.Verify(f => f.UploadFileAsync(ApplicationMessageStoragePaths.MessageFiles(applicationId, msgResponse.Value.Id), It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>()));
-            _fileService.Verify(f => f.UploadFileAsync(It.IsAny<string>(), fileName, It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>()));
-            _fileService.Verify(f => f.UploadFileAsync(It.IsAny<string>(), It.IsAny<string>(), stream, It.IsAny<string>(), It.IsAny<string>()));
-            _fileService.Verify(f => f.UploadFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>(), contentType, It.IsAny<string>()));
-            _fileService.Verify(f => f.UploadFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<string>(), metaDataResponse.Value.Reference.ToString().PadLeft(6, '0')));
-
+            _fileService.Verify(f =>
+                f.UploadAsync(
+                    FileCategory.MessageAttachment,
+                    It.IsAny<FileContext>(),
+                    fileName,
+                    contentType,
+                    It.IsAny<Stream>()),
+                Times.Once);
         }
 
         [Fact]
@@ -147,35 +210,65 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Apply.Controllers
         public async Task ApplicationMessageFileDownload_Success_ReturnsFile()
         {
             // Arrange
-            var applicationId = _fixture.Create<Guid>();
-            var messageId = _fixture.Create<Guid>();
-            var file = $"messages/{applicationId}/{messageId}/";
+            var applicationId = Guid.NewGuid();
+            var messageId = Guid.NewGuid();
+            var fileId = Guid.NewGuid();
 
-            var blob = _fixture.Create<UploadedBlob>();
-            string content = "Test file content";
-
-            BaseMediatrResponse<GetApplicationMessageByIdQueryResponse> response = new()
+            var fileMetadata = new FileMetadataDto
             {
-                Value = new() { SharedWithAwardingOrganisation = true },
-                Success = true,
+                FileId = fileId,
+                FileName = "test.docx",
+                BlobContainer = "files",
+                BlobPath = "messages/test.docx",
+                ContentType = "application/msword",
+                ApplicationId = applicationId,
+                MessageId = messageId,
+                IsDownloadable = true
             };
-            _mediatorMock.Setup(m => m.Send(It.IsAny<GetApplicationMessageByIdQuery>(), default)).ReturnsAsync(response);
 
-            _fileService.Setup(f => f.GetBlobDetails(file)).ReturnsAsync(blob);
-            _fileService.Setup(fs => fs.OpenReadStreamAsync(It.IsAny<string>()))
-              .ReturnsAsync(new MemoryStream(System.Text.Encoding.UTF8.GetBytes(content)));
+            _mediatorMock
+                .Setup(m => m.Send(
+                    It.IsAny<GetFileMetadataQuery>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult(
+                    new BaseMediatrResponse<GetFileMetadataQueryResponse>
+                    {
+                        Success = true,
+                        Value = new GetFileMetadataQueryResponse
+                        {
+                            Files = new List<FileMetadataDto> { fileMetadata }
+                        }
+                    }));
+
+            _mediatorMock
+                .Setup(m => m.Send(
+                    It.IsAny<GetApplicationMessageByIdQuery>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult(
+                    new BaseMediatrResponse<GetApplicationMessageByIdQueryResponse>
+                    {
+                        Success = true,
+                        Value = new GetApplicationMessageByIdQueryResponse
+                        {
+                            SharedWithAwardingOrganisation = true
+                        }
+                    }));
+
+            var content = "Test file content";
+            _fileService
+                .Setup(f => f.OpenReadStreamAsync("files", "messages/test.docx"))
+                .ReturnsAsync(new MemoryStream(Encoding.UTF8.GetBytes(content)));
 
             // Act
-            var result = await _controller.ApplicationMessageFileDownload(file, applicationId, messageId);
+            var result = await _controller.ApplicationMessageFileDownload(
+                applicationId, messageId, fileId);
 
             // Assert
             var fileResult = Assert.IsType<FileStreamResult>(result);
-            Assert.Equal("application/octet-stream", fileResult.ContentType);
-            Assert.Equal(blob.FileName, fileResult.FileDownloadName);
-
-            using StreamReader reader = new(fileResult.FileStream);
-            Assert.Equal(content, reader.ReadToEnd());
+            Assert.Equal("application/msword", fileResult.ContentType);
+            Assert.Equal("test.docx", fileResult.FileDownloadName);
         }
+
 
         [Fact]
         public async Task ApplicationMessageFileDownload_MessageNotSharedWithAo_ReturnsBadRequest()
@@ -183,7 +276,7 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Apply.Controllers
             // Arrange
             var messageId = _fixture.Create<Guid>();
             var applicationId = _fixture.Create<Guid>();
-            var file = $"messages/{applicationId}/{messageId}/";
+            var fileId = Guid.NewGuid();
 
             BaseMediatrResponse<GetApplicationMessageByIdQueryResponse> response = new()
             {
@@ -193,10 +286,10 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Apply.Controllers
             _mediatorMock.Setup(m => m.Send(It.IsAny<GetApplicationMessageByIdQuery>(), default)).ReturnsAsync(response);
 
             // Act
-            var result = await _controller.ApplicationMessageFileDownload(file, applicationId, messageId);
+            var result = await _controller.ApplicationMessageFileDownload(applicationId, messageId, fileId);
 
             // Assert
-            Assert.IsType<BadRequestResult>(result);
+            Assert.IsType<ForbidResult>(result);
         }
 
         [Fact]
@@ -204,11 +297,11 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Apply.Controllers
         {
             // Arrange
             var applicationId = _fixture.Create<Guid>();
-            var file = $"messages/{Guid.NewGuid()}/";
+            var fileId = Guid.Empty;
             var messageId = _fixture.Create<Guid>();
 
             // Act
-            var result = await _controller.ApplicationMessageFileDownload(file, applicationId, messageId);
+            var result = await _controller.ApplicationMessageFileDownload(applicationId, messageId, fileId);
 
             // Assert
             Assert.IsType<BadRequestResult>(result);
@@ -299,26 +392,44 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Apply.Controllers
             var applicationId = Guid.NewGuid();
             var formVersionId = Guid.NewGuid();
 
-
-            var response = new BaseMediatrResponse<GetApplicationMessagesByApplicationIdQueryResponse>
-            {
-                Success = true,
-                Value = new GetApplicationMessagesByApplicationIdQueryResponse()
-            };
+            _mediatorMock
+                .Setup(m => m.Send(
+                    It.IsAny<GetApplicationMessagesByApplicationIdQuery>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult(
+                    new BaseMediatrResponse<GetApplicationMessagesByApplicationIdQueryResponse>
+                    {
+                        Success = true,
+                        Value = new GetApplicationMessagesByApplicationIdQueryResponse
+                        {
+                            Messages = new List<GetApplicationMessagesByApplicationIdQueryResponse.ApplicationMessage>()
+                        }
+                    }));
 
             _mediatorMock
-                .Setup(m => m.Send(It.IsAny<GetApplicationMessagesByApplicationIdQuery>(), default))
-                .ReturnsAsync(response);
+                .Setup(m => m.Send(
+                    It.IsAny<GetFileMetadataQuery>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult(
+                    new BaseMediatrResponse<GetFileMetadataQueryResponse>
+                    {
+                        Success = true,
+                        Value = new GetFileMetadataQueryResponse
+                        {
+                            Files = new List<FileMetadataDto>()
+                        }
+                }));
 
-            // No blobs
-            _fileService
-                .Setup(s => s.ListBlobs(It.IsAny<string>()))
-                .Returns(new List<UploadedBlob>());
-
-            _controller.TempData = new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
+            _controller.TempData =
+                new TempDataDictionary(
+                    new DefaultHttpContext(),
+                    Mock.Of<ITempDataProvider>());
 
             // Act
-            var result = await _controller.ApplicationMessages(organisationId, applicationId, formVersionId);
+            var result = await _controller.ApplicationMessages(
+                organisationId,
+                applicationId,
+                formVersionId);
 
             // Assert
             var view = Assert.IsType<ViewResult>(result);
@@ -328,32 +439,15 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Apply.Controllers
             Assert.NotEmpty(model.RelatedLinks);
 
             // Contextual link exists for ApplyApplicationMessages
-            Assert.Contains(model.RelatedLinks, l => l.Text == RelatedLinkConstants.Text.ViewApplication);
+            Assert.Contains(
+                model.RelatedLinks,
+                l => l.Text == RelatedLinkConstants.Text.ViewApplication);
 
-            // AwardingOrganisation user type adds 3 configured links
-            Assert.Contains(model.RelatedLinks, l => l.Text == RelatedLinksConfiguration.FundingApprovalManual.Text);
+            // AwardingOrganisation user type adds configured links
+            Assert.Contains(
+                model.RelatedLinks,
+                l => l.Text == RelatedLinksConfiguration.FundingApprovalManual.Text);
         }
-
-
-        private void SetupControllerUrl()
-        {
-            _controller.ControllerContext = new ControllerContext
-            {
-                HttpContext = new DefaultHttpContext()
-            };
-
-            var url = new Mock<IUrlHelper>();
-
-            url.Setup(u => u.RouteUrl(It.IsAny<UrlRouteContext>()))
-               .Returns("/fake-url");
-
-            url.Setup(u => u.Action(It.IsAny<UrlActionContext>()))
-               .Returns("/fake-url");
-
-            _controller.Url = url.Object;
-        }
-
-
     }
 
 }

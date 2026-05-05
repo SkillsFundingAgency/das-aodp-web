@@ -1,4 +1,5 @@
-﻿using SFA.DAS.AODP.Models.Forms;
+﻿using SFA.DAS.AODP.Application.Queries.Files;
+using SFA.DAS.AODP.Models.Forms;
 using System;
 using System.ComponentModel;
 
@@ -91,7 +92,7 @@ namespace SFA.DAS.AODP.Web.Models.Application
 
         public class UploadedFile
         {
-            public string FullPath { get; set; }
+            public Guid FileId { get; set; }
             public string DisplayName { get; set; }
         }
 
@@ -103,7 +104,7 @@ namespace SFA.DAS.AODP.Web.Models.Application
             Guid sectionId,
             Guid organisationId,
             GetApplicationPageAnswersByPageIdQueryResponse answers,
-            Func<string, List<Infrastructure.File.UploadedBlob>> fetchBlobFunc)
+            IReadOnlyDictionary<Guid, List<FileMetadataDto>> filesByQuestionId)
         {
             ApplicationPageViewModel model = new ApplicationPageViewModel()
             {
@@ -114,17 +115,17 @@ namespace SFA.DAS.AODP.Web.Models.Application
                 OrganisationId = organisationId,
             };
 
-            return PopulateViewModel(model, value, fetchBlobFunc, answers);
+            return PopulateViewModel(model, value, filesByQuestionId, answers);
         }
 
         public static ApplicationPageViewModel RepopulatePageDataOnViewModel
         (
             GetApplicationPageByIdQueryResponse value,
             ApplicationPageViewModel viewModel,
-            Func<string, List<Infrastructure.File.UploadedBlob>> fetchBlobFunc
+            IReadOnlyDictionary<Guid, List<FileMetadataDto>> filesByQuestionId
         )
         {
-            return PopulateViewModel(viewModel, value, fetchBlobFunc);
+            return PopulateViewModel(viewModel, value, filesByQuestionId);
 
         }
 
@@ -132,7 +133,7 @@ namespace SFA.DAS.AODP.Web.Models.Application
         (
             ApplicationPageViewModel model,
             GetApplicationPageByIdQueryResponse value,
-            Func<string, List<Infrastructure.File.UploadedBlob>> fetchBlobFunc,
+            IReadOnlyDictionary<Guid, List<FileMetadataDto>> filesByQuestionId,
             GetApplicationPageAnswersByPageIdQueryResponse? answers = null
         )
         {
@@ -180,15 +181,18 @@ namespace SFA.DAS.AODP.Web.Models.Application
                 }
                 else if (questionModel.Type == QuestionType.File)
                 {
-                    var blobs = fetchBlobFunc($"{model.ApplicationId}/{questionModel.Id}");
-                    foreach (var blob in blobs)
+                    if (filesByQuestionId.TryGetValue(questionModel.Id, out var files))
                     {
-                        questionModel.UploadedFiles.Add(new()
+                        foreach (var file in files)
                         {
-                            FullPath = blob.FullPath,
-                            DisplayName = blob.FileName
-                        });
+                            questionModel.UploadedFiles.Add(new()
+                            {
+                                FileId = file.FileId,
+                                DisplayName = file.FileName,
+                            });
+                        }
                     }
+
                     continue;
                 }
 

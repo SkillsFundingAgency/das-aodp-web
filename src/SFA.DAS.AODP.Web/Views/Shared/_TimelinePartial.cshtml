@@ -34,15 +34,24 @@
                                 <li>
                                     <span class="govuk-file-name">@file.FileDisplayName</span>
 
-                                    <form method="post" action="@file.FormUrl">
-                                        <input type="hidden" name="FilePath" value="@file.FullPath" />
-                                        <input type="hidden" name="MessageId" value="@item.Id" />
-                                        <button type="submit" class="govuk-button govuk-button--secondary">
-                                            Download <span class="govuk-visually-hidden">@file.FileDisplayName</span>
-                                        </button>
-                                        @Html.AntiForgeryToken()
-                                    </form>
-
+                                    @if (file.IsDownloadable)
+                                    {
+                                        <form method="post" action="@file.FormUrl">
+                                            <input type="hidden" name="FileId" value="@file.FileId" />
+                                            <input type="hidden" name="MessageId" value="@item.Id" />
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="govuk-button govuk-button--secondary">
+                                                Download
+                                                <span class="govuk-visually-hidden">
+                                                    @file.FileDisplayName
+                                                </span>
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <p class="govuk-hint">File not available for download.</p>
+                                    }
                                 </li>
                             }
                         </ul>

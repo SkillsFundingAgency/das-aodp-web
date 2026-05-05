@@ -10,7 +10,9 @@ using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Application.Form;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
+using SFA.DAS.AODP.Infrastructure.Common.IO;
 using SFA.DAS.AODP.Infrastructure.File;
+using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Areas.Apply.Controllers;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Application;
@@ -27,6 +29,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
         private readonly Mock<IUserHelperService> _userHelperMock = new();
         private readonly Mock<ILogger<ApplicationsController>> _loggerMock = new();
         private readonly ApplicationsController _controller;
+        private readonly FileUploadValidator _fileUploadValidator;
 
         private const string OrgId = "00000000-0000-0000-0000-000000000001";
         private const string UserDisplayName = "Test User";
@@ -40,12 +43,21 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
             _userHelperMock.Setup(u => u.GetUserDisplayName()).Returns(UserDisplayName);
             _userHelperMock.Setup(u => u.GetUserEmail()).Returns(UserEmail);
 
+            var formBuilderSettings = new FormBuilderSettings
+            {
+                MaxUploadFileSize = 10,
+                UploadFileTypesAllowed = new List<string> { ".xlsx", ".docx", ".pdf" }
+            };
+
+            _fileUploadValidator = new FileUploadValidator(formBuilderSettings);
+
             _controller = new ApplicationsController(
                 _mediatorMock.Object,
                 _validatorMock.Object,
                 _loggerMock.Object,
                 _fileServiceMock.Object,
-                _userHelperMock.Object
+                _userHelperMock.Object,
+                _fileUploadValidator
             )
             {
                 TempData = new Mock<ITempDataDictionary>().Object

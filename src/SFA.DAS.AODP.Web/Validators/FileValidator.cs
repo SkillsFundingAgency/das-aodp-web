@@ -22,7 +22,10 @@ namespace SFA.DAS.AODP.Web.Validators
         public void Validate(GetApplicationPageByIdQueryResponse.Question question, ApplicationPageViewModel.Answer answer, ApplicationPageViewModel model)
         {
             var required = question.Required;
-            var existingFilesCount = _fileService.ListBlobs($"{model.ApplicationId}/{question.Id}").Count;
+
+            var existingFilesCount = model.Questions
+                .First(question => question.Id == question.Id)
+                .UploadedFiles.Count;
 
             if (required && existingFilesCount == 0 && (answer == null || answer.FormFiles == null || answer.FormFiles.Count == 0))
                 throw new QuestionValidationFailedException(question.Id, question.Title, $"Please provide the requested files.");
