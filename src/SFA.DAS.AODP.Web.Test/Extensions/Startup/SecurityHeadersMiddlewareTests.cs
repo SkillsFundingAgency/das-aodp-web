@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc.Testing;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.Configuration;
 
 namespace SFA.DAS.AODP.Web.UnitTests.Extensions.Startup;
 
@@ -9,19 +11,23 @@ public class SecurityHeadersMiddlewareTests
 
     public SecurityHeadersMiddlewareTests(WebApplicationFactory<Program> factory)
     {
-        _client = factory.CreateClient();
+        _client = factory
+            .WithWebHostBuilder(builder =>
+            {
+                builder.UseEnvironment("Development"); 
+            })
+            .CreateClient();
     }
 
     [Fact]
     public async Task Security_headers_are_present_and_correct()
     {
         // Act
-        var response = await _client.GetAsync("/");
+        var response = await _client.GetAsync("/health"); 
 
         response.EnsureSuccessStatusCode();
 
         // Assert
-
         Assert.Equal(
             "nosniff",
             response.Headers.GetValues("X-Content-Type-Options").Single());
@@ -38,7 +44,7 @@ public class SecurityHeadersMiddlewareTests
     [Fact]
     public async Task ContentSecurityPolicy_contains_expected_directives_and_is_secure()
     {
-        var response = await _client.GetAsync("/");
+        var response = await _client.GetAsync("/health"); 
 
         response.EnsureSuccessStatusCode();
 
