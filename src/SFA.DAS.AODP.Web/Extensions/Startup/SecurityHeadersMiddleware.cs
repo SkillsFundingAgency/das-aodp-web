@@ -1,5 +1,6 @@
 ﻿namespace SFA.DAS.AODP.Web.Extensions.Startup
 {
+    [ExcludeFromCodeCoverage]
     public sealed class SecurityHeadersMiddleware
     {
         private readonly RequestDelegate _next;
