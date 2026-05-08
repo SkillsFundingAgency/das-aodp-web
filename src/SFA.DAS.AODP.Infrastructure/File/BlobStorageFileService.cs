@@ -1,255 +1,75 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
-using Microsoft.Extensions.Azure;
-using Microsoft.Extensions.Options;
-using SFA.DAS.AODP.Infrastructure.Common.IO;
-using SFA.DAS.AODP.Models.Common;
-using SFA.DAS.AODP.Models.Exceptions;
-using SFA.DAS.AODP.Models.Settings;
-using System;
-using System.Text;
-using System.Threading.Tasks;
+using Polly;
+using SFA.DAS.Aodp.Domain.Files;
 
 namespace SFA.DAS.AODP.Infrastructure.File
 {
+    /*
+     * Low‑level wrapper over Azure Blob Storage that upload and reads raw bytes by container and path. 
+     * */
     public class BlobStorageFileService : IFileService
     {
-        public const string FileNameMetadataKey = "FileName";
-        public const string FileExtensionsMetadataKey = "Extension";
-        public const string FilePrefixMetadataKey = "FileNamePrefix";
-        private readonly BlobStorageSettings _blobStorageSettings;
-        private readonly FormBuilderSettings _fileUploadSettings;
-        private readonly ImportFileUploadSettings _importFileUploadSettings;
-        private readonly ImportBlobStorageSettings _importBlobStorageSettings;
         private readonly BlobServiceClient _blobServiceClient;
-        private BlobContainerClient? _blobContainerClient;
-        private readonly IAzureClientFactory<BlobServiceClient> _clientFactory;
-        private string? _blobContainerName;
-        private readonly FileUploadValidator _uploadValidator;
+        private readonly IFileStorageLocationPolicy _fileStorageLocationPolicy;
 
-        public const string MalwareScanResultTagKey = "Malware scanning scan result";
-        public const string MalwareScanTimeTagKey = "Malware scanning scan time (UTC)";
-        public const string MalwareScanCleanValue = "No threats found";
-        public const string MalwareScanMaliciousValue = "Malicious";
-        public const string MalwareScanErrorValue = "Error";
-        public const string MalwareScanNotScannedValue = "Not scanned";
-
-        public BlobStorageFileService(BlobServiceClient blobServiceClient,
-                    IAzureClientFactory<BlobServiceClient> clientFactory,
-                    IOptions<BlobStorageSettings> settings,
-                    IOptions<ImportBlobStorageSettings> importSettings,
-                    FormBuilderSettings fileUploadSettings,
-                    ImportFileUploadSettings importFileUploadSettings)
+        public BlobStorageFileService(
+            BlobServiceClient blobServiceClient,
+            IFileStorageLocationPolicy fileStorageLocationPolicy)
         {
             _blobServiceClient = blobServiceClient;
-            _blobStorageSettings = settings.Value ?? throw new ArgumentNullException(nameof(settings));
-            _importBlobStorageSettings = importSettings.Value ?? throw new ArgumentNullException(nameof(importSettings));
-            _clientFactory = clientFactory ?? throw new ArgumentNullException(nameof(clientFactory));
-            _fileUploadSettings = fileUploadSettings ?? throw new ArgumentNullException(nameof(fileUploadSettings));
-            _importFileUploadSettings = importFileUploadSettings ?? throw new ArgumentNullException(nameof(importFileUploadSettings));
-            _uploadValidator = new FileUploadValidator(_fileUploadSettings);
+            _fileStorageLocationPolicy = fileStorageLocationPolicy;
         }
 
-        public async Task UploadFileAsync(string folderName, string fileName, Stream stream, string? contentType, string fileNamePrefix)
+        public async Task<FileStorageLocation> UploadAsync(
+            FileCategory category,
+            FileContext? context,
+            string fileName,
+            string? contentType,
+            Stream stream)
         {
-            _uploadValidator.ValidateOrThrow(fileName, stream);
+            var location = _fileStorageLocationPolicy.Resolve(category, context);
 
-            var safeFileName = Path.GetFileName(fileName).Trim();
-            var ext = Path.GetExtension(safeFileName);
+            var containerClient =
+                _blobServiceClient.GetBlobContainerClient(location.Container);
 
-            string filePath = $"{folderName}/{Guid.NewGuid()}";
+            await containerClient.CreateIfNotExistsAsync();
 
-            var blobClient = GetBlobClient(filePath, _blobStorageSettings.FileUploadContainerName);
+            var blobClient =
+                containerClient.GetBlobClient(location.BlobPath);
 
-            await blobClient.UploadAsync(stream,
-                metadata: new Dictionary<string, string>()
+            var resolvedContentType = string.IsNullOrWhiteSpace(contentType)
+                ? "application/octet-stream"
+                : contentType;
+
+            var options = new BlobUploadOptions
+            {
+                HttpHeaders = new BlobHttpHeaders
                 {
-                    { FileNameMetadataKey, safeFileName },
-                    { FileExtensionsMetadataKey, ext },
-                    { FilePrefixMetadataKey, fileNamePrefix }
-                },
-                httpHeaders: !string.IsNullOrEmpty(contentType) ? new BlobHttpHeaders { ContentType = contentType } : null);
-        }
-
-        public List<UploadedBlob> ListBlobs(string folderName)
-        {
-            EnsureBlobContainerClient(_blobStorageSettings.FileUploadContainerName);
-            var items = _blobContainerClient.GetBlobs(
-                BlobTraits.Metadata,
-                BlobStates.None,
-                prefix: folderName,
-                CancellationToken.None);
-
-            var result = new List<UploadedBlob>();
-
-            foreach (var item in items)
-            {
-                var metadata = item.Metadata ?? new Dictionary<string, string>();
-                metadata.TryGetValue(FileNameMetadataKey, out var fileName);
-                metadata.TryGetValue(FileExtensionsMetadataKey, out var fileExtension);
-                metadata.TryGetValue(FilePrefixMetadataKey, out var filePrefix);
-
-                var blob = _blobContainerClient.GetBlobClient(item.Name);
-                var scanStatus = TryGetScanStatus(blob);
-
-                result.Add(new()
-                {
-                    FileName = fileName ?? string.Empty,
-                    FullPath = item.Name,
-                    Extension = fileExtension ?? string.Empty,
-                    FileNamePrefix = filePrefix ?? string.Empty,
-                    ScanStatus = scanStatus
-                });
-            }
-
-            return result;
-        }
-
-        public async Task UploadXlsxFileAsync(string folderName, string fileName, Stream stream, string? contentType, string fileNamePrefix)
-        {
-            var maxAllowedFileSize = fileName is "Pldns.xlsx" ? _importFileUploadSettings.MaxPldnsUploadSizeInMB : _importFileUploadSettings.MaxDefundingListUploadSizeInMB;
-            _uploadValidator.ValidateOrThrow(fileName, stream, maxAllowedFileSize);
-
-            var safeFileName = Path.GetFileName(fileName).Trim();
-            var fileExtension = Path.GetExtension(safeFileName);
-
-            var trimmedFolder = (folderName ?? string.Empty).Trim();
-            if (!string.IsNullOrEmpty(trimmedFolder) && trimmedFolder.EndsWith('/'))
-                trimmedFolder = trimmedFolder.TrimEnd('/');
-
-            var filePath = string.IsNullOrEmpty(trimmedFolder) ? safeFileName : $"{trimmedFolder}/{safeFileName}";
-
-            BlobServiceClient serviceClient;
-            try
-            {
-                serviceClient = _clientFactory.CreateClient("import");
-            }
-            catch (InvalidOperationException)
-            {
-                throw new Exception("Import BlobServiceClient is not configured.");
-            }
-            var importContainer = serviceClient.GetBlobContainerClient(_importBlobStorageSettings.ImportFilesContainerName);
-            await importContainer.CreateIfNotExistsAsync();
-
-            var blobClient = importContainer.GetBlobClient(filePath);
-
-            await blobClient.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
-
-            if (stream.CanSeek)
-            {
-                stream.Position = 0;
-            }
-
-            var headers = new BlobHttpHeaders
-            {
-                ContentDisposition = $"attachment; filename=\"{safeFileName}\""
+                    ContentType = resolvedContentType,
+                    ContentDisposition = $"attachment; filename=\"{fileName}\""
+                }
             };
 
-            if (!string.IsNullOrEmpty(contentType))
-            {
-                headers.ContentType = contentType;
-            }
+            await blobClient.UploadAsync(stream, options);
 
-            await blobClient.UploadAsync(stream,
-                metadata: new Dictionary<string, string>()
-                {
-                    { FileNameMetadataKey, safeFileName },
-                    { FileExtensionsMetadataKey, fileExtension },
-                    { FilePrefixMetadataKey, fileNamePrefix ?? string.Empty }
-                },
-                httpHeaders: headers);
+            return location;
         }
 
-        public async Task<UploadedBlob> GetBlobDetails(string fileName)
+
+        public async Task<Stream> OpenReadStreamAsync(string? containerName, string? blobPath)
         {
-            EnsureBlobContainerClient(_blobStorageSettings.FileUploadContainerName);
 
-            var blobClient = _blobContainerClient!.GetBlobClient(fileName);
-            var properties = await blobClient.GetPropertiesAsync();
+            ArgumentException.ThrowIfNullOrWhiteSpace(containerName);
+            ArgumentException.ThrowIfNullOrWhiteSpace(blobPath);
 
-            var scanStatus = TryGetScanStatus(blobClient);
+            var containerClient =
+                _blobServiceClient.GetBlobContainerClient(containerName);
 
-            properties.Value.Metadata.TryGetValue(FileNameMetadataKey, out var metadadaFileName);
-            properties.Value.Metadata.TryGetValue(FileExtensionsMetadataKey, out var metadataFileExtension);
-            properties.Value.Metadata.TryGetValue(FilePrefixMetadataKey, out var metadataFilePrefix);
+            var blobClient =
+                containerClient.GetBlobClient(blobPath);
 
-            return new()
-            {
-                FileName = metadadaFileName ?? string.Empty,
-                FullPath = fileName,
-                Extension = metadataFileExtension ?? string.Empty,
-                FileNamePrefix = metadataFilePrefix ?? string.Empty,
-                ScanStatus = scanStatus,
-            };
+            return await blobClient.OpenReadAsync();
         }
-
-        public async Task<Stream> OpenReadStreamAsync(string filePath)
-        {
-            var blobClient = GetBlobClient(filePath, _blobStorageSettings.FileUploadContainerName);
-            var stream = await blobClient.OpenReadAsync();
-            return stream;
-        }
-
-        public async Task DeleteFileAsync(string filePath)
-        {
-            var blobClient = GetBlobClient(filePath, _blobStorageSettings.FileUploadContainerName);
-            await blobClient.DeleteAsync(DeleteSnapshotsOption.IncludeSnapshots);
-        }
-
-        private BlobClient GetBlobClient(string filePath, string containerName)
-        {
-            EnsureBlobContainerClient(containerName);
-            return _blobContainerClient!.GetBlobClient(filePath);
-        }
-
-        private void EnsureBlobContainerClient(string containerName)
-        {
-            if (_blobContainerClient is null || !string.Equals(_blobContainerName, containerName, StringComparison.Ordinal))
-            {
-                _blobContainerClient = _blobServiceClient.GetBlobContainerClient(containerName);
-                _blobContainerName = containerName;
-
-                _blobContainerClient.CreateIfNotExists();
-            }
-        }
-        internal virtual MalwareScanStatus TryGetScanStatus(BlobClient blobClient)
-        {
-            try
-            {
-                var tags = blobClient.GetTags();
-
-                if (!tags.Value.Tags.TryGetValue(MalwareScanResultTagKey, out var raw) || string.IsNullOrWhiteSpace(raw))
-                    return MalwareScanStatus.InProgress;
-
-                return MapScanStatus(raw);
-            }
-            catch
-            {
-                return MalwareScanStatus.Unknown;
-            }
-        }
-        internal static MalwareScanStatus MapScanStatus(string? raw)
-        {
-            if (string.IsNullOrWhiteSpace(raw)) return MalwareScanStatus.Unknown;
-
-            return raw switch
-            {
-                MalwareScanCleanValue => MalwareScanStatus.Clean,
-                MalwareScanMaliciousValue => MalwareScanStatus.Malicious,
-                MalwareScanErrorValue => MalwareScanStatus.Error,
-                MalwareScanNotScannedValue => MalwareScanStatus.InProgress,
-                _ => MalwareScanStatus.Unknown
-            };
-        }
-    }
-
-    public class UploadedBlob
-    {
-        public string FullPath { get; set; }
-        public string FileName { get; set; }
-        public string Extension { get; set; }
-        public string FileNamePrefix { get; set; }
-        public string FileNameWithPrefix => string.IsNullOrWhiteSpace(FileNamePrefix) ? FileName : $"{FileNamePrefix} {FileName}";
-        public MalwareScanStatus ScanStatus { get; set; }
     }
 }

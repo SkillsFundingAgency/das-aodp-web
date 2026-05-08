@@ -3,14 +3,20 @@ using AutoFixture.AutoMoq;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Logging;
 using Moq;
+using SFA.DAS.Aodp.Domain.Files;
 using SFA.DAS.AODP.Application;
+using SFA.DAS.AODP.Application.Commands.Files;
 using SFA.DAS.AODP.Application.Commands.Import;
 using SFA.DAS.AODP.Application.Queries.Import;
+using SFA.DAS.AODP.Infrastructure.Common.IO;
 using SFA.DAS.AODP.Infrastructure.File;
+using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Areas.Admin.Controllers;
 using SFA.DAS.AODP.Web.Areas.Admin.Models;
+using SFA.DAS.AODP.Web.Areas.Admin.Storage;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Import;
@@ -24,16 +30,35 @@ public class ImportControllerTests
     private readonly Mock<IMediator> _mediatorMock;
     private readonly Mock<IUserHelperService> _userHelpService;
     private readonly Mock<IFileService> _fileService;
+    private readonly ImportFileUploadSettings _uploadSettings;
     private readonly ImportController _controller;
 
     public ImportControllerTests()
     {
         _fixture = new Fixture().Customize(new AutoMoqCustomization());
+
         _loggerMock = _fixture.Freeze<Mock<ILogger<ImportController>>>();
         _mediatorMock = _fixture.Freeze<Mock<IMediator>>();
         _userHelpService = _fixture.Freeze<Mock<IUserHelperService>>();
         _fileService = _fixture.Freeze<Mock<IFileService>>();
-        _controller = new ImportController(_loggerMock.Object, _mediatorMock.Object, _userHelpService.Object, _fileService.Object);
+
+        _uploadSettings = new ImportFileUploadSettings
+        {
+            MaxPldnsUploadSizeInMB = 10,
+            MaxDefundingListUploadSizeInMB = 10
+        };
+
+
+        _controller = new ImportController(
+            _loggerMock.Object,
+            _mediatorMock.Object,
+            _userHelpService.Object,
+            _fileService.Object,
+            _uploadSettings);
+
+        _controller.TempData = new TempDataDictionary(
+            new DefaultHttpContext(),
+            Mock.Of<ITempDataProvider>());
     }
 
     [Fact]
@@ -60,7 +85,7 @@ public class ImportControllerTests
 
         // Assert
         var viewResult = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal("ConfirmImportSelection", viewResult.ActionName);        
+        Assert.Equal("ConfirmImportSelection", viewResult.ActionName);
     }
 
     [Fact]
@@ -100,7 +125,7 @@ public class ImportControllerTests
             .With(w => w.Value, body)
             .With(w => w.Success, true)
             .Create();
-     
+
         _mediatorMock.Setup(m => m.Send(It.Is<GetJobRunsQuery>(i => i.JobName == JobNames.RegulatedQualifications.ToString()), default))
                      .ReturnsAsync(currentJobRuns);
 
@@ -110,7 +135,7 @@ public class ImportControllerTests
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
         Assert.Equal("SubmitImportRequest", viewResult.ViewName);
-        var model = Assert.IsAssignableFrom<SubmitImportRequestViewModel>(viewResult.ViewData.Model);              
+        var model = Assert.IsAssignableFrom<SubmitImportRequestViewModel>(viewResult.ViewData.Model);
         Assert.Equal(userName, model.UserName);
         Assert.Equal(viewModel.ImportType, model.ImportType);
         Assert.Equal(JobStatus.Requested.ToString(), model.Status);
@@ -140,7 +165,7 @@ public class ImportControllerTests
         var currentJobRuns = _fixture.Build<BaseMediatrResponse<GetJobRunsQueryResponse>>()
             .With(w => w.Value, body)
             .Create();
-        
+
         _mediatorMock.Setup(m => m.Send(It.Is<GetJobRunsQuery>(i => i.JobName == JobNames.RegulatedQualifications.ToString()), default))
                      .ReturnsAsync(currentJobRuns);
 
@@ -225,11 +250,11 @@ public class ImportControllerTests
                             .With(w => w.JobName, JobNames.RegulatedQualifications.ToString())
                             .With(w => w.JobRunId, Guid.NewGuid())
                             .Create();
-       
+
         var currentRun = _fixture.Build<JobRun>()
                                     .With(w => w.Status, JobStatus.Running.ToString())
                                     .With(w => w.StartTime, DateTime.Now)
-                                    .Create();      
+                                    .Create();
 
         var queryResponse = _fixture.Build<BaseMediatrResponse<GetJobRunByIdQueryResponse>>()
             .With(w => w.Value, currentRun)
@@ -287,7 +312,7 @@ public class ImportControllerTests
 
         // Assert
         var viewResult = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal("Complete", viewResult.ActionName);        
+        Assert.Equal("Complete", viewResult.ActionName);
     }
 
     [Fact]
@@ -321,7 +346,7 @@ public class ImportControllerTests
         var result = await _controller.Complete(viewModel);
 
         // Assert
-        var viewResult = Assert.IsType<ViewResult>(result);       
+        var viewResult = Assert.IsType<ViewResult>(result);
         var model = Assert.IsAssignableFrom<CompleteViewModel>(viewResult.ViewData.Model);
         Assert.Equal(currentRun.User, model.UserName);
         Assert.Equal(currentRun.Status, model.Status);
@@ -349,28 +374,57 @@ public class ImportControllerTests
         _userHelpService.Setup(s => s.GetUserDisplayName()).Returns(userName);
 
         var mockFile = new Mock<IFormFile>();
-        var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-        mockFile.Setup(f => f.ContentType).Returns(contentType);
         mockFile.Setup(f => f.FileName).Returns("Pldns.xlsx");
+        mockFile.Setup(f => f.ContentType)
+            .Returns("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
         var stream = new MemoryStream(new byte[] { 1, 2, 3 });
         mockFile.Setup(f => f.OpenReadStream()).Returns(stream);
 
         var model = _fixture.Build<UploadImportFileViewModel>()
-                            .With(m => m.File, mockFile.Object)
-                            .Create();
+            .With(m => m.File, mockFile.Object)
+            .Create();
 
-        _fileService.Setup(f => f.UploadXlsxFileAsync(JobNames.Pldns.ToString(), "Pldns.xlsx", It.IsAny<Stream>(), contentType, userName))
-                    .Returns(Task.CompletedTask)
-                    .Verifiable();
+        var storageLocation = new FileStorageLocation(
+            "importfilescontainer",
+            "pldns/file-id");
+
+        _fileService.Setup(f =>
+                f.UploadAsync(
+                    FileCategory.Pldns,
+                    null,
+                    ImportStoragePaths.PldnsFileName,
+                    It.IsAny<string>(),
+                    It.IsAny<Stream>()))
+            .ReturnsAsync(storageLocation);
+
+        _mediatorMock
+            .Setup(m => m.Send(
+                It.IsAny<CreateFileMetadataCommand>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<EmptyResponse>
+            {
+                Success = true,
+                Value = new EmptyResponse()
+            });
 
         // Act
         var result = await _controller.Pldns(model);
 
         // Assert
-        _fileService.Verify();
         var redirect = Assert.IsType<RedirectToActionResult>(result);
         Assert.Equal("ConfirmImportSelection", redirect.ActionName);
+
+        _fileService.Verify(f =>
+            f.UploadAsync(
+                FileCategory.Pldns,
+                null,
+                ImportStoragePaths.PldnsFileName,
+                It.IsAny<string>(),
+                It.IsAny<Stream>()),
+            Times.Once);
     }
+
 
     [Fact]
     public void DefundingList_Get_ReturnsUploadViewAndSetsViewBag()
@@ -393,26 +447,193 @@ public class ImportControllerTests
         _userHelpService.Setup(s => s.GetUserDisplayName()).Returns(userName);
 
         var mockFile = new Mock<IFormFile>();
-        var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-        mockFile.Setup(f => f.ContentType).Returns(contentType);
         mockFile.Setup(f => f.FileName).Returns("DefundingList.xlsx");
+        mockFile.Setup(f => f.ContentType)
+            .Returns("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
         var stream = new MemoryStream(new byte[] { 4, 5, 6 });
         mockFile.Setup(f => f.OpenReadStream()).Returns(stream);
 
         var model = _fixture.Build<UploadImportFileViewModel>()
-                            .With(m => m.File, mockFile.Object)
-                            .Create();
+            .With(m => m.File, mockFile.Object)
+            .Create();
 
-        _fileService.Setup(f => f.UploadXlsxFileAsync(JobNames.DefundingList.ToString(), "DefundingList.xlsx", It.IsAny<Stream>(), contentType, userName))
-                    .Returns(Task.CompletedTask)
-                    .Verifiable();
+        var storageLocation = new FileStorageLocation(
+            "importfilescontainer",
+            "defunding/file-id");
+
+        _fileService
+            .Setup(f => f.UploadAsync(
+                FileCategory.DefundingList,
+                null,
+                ImportStoragePaths.DefundingListFileName,
+                It.IsAny<string>(),
+                It.IsAny<Stream>()))
+            .ReturnsAsync(storageLocation);
+
+        _mediatorMock
+            .Setup(m => m.Send(
+                It.IsAny<CreateFileMetadataCommand>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<EmptyResponse>
+            {
+                Success = true,
+                Value = new EmptyResponse()
+            });
 
         // Act
         var result = await _controller.DefundingList(model);
 
         // Assert
-        _fileService.Verify();
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal("ConfirmImportSelection", redirect.ActionName);
+
+        _fileService.Verify(f =>
+            f.UploadAsync(
+                FileCategory.DefundingList,
+                null,
+                ImportStoragePaths.DefundingListFileName,
+                It.IsAny<string>(),
+                It.IsAny<Stream>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public void SelectImport_InvalidModel_ReturnsIndexView()
+    {
+        var model = _fixture.Create<ImportRequestViewModel>();
+        _controller.ModelState.AddModelError("ImportType", "Required");
+
+        var result = _controller.SelectImport(model);
+
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.Equal("Index", view.ViewName);
+    }
+
+
+    [Fact]
+    public void SelectImport_DefundingList_Redirects()
+    {
+        var model = _fixture.Build<ImportRequestViewModel>()
+            .With(m => m.ImportType, "Defunding list")
+            .Create();
+
+        var result = _controller.SelectImport(model);
+
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal("DefundingList", redirect.ActionName);
+    }
+
+    [Fact]
+    async Task ConfirmImportSelection_Post_InvalidModel_ReturnsView()
+    {
+        var model = _fixture.Create<ConfirmImportRequestViewModel>();
+        _controller.ModelState.AddModelError("ImportType", "Required");
+
+        var result = await _controller.ConfirmImportSelection(model);
+
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.Equal(nameof(ImportController.ConfirmImportSelection), view.ViewName);
+    }
+
+    [Fact]
+    public async Task ConfirmImportSelection_RequestJobRunThrows_RedirectsWithTempData()
+    {
+        var model = _fixture.Build<ConfirmImportRequestViewModel>()
+            .With(m => m.ImportType, "Regulated Qualifications")
+            .Create();
+
+        _mediatorMock
+            .Setup(m => m.Send(It.IsAny<RequestJobRunCommand>(), default))
+            .ThrowsAsync(new Exception("Boom"));
+
+        _mediatorMock
+            .Setup(m => m.Send(It.IsAny<GetJobRunsQuery>(), default))
+            .ReturnsAsync(new BaseMediatrResponse<GetJobRunsQueryResponse>
+            {
+                Success = true,
+                Value = new GetJobRunsQueryResponse()
+            });
+
+        var result = await _controller.ConfirmImportSelection(model);
+
         var redirect = Assert.IsType<RedirectToActionResult>(result);
         Assert.Equal("ConfirmImportSelection", redirect.ActionName);
     }
+
+    [Fact]
+    public async Task CheckProgress_WhenMediatorThrows_SetsTempData()
+    {
+        var model = _fixture.Create<SubmitImportRequestViewModel>();
+
+        _mediatorMock
+            .Setup(m => m.Send(It.IsAny<GetJobRunsQuery>(), default))
+            .ThrowsAsync(new Exception("Boom"));
+
+        var result = await _controller.CheckProgress(model);
+
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.Equal("SubmitImportRequest", view.ViewName);
+    }
+
+    [Fact]
+    public async Task Pldns_Post_InvalidFileType_ReturnsViewWithError()
+    {
+        var mockFile = new Mock<IFormFile>();
+        mockFile.Setup(f => f.FileName).Returns("bad.txt");
+        mockFile.Setup(f => f.OpenReadStream())
+            .Returns(new MemoryStream(new byte[] { 1 }));
+
+        var model = _fixture.Build<UploadImportFileViewModel>()
+            .With(m => m.File, mockFile.Object)
+            .Create();
+
+        var result = await _controller.Pldns(model);
+
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.Equal("UploadImportFile", view.ViewName);
+    }
+
+    [Fact]
+    public async Task Pldns_Post_FileTooLarge_ReturnsViewWithError()
+    {
+        var mockFile = new Mock<IFormFile>();
+        mockFile.Setup(f => f.FileName).Returns("Pldns.xlsx");
+
+        var oversizedStream = new MemoryStream(new byte[20 * 1024 * 1024]);
+        mockFile.Setup(f => f.OpenReadStream()).Returns(oversizedStream);
+
+        var model = _fixture.Build<UploadImportFileViewModel>()
+            .With(m => m.File, mockFile.Object)
+            .Create();
+
+        var result = await _controller.Pldns(model);
+
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.Equal("UploadImportFile", view.ViewName);
+    }
+
+    [Fact]
+    public void SelectImport_Pldns_RedirectsToPldnsAction()
+    {
+        // Arrange
+        var viewModel = new ImportRequestViewModel
+        {
+            ImportType = "Pldns" // exact string checked in controller
+        };
+
+        // Act
+        var result = _controller.SelectImport(viewModel);
+
+        // Assert
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+
+        Assert.Multiple(() =>
+        {
+            Assert.Equal("Pldns", redirect.ActionName);
+            Assert.Null(redirect.ControllerName); // same controller
+            Assert.Null(redirect.RouteValues);    // no route values expected
+        });
+    }
+
 }

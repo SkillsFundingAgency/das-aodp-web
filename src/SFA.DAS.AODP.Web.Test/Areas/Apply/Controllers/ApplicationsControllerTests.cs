@@ -1,4 +1,6 @@
 ﻿using AutoFixture;
+using AutoFixture.AutoMoq;
+using AutoFixture.Kernel;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -8,9 +10,15 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.Application.Application;
+using SFA.DAS.AODP.Application.Commands.Files;
 using SFA.DAS.AODP.Application.Queries.Application.Form;
+using SFA.DAS.AODP.Application.Queries.Files;
+using SFA.DAS.AODP.Application.Queries.Files.Get;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
+using SFA.DAS.AODP.Infrastructure.Common.IO;
 using SFA.DAS.AODP.Infrastructure.File;
+using SFA.DAS.AODP.Models.Application;
+using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Areas.Apply.Controllers;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Application;
@@ -27,6 +35,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
         private readonly Mock<IUserHelperService> _userHelperMock = new();
         private readonly Mock<ILogger<ApplicationsController>> _loggerMock = new();
         private readonly ApplicationsController _controller;
+        private readonly FileUploadValidator _fileUploadValidator;
 
         private const string OrgId = "00000000-0000-0000-0000-000000000001";
         private const string UserDisplayName = "Test User";
@@ -36,20 +45,50 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
 
         public ApplicationsControllerTests()
         {
+
+            _fixture.Customize(new AutoMoqCustomization
+            {
+                ConfigureMembers = true
+            });
+            _fixture.Customizations.Add(new DateOnlySpecimenBuilder());
+            _mediatorMock.DefaultValue = DefaultValue.Mock;
+
             _userHelperMock.Setup(u => u.GetUserOrganisationId()).Returns(OrgId);
             _userHelperMock.Setup(u => u.GetUserDisplayName()).Returns(UserDisplayName);
             _userHelperMock.Setup(u => u.GetUserEmail()).Returns(UserEmail);
+
+            var formBuilderSettings = new FormBuilderSettings
+            {
+                MaxUploadFileSize = 10,
+                UploadFileTypesAllowed = new List<string> { ".xlsx", ".docx", ".pdf" }
+            };
+
+            _fileUploadValidator = new FileUploadValidator(formBuilderSettings);
 
             _controller = new ApplicationsController(
                 _mediatorMock.Object,
                 _validatorMock.Object,
                 _loggerMock.Object,
                 _fileServiceMock.Object,
-                _userHelperMock.Object
-            )
+                _userHelperMock.Object,
+                _fileUploadValidator)
             {
                 TempData = new Mock<ITempDataDictionary>().Object
             };
+        }
+
+        private sealed class DateOnlySpecimenBuilder : ISpecimenBuilder
+        {
+            public object Create(object request, ISpecimenContext context)
+            {
+                if (request is Type type &&
+                    (type == typeof(DateOnly) || type == typeof(DateOnly?)))
+                {
+                    return DateOnly.FromDateTime(DateTime.UtcNow);
+                }
+
+                return new NoSpecimen();
+            }
         }
 
         [Fact]
@@ -621,5 +660,312 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
             Assert.NotNull(model.RelatedLinks);
             Assert.NotEmpty(model.RelatedLinks);
         }
+
+        [Fact]
+        public async Task ApplicationPage_Get_ReturnsView_WithGroupedFiles()
+        {
+            // Arrange
+            var organisationId = Guid.NewGuid();
+            var applicationId = Guid.NewGuid();
+            var formVersionId = Guid.NewGuid();
+            var sectionId = Guid.NewGuid();
+            var questionId = Guid.NewGuid();
+
+            // 1. GetFileMetadataQuery response
+            var fileResponse = new GetFileMetadataQueryResponse
+            {
+                Files = new()
+                {
+                    new FileMetadataDto
+                    {
+                        FileId = Guid.NewGuid(),
+                        QuestionId = questionId,
+                        FileName = "test.pdf"
+                    }
+                }
+            };
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetFileMetadataQuery>(), default))
+                .ReturnsAsync(new BaseMediatrResponse<GetFileMetadataQueryResponse>
+                {
+                    Success = true,
+                    Value = fileResponse
+                });
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationPageByIdQuery>(), default))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationPageByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = _fixture.Create<GetApplicationPageByIdQueryResponse>()
+                });
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationPageAnswersByPageIdQuery>(), default))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationPageAnswersByPageIdQueryResponse>
+                {
+                    Success = true,
+                    Value = _fixture.Create<GetApplicationPageAnswersByPageIdQueryResponse>()
+                });
+
+            _mediatorMock
+                .Setup(m => m.Send(
+                    It.Is<GetApplicationByIdQuery>(q => q.ApplicationId == applicationId),
+                    default))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = _fixture.Build<GetApplicationByIdQueryResponse>()
+                        .With(r => r.Status, ApplicationStatus.Draft.ToString())
+                        .Create()
+                });
+
+            // Act
+            var result = await _controller.ApplicationPage(
+                organisationId,
+                applicationId,
+                sectionId,
+                pageOrder: 1,
+                formVersionId);
+
+            // Assert
+            var view = Assert.IsType<ViewResult>(result);
+            Assert.IsType<ApplicationPageViewModel>(view.Model);
+        }
+
+        [Fact]
+        public async Task ApplicationPage_Post_InvalidRemoveFileGuid_ReturnsBadRequest()
+        {
+            // Arrange
+            var applicationId = Guid.NewGuid();
+            var organisationId = Guid.NewGuid();
+            var formVersionId = Guid.NewGuid();
+
+            var model = _fixture.Build<ApplicationPageViewModel>()
+                .With(m => m.ApplicationId, applicationId)
+                .With(m => m.RemoveFile, "not-a-guid")
+                .Create();
+
+            // Application must NOT be submitted
+            _mediatorMock
+                .Setup(m => m.Send(
+                    It.IsAny<IRequest<BaseMediatrResponse<GetApplicationByIdQueryResponse>>>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = _fixture.Build<GetApplicationByIdQueryResponse>()
+                        .With(r => r.Status, ApplicationStatus.Draft.ToString())
+                        .Create()
+                });
+
+            // File metadata is always fetched before RemoveFile logic
+            _mediatorMock
+                .Setup(m => m.Send(
+                    It.IsAny<IRequest<BaseMediatrResponse<GetFileMetadataQueryResponse>>>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetFileMetadataQueryResponse>
+                {
+                    Success = true,
+                    Value = new GetFileMetadataQueryResponse
+                    {
+                        Files = new List<FileMetadataDto>()
+                    }
+                });
+
+            //Page is always loaded before RemoveFile validation
+            _mediatorMock
+                .Setup(m => m.Send(
+                    It.IsAny<IRequest<BaseMediatrResponse<GetApplicationPageByIdQueryResponse>>>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationPageByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = _fixture.Create<GetApplicationPageByIdQueryResponse>()
+                });
+
+            // Act
+            var result = await _controller.ApplicationPageAsync(
+                model,
+                applicationId,
+                organisationId,
+                formVersionId);
+
+            // Assert
+            Assert.IsType<BadRequestResult>(result);
+        }
+
+        [Fact]
+        public async Task ApplicationPage_Post_RemoveFileNotFound_ReturnsBadRequest()
+        {
+            // Arrange
+            var applicationId = Guid.NewGuid();
+            var organisationId = Guid.NewGuid();
+            var formVersionId = Guid.NewGuid();
+            var missingFileId = Guid.NewGuid();
+
+            var model = _fixture.Build<ApplicationPageViewModel>()
+                .With(m => m.ApplicationId, applicationId)
+                .With(m => m.RemoveFile, missingFileId.ToString())
+                .Create();
+
+            // Application must NOT be submitted
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationByIdQuery>(), default))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = _fixture.Build<GetApplicationByIdQueryResponse>()
+                        .With(r => r.Status, ApplicationStatus.Draft.ToString())
+                        .Create()
+                });
+
+            // File metadata returned, but does NOT contain requested file id
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetFileMetadataQuery>(), default))
+                .ReturnsAsync(new BaseMediatrResponse<GetFileMetadataQueryResponse>
+                {
+                    Success = true,
+                    Value = new GetFileMetadataQueryResponse
+                    {
+                        Files = new List<FileMetadataDto>()
+                    }
+                });
+
+            _mediatorMock
+               .Setup(m => m.Send(
+                   It.IsAny<IRequest<BaseMediatrResponse<GetApplicationPageByIdQueryResponse>>>()))
+               .ReturnsAsync(new BaseMediatrResponse<GetApplicationPageByIdQueryResponse>
+               {
+                   Success = true,
+                   Value = _fixture.Create<GetApplicationPageByIdQueryResponse>()
+               });
+
+
+            // Act
+            var result = await _controller.ApplicationPageAsync(
+                model,
+                applicationId,
+                organisationId,
+                formVersionId);
+
+            // Assert
+            Assert.IsType<BadRequestResult>(result);
+        }
+
+        [Fact]
+        public async Task ApplicationPage_Post_WhenApplicationNotDraft_ReturnsBadRequest()
+        {
+            // Arrange
+            var applicationId = Guid.NewGuid();
+            var organisationId = Guid.NewGuid();
+            var formVersionId = Guid.NewGuid();
+
+            var model = _fixture.Build<ApplicationPageViewModel>()
+                .With(m => m.ApplicationId, applicationId)
+                .Create();
+
+            // Application Is not Draft
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationByIdQuery>(), default))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = _fixture.Build<GetApplicationByIdQueryResponse>()
+                        .With(r => r.Status, ApplicationStatus.InReview.ToString())
+                        .Create()
+                });
+
+            // Act
+            var result = await _controller.ApplicationPageAsync(
+                model,
+                applicationId,
+                organisationId,
+                formVersionId);
+
+            // Assert
+            Assert.IsType<BadRequestResult>(result);
+        }
+
+        [Fact]
+        public async Task ApplicationPage_Post_ValidRemoveFile_DeletesFile_AndReturnsView()
+        {
+            // Arrange
+            var applicationId = Guid.NewGuid();
+            var organisationId = Guid.NewGuid();
+            var formVersionId = Guid.NewGuid();
+            var sectionId = Guid.NewGuid();
+            var questionId = Guid.NewGuid();
+            var fileId = Guid.NewGuid();
+
+            var model = _fixture.Build<ApplicationPageViewModel>()
+                .With(m => m.ApplicationId, applicationId)
+                .With(m => m.SectionId, sectionId)
+                .With(m => m.RemoveFile, fileId.ToString())
+                .Create();
+
+            // --- 1: Application is NOT submitted ---
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationByIdQuery>(), default))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = _fixture.Build<GetApplicationByIdQueryResponse>()
+                        .With(r => r.Status, ApplicationStatus.Draft.ToString())
+                        .Create()
+                });
+
+            // --- 2: File exists ---
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetFileMetadataQuery>(), default))
+                .ReturnsAsync(new BaseMediatrResponse<GetFileMetadataQueryResponse>
+                {
+                    Success = true,
+                    Value = new GetFileMetadataQueryResponse
+                    {
+                        Files = new List<FileMetadataDto>
+                        {
+                            new FileMetadataDto
+                            {
+                                FileId = fileId,
+                                QuestionId = questionId,
+                                FileName = "test.pdf"
+                            }
+                        }
+                    }
+                });
+
+            // --- 3: Page lookup (required for repopulation) ---
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationPageByIdQuery>(), default))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationPageByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = _fixture.Create<GetApplicationPageByIdQueryResponse>()
+                });
+
+            // --- 4: Delete command ---
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<DeleteFileMetataCommand>(), default))
+                .ReturnsAsync(new BaseMediatrResponse<EmptyResponse>
+                {
+                    Success = true,
+                    Value = new EmptyResponse()
+                });
+
+            // Act
+            var result = await _controller.ApplicationPageAsync(
+                model,
+                applicationId,
+                organisationId,
+                formVersionId);
+
+            // Assert
+            var view = Assert.IsType<ViewResult>(result);
+            Assert.IsType<ApplicationPageViewModel>(view.Model);
+
+            _mediatorMock.Verify(
+                m => m.Send(It.Is<DeleteFileMetataCommand>(c => c.FileId == fileId), default),
+                Times.Once);
+        }
+
     }
 }

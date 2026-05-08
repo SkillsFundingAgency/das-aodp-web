@@ -197,13 +197,20 @@
                                     <li>
                                         <span class="govuk-file-name">@file.FileDisplayName</span>
 
-                                        <form method="post" asp-route-applicationReviewId="@Model.ApplicationReviewId" asp-area="Review" asp-controller="ApplicationsReview" asp-action="ApplicationFileDownload">
-                                            @Html.HiddenFor(m => m.ApplicationReviewId)
-                                            <input type="hidden" name="FilePath" value="@file.FullPath" />
-                                            <button type="submit" class="govuk-button govuk-button--secondary">
-                                                Download
-                                            </button>
-                                        </form>
+                                        @if(file.IsDownloadable)
+                                        {
+                                            <form method="post" asp-route-applicationReviewId="@Model.ApplicationReviewId" asp-area="Review" asp-controller="ApplicationsReview" asp-action="ApplicationFileDownload">
+                                                @Html.HiddenFor(m => m.ApplicationReviewId)
+                                                <input type="hidden" name="FileId" value="@file.FileId" />
+                                                <button type="submit" class="govuk-button govuk-button--secondary">
+                                                    Download
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <p class="govuk-hint">File not available for download. </p>
+                                        }
                                     </li>
                                 }
                             </ul>

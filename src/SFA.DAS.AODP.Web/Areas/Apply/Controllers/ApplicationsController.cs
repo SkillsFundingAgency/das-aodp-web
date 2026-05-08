@@ -1,10 +1,15 @@
-﻿using FluentValidation;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SFA.DAS.Aodp.Domain.Files;
 using SFA.DAS.AODP.Application.Commands.Application.Application;
+using SFA.DAS.AODP.Application.Commands.Files;
 using SFA.DAS.AODP.Application.Queries.Application.Form;
+using SFA.DAS.AODP.Application.Queries.Files.Get;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
+using SFA.DAS.AODP.Infrastructure.Common.IO;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Web.Authentication;
@@ -33,6 +38,7 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
 
         private readonly IFileService _fileService;
         private readonly IUserHelperService _userHelperService;
+        private readonly FileUploadValidator _fileUploadValidator;
 
         private const string DefaultQANValidationMessage = "Invalid Qualification Number.";
 
@@ -40,11 +46,13 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
             IApplicationAnswersValidator validator, 
             ILogger<ApplicationsController> logger, 
             IFileService fileService, 
-            IUserHelperService userHelperService) : base(mediator, logger)
+            IUserHelperService userHelperService,
+            FileUploadValidator fileUploadValidator) : base(mediator, logger)
         {
             _validator = validator;
             _fileService = fileService;
             _userHelperService = userHelperService;
+            _fileUploadValidator = fileUploadValidator;
         }
 
         [HttpGet]
@@ -240,7 +248,16 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         [Route("apply/organisations/{organisationId}/applications/{applicationId}/forms/{formVersionId}/sections/{sectionId}/pages/{pageOrder}")]
         public async Task<IActionResult> ApplicationPage(Guid organisationId, Guid applicationId, Guid sectionId, int pageOrder, Guid formVersionId)
         {
-            Func<string, List<UploadedBlob>> fetchBlobFunc = path => _fileService.ListBlobs(path);
+            var fileResponse = await Send(new GetFileMetadataQuery
+            {
+                FileCategory = FileCategory.QuestionUpload,
+                ApplicationId = applicationId
+            });
+
+            var filesByQuestionId = fileResponse.Files
+                .Where(f => f.QuestionId.HasValue)
+                .GroupBy(f => f.QuestionId!.Value)
+                .ToDictionary(g => g.Key, g => g.ToList());
 
             var request = new GetApplicationPageByIdQuery()
             {
@@ -252,7 +269,7 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
             var cachedApplicationPage = await Send(request);
             var answers = await Send(new GetApplicationPageAnswersByPageIdQuery(applicationId, cachedApplicationPage.Id, sectionId, formVersionId));
 
-            ApplicationPageViewModel viewModel = ApplicationPageViewModel.MapToViewModel(cachedApplicationPage, applicationId, formVersionId, sectionId, organisationId, answers, fetchBlobFunc);
+            ApplicationPageViewModel viewModel = ApplicationPageViewModel.MapToViewModel(cachedApplicationPage, applicationId, formVersionId, sectionId, organisationId, answers, filesByQuestionId);
             viewModel.IsSubmitted = await IsApplicationSubmitted(applicationId);
 
             return View(viewModel);
@@ -269,7 +286,16 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
 
             if (await IsApplicationSubmitted(model.ApplicationId)) return BadRequest();
 
-            Func<string, List<UploadedBlob>> fetchBlobFunc = path => _fileService.ListBlobs(path);
+            var fileResponse = await Send(new GetFileMetadataQuery
+            {
+                FileCategory = FileCategory.QuestionUpload,
+                ApplicationId = applicationId
+            });
+
+            var filesByQuestionId = fileResponse.Files
+                .Where(f => f.QuestionId.HasValue)
+                .GroupBy(f => f.QuestionId!.Value)
+                .ToDictionary(g => g.Key, g => g.ToList());
 
             var request = new GetApplicationPageByIdQuery()
             {
@@ -283,27 +309,31 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
             {
                 if (!string.IsNullOrEmpty(model.RemoveFile))
                 {
-                    if (!model.RemoveFile.StartsWith(model.ApplicationId.ToString()))
-                    {
+                    if (!Guid.TryParse(model.RemoveFile, out var fileId))
                         return BadRequest();
-                    }
-                    await _fileService.DeleteFileAsync(model.RemoveFile);
-                    model = ApplicationPageViewModel.RepopulatePageDataOnViewModel(cachedApplicationPage, model, fetchBlobFunc);
-                    return View(model);
 
+                    if (!fileResponse.Files.Any(f => f.FileId == fileId))
+                        return BadRequest();
+
+                    await _mediator.Send(new DeleteFileMetataCommand { FileId = fileId });
+
+                    model = ApplicationPageViewModel.RepopulatePageDataOnViewModel(
+                        cachedApplicationPage, model, filesByQuestionId);
+
+                    return View(model);
                 }
                 _validator.ValidateApplicationPageAnswers(ModelState, cachedApplicationPage, model);
 
                 if (!ModelState.IsValid)
                 {
-                    model = ApplicationPageViewModel.RepopulatePageDataOnViewModel(cachedApplicationPage, model, fetchBlobFunc);
+                    model = ApplicationPageViewModel.RepopulatePageDataOnViewModel(cachedApplicationPage, model, filesByQuestionId);
                     return View(model);
                 }
                 var command = ApplicationPageViewModel.MapToCommand(model, cachedApplicationPage);
 
                 var commandResponse = await Send(command);
 
-                await HandleFileUploads(model, cachedApplicationPage);
+                await HandleFileUploads(model);
 
                 bool endSection = command.Routing?.EndSection == true || cachedApplicationPage.TotalSectionPages == cachedApplicationPage.Order;
                 if (endSection) return RedirectToAction(nameof(ViewApplicationSection), new { organisationId = model.OrganisationId, applicationId = model.ApplicationId, sectionId = model.SectionId, formVersionId = model.FormVersionId });
@@ -323,7 +353,7 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
             {
                 LogException(ex);
 
-                model = ApplicationPageViewModel.RepopulatePageDataOnViewModel(cachedApplicationPage, model, fetchBlobFunc);
+                model = ApplicationPageViewModel.RepopulatePageDataOnViewModel(cachedApplicationPage, model, filesByQuestionId);
                 return View(model);
             }
         }
@@ -357,7 +387,7 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
                 var command = new DeleteApplicationCommand(model.ApplicationId);
 
                 await Send(command);
-                await DeleteApplicationFiles(model.ApplicationId);
+
                 TempData[UpdateKeys.ApplicationDeletedKey.ToString()] = true;
                 return RedirectToAction(nameof(Index));
             }
@@ -483,25 +513,46 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         #endregion
 
 
-        private async Task HandleFileUploads(ApplicationPageViewModel viewModel, GetApplicationPageByIdQueryResponse response)
+        private async Task HandleFileUploads(
+            ApplicationPageViewModel viewModel)
         {
-            foreach (var question in viewModel.Questions?.Where(q => q.Type == AODP.Models.Forms.QuestionType.File) ?? [])
+            foreach (var question in viewModel.Questions
+                .Where(q => q.Type == AODP.Models.Forms.QuestionType.File))
             {
-                var prefix = response.Questions.First(r => r.Id == question.Id).FileUpload?.FileNamePrefix ?? string.Empty;
                 foreach (var file in question.Answer?.FormFiles ?? [])
-                {
+                { 
                     using var stream = file.OpenReadStream();
-                    await _fileService.UploadFileAsync($"{viewModel.ApplicationId}/{question.Id}", file.FileName, stream, file.ContentType, prefix);
-                }
-            }
-        }
 
-        private async Task DeleteApplicationFiles(Guid applicationId)
-        {
-            var files = _fileService.ListBlobs(applicationId.ToString());
-            foreach (var file in files)
-            {
-                await _fileService.DeleteFileAsync(file.FullPath);
+                    _fileUploadValidator.ValidateOrThrow(
+                            file.FileName,
+                            stream,
+                            importFileSize: null);
+
+
+                    var location = await _fileService.UploadAsync(
+                        FileCategory.QuestionUpload,
+                        new FileContext
+                        (
+                            viewModel.ApplicationId,
+                            question.Id,
+                            null
+                        ),
+                        file.FileName,
+                        file.ContentType,
+                        stream);
+
+                    await _mediator.Send(new CreateFileMetadataCommand
+                    {
+                        FileCategory = FileCategory.QuestionUpload,
+                        FileName = file.FileName,
+                        ContentType = file.ContentType,
+                        BlobContainer = location.Container,
+                        BlobPath = location.BlobPath,
+                        ApplicationId = viewModel.ApplicationId,
+                        QuestionId = question.Id,
+                        UploadedBy = _userHelperService.GetUserDisplayName() ?? string.Empty,
+                    });
+                }
             }
         }
 

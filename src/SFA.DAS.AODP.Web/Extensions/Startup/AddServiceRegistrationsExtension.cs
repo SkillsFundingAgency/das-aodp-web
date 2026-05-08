@@ -1,10 +1,11 @@
 ﻿using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Domain.Interfaces;
 using SFA.DAS.AODP.Infrastructure.ApiClient;
+using SFA.DAS.AODP.Infrastructure.Common.IO;
 using SFA.DAS.AODP.Infrastructure.Extensions;
+using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Web.Helpers.File;
 using SFA.DAS.AODP.Web.Helpers.User;
-using System.Diagnostics.CodeAnalysis;
 
 namespace SFA.DAS.AODP.Web.Extensions.Startup;
 
@@ -28,6 +29,10 @@ public static class AddServiceRegistrationsExtension
         services.AddScoped<IUserHelperService, UserHelperService>();
 
         services.AddSingleton<IMessageFileValidationService, MessageFileValidationService>();
+
+        services.AddSingleton<FileUploadValidator>();
+
+        services.AddSingleton<IFileStorageLocationPolicy, AzureBlobLocationPolicy>();
 
         return services;
     }
