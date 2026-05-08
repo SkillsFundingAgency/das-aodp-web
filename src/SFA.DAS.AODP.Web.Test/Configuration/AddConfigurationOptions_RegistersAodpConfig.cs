@@ -82,9 +82,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Configuration
             // Arrange
             var inmemorySettings = new Dictionary<string, string>
             {
-                { "BlobStorageSettings:ConnectionString", "ConnectionString" },
-                { "BlobStorageSettings:QuarantineContainerName", "quarantine-container" },
-                { "BlobStorageSettings:SafeContainerName", "safe-container" }
+                { "BlobStorageSettings:ConnectionString", "ConnectionString" }
             };
 
             IConfiguration configuration = new ConfigurationBuilder()
@@ -101,14 +99,10 @@ namespace SFA.DAS.AODP.Web.UnitTests.Configuration
             var options = serviceProvider.GetRequiredService<IOptions<BlobStorageSettings>>();
 
             Assert.Equal("ConnectionString", options.Value.ConnectionString);
-            Assert.Equal("quarantine-container", options.Value.QuarantineContainerName);
-            Assert.Equal("safe-container", options.Value.SafeContainerName);
 
             var singleton = serviceProvider.GetRequiredService<BlobStorageSettings>();
 
             Assert.Equal("ConnectionString", singleton.ConnectionString);
-            Assert.Equal("quarantine-container", singleton.QuarantineContainerName);
-            Assert.Equal("safe-container", singleton.SafeContainerName);
         }
 
 

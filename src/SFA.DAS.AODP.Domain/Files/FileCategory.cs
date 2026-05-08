@@ -2,9 +2,12 @@
 {
     public enum FileCategory
     {
+        Unknown,
         MessageAttachment,
         QuestionUpload,
         Pldns,
-        DefundingList
+        DefundingList,
+        ApprovedFunding,
+        ArchivedFunding
     }
 }

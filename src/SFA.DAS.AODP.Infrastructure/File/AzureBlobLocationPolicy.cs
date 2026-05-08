@@ -43,17 +43,16 @@ namespace SFA.DAS.AODP.Infrastructure.File
                     ),
 
                 // PLDNs imports
-                // importfilescontainer/Pldns/{yyyy/MM}/{fileId}
+                // importfilescontainer/Pldns/{fileId}
                 FileCategory.Pldns =>
                     new FileStorageLocation(
                         ImportsContainer,
                         $"{PldnsPrefix}/" +
-                        $"{DateTime.UtcNow:yyyy/MM}/" +
                         $"{Guid.NewGuid()}"
                     ),
 
                 // Defunding list imports
-                // importfilescontainer/DefundingList/{fileName or fileId}
+                // importfilescontainer/DefundingList/{fileId}
                 FileCategory.DefundingList =>
                     new FileStorageLocation(
                         ImportsContainer,

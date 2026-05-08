@@ -67,7 +67,7 @@ namespace SFA.DAS.AODP.Infrastructure.UnitTests.File
             Assert.Equal(AzureBlobLocationPolicy.ImportsContainer, result.Container);
 
             var expectedPrefix =
-                $"{AzureBlobLocationPolicy.PldnsPrefix}/{DateTime.UtcNow:yyyy/MM}/";
+                $"{AzureBlobLocationPolicy.PldnsPrefix}";
 
             Assert.StartsWith(expectedPrefix, result.BlobPath);
         }
