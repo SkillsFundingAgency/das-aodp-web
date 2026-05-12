@@ -90,6 +90,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     organisation = viewModel.Filter.Organisation,
                     qan = viewModel.Filter.QAN,
                     processStatusIds = viewModel.Filter.ProcessStatusIds,
+                    ageGroups = viewModel.Filter.AgeGroups,
                 });
             }
             catch (Exception ex)
