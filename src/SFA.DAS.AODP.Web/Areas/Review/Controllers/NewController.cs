@@ -169,17 +169,11 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 if (applications != null)
                     model.Applications = ApplicationMapper.Map(applications);
 
-                model.BackArea = "Review";
-                model.BackController = "New";
-                model.BackAction = "Index";
-
                 if (!string.IsNullOrWhiteSpace(returnTo) &&
                     string.Equals(returnTo, "QualificationSearch", StringComparison.OrdinalIgnoreCase))
                 {
-                    model.BackArea = "Review";
                     model.BackController = "QualificationSearch";
-                    model.BackAction = "Index";
-                    model.ReturnTo = "QualificationSearch";
+                    model.ReturnTo = returnTo;
                 }
 
                 return View(model);
@@ -234,7 +228,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         }
 
         [Route("/Review/New/QualificationDetails/Timeline")]
-        public async Task<IActionResult> QualificationDetailsTimeline([FromQuery] string qualificationReference)
+        public async Task<IActionResult> QualificationDetailsTimeline([FromQuery] string qualificationReference, [FromQuery] string? returnTo = null)
         {
             try
             {
@@ -245,6 +239,16 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
                 QualificationDetailsTimelineViewModel result = await Send(new GetDiscussionHistoriesForQualificationQuery { QualificationReference = qualificationReference });
                 result.Qan = qualificationReference;
+
+                
+
+                if (!string.IsNullOrWhiteSpace(returnTo) &&
+                    string.Equals(returnTo, "QualificationSearch", StringComparison.OrdinalIgnoreCase))
+                {
+                    result.BackController = "QualificationSearch";
+                    result.ReturnTo = returnTo;
+                }
+
                 return View(result);
             }
             catch (Exception ex)

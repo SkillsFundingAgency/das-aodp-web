@@ -6,8 +6,9 @@
 
     var backLinkModel = new BackLinkModel
     {
-        Action = "Index",
-        Controller = "New",
+        Action = Model.BackAction,
+        Area = Model.BackArea,
+        Controller = Model.BackController,
         Text = "Return to qualifications"
     };
 }
@@ -23,12 +24,22 @@
 <div class="govuk-tabs" data-module="govuk-tabs">
     <ul class="govuk-tabs__list">
         <li class="govuk-tabs__list-item govuk-tabs__list-item">
-            <a class="govuk-link" href="/Review/New/QualificationDetails?qualificationReference=@Model.Qan">
+            <a class="govuk-link"
+                   asp-area="Review"
+                   asp-controller="New"
+                   asp-action="QualificationDetails"
+                   asp-route-qualificationReference="@Model.Qan"
+                   asp-route-returnTo="@Model.ReturnTo">
                 Details
             </a>
         </li>
         <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
-            <a class="govuk-link" href="/Review/New/QualificationDetails/Timeline?qualificationReference=@Model.Qan">
+            <a class="govuk-link"
+                   asp-area="Review"
+                   asp-controller="New"
+                   asp-action="QualificationDetailsTimeline"
+                   asp-route-qualificationReference="@Model.Qan"
+                   asp-route-returnTo="@Model.ReturnTo">
                 History
             </a>
         </li>
