@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Constants;
+using SFA.DAS.AODP.Web.Extensions;
 using SFA.DAS.AODP.Web.Models.BulkActions;
 using SFA.DAS.AODP.Web.Validators.Attributes;
 using SFA.DAS.AODP.Web.Validators.Patterns;
@@ -50,7 +51,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
             public bool NewMessage { get; set; }
             public string? AwardingOrganisation { get; set; }
             public Guid ApplicationReviewId { get; set; }
-            public List<string> ReviewersSummary { get; set; }
+            public List<string> ReviewersSummary { get; set; } = new();
+            public string SubmittedDate { get; set; } = string.Empty; 
+
         }
 
         public void MapApplications(GetApplicationsForReviewQueryResponse response)
@@ -74,7 +77,10 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
                     AwardingOrganisation = application.AwardingOrganisation,
                     NewMessage = application.NewMessage,
                     ApplicationReviewId = application.ApplicationReviewId,
-                    ReviewersSummary = GetReviewersForSearchResults(application)
+                    ReviewersSummary = GetReviewersForSearchResults(application),
+                    SubmittedDate = application.SubmittedAt.HasValue 
+                        ? application.SubmittedAt.Value.ToDateDisplayFormat()
+                        : string.Empty
 
                 });
             }

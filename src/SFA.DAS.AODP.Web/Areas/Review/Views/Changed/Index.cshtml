@@ -45,17 +45,17 @@
                         <div class="govuk-grid-row">
                             <div class="govuk-grid-column-one-half">
                                 <div class="govuk-form-group">
-                                    <govuk-input asp-for="@Model.Filter.QualificationName" inputmode="text" spellcheck="false" autocomplete="off">
+                                    <govuk-input for="@Model.Filter.QualificationName" inputmode="text" spellcheck="false" autocomplete="off">
                                         <govuk-input-label is-page-heading="false" class="govuk-label--s">Qualification Title</govuk-input-label>
                                     </govuk-input>
                                 </div>
                                 <div class="govuk-form-group">
-                                    <govuk-input asp-for="@Model.Filter.QAN" inputmode="text" spellcheck="false" autocomplete="off">
+                                    <govuk-input for="@Model.Filter.QAN" inputmode="text" spellcheck="false" autocomplete="off">
                                         <govuk-input-label is-page-heading="false" class="govuk-label--s">QAN</govuk-input-label>
                                     </govuk-input>
                                 </div>
                                 <div class="govuk-form-group">
-                                    <govuk-input asp-for="@Model.Filter.Organisation" inputmode="text" spellcheck="false" autocomplete="off">
+                                    <govuk-input for="@Model.Filter.Organisation" inputmode="text" spellcheck="false" autocomplete="off">
                                         <govuk-input-label is-page-heading="false" class="govuk-label--s">Awarding Organisation</govuk-input-label>
                                     </govuk-input>
                                 </div>
@@ -63,7 +63,7 @@
                             <div class="govuk-grid-column-one-half">
                                 <div class="govuk-form-group">
                                     <fieldset class="govuk-fieldset govuk-!-static-padding-left-5">
-                                        <govuk-checkboxes name="Filter[ProcessStatusIds]" asp-for="@Model.Filter.ProcessStatusIds">
+                                        <govuk-checkboxes name="Filter[ProcessStatusIds]" for="@Model.Filter.ProcessStatusIds">
                                             <govuk-checkboxes-fieldset>
                                                 <govuk-checkboxes-fieldset-legend is-page-heading="false" class="govuk-label--s">
                                                     <div class="govuk-label govuk-label--s">Status</div>
@@ -84,7 +84,7 @@
 
                         <div class="govuk-grid-row">
                             <div class="govuk-grid-column-full">
-                                <govuk-select asp-for="@Model.PaginationViewModel.RecordsPerPage">
+                                <govuk-select for="@Model.PaginationViewModel.RecordsPerPage">
                                     <govuk-select-label>Qualifications Per Page</govuk-select-label>
                                     <govuk-select-item value="10" selected="true">10</govuk-select-item>
                                     <govuk-select-item value="20">20</govuk-select-item>

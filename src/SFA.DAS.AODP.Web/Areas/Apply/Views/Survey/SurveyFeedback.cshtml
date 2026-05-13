@@ -13,7 +13,7 @@
     @Html.HiddenFor(m => m.Page)
     @Html.AntiForgeryToken()
     <div class="govuk-form-group @(ViewData.ModelState["SatisfactionScore"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
-        <govuk-radios asp-for="SatisfactionScore">
+        <govuk-radios for="SatisfactionScore">
             <govuk-radios-fieldset>
                 <govuk-radios-fieldset-legend is-page-heading="false" class="govuk-fieldset__legend--s">
                     Overall, how did you feel about the service you received today?
@@ -47,7 +47,7 @@
                 <span class="govuk-visually-hidden">Error:</span> @ViewData.ModelState["Comments"]?.Errors[0].ErrorMessage
             </p>
         }
-        <textarea asp-for="Comments"
+        <textarea for="Comments"
                   class="govuk-textarea @(ViewData.ModelState["Comments"]?.Errors.Count > 0 ? "govuk-textarea--error" : "")"
                   id="Comments"
                   rows="5"

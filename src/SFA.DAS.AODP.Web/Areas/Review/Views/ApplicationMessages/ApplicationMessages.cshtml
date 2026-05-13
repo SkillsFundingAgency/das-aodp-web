@@ -48,7 +48,7 @@
                 @Html.HiddenFor(m => m.ApplicationReviewId)
 
                 <h1 class="govuk-label-wrapper">
-                    <label class="govuk-label govuk-label--m" asp-for="MessageText">Message</label>
+                    <label class="govuk-label govuk-label--m" for="MessageText">Message</label>
                 </h1>
                 <div id="more-detail-hint" class="govuk-hint">
                     @Model.Hint
@@ -57,16 +57,16 @@
                 <div class="govuk-form-group @(ViewData.ModelState["MessageText"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
                     <span asp-validation-for="MessageText" class="govuk-error-message"></span>
                     <textarea class="govuk-textarea @(ViewData.ModelState["MessageText"]?.Errors.Count > 0 ? "govuk-textarea--error" : "")" 
-                              asp-for="MessageText"
+                              for="MessageText"
                               rows="5"
                               aria-describedby="@(ViewData.ModelState["MessageText"]?.Errors.Count > 0 ? "messageText-error" : "more-detail-hint")"
                               autocomplete="off"></textarea>
                 </div>
 
                 <div class="govuk-form-group @(ViewData.ModelState["SelectedMessageType"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
-                    <label class="govuk-label" asp-for="SelectedMessageType">Message type</label>
+                    <label class="govuk-label" for="SelectedMessageType">Message type</label>
                     <span asp-validation-for="SelectedMessageType" class="govuk-error-message"></span>
-                    <select asp-for="SelectedMessageType"
+                    <select for="SelectedMessageType"
                             asp-items="@(Model.MessageTypeSelectOptions)"
                             class="govuk-select @(ViewData.ModelState["SelectedMessageType"]?.Errors.Count > 0 ? "govuk-select--error" : "")">
                     </select>

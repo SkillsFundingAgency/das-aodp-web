@@ -39,7 +39,7 @@
             Do not close this window, navigate away or refresh the page until it's done.
         </div>
 
-        <input asp-for="File"
+        <input for="File"
                class="@inputClass"
                id="File"
                name="File"
@@ -54,5 +54,5 @@
         <govuk-button type="submit">Continue</govuk-button>
     </div>
 
-    <input asp-for="Source" type="hidden" value="@(formAction)" />
+    <input for="Source" type="hidden" value="@(formAction)" />
 </form>

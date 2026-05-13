@@ -24,18 +24,18 @@
             <div class="govuk-grid-row">
                 <div class="govuk-grid-column-one-half">
                     <div class="govuk-form-group">
-                        <govuk-input asp-for="@Model.ApplicationSearch" value="@Model.ApplicationSearch" input-class="govuk-input--width-30" inputmode="text" spellcheck="false" autocomplete="off">
+                        <govuk-input for="@Model.ApplicationSearch" value="@Model.ApplicationSearch" input-class="govuk-input--width-30" inputmode="text" spellcheck="false" autocomplete="off">
                             <govuk-input-label is-page-heading="false" class="govuk-label--s">Search by submission ID, qualification title or QAN</govuk-input-label>
                         </govuk-input>
                     </div>
                     <div class="govuk-form-group">
-                        <govuk-input asp-for="@Model.AwardingOrganisationSearch" value="@Model.AwardingOrganisationSearch" input-class="govuk-input--width-30" inputmode="text" spellcheck="false" autocomplete="off">
+                        <govuk-input for="@Model.AwardingOrganisationSearch" value="@Model.AwardingOrganisationSearch" input-class="govuk-input--width-30" inputmode="text" spellcheck="false" autocomplete="off">
                             <govuk-input-label is-page-heading="false" class="govuk-label--s">Search by Awarding Organisation</govuk-input-label>
                         </govuk-input>
                     </div>
                     <div class="govuk-form-group">
                         <label class="govuk-label govuk-label--s" for="ReviewerSelection">Search by reviewer</label>
-                        <select class="govuk-select" asp-for="ReviewerSelection" asp-items="@Model.ReviewerOptions">
+                        <select class="govuk-select" for="ReviewerSelection" asp-items="@Model.ReviewerOptions">
                         </select>
                     </div>
                 </div>
@@ -131,7 +131,7 @@
 
             <div class="govuk-grid-row">
                 <div class="govuk-grid-column-full">
-                    <govuk-select asp-for="@Model.RecordsPerPage">
+                    <govuk-select for="@Model.RecordsPerPage">
                         <govuk-select-label>Applications per page</govuk-select-label>
                         <govuk-select-item value="10" selected="true">10</govuk-select-item>
                         <govuk-select-item value="20">20</govuk-select-item>
@@ -213,6 +213,7 @@
                         <tr class="govuk-table__row">
                             <partial name="~/Views/Shared/_SelectColumnHeader.cshtml" />
                             <th scope="col" class="govuk-table__header">Submission ID</th>
+                            <th scope="col" class="govuk-table__header">Submitted date</th>
                             <th scope="col" class="govuk-table__header">QAN</th>
                             <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Qualification Title</th>
                             <th scope="col" class="govuk-table__header govuk-!-width-one-quarter">Status</th>
@@ -239,6 +240,7 @@
                                 <td class="govuk-table__cell">
                                     @item.Reference.ToString().PadLeft(6, '0')
                                 </td>
+                                <td class="govuk-table__cell">@item.SubmittedDate</td>
                                 <td class="govuk-table__cell">
                                     @if (!string.IsNullOrWhiteSpace(item.Qan))
                               {
