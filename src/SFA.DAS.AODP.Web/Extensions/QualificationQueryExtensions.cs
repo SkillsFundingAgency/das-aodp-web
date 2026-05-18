@@ -47,8 +47,8 @@ namespace SFA.DAS.AODP.Web.Extensions
                 Organisation = q.Organisation ?? string.Empty,
                 QualificationName = q.Name ?? string.Empty,
                 QAN = q.Qan ?? string.Empty,
-                ProcessStatusIds = q.ProcessStatusIds,
-                AgeGroups = q.AgeGroups 
+                ProcessStatusIds = q.ProcessStatusIds ?? new(),
+                AgeGroups = q.AgeGroups ?? new()
             };
         }
 
@@ -73,13 +73,9 @@ namespace SFA.DAS.AODP.Web.Extensions
                     ? null
                     : q.Qan,
 
-                ProcessStatusIds = (q.ProcessStatusIds?.Count > 0)
-                    ? q.ProcessStatusIds
-                    : null,
+                ProcessStatusIds = q.ProcessStatusIds ?? new(),
 
-                AgeGroups = (q.AgeGroups?.Count > 0)
-                    ? q.AgeGroups
-                    : null
+                AgeGroups = q.AgeGroups ?? new()
             };
         }
 
