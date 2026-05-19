@@ -95,5 +95,48 @@ namespace SFA.DAS.AODP.Application.Tests.Commands.FormBuilder.Forms
             Assert.Equal(processStatuses, captured.ProcessStatusFilter);
             Assert.Equal(ageGroups, captured.AgeGroups);
         }
+
+        [Fact]
+        public void GetUrl_Includes_AgeGroups_In_QueryString()
+        {
+            // Arrange
+            var request = new GetNewQualificationsApiRequest
+            {
+                Skip = 10,
+                Take = 20,
+                AgeGroups = new List<AgeGroup>
+                {
+                    AgeGroup.Pre16,
+                    AgeGroup.EighteenPlus
+                }
+            };
+
+            // Act
+            var url = request.GetUrl;
+
+            // Assert
+            Assert.Contains("AgeGroups=0", url);
+            Assert.Contains("AgeGroups=2", url);
+        }
+
+        [Fact]
+        public void GetUrl_Does_Not_Include_AgeGroups_When_Empty()
+        {
+            // Arrange
+            var request = new GetNewQualificationsApiRequest
+            {
+                Skip = 0,
+                Take = 10,
+                AgeGroups = new List<AgeGroup>()
+            };
+
+            // Act
+            var url = request.GetUrl;
+
+            // Assert
+            Assert.DoesNotContain("AgeGroups=", url);
+        }
+
     }
+
 }

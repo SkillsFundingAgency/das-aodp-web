@@ -40,6 +40,9 @@ namespace SFA.DAS.AODP.Web.Tests.Extensions
                 Assert.NotNull(result.ProcessStatusFilter);
                 Assert.NotNull(result.ProcessStatusFilter.ProcessStatusIds);
                 Assert.Empty(result.ProcessStatusFilter.ProcessStatusIds);
+                Assert.NotNull(result.AgeGroups);
+                Assert.Empty(result.AgeGroups);
+
             });
         }
 
@@ -47,6 +50,7 @@ namespace SFA.DAS.AODP.Web.Tests.Extensions
         public void ToGetNewQualificationsQuery_Maps_Filter_Properties_When_Populated()
         {
             var processStatusIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
+            var ageGroups = new List<AgeGroup> { AgeGroup.Pre16, AgeGroup.SixteenToEighteen, AgeGroup.EighteenPlus, AgeGroup.NineteenPlus };
 
             var query = new QualificationQuery
             {
@@ -55,7 +59,8 @@ namespace SFA.DAS.AODP.Web.Tests.Extensions
                 Name = QualificationName,
                 Organisation = OrganisationName,
                 Qan = Qan,
-                ProcessStatusIds = processStatusIds
+                ProcessStatusIds = processStatusIds,
+                AgeGroups = ageGroups
             };
 
             var result = query.ToGetNewQualificationsQuery();
@@ -69,6 +74,8 @@ namespace SFA.DAS.AODP.Web.Tests.Extensions
                 Assert.Equal(Qan, result.QAN);
                 Assert.NotNull(result.ProcessStatusFilter);
                 Assert.Equal(processStatusIds, result.ProcessStatusFilter.ProcessStatusIds);
+                Assert.NotNull(result.AgeGroups);
+                Assert.Equal(ageGroups, result.AgeGroups);
             });
         }
 

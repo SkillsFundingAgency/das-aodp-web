@@ -2,6 +2,7 @@
 
 namespace SFA.DAS.AODP.Web.Helpers
 {
+    [ExcludeFromCodeCoverage]
     public static class AgeGroupHelper
     {
         public static string ToDisplay(this AgeGroup ageGroup)
