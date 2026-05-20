@@ -586,7 +586,7 @@ public class RolloverControllerTests
 
         // assert redirect
         var redirect = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal(nameof(RolloverController.ImportCandidatesList), redirect.ActionName);
+        Assert.Equal(nameof(RolloverController.UploadQualificationCandidates), redirect.ActionName);
 
         // assert
         Assert.True(session.TryGetValue("RolloverSession", out var bytes));
@@ -628,20 +628,6 @@ public class RolloverControllerTests
     }
 
     [Fact]
-    public void ImportCandidatesList_Get_SetsTitle()
-    {
-        // arrange
-        var controller = CreateControllerWithSession(new TestSession());
-
-        // act
-        var result = controller.ImportCandidatesList();
-
-        // assert
-        var viewResult = Assert.IsType<ViewResult>(result);
-        Assert.Equal("Import Candidates List ", viewResult.ViewData["Title"]);
-    }
-
-    [Fact]
     public void RolloverQueryBuilder_Get_SetsTitle()
     {
         // arrange
@@ -653,6 +639,41 @@ public class RolloverControllerTests
         // assert
         var viewResult = Assert.IsType<ViewResult>(result);
         Assert.Equal("Rollover Query Builder", viewResult.ViewData["Title"]);
+    }
+
+
+    [Fact]
+    public async Task EnterRolloverEligibilityDates_ReturnsViewResult()
+    {
+        // Arrange
+
+        // Act
+        var result = await _controller.EnterRolloverEligibilityDates();
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.Null(viewResult.ViewName); // using default view
+    }
+
+
+    [Fact]
+    public async Task EnterRolloverEligibilityDates_WhenModelIsValid_RedirectsToFundingApprovalEndDate()
+    {
+        // Arrange
+        var model = new RolloverEligibilityDatesViewModel();
+        var validationResult = new ValidationResult(); // no errors => valid
+
+        _eligibilityDatesValidatorMock
+            .Setup(v => v.ValidateAsync(model, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(validationResult);
+
+        // Act
+        var result = await _controller.EnterRolloverEligibilityDates(model);
+
+        // Assert
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal(nameof(RolloverController.EnterRolloverFundingApprovalEndDate), redirect.ActionName);
+        _eligibilityDatesValidatorMock.Verify(v => v.ValidateAsync(model, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -1236,6 +1257,7 @@ public class RolloverControllerTests
         // also ensure validator was invoked
         _eligibilityDatesValidatorMock.Verify(v => v.ValidateAsync(model, It.IsAny<CancellationToken>()), Times.Once);
     }
+
 
     [Fact]
     public void EnterRolloverFundingApprovalEndDate_Get_ReturnsView()

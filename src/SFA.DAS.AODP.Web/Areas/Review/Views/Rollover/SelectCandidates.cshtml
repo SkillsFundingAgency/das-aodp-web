@@ -21,11 +21,11 @@
 
     <input asp-for="ReturnUrl" type="hidden" />
 
-        <govuk-radios asp-for="@Model.SelectedOption">
+        <govuk-radios for="@Model.SelectedOption">
             <govuk-radios-fieldset>
                 <govuk-radios-fieldset-legend is-page-heading="true" class="govuk-fieldset__legend--l">@ViewData["Title"]</govuk-radios-fieldset-legend>
 
-                @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.SelectedOption))
+                @await Html.PartialAsync("Validation/_RadioValidationPartial", nameof(Model.SelectedOption))
 
                 <govuk-radios-item value="ImportAList">Import a list</govuk-radios-item>
                 <govuk-radios-item value="GenerateAList">Generate a list of candidates by selecting level, type, SSA and AO</govuk-radios-item>

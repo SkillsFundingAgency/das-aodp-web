@@ -3,31 +3,22 @@
 
 @using System.Security.Claims
 @{
-	ViewData["Title"] = "Import Data";
+    ViewData["Title"] = "Import Data";
 }
 
-<div class="govuk-width-container">
-	<main class="govuk-main-wrapper">
-		<div class="govuk-grid-row">
-			<div class="govuk-grid-column-two-thirds">
-
-                <div class="govuk-grid-row">
-                <govuk-panel heading-level="2">
-                    <govuk-panel-title>Import complete</govuk-panel-title>
-                    <govuk-panel-body>
-                    </govuk-panel-body>
-                </govuk-panel>
-                </div>
-                <div class="govuk-grid-row">
-                    <div class="govuk-form-group">
-                        <p class="govuk-body">@Model.UserName imported @Model.ImportType at @Model.CompletedTime.ToShortDateString() @Model.CompletedTime.ToShortTimeString()</p>
-                    </div>
-                   
-                    <a class="govuk-link" asp-action="Index" asp-controller="Home" asp-area="Review">
-                        Go to the QFAST homepage
-                    </a>
-                </div>              
-			</div>
-		</div>
-	</main>
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <govuk-panel heading-level="2">
+            <govuk-panel-title>Import complete</govuk-panel-title>
+            <govuk-panel-body>
+            </govuk-panel-body>
+        </govuk-panel>
+    </div>
 </div>
+<div class="govuk-form-group">
+    <p class="govuk-body">@Model.UserName imported @Model.ImportType at @Model.CompletedTime.ToShortDateString() @Model.CompletedTime.ToShortTimeString()</p>
+</div>
+                   
+<a class="govuk-link" asp-action="Index" asp-controller="Home" asp-area="Review">
+    Go to the QFAST homepage
+</a>

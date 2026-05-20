@@ -1,4 +1,5 @@
 ﻿using SFA.DAS.AODP.Models.Application;
+using SFA.DAS.AODP.Models.Qualifications;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApproval;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
@@ -8,11 +9,13 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
         public Guid ApplicationReviewId { get; set; }
         public string? Comments { get; set; }
         public ApplicationStatus? Status { get; set; }
-        public bool Approved { get; set; }
+
+        public bool CanSubmit { get; set; }
+        public List<string> Messages { get; set; } = new();
 
         public List<OfferFunding> OfferFundingDetails { get; set; } = new();
         public List<FundingOffer> FundingOffers { get; set; } = new();
-
+        public Qualification? RelatedQualification { get; set; }
 
 
         public class OfferFunding
@@ -29,8 +32,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
             public string Name { get; set; }
         }
 
-        public Qualification? RelatedQualification { get; set; }
-
         public class Qualification
         {
             public string? Qan { get; set; }
@@ -38,12 +39,12 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
             public string? Name { get; set; }
         }
 
-        public static QfauFundingDecisionViewModel Map(GetQfauFeedbackForApplicationReviewConfirmationQueryResponse response, GetFundingOffersQueryResponse offers)
+        public static QfauFundingDecisionViewModel Map(Guid applicationReviewid, GetQfauFeedbackForApplicationReviewConfirmationQueryResponse response, GetFundingOffersQueryResponse offers)
         {
             Enum.TryParse(response.Status, out ApplicationStatus status);
             QfauFundingDecisionViewModel model = new()
             {
-                Approved = status == ApplicationStatus.Approved,
+                ApplicationReviewId = applicationReviewid,
                 Comments = response.Comments,
                 Status = status,
             };
@@ -70,6 +71,30 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
             }
 
             model.MapOffers(offers);
+
+            var messages = new List<string>();
+
+            var qualificationStatus = model.RelatedQualification?.Status;
+
+            if (model.Status == ApplicationStatus.NotApproved && model.OfferFundingDetails.Count > 0)
+            {
+                messages.Add(FundingDecisionMessages.NotApprovedWithOffers);
+            }
+            else if (model.Status != ApplicationStatus.NotApproved && model.Status != ApplicationStatus.Approved)
+            {
+                messages.Add(FundingDecisionMessages.InvalidStatus);
+            }
+            else if (model.Status == ApplicationStatus.Approved && model.RelatedQualification == null)
+            {
+                messages.Add(FundingDecisionMessages.MissingQualification);
+            }
+            else if (qualificationStatus is ProcessStatus.Rejected or ProcessStatus.NoActionRequired)
+            {
+                messages.Add(FundingDecisionMessages.InvalidQualificationStatus(qualificationStatus));
+            }
+
+            model.Messages = messages;
+            model.CanSubmit = ! (messages.Count > 0);
 
             return model;
         }
