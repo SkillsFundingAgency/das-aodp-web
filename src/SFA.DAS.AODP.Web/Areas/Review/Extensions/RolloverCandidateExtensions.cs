@@ -14,6 +14,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Extensions
                     Id = g.First().FundingOfferId!,
                     Name = g.First().FundingOfferName!
                 })
+                .OrderBy(x => x.Name)
                 .ToList();
         }
 
@@ -23,9 +24,10 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Extensions
 
             foreach (var item in items)
             {
-                var candidate = rolloverCandidates.Where(x => x.QualificationNumber == item.QualificationNumber).FirstOrDefault();
+                var candidates = rolloverCandidates.Where(x => x.QualificationNumber == item.QualificationNumber).ToList();
 
-                if (candidate != null)
+                foreach (var candidate in candidates)
+                {
                     list.Add(new QualificationCandidate
                     {
                         QualificationNumber = candidate.QualificationNumber,
@@ -35,9 +37,10 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Extensions
                         RolloverCandidateId = candidate.Id,
                         QualificationVersionId = candidate.QualificationVersionId,
                         AwardingOrganisation = item.AwardingOrganisation,
-                        FundingApprovalEndDate = item.FundingApprovalEndDate,                        
+                        FundingApprovalEndDate = item.FundingApprovalEndDate,
                         QualificationName = item.QualificationName
                     });
+                }
             }
 
             return list;

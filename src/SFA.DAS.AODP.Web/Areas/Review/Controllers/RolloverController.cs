@@ -384,6 +384,7 @@ public class RolloverController : ControllerBase
         }
 
         session.RolloverCandidates = matchedCsv;
+        session.RolloverFundingStream = null;
 
         SaveSessionModel(session);
 
@@ -575,12 +576,14 @@ public class RolloverController : ControllerBase
 
         var response = await Send(command);
 
-        return CheckingData();
+        return await CheckingData();
     }
 
-    public IActionResult CheckingData()
+    public async Task<IActionResult> CheckingData()
     {
-        Thread.Sleep(3000);
+        
+        await Send(new UpdateRolloverWorkflowCandidatesAfterP1ChecksCommand());
+
         return RedirectToAction(nameof(InitialChecksExport));
     }
 
