@@ -576,14 +576,6 @@ public class RolloverController : ControllerBase
 
         var response = await Send(command);
 
-        return await CheckingData();
-    }
-
-    public async Task<IActionResult> CheckingData()
-    {
-        
-        await Send(new UpdateRolloverWorkflowCandidatesAfterP1ChecksCommand());
-
         return RedirectToAction(nameof(InitialChecksExport));
     }
 
