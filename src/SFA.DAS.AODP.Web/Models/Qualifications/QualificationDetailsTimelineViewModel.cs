@@ -8,6 +8,11 @@ public class QualificationDetailsTimelineViewModel
 {
     public List<QualificationDiscussionHistoryViewModel> QualificationDiscussionHistories { get; set; } = new List<QualificationDiscussionHistoryViewModel>();
     public string Qan { get; set; } = string.Empty;
+    public string BackArea { get; set; } = "Review";
+    public string BackController { get; set; } = "New";
+    public string BackAction { get; set; } = "Index";
+    public string? ReturnTo { get; set; } = null;
+
     public static implicit operator QualificationDetailsTimelineViewModel(QualificationDiscussionHistoriesResponse model)
     {
         return new QualificationDetailsTimelineViewModel

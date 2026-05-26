@@ -9,8 +9,9 @@
             <li id="Options.Options[@i]" style="display: flex; align-items: flex-end;">
 
                 <div class="govuk-form-group" style="width:80%">
-                    <label class="govuk-label"
-                           for="Options-@i">Option @(i + 1)</label>
+                    <label for="Options.Options[@i].Value" class="govuk-label">
+                        Option @(i + 1)
+                    </label>
 
                     <input type="hidden" name="Options[Options][@i][Id]" value="@Model.Options[i].Id" />
                     @{
@@ -23,12 +24,13 @@
                             </p>
                         }
                     }
-                    <input type="text"
-                           name="Options[Options][@i][Value]"
-                           class="govuk-input"
-                           value="@Model.Options[i].Value"
-                           id="Options-@i"
-                           autocomplete="off"/>
+                    
+                    <input name="Options[Options][@i][Value]"
+                        id="Options.Options[@i].Value"
+                        class="govuk-input"
+                        value="@Model.Options[i].Value"
+                        autocomplete="off" />
+
                 </div>
 
                 @if (ViewBag.IsEditable)

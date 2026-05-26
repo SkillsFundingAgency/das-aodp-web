@@ -7,7 +7,7 @@ namespace SFA.DAS.AODP.Application.Services
     //Builds additional timeline entries to describe
     // - changed field values (if VersionFieldChanges contains field names)
     // - eligibility failures (if FundingEligibilityFailedFields contains field names)
-    //
+    // - special case added for EligibleForFunding field changes to display the new value as "eligible" or "not eligible" rather than "true" or "false"
     //
     public class QualificationTimelineHistoryBuilder : IQualificationTimelineHistoryBuilder
     {
@@ -260,14 +260,34 @@ namespace SFA.DAS.AODP.Application.Services
 
         private static string BuildChangeString(List<FieldChange> fieldChanges)
         {
-            var items = fieldChanges
-                .Select(x => $"{x.Name} changed from {x.Was?.ToLower()} to {x.Now?.ToLower()}")
-                .ToList();
+            var items = fieldChanges.Select(x =>
+            {
+                if (x.Name.Equals("Eligibility Status", StringComparison.OrdinalIgnoreCase))
+                {
+                    return $"{x.Name} changed to {FormatEligibility(x.Now)}";
+                }
+
+                // Default behaviour
+                return $"{x.Name} changed from {x.Was?.ToLower()} to {x.Now?.ToLower()}";
+            }).ToList();
 
             return TimelineFormattingHelper.ToDisplayString(
                 items,
                 string.Empty,
                 "The following fields changed:");
+        }
+
+        private static string FormatEligibility(string? now)
+        {
+            if (string.IsNullOrWhiteSpace(now))
+                return string.Empty;
+
+            return now.Trim().ToLowerInvariant() switch
+            {
+                "true" => "eligible",
+                "false" => "not eligible",
+                _ => now.Trim().ToLowerInvariant()
+            };
         }
 
         private static List<QualificationDiscussionHistory> BuildFundingEligibilityEntries(List<GetQualificationDetailsQueryResponse> versions)
