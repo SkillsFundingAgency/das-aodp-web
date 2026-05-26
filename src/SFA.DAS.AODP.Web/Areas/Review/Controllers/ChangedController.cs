@@ -1,4 +1,5 @@
-﻿using CsvHelper.Configuration;
+﻿using System.Collections.ObjectModel;
+using CsvHelper.Configuration;
 using CsvHelper.Configuration.Attributes;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -34,7 +35,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         private readonly IMediator _mediator;
         private readonly IUserHelperService _userHelperService;
 
-        private static readonly IReadOnlyDictionary<string, KeyField> KeyFieldLookup = KeyField.All.ToDictionary(k => k.Key, k => k, StringComparer.OrdinalIgnoreCase);
+        private static readonly Dictionary<string, KeyField> KeyFieldLookup = KeyField.All.ToDictionary(k => k.Key, k => k, StringComparer.OrdinalIgnoreCase);
 
                 private List<string> ReviewerAllowedStatuses { get; set; } = new List<string>()
                 {
@@ -162,7 +163,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             try
             {
                 QualificationDetailsTimelineViewModel discussionHistoryDetailsResult = await Send(new GetDiscussionHistoriesForQualificationQuery { QualificationReference = qualificationReference });
-                ChangedQualificationDetailsViewModel qualificationWithVersions = await Send(new GetQualificationDetailWithVersionsQuery { QualificationReference = qualificationReference });
+                
+                ChangedQualificationDetailsViewModel qualificationWithVersions = ChangedQualificationDetailsViewModel.MapToView(await Send(new GetQualificationDetailWithVersionsQuery { QualificationReference = qualificationReference }));
 
                 var latestVersionNumber = qualificationWithVersions.Qual.Versions.Max(i => i.Version) ?? 0;
 
@@ -174,11 +176,11 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                         if (i != latestVersionNumber)
                             currentVersion = qualificationWithVersions.Qual.Versions.Where(v => v.Version == i).FirstOrDefault();
                         var previousVersion = qualificationWithVersions.Qual.Versions.Where(v => v.Version == i - 1).FirstOrDefault();
-                        var keyFieldsChanges = currentVersion?.ChangedFields;
+                        var keyFieldsChanges = currentVersion?.GetChangedFields();
 
                         if (currentVersion == null || previousVersion == null) continue;
 
-                        GetKeyFieldChanges(currentVersion, previousVersion, keyFieldsChanges);
+                        GetKeyFieldChanges(currentVersion, previousVersion, keyFieldsChanges!);
 
                         if (currentVersion.KeyFieldChanges.Any())
                         {
@@ -303,7 +305,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
             try
             {
-                ChangedQualificationDetailsViewModel latestVersion = await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });
+                var latestVersion = ChangedQualificationDetailsViewModel.MapToView(await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference }));
                 latestVersion.ProcessStatuses = [.. await GetProcessStatuses()];
 
                 ShowNotificationIfKeyExists(NewQualDataKeys.CommentSaved.ToString(), ViewNotificationMessageType.Success, "The comment has been saved.");
@@ -321,10 +323,10 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
                 if (latestVersion.Version > 1)
                 {
-                    var previousVersion = await Send(new GetQualificationVersionQuery() { QualificationReference = qualificationReference, Version = latestVersion.Version - 1 });
+                    var previousVersion = await Send(new GetQualificationVersionQuery { QualificationReference = qualificationReference, Version = latestVersion.Version - 1 });
 
-                    var keyFieldsChanges = latestVersion?.ChangedFields;
-                    GetKeyFieldChanges(latestVersion, previousVersion, keyFieldsChanges!);
+                    var keyFieldsChanges = latestVersion.GetChangedFields();
+                    GetKeyFieldChanges(latestVersion, ChangedQualificationDetailsViewModel.MapToView(previousVersion), keyFieldsChanges);
                 }
                 return View(latestVersion);
             }

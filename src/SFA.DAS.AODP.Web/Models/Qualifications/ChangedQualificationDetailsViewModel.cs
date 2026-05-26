@@ -25,16 +25,7 @@ public class ChangedQualificationDetailsViewModel
     public Guid LifecycleStageId { get; set; }
     public string? ChangedFieldNames { get; set; }
 
-    public IList<string> ChangedFields
-    {
-        get
-        {
-            var splitEntries = ChangedFieldNames?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList() ?? [];
-            return splitEntries.IntersectBy(_keyFields.Select(o => o.FieldName.Key), x => x, StringComparer.InvariantCultureIgnoreCase).ToList();
-        }
-    }
-
-    public string ChangeFieldsForDisplay => string.Join(", ", ChangedFields);
+    public string ChangeFieldsForDisplay => string.Join(", ", GetChangedFields());
 
     public string? OutcomeJustificationNotes { get; set; }
     public Guid AwardingOrganisationId { get; set; }
@@ -117,11 +108,19 @@ public class ChangedQualificationDetailsViewModel
 
     public KeyFieldPriority Priority => MapChangedFieldsToPriority();
 
+    public IList<string> GetChangedFields()
+    {
+        var splitEntries = ChangedFieldNames?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList() ?? [];
+        return splitEntries
+            .IntersectBy(_keyFields.Select(o => o.FieldName.Key), x => x, StringComparer.InvariantCultureIgnoreCase)
+            .ToList();
+    }
+
     private KeyFieldPriority MapChangedFieldsToPriority()
     {
         var priority = KeyFieldPriority.Green;
         
-        if (Status is ActionTypeEnum.NoActionRequired || !ChangedFields.Any())
+        if (Status is ActionTypeEnum.NoActionRequired || !GetChangedFields().Any())
         {
             return priority;
         }
@@ -129,14 +128,14 @@ public class ChangedQualificationDetailsViewModel
         var keyFieldPriorities = _keyFields
             .ToDictionary(k => k.FieldName.Key, k => k.Priority, StringComparer.InvariantCultureIgnoreCase);
 
-        if (ChangedFields
+        if (GetChangedFields()
             .Any(c => 
                 keyFieldPriorities.TryGetValue(c, out var p) && p == KeyFieldPriority.Red))
         {
             return KeyFieldPriority.Red;
         }
 
-        if (ChangedFields
+        if (GetChangedFields()
             .Any(c => 
                 keyFieldPriorities.TryGetValue(c, out var p) && p == KeyFieldPriority.Yellow))
         {
@@ -219,7 +218,7 @@ public class ChangedQualificationDetailsViewModel
         public Guid? ProcessStatusId { get; set; }
     }
 
-    public static implicit operator ChangedQualificationDetailsViewModel(GetQualificationDetailsQueryResponse entity)
+    public static ChangedQualificationDetailsViewModel MapToView(GetQualificationDetailsQueryResponse entity)
     {
         return new ChangedQualificationDetailsViewModel()
         {
@@ -401,4 +400,3 @@ public class ChangedQualificationDetailsViewModel
         };
     }
 }
-

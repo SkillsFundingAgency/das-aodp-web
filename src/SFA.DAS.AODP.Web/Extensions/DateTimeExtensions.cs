@@ -4,16 +4,7 @@ namespace SFA.DAS.AODP.Web.Extensions
 {
     public static class DateTimeExtensions
     {
-        private static readonly CultureInfo LowercaseAmPmCulture;
-
-        static DateTimeExtensions()
-        {
-            var culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
-            culture.DateTimeFormat.AMDesignator = "am";
-            culture.DateTimeFormat.PMDesignator = "pm";
-
-            LowercaseAmPmCulture = culture;
-        }
+        private static readonly CultureInfo LowercaseAmPmCulture = CreateCulture();
 
         public static string ToDateTimeDisplayFormat(this DateTime dateTime)
         {
@@ -43,6 +34,15 @@ namespace SFA.DAS.AODP.Web.Extensions
         public static string ToStandardDateFormat(this DateOnly date)
         {
             return date.ToString("dd MMMM yyyy", CultureInfo.InvariantCulture);
+        }
+
+        private static CultureInfo CreateCulture()
+        {
+            var culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
+            culture.DateTimeFormat.AMDesignator = "am";
+            culture.DateTimeFormat.PMDesignator = "pm";
+
+            return culture;
         }
     }
 }

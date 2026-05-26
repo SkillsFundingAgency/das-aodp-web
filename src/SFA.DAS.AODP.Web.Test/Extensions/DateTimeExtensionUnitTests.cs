@@ -61,4 +61,30 @@ public class DateTimeExtensionUnitTests : UnitTest
         // Assert
         result.ShouldBeEquivalentTo(expected);
     }
+
+    [Fact]
+    public void ToStandardDateFormat_ShortMonthFormat_ShouldDisplayFullMonth()
+    {
+        // Arrange
+        var testDate = new DateOnly(2026, 5, 22);
+
+        // Act
+        var result = testDate.ToStandardDateFormat();
+
+        // Assert
+        result.ShouldBeEquivalentTo("22 May 2026");
+    }
+
+    [Fact]
+    public void ToStandardDateFormat_LongMonthFormat_ShouldDisplayFullMonth()
+    {
+        // Arrange
+        var testDate = new DateOnly(2026, 12, 22);
+
+        // Act
+        var result = testDate.ToStandardDateFormat();
+
+        // Assert
+        result.ShouldBeEquivalentTo("22 December 2026");
+    }
 }
