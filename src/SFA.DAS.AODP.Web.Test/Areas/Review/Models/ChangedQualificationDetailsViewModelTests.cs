@@ -215,7 +215,7 @@ public class ChangedQualificationDetailsViewModelTests
     public void ChangedFields_WhenChangedFieldNamesContainsEmptyEntries_ThenRemovesEmptyEntriesAndTrimsValues()
     {
         // Arrange
-        var keyField = KeyField.All.First();
+        var keyField = KeyField.All[0];
 
         var viewModel = new ChangedQualificationDetailsViewModel
         {
@@ -236,7 +236,7 @@ public class ChangedQualificationDetailsViewModelTests
     public void ChangedFields_WhenChangedFieldNamesUsesDifferentCasing_ThenMatchesKeyFieldsCaseInsensitively()
     {
         // Arrange
-        var keyField = KeyField.All.First();
+        var keyField = KeyField.All[0];
         var changedFieldName = keyField.Key.ToUpperInvariant();
 
         var viewModel = new ChangedQualificationDetailsViewModel
