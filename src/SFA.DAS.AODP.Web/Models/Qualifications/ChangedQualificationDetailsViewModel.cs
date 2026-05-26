@@ -7,7 +7,7 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications;
 
 public class ChangedQualificationDetailsViewModel
 {
-    private readonly IList<KeyFieldPriorityMapping> _keyFields = KeyField.All.Select(k => new KeyFieldPriorityMapping(k.Key, k.Priority)).ToList();
+    private readonly IList<KeyFieldPriorityMapping> _keyFields = KeyField.All.Select(k => new KeyFieldPriorityMapping(k, k.Priority)).ToList();
 
     public Guid Id { get; set; }
     public Guid QualificationId { get; set; }
@@ -30,7 +30,7 @@ public class ChangedQualificationDetailsViewModel
         get
         {
             var splitEntries = ChangedFieldNames?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList() ?? [];
-            return splitEntries.IntersectBy(_keyFields.Select(o => o.FieldName), x => x, StringComparer.InvariantCultureIgnoreCase).ToList();
+            return splitEntries.IntersectBy(_keyFields.Select(o => o.FieldName.Key), x => x, StringComparer.InvariantCultureIgnoreCase).ToList();
         }
     }
 
@@ -126,15 +126,19 @@ public class ChangedQualificationDetailsViewModel
             return priority;
         }
 
-        var keyFieldPriorities =
-            _keyFields.ToDictionary(k => k.FieldName, k => k.Priority, StringComparer.InvariantCultureIgnoreCase);
+        var keyFieldPriorities = _keyFields
+            .ToDictionary(k => k.FieldName.Key, k => k.Priority, StringComparer.InvariantCultureIgnoreCase);
 
-        if (ChangedFields.Any(c => keyFieldPriorities.TryGetValue(c, out var p) && p == KeyFieldPriority.Red))
+        if (ChangedFields
+            .Any(c => 
+                keyFieldPriorities.TryGetValue(c, out var p) && p == KeyFieldPriority.Red))
         {
             return KeyFieldPriority.Red;
         }
 
-        if (ChangedFields.Any(c => keyFieldPriorities.TryGetValue(c, out var p) && p == KeyFieldPriority.Yellow))
+        if (ChangedFields
+            .Any(c => 
+                keyFieldPriorities.TryGetValue(c, out var p) && p == KeyFieldPriority.Yellow))
         {
             return KeyFieldPriority.Yellow;
         }
