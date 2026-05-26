@@ -47,9 +47,9 @@ public class DateTimeExtensionUnitTests : UnitTest
     }
 
     [Theory]
-    [InlineData(13, 5, "22/05/2026 01:05:00 pm")] // Afternoon conversion
-    [InlineData(0, 0, "22/05/2026 12:00:00 am")]  // Midnight edge case
-    [InlineData(12, 0, "22/05/2026 12:00:00 pm")] // Noon edge case
+    [InlineData(13, 5, "22 May 2026, 01:05:00 pm")] // Afternoon conversion
+    [InlineData(0, 0, "22 May 2026, 12:00:00 am")]  // Midnight edge case
+    [InlineData(12, 0, "22 May 2026, 12:00:00 pm")] // Noon edge case
     public void ToStandard12HourDateTimeFormat_VariousTimes_ReturnsCorrectStrings(int hour, int minute, string expected)
     {
         // Arrange

@@ -236,7 +236,7 @@ public class ReviewChangedControllerTests
     public async Task Search()
     {
         // Arrange
-        var viewModel = _fixture.Create<ChangedQualificationsViewModel>();
+        var viewModel = new ChangedQualificationsViewModel();
 
         // Act
         var result = await _controller.Search(viewModel);
