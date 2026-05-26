@@ -250,7 +250,7 @@ public class QualificationTimelineHistoryBuilderTests
     #region Test Data
     public static IEnumerable<object[]> RecognisedFieldCases()
     {
-        yield return new object[] { "EligibleForFunding", "Eligible for funding", "True", "False" };
+        yield return new object[] { "EligibleForFunding", "Eligibility status", "True", "False" };
         yield return new object[] { "OrganisationName", "Organisation name", OrganisationNameOld, OrganisationNameNew };
         yield return new object[] { "Title", "Title", QualificationNameOld, QualificationNameNew };
         yield return new object[] { "Level", "Level", "level 1", "level 2" };
