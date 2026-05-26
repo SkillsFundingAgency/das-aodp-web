@@ -41,7 +41,7 @@ namespace SFA.DAS.AODP.Application.Services
                 {
                     case "EligibleForFunding":
                         changes.Add(new FieldChange(
-                            "Eligible for funding",
+                            "Eligibility status",
                             previousVersion.EligibleForFunding?.ToString(),
                             latestVersion.EligibleForFunding?.ToString()));
                         break;
@@ -262,12 +262,11 @@ namespace SFA.DAS.AODP.Application.Services
         {
             var items = fieldChanges.Select(x =>
             {
-                if (x.Name.Equals("Eligibility Status", StringComparison.OrdinalIgnoreCase))
+                if (x.Name.Equals("Eligibility status", StringComparison.OrdinalIgnoreCase))
                 {
                     return $"{x.Name} changed to {FormatEligibility(x.Now)}";
                 }
 
-                // Default behaviour
                 return $"{x.Name} changed from {x.Was?.ToLower()} to {x.Now?.ToLower()}";
             }).ToList();
 
