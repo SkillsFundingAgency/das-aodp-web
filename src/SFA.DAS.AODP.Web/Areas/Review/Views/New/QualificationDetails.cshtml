@@ -117,17 +117,17 @@
             </govuk-summary-list-row>
             <govuk-summary-list-row>
                 <govuk-summary-list-row-key>Regulation start date</govuk-summary-list-row-key>
-                <govuk-summary-list-row-value>@Model.RegulationStartDate.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)</govuk-summary-list-row-value>
+                <govuk-summary-list-row-value>@Model.RegulationStartDate.ToDateDisplayFormat()</govuk-summary-list-row-value>
             </govuk-summary-list-row>
             <govuk-summary-list-row>
                 <govuk-summary-list-row-key>Operational start date</govuk-summary-list-row-key>
-                <govuk-summary-list-row-value>@Model.OperationalStartDate.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)</govuk-summary-list-row-value>
+                <govuk-summary-list-row-value>@Model.OperationalStartDate.ToDateDisplayFormat()</govuk-summary-list-row-value>
             </govuk-summary-list-row>
             <govuk-summary-list-row>
                     <govuk-summary-list-row-key>Operational end date</govuk-summary-list-row-key>
                     @if (Model.OperationalEndDate.HasValue)
                     {
-                        <govuk-summary-list-row-value>@Model.OperationalEndDate.Value.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)</govuk-summary-list-row-value>
+                        <govuk-summary-list-row-value>@Model.OperationalEndDate.Value.ToDateDisplayFormat()</govuk-summary-list-row-value>
                     }
                     else
                     {

@@ -105,7 +105,7 @@ public class ReviewChangedControllerTests
         Assert.Equal(2, model.ChangedQualifications.Count);
         Assert.Equal(queryResponse.Value.Data[0].Subject, model.ChangedQualifications[0].Subject);
         Assert.Equal(queryResponse.Value.Data[0].Status, model.ChangedQualifications[0].Status);
-        Assert.Equal(queryResponse.Value.Data[0].AwardingOrganisation, model.ChangedQualifications[0].AwardingOrganisation);
+        Assert.Equal(queryResponse.Value.Data[0].AwardingOrganisation, model.ChangedQualifications[0].AwardingOrganisationName);
         Assert.Equal(queryResponse.Value.Data[0].Status, model.ChangedQualifications[0].Status);
     }
 
@@ -236,7 +236,7 @@ public class ReviewChangedControllerTests
     public async Task Search()
     {
         // Arrange
-        var viewModel = _fixture.Create<ChangedQualificationsViewModel>();
+        var viewModel = new ChangedQualificationsViewModel();
 
         // Act
         var result = await _controller.Search(viewModel);
