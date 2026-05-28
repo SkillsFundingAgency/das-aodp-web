@@ -1,29 +1,30 @@
-﻿using System.ComponentModel.DataAnnotations;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using SFA.DAS.AODP.Application.Commands.Application.Review;
 using SFA.DAS.AODP.Application.Commands.Review;
 using SFA.DAS.AODP.Application.Queries.Application.Form;
+using SFA.DAS.AODP.Application.Queries.Application.Review;
 using SFA.DAS.AODP.Application.Queries.Review;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Application;
-using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApproval;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Enums;
+using SFA.DAS.AODP.Web.Extensions;
+using SFA.DAS.AODP.Web.Helpers.Export;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Applications;
 using SFA.DAS.AODP.Web.Models.BulkActions;
 using SFA.DAS.AODP.Web.Models.BulkActions.Options;
 using SFA.DAS.AODP.Web.Models.RelatedLinks;
 using SFA.DAS.AODP.Web.Validators.Messages;
+using System.ComponentModel.DataAnnotations;
 using System.IO.Compression;
-using Newtonsoft.Json;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
@@ -42,13 +43,15 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         private readonly IFileService _fileService;
         private readonly IOptions<AodpConfiguration> _aodpConfiguration;
         private const string DefaultQANValidationMessage = "Invalid Qualification Number.";
+        private readonly IApplicationExportService _exportService;
 
-        public ApplicationsReviewController(ILogger<ApplicationsReviewController> logger, IMediator mediator, IUserHelperService userHelperService, IFileService fileService, IOptions<AodpConfiguration> aodpConfiguration) : base(mediator, logger)
+        public ApplicationsReviewController(ILogger<ApplicationsReviewController> logger, IMediator mediator, IUserHelperService userHelperService, IFileService fileService, IOptions<AodpConfiguration> aodpConfiguration, IApplicationExportService exportService) : base(mediator, logger)
         {
             _userHelperService = userHelperService;
             UserType = userHelperService.GetUserType();
             _fileService = fileService;
             _aodpConfiguration = aodpConfiguration;
+            _exportService = exportService;
         }
 
         [Route("review/application-reviews")]
@@ -706,15 +709,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         [Route("review/application-reviews/{applicationReviewId}/details", Name = RouteNames.Review_ViewApplicationReadOnlyDetails)]
         public async Task<IActionResult> ViewApplicationReadOnlyDetails(Guid applicationReviewId)
         {
-            var applicationId = await GetApplicationIdWithAccessValidation(applicationReviewId);
-            var form = await Send(new GetFormPreviewByIdQuery(applicationId));
-            var applicationDetails = await Send(new GetApplicationFormByReviewIdQuery(applicationReviewId));
-            var files = _fileService.ListBlobs(applicationId.ToString());
-
-            var vm = ApplicationReadOnlyDetailsViewModel.Map(form, applicationDetails, files);
-            vm.ApplicationReviewId = applicationReviewId;
-
-            return View(vm);
+            var viewModel = await BuildReadOnlyApplicationDetailsViewModel(applicationReviewId);
+            return View(viewModel);
         }
 
         [Authorize(Policy = PolicyConstants.IsReviewUser)]
@@ -732,7 +728,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             var fileStream = await _fileService.OpenReadStreamAsync(model.FilePath);
             return File(fileStream, "application/octet-stream", file.FileNameWithPrefix);
         }
-
         [Authorize(Policy = PolicyConstants.IsReviewUser)]
         [HttpPost]
         [Route("review/application-reviews/{applicationReviewId}/files")]
@@ -779,6 +774,26 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
                 return File(memoryStream.ToArray(), "application/zip", zipFileName);
             }
+        }
+
+        [Authorize(Policy = PolicyConstants.IsReviewUser)]
+        [HttpPost]
+        [Route("review/application-reviews/{applicationReviewId}/export")]
+        public async Task<IActionResult> DownloadApplicationFormAndFiles(Guid applicationReviewId)
+        {
+            var applicationId = await GetApplicationIdWithAccessValidation(applicationReviewId);
+
+            var exportData = await Send(new GetApplicationExportDataQuery(applicationReviewId));
+
+            var files = _fileService.ListBlobs(applicationId.ToString());
+
+            var zipBytes = await _exportService.GenerateExportZipAsync(exportData, files);
+
+            var org = exportData.ApplicationMetadata.OrganisationName.SanitiseFileName();
+            var qan = exportData.ApplicationMetadata.Qan?.SanitiseFileName() ?? "NoQAN";
+            var submission = exportData.ApplicationMetadata.SubmissionId.ToString();
+
+            return File(zipBytes, "application/zip", $"{org}_{qan}_{submission}.zip");
         }
 
         private async Task<Guid> GetApplicationIdWithAccessValidation(Guid applicationReviewId)
@@ -899,6 +914,21 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
 
             return viewModel;
+        }
+
+        private async Task<ApplicationReadOnlyDetailsViewModel> BuildReadOnlyApplicationDetailsViewModel(Guid applicationReviewId)
+        {
+            var applicationId = await GetApplicationIdWithAccessValidation(applicationReviewId);
+
+            var form = await Send(new GetFormPreviewByIdQuery(applicationId));
+            var applicationFormDetails = await Send(new GetApplicationFormByReviewIdQuery(applicationReviewId));
+            
+            var files = _fileService.ListBlobs(applicationId.ToString());
+
+            var vm = ApplicationReadOnlyDetailsViewModel.Map(form, applicationFormDetails, files);
+            vm.ApplicationReviewId = applicationReviewId;
+
+            return vm;
         }
     }
 }

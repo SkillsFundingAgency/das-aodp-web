@@ -1,10 +1,8 @@
 ﻿using AutoFixture;
-using AutoFixture.Kernel;
 using Moq;
 using SFA.DAS.AODP.Application.Commands.Application.Page;
-using SFA.DAS.AODP.Application.Commands.FormBuilder.Forms;
-using SFA.DAS.AODP.Domain.FormBuilder.Requests.Forms;
 using SFA.DAS.AODP.Domain.Interfaces;
+using SFA.DAS.AODP.UnitTests.Helper;
 
 namespace SFA.DAS.AODP.Application.Tests.Commands.Application.Page
 {
@@ -20,18 +18,7 @@ namespace SFA.DAS.AODP.Application.Tests.Commands.Application.Page
             _handler = new(_apiClient.Object);
             _fixture.Customizations.Add(new DateOnlySpecimenBuilder());
         }
-        public class DateOnlySpecimenBuilder : ISpecimenBuilder
-        {
-            public object Create(object request, ISpecimenContext context)
-            {
-                if (request is Type type && type == typeof(DateOnly))
-                {
-                    return new DateOnly(2023, 1, 1); // a valid date
-                }
-
-                return new NoSpecimen();
-            }
-        }
+       
 
         [Fact]
         public async Task Then_The_CommandResult_Is_Returned_As_Expected()

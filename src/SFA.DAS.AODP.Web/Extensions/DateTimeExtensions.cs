@@ -11,5 +11,10 @@
         {
             return dateTime.ToString("dd MMMM yyyy");
         }
+
+        public static string ToDateDisplayFormat(this DateOnly date)
+        {
+            return date.ToString("dd MMMM yyyy");
+        }
     }
 }

@@ -16,6 +16,7 @@ using SFA.DAS.AODP.Application.Queries.FormBuilder.Questions;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Routes;
 using SFA.DAS.AODP.Models.Forms;
 using SFA.DAS.AODP.Models.Settings;
+using SFA.DAS.AODP.UnitTests.Helper;
 using SFA.DAS.AODP.Web.Areas.Admin.Controllers.FormBuilder;
 using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Models.FormBuilder.Question;
@@ -46,20 +47,6 @@ public class QuestionsControllerTests
             UploadFileTypesAllowed = new List<string>() { "pdf", "doc"}
         });
     }
-
-    public class DateOnlySpecimenBuilder : ISpecimenBuilder
-    {
-        public object Create(object request, ISpecimenContext context)
-        {
-            if (request is Type type && type == typeof(DateOnly))
-            {
-                return new DateOnly(2023, 1, 1); // a valid date
-            }
-
-            return new NoSpecimen();
-        }
-    }
-
 
     [Fact]
     public async Task Delete_Get_ReturnsViewModel()

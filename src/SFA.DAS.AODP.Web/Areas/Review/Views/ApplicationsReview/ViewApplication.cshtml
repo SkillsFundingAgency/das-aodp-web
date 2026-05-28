@@ -277,6 +277,19 @@
                 }
             </govuk-summary-list>
 
+            @if (Model.UserType == SFA.DAS.AODP.Models.Users.UserType.Qfau)
+            {
+                <div class="govuk-grid-row">
+                    <h2 class="govuk-heading-m">Download application</h2>
+                    <p class="govuk-body">This will download a ZIP file containing a summary file and any attachments associated with the application to your device.</p>
+
+
+                    <a class="govuk-button" asp-action="DownloadApplicationFormAndFiles" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId">
+                        Download application
+                    </a>
+                </div>
+            }
+
             @if (!IsReadOnly)
             {
                 @if (Model.UserType == SFA.DAS.AODP.Models.Users.UserType.Qfau)
