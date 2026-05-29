@@ -777,7 +777,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         }
 
         [Authorize(Policy = PolicyConstants.IsReviewUser)]
-        [HttpPost]
+        [HttpGet]
         [Route("review/application-reviews/{applicationReviewId}/export")]
         public async Task<IActionResult> DownloadApplicationFormAndFiles(Guid applicationReviewId)
         {
