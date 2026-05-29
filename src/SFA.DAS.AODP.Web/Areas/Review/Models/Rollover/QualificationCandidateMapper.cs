@@ -17,10 +17,8 @@
             return new QualificationCandidate
             {
                 QualificationNumber = Get(QualificationImportColumns.QualificationNumber),
-                QualificationName = Get(QualificationImportColumns.Title),
-                AwardingOrganisation = Get(QualificationImportColumns.AwardingOrganisation),
-                FundingOfferName = Get(QualificationImportColumns.FundingOffer),
-                FundingApprovalEndDate = ParseDate(Get(QualificationImportColumns.FundingApprovalEndDate))
+                QualificationName = Get(QualificationImportColumns.QualificationName),
+                AwardingOrganisation = Get(QualificationImportColumns.AwardingOrganisation)
             };
         }
     }
