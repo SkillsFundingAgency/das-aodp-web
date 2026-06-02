@@ -3,16 +3,14 @@ using AutoFixture.AutoMoq;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Moq;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
-using SFA.DAS.AODP.Models.Settings;
+using SFA.DAS.AODP.UnitTests.Helper;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 using System.Diagnostics.CodeAnalysis;
-using static SFA.DAS.AODP.Application.Queries.Qualifications.GetProcessStatusesQueryResponse;
 
 namespace SFA.DAS.AODP.Web.Test.Controllers;
 
@@ -27,6 +25,12 @@ public class ReviewChangedControllerTests
     public ReviewChangedControllerTests()
     {
         _fixture = new Fixture().Customize(new AutoMoqCustomization());
+
+        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => _fixture.Behaviors.Remove(b));
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _fixture.Customizations.Add(new DateOnlySpecimenBuilder());
+
         _loggerMock = _fixture.Freeze<Mock<ILogger<ChangedController>>>();
         _userHelper = _fixture.Freeze<Mock<IUserHelperService>>();
         _mediatorMock = _fixture.Freeze<Mock<IMediator>>();
@@ -105,7 +109,7 @@ public class ReviewChangedControllerTests
         Assert.Equal(2, model.ChangedQualifications.Count);
         Assert.Equal(queryResponse.Value.Data[0].Subject, model.ChangedQualifications[0].Subject);
         Assert.Equal(queryResponse.Value.Data[0].Status, model.ChangedQualifications[0].Status);
-        Assert.Equal(queryResponse.Value.Data[0].AwardingOrganisation, model.ChangedQualifications[0].AwardingOrganisation);
+        Assert.Equal(queryResponse.Value.Data[0].AwardingOrganisation, model.ChangedQualifications[0].AwardingOrganisationName);
         Assert.Equal(queryResponse.Value.Data[0].Status, model.ChangedQualifications[0].Status);
     }
 

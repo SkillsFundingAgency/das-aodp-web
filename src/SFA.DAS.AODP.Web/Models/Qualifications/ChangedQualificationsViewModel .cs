@@ -8,7 +8,7 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
     {
         public ChangedQualificationsViewModel()
         {
-            ChangedQualifications = new List<ChangedQualificationViewModel>();
+            ChangedQualifications = new List<ChangedQualificationDetailsViewModel>();
             JobStatusViewModel = new JobStatusViewModel();
             Filter = new NewQualificationFilterViewModel();
             PaginationViewModel = new PaginationViewModel();
@@ -16,7 +16,7 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
 
         public NewQualificationFilterViewModel Filter { get; set; }
 
-        public List<ChangedQualificationViewModel> ChangedQualifications { get; set; }
+        public List<ChangedQualificationDetailsViewModel> ChangedQualifications { get; set; }
 
         public PaginationViewModel PaginationViewModel { get; set; }
 
@@ -47,11 +47,11 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
         {
             var viewModel = new ChangedQualificationsViewModel();
             viewModel.PaginationViewModel = new PaginationViewModel(response.TotalRecords, response.Skip, response.Take);
-            viewModel.ChangedQualifications= response.Data.Select(s => new ChangedQualificationViewModel()
+            viewModel.ChangedQualifications= response.Data.Select(s => new ChangedQualificationDetailsViewModel()
             {
                 QualificationId = s.QualificationId,
                 QualificationReference=s.QualificationReference,
-                AwardingOrganisation = s.AwardingOrganisation,
+                AwardingOrganisationName = s.AwardingOrganisation,
                 QualificationTitle=s.QualificationTitle,
                 QualificationType=s.QualificationType,
                 Subject=s.Subject,
@@ -60,7 +60,7 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
                 AgeGroup = s.AgeGroup,
                 ChangedFieldNames = s.ChangedFieldNames,
                 Status=s.Status
-                
+
             }).ToList();
             viewModel.Filter = qualificationQuery.ToQualificationFilterViewModel();
             viewModel.JobStatusViewModel = new JobStatusViewModel()
