@@ -48,7 +48,7 @@
                 <div class="govuk-form-group @(ViewData.ModelState["MessageText"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
                     <span asp-validation-for="MessageText" class="govuk-error-message"></span>
                     <textarea class="govuk-textarea @(ViewData.ModelState["MessageText"]?.Errors.Count > 0 ? "govuk-textarea--error" : "")"
-                              for="MessageText"
+                              asp-for="MessageText"
                               rows="5"
                               aria-describedby="more-detail-hint @(ViewData.ModelState["MessageText"]?.Errors.Count > 0 ? "messageText-error" : "")"></textarea>
                 </div>

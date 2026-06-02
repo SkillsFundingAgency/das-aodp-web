@@ -24,7 +24,7 @@
 
             <select class="govuk-select"
                     id="BulkActionInputViewModel.BulkActionType"
-                    for="BulkActionInputViewModel.BulkActionType" 
+                    asp-for="BulkActionInputViewModel.BulkActionType" 
                     aria-labelledby="@bulkActionSelectId">
                 @foreach (var option in Model.BulkActionOptions)
                 {
@@ -51,7 +51,7 @@
                 <label class="govuk-label govuk-label--s" for="BulkActionInputViewModel.Reviewer1">Reviewer 1</label>
                 <select class="govuk-select"
                         id="BulkActionInputViewModel.Reviewer1"
-                        for="BulkActionInputViewModel.Reviewer1"
+                        asp-for="BulkActionInputViewModel.Reviewer1"
                         asp-items="Model.ReviewerOptions">
                 </select>
             </div>
@@ -59,7 +59,7 @@
             <div class="govuk-form-group">
                 <label class="govuk-label govuk-label--s" for="BulkActionInputViewModel.Reviewer2">Reviewer 2</label>
                 <select class="govuk-select"
-                        for="BulkActionInputViewModel.Reviewer2"
+                        asp-for="BulkActionInputViewModel.Reviewer2"
                         asp-items="Model.ReviewerOptions">
                 </select>
             </div>

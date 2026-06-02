@@ -34,7 +34,7 @@
     <input type="hidden" id="RegulatedQualificationsLastImported" name="RegulatedQualificationsLastImported" value='@(Model.RegulatedQualificationsLastImported?.ToString("mm/dd/yyyy") ?? "")' />
     <input type="hidden" id="FundedQualificationsLastImported" name="FundedQualificationsLastImported" value='@(Model.FundedQualificationsLastImported?.ToString("mm/dd/yyyy") ?? "")' />
     <div class="govuk-form-group">
-        <input for="SearchTerm" class="govuk-input" />
+        <input asp-for="SearchTerm" class="govuk-input" />
         <span asp-validation-for="SearchTerm" class="govuk-error-message"></span>
     </div>
 
