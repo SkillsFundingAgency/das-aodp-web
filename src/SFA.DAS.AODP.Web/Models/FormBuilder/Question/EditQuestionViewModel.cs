@@ -313,6 +313,12 @@ namespace SFA.DAS.AODP.Web.Models.FormBuilder.Question
             }
             else if (Options?.Options != null)
             {
+                if (Options.AdditionalFormActions?.RemoveOptionIndex != null ||
+                    Options.AdditionalFormActions?.AddOption == true)
+                {
+                    yield break;
+                }
+
                 foreach (var item in Options.Options
                              .Select((option, index) => new { Option = option, Index = index })
                              .Where(item => string.IsNullOrWhiteSpace(item.Option.Value)))
