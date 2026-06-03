@@ -12,6 +12,7 @@ using SFA.DAS.AODP.Web.Models.OutputFile;
 using SFA.DAS.AODP.Web.Validators;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Reflection;
 using FeatureManagementOptions = SFA.DAS.AODP.Web.FeatureManagement.FeatureManagementOptions;
 
@@ -22,7 +23,7 @@ internal class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        Debug.WriteLine($"Environment: {builder.Environment.EnvironmentName}");
+        SetCulture();
 
         var configuration = builder.Configuration.LoadConfiguration(builder.Services, builder.Environment.IsDevelopment());
 
@@ -156,6 +157,15 @@ internal class Program
 
             });
         app.Run();
+    }
+
+    private static void SetCulture()
+    {
+        // Set the default culture to en-GB for all threads in the application this is to ensure dates and other formatting 
+        // that is impacted by culture is consistent across the application and in line with user expectations for a UK based application.
+        var targetCulture = new CultureInfo("en-GB");
+        CultureInfo.DefaultThreadCurrentCulture = targetCulture;
+        CultureInfo.DefaultThreadCurrentUICulture = targetCulture;
     }
 
     private static void AddRoutes(IEndpointRouteBuilder endpoints)

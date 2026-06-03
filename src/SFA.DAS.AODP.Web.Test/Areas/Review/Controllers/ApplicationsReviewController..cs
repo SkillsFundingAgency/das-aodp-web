@@ -15,6 +15,7 @@ using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview;
+using SFA.DAS.AODP.Web.Models.Applications;
 using SFA.DAS.AODP.Web.Helpers.User;
 using System.IO.Compression;
 
@@ -46,7 +47,7 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
             var expectedUserType = UserType.Ofqual;
             _userHelperServiceMock.Setup(x => x.GetUserType()).Returns(expectedUserType);
 
-            var expectedModel = new Models.Applications.ApplicationsReviewQuery
+            var expectedModel = new ApplicationsReviewQuery
             {
                 PageNumber = 2,
                 RecordsPerPage = 10,
