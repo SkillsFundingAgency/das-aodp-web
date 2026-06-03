@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.Rollover;
+using Newtonsoft.Json;
 using SFA.DAS.AODP.Application.Queries.Import;
 using SFA.DAS.AODP.Application.Queries.Review.Rollover;
 using SFA.DAS.AODP.Application.Validators;
@@ -368,18 +369,10 @@ public class RolloverController : ControllerBase
 
         return model.SelectedOption switch
         {
-            SelectCandidatesForRollover.ImportAList => RedirectToAction(nameof(ImportCandidatesList)),
-            SelectCandidatesForRollover.GenerateAList => RedirectToAction(nameof(RolloverQueryBuilder)),
+            SelectCandidatesForRollover.ImportAList => RedirectToAction(nameof(UploadQualificationCandidates)),
+            SelectCandidatesForRollover.GenerateAList  => RedirectToAction(nameof(RolloverQueryBuilder)),
             _ => View()
         };
-    }
-
-    [HttpGet]
-    [Route("/Review/Rollover/ImportCandidatesList")]
-    public IActionResult ImportCandidatesList()
-    {
-        ViewData["Title"] = "Import Candidates List ";
-        return View();
     }
 
     [HttpGet]
@@ -455,6 +448,7 @@ public class RolloverController : ControllerBase
         }
 
         session.RolloverCandidates = matchedCsv;
+        session.RolloverFundingStream = null;
 
         SaveSessionModel(session);
 
@@ -645,12 +639,6 @@ public class RolloverController : ControllerBase
 
         var response = await Send(command);
 
-        return CheckingData();
-    }
-
-    public IActionResult CheckingData()
-    {
-        Thread.Sleep(3000);
         return RedirectToAction(nameof(InitialChecksExport));
     }
 

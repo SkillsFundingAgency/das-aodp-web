@@ -28,6 +28,7 @@ namespace SFA.DAS.AODP.Application.Queries.Test
                      Organisation = request.Organisation,
                      QAN = request.QAN,
                      ProcessStatusFilter = request.ProcessStatusFilter,
+                     AgeGroups = request.AgeGroups
                 });
 
                 if (result != null)

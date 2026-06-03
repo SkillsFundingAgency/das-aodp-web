@@ -9,6 +9,7 @@ using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.Qualification;
 using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Domain.Qualifications.Requests;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Helpers.User;
@@ -64,12 +65,10 @@ public class NewControllerTests
     private readonly Mock<ILogger<NewController>> _logger = new();
     private readonly Mock<IMediator> _mediator = new();
     private readonly Mock<IUserHelperService> _userHelper = new();
-    private readonly IOptions<AodpConfiguration> _options =
-        Options.Create(new AodpConfiguration { FindRegulatedQualificationUrl = FindRegulatedQualificationUrl });
-
+   
     private NewController CreateController()
     {
-        var controller = new NewController(_logger.Object, _options, _mediator.Object, _userHelper.Object);
+        var controller = new NewController(_logger.Object, _mediator.Object, _userHelper.Object);
 
         var httpContext = new DefaultHttpContext();
         controller.ControllerContext = new ControllerContext { HttpContext = httpContext };
@@ -111,7 +110,6 @@ public class NewControllerTests
         Assert.Multiple(() =>
         {
             Assert.Empty(model.NewQualifications);
-            Assert.Equal(FindRegulatedQualificationUrl, model.FindRegulatedQualificationUrl);
             Assert.NotNull(model.Filter);
             Assert.NotNull(model.ProcessStatuses);
         });
@@ -168,7 +166,6 @@ public class NewControllerTests
         {
             Assert.Single(model.NewQualifications);
             Assert.Equal(QualificationTitle, model.NewQualifications.First().Title);
-            Assert.Equal(FindRegulatedQualificationUrl, model.FindRegulatedQualificationUrl);
             Assert.NotNull(model.Filter);
             Assert.NotNull(model.ProcessStatuses);
         });
@@ -807,5 +804,89 @@ public class NewControllerTests
             Assert.Equal(nameof(NewController.QualificationDetails), redirect.ActionName);
             Assert.Equal(QualificationReference, redirect.RouteValues!["qualificationReference"]);
         });
+    }
+
+    [Fact]
+    public async Task Index_Forwards_ProcessStatusIds_And_AgeGroups_To_Query()
+    {
+        var controller = CreateController();
+
+        var processStatusIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
+        var ageGroups = new List<AgeGroup> { AgeGroup.EighteenPlus };
+
+        GetNewQualificationsQuery? captured = null;
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetProcessStatusesQueryResponse>
+            {
+                Success = true,
+                Value = new GetProcessStatusesQueryResponse
+                {
+                    ProcessStatuses = new List<GetProcessStatusesQueryResponse.ProcessStatus>()
+                }
+            });
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetNewQualificationsQuery>(), It.IsAny<CancellationToken>()))
+            .Callback<object, CancellationToken>((q, _) => captured = (GetNewQualificationsQuery)q)
+            .ReturnsAsync(Success(new GetNewQualificationsQueryResponse()));
+
+        var qualificationQuery = new QualificationQuery
+        {
+            PageNumber = 1,
+            RecordsPerPage = 10, 
+            ProcessStatusIds = processStatusIds,
+            AgeGroups = ageGroups
+        };
+
+        // Act
+        await controller.Index(qualificationQuery);
+
+        // Assert
+        Assert.NotNull(captured);
+        Assert.Equal(processStatusIds, captured!.ProcessStatusFilter.ProcessStatusIds);
+        Assert.Equal(ageGroups, captured.AgeGroups);
+    }
+
+
+    [Fact]
+    public async Task Search_Post_Includes_AgeGroups_In_Redirect()
+    {
+        var controller = CreateController();
+
+        var ageGroups = new List<AgeGroup> { AgeGroup.NineteenPlus };
+
+        var viewModel = new NewQualificationsViewModel();
+        viewModel.PaginationViewModel.RecordsPerPage = DefaultRecordsPerPage;
+        viewModel.Filter.AgeGroups = ageGroups;
+
+        var result = await controller.Search(viewModel);
+
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+
+        Assert.Equal(ageGroups, redirect.RouteValues!["ageGroups"]);
+    }
+
+    [Fact]
+    public async Task ChangePage_Preserves_ProcessStatusIds_And_AgeGroups()
+    {
+        var controller = CreateController();
+
+        var processStatusIds = new List<Guid> { Guid.NewGuid() };
+        var ageGroups = new List<AgeGroup> { AgeGroup.EighteenPlus };
+
+        var query = new QualificationQuery
+        {
+            PageNumber = 2,
+            RecordsPerPage = DefaultRecordsPerPage,
+            ProcessStatusIds = processStatusIds,
+            AgeGroups = ageGroups
+        };
+
+        var result = await controller.ChangePage(query);
+
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+
+        Assert.Equal(processStatusIds, redirect.RouteValues!["processStatusIds"]);
+        Assert.Equal(ageGroups, redirect.RouteValues!["ageGroups"]);
     }
 }

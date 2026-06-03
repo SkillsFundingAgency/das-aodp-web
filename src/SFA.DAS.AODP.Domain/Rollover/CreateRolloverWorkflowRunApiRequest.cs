@@ -9,7 +9,7 @@ namespace SFA.DAS.AODP.Domain.Rollover
             Data = data;
         }
 
-        public object Data { get; set; }
+        public object Data { get; set; } = new { };
 
         public string PostUrl => $"api/rollover/rolloverworkflowruns";
     }

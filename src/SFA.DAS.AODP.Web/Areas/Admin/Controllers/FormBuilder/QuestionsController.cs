@@ -54,6 +54,7 @@ public class QuestionsController : ControllerBase
             {
                 return View(model);
             }
+
             var command = new CreateQuestionCommand()
             {
                 SectionId = model.SectionId,
@@ -87,7 +88,6 @@ public class QuestionsController : ControllerBase
     [Route("/admin/forms/{formVersionId}/sections/{sectionId}/pages/{pageId}/questions/{questionId}")]
     public async Task<IActionResult> Edit(Guid formVersionId, Guid sectionId, Guid pageId, Guid questionId)
     {
-
         var query = new GetQuestionByIdQuery()
         {
             PageId = pageId,
@@ -102,7 +102,6 @@ public class QuestionsController : ControllerBase
         ShowNotificationIfKeyExists(QuestionUpdatedKey, ViewNotificationMessageType.Success, "The question has been updated.");
 
         return View(map);
-
     }
 
     [HttpPost()]
@@ -111,6 +110,19 @@ public class QuestionsController : ControllerBase
     {
         try
         {
+
+            //Ignore validation errors if we are removing or adding a new option
+            if (model.Options?.AdditionalFormActions?.RemoveOptionIndex != null ||
+                    model.Options?.AdditionalFormActions?.AddOption == true)
+            {
+                ModelState.Clear();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
             if (model.FileUpload != null) model.FileUpload.FileTypes = _formBuilderSettings.UploadFileTypesAllowed;
 
             if (model.AdditionalActions?.UpdateDescriptionPreview == true)

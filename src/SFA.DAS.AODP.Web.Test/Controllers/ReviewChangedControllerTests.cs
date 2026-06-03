@@ -23,10 +23,6 @@ public class ReviewChangedControllerTests
     private readonly Mock<IUserHelperService> _userHelper;
     private readonly Mock<IMediator> _mediatorMock;
     private readonly ChangedController _controller;
-    private readonly IOptions<AodpConfiguration> _aodpOptions = Options.Create(new AodpConfiguration
-    {
-        FindRegulatedQualificationUrl = "https://find-a-qualification.services.ofqual.gov.uk/qualifications/"
-    });
 
     public ReviewChangedControllerTests()
     {
@@ -35,7 +31,7 @@ public class ReviewChangedControllerTests
         _userHelper = _fixture.Freeze<Mock<IUserHelperService>>();
         _mediatorMock = _fixture.Freeze<Mock<IMediator>>();
 
-        _controller = new ChangedController(_loggerMock.Object, _aodpOptions, _mediatorMock.Object, _userHelper.Object);
+        _controller = new ChangedController(_loggerMock.Object, _mediatorMock.Object, _userHelper.Object);
 
         _userHelper
             .Setup(u => u.GetUserRoles())
@@ -77,7 +73,6 @@ public class ReviewChangedControllerTests
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
         var model = Assert.IsAssignableFrom<ChangedQualificationsViewModel>(viewResult.ViewData.Model);
-        Assert.Equal(_aodpOptions.Value.FindRegulatedQualificationUrl, model.FindRegulatedQualificationUrl);
     }
 
     [Fact]
@@ -110,9 +105,8 @@ public class ReviewChangedControllerTests
         Assert.Equal(2, model.ChangedQualifications.Count);
         Assert.Equal(queryResponse.Value.Data[0].Subject, model.ChangedQualifications[0].Subject);
         Assert.Equal(queryResponse.Value.Data[0].Status, model.ChangedQualifications[0].Status);
-        Assert.Equal(queryResponse.Value.Data[0].AwardingOrganisation, model.ChangedQualifications[0].AwardingOrganisation);
+        Assert.Equal(queryResponse.Value.Data[0].AwardingOrganisation, model.ChangedQualifications[0].AwardingOrganisationName);
         Assert.Equal(queryResponse.Value.Data[0].Status, model.ChangedQualifications[0].Status);
-        Assert.Equal(_aodpOptions.Value.FindRegulatedQualificationUrl, model.FindRegulatedQualificationUrl);
     }
 
     [Fact]
@@ -242,7 +236,7 @@ public class ReviewChangedControllerTests
     public async Task Search()
     {
         // Arrange
-        var viewModel = _fixture.Create<ChangedQualificationsViewModel>();
+        var viewModel = new ChangedQualificationsViewModel();
 
         // Act
         var result = await _controller.Search(viewModel);

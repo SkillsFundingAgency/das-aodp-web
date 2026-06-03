@@ -1,14 +1,11 @@
-﻿using Azure.Identity;
+﻿using System.ComponentModel.DataAnnotations;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using SFA.DAS.AODP.Application;
-using SFA.DAS.AODP.Application.Commands.Application.Application;
 using SFA.DAS.AODP.Application.Commands.Application.Review;
 using SFA.DAS.AODP.Application.Commands.Review;
 using SFA.DAS.AODP.Application.Queries.Application.Form;
-using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Application.Queries.Review;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Application;
@@ -19,17 +16,16 @@ using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApproval;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Enums;
-using SFA.DAS.AODP.Web.Extensions;
 using SFA.DAS.AODP.Web.Helpers.User;
-using SFA.DAS.AODP.Web.Models.Application;
 using SFA.DAS.AODP.Web.Models.Applications;
 using SFA.DAS.AODP.Web.Models.BulkActions;
 using SFA.DAS.AODP.Web.Models.BulkActions.Options;
 using SFA.DAS.AODP.Web.Models.RelatedLinks;
 using SFA.DAS.AODP.Web.Validators.Messages;
 using System.IO.Compression;
-using System.Text.Json;
+using Newtonsoft.Json;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 {
@@ -430,8 +426,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             var offers = await Send(new GetFundingOffersQuery());
             var review = await Send(new GetQfauFeedbackForApplicationReviewConfirmationQuery(applicationReviewId));
 
-            var model = QfauFundingDecisionViewModel.Map(review, offers);
-            model.ApplicationReviewId = applicationReviewId;
+            var model = QfauFundingDecisionViewModel.Map(applicationReviewId, review, offers);
 
             return View(model);
         }
@@ -757,7 +752,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 {
                     foreach (var file in files)
                     {
-                        var fileStream = await _fileService.OpenReadStreamAsync(file.FullPath); 
+                        var fileStream = await _fileService.OpenReadStreamAsync(file.FullPath);
 
                         if (fileStream != null)
                         {
@@ -771,7 +766,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                         else
                         {
                             throw new IOException($"Could not open stream for {file.FullPath}");
-                        } 
+                        }
                     }
                 }
 
@@ -866,19 +861,41 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 FindRegulatedQualificationUrl = _aodpConfiguration.Value.FindRegulatedQualificationUrl
             };
 
-            viewModel.MapApplications(response);
+            var validationResults = new List<ValidationResult>();
+            Validator.TryValidateObject(viewModel, new ValidationContext(viewModel), validationResults,
+                validateAllProperties: true);
 
-            if (selectAll)
+            if (validationResults.Any())
             {
-                viewModel.SelectedApplicationReviewIds = viewModel.Applications.Select(a => a.ApplicationReviewId).Distinct().ToList();
+                response = new GetApplicationsForReviewQueryResponse();
+
+                response.AvailableReviewers =
+                    string.IsNullOrWhiteSpace(viewModel.AvailableReviewersJson)
+                        ? new List<UserOption>()
+                        : JsonConvert.DeserializeObject<List<UserOption>>(viewModel.AvailableReviewersJson)
+                          ?? new List<UserOption>();
+
+                foreach (var validationResult in validationResults)
+                {
+                    ModelState.AddModelError(validationResult.ErrorMessage!.Split(' ').First(), validationResult.ErrorMessage!);
+                }
             }
-
-            viewModel.BulkActionOptions = BulkMessageActionOptions.Build();
-
-            if (postedModel is not null)
+            else
             {
-                viewModel.SelectedApplicationReviewIds = postedModel.SelectedApplicationReviewIds ?? new();
-                viewModel.BulkActionInputViewModel = postedModel.BulkActionInputViewModel ?? new();
+                viewModel.MapApplications(response);
+
+                if (selectAll)
+                {
+                    viewModel.SelectedApplicationReviewIds = viewModel.Applications.Select(a => a.ApplicationReviewId).Distinct().ToList();
+                }
+
+                viewModel.BulkActionOptions = BulkMessageActionOptions.Build();
+
+                if (postedModel is not null)
+                {
+                    viewModel.SelectedApplicationReviewIds = postedModel.SelectedApplicationReviewIds ?? new();
+                    viewModel.BulkActionInputViewModel = postedModel.BulkActionInputViewModel ?? new();
+                }
             }
 
             return viewModel;

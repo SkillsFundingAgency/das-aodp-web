@@ -11,7 +11,7 @@
         Action = Model.BackAction,
         Controller = Model.BackController,
         Area = Model.BackArea,
-        Text = "Return to qualifications"
+        Text = "Back"
     };
 
     var isCompleted = string.Equals(Model.Stage?.Name, "Completed", System.StringComparison.OrdinalIgnoreCase);
@@ -22,19 +22,29 @@
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
 <span class="govuk-caption-xl">
-    @(Model.IsApplicationCompleted ? "Completed qualification" : "Newly regulated qualification")
+    @(Model.IsQualificationCompleted ? "Completed qualification" : "Newly regulated qualification")
 </span>
 <h1 class="govuk-heading-xl">Qualification Details</h1>
 
 <div class="govuk-tabs" data-module="govuk-tabs">
     <ul class="govuk-tabs__list">
         <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
-            <a class="govuk-link" href="/Review/New/QualificationDetails?qualificationReference=@Model.Qual.Qan">
+            <a class="govuk-link"
+                   asp-area="Review"
+                   asp-controller="New"
+                   asp-action="QualificationDetails"
+                   asp-route-qualificationReference="@Model.Qual.Qan"
+                   asp-route-returnTo="@Model.ReturnTo">
                 Overview
             </a>
         </li>
         <li class="govuk-tabs__list-item govuk-tabs__list-item">
-            <a class="govuk-link" href="/Review/New/QualificationDetails/Timeline?qualificationReference=@Model.Qual.Qan">
+            <a class="govuk-link"
+                   asp-area="Review"
+                   asp-controller="New"
+                   asp-action="QualificationDetailsTimeline"
+                   asp-route-qualificationReference="@Model.Qual.Qan"
+                   asp-route-returnTo="@Model.ReturnTo">
                 History
             </a>
         </li>
@@ -109,26 +119,23 @@
             </govuk-summary-list-row>
             <govuk-summary-list-row>
                 <govuk-summary-list-row-key>Regulation start date</govuk-summary-list-row-key>
-                <govuk-summary-list-row-value>@Model.RegulationStartDate.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)</govuk-summary-list-row-value>
+                <govuk-summary-list-row-value>@Model.RegulationStartDate.ToDateDisplayFormat()</govuk-summary-list-row-value>
             </govuk-summary-list-row>
             <govuk-summary-list-row>
                 <govuk-summary-list-row-key>Operational start date</govuk-summary-list-row-key>
-                <govuk-summary-list-row-value>@Model.OperationalStartDate.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)</govuk-summary-list-row-value>
+                <govuk-summary-list-row-value>@Model.OperationalStartDate.ToDateDisplayFormat()</govuk-summary-list-row-value>
             </govuk-summary-list-row>
-            @if (!Model.IsApplicationCompleted)
-            {
-                <govuk-summary-list-row>
+            <govuk-summary-list-row>
                     <govuk-summary-list-row-key>Operational end date</govuk-summary-list-row-key>
                     @if (Model.OperationalEndDate.HasValue)
                     {
-                        <govuk-summary-list-row-value>@Model.OperationalEndDate.Value.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)</govuk-summary-list-row-value>
+                        <govuk-summary-list-row-value>@Model.OperationalEndDate.Value.ToDateDisplayFormat()</govuk-summary-list-row-value>
                     }
                     else
                     {
                         <govuk-summary-list-row-value></govuk-summary-list-row-value>
                     }
                 </govuk-summary-list-row>
-            }
             @if (Model.Applications?.Any() ?? false)
             {
                 var idx = 1;
@@ -154,10 +161,7 @@
             }
         </govuk-summary-list>
 
-        @* Actions (editable) are only shown when not completed *@
-        @if (!Model.IsApplicationCompleted)
-        {
-            <form asp-controller="New" asp-action="QualificationDetails" method="post">
+        <form asp-controller="New" asp-action="QualificationDetails" method="post">
                 @Html.HiddenFor(m => m.Qual.Qan)
 
                 <div class="govuk-form-group">
@@ -204,6 +208,5 @@
                     }
                 </div>
             </form>
-        }
     </div>
 </div>
