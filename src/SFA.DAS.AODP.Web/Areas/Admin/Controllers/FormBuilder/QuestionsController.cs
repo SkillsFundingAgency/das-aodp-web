@@ -110,6 +110,14 @@ public class QuestionsController : ControllerBase
     {
         try
         {
+
+            //Ignore validation errors if we are removing or adding a new option
+            if (model.Options?.AdditionalFormActions?.RemoveOptionIndex != null ||
+                    model.Options?.AdditionalFormActions?.AddOption == true)
+            {
+                ModelState.Clear();
+            }
+
             if (!ModelState.IsValid)
             {
                 return View(model);

@@ -44,11 +44,11 @@
                 <govuk-summary-list-row-key>Priority</govuk-summary-list-row-key>
                 <govuk-summary-list-row-value>@Model.Priority</govuk-summary-list-row-value>
             </govuk-summary-list-row>
-            @if (Model.ChangedFieldNames != null && Model.ChangedFieldNames != "")
+            @if (!string.IsNullOrEmpty(Model.ChangeFieldsForDisplay))
             {
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key>Changes</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.ChangedFieldNames</govuk-summary-list-row-value>
+                    <govuk-summary-list-row-value>@Model.ChangeFieldsForDisplay</govuk-summary-list-row-value>
                 </govuk-summary-list-row>
             }
             <govuk-summary-list-row>
@@ -114,7 +114,7 @@
                     @foreach (var offerfunded in Model.FundingDetails)
                     {
                         <p>
-                            @($"Offer: {offerfunded.FundingOfferName ?? ""} ({offerfunded.StartDate?.ToString("MM/dd/yyyy") ?? ""} - {offerfunded.EndDate?.ToString("MM/dd/yyyy") ?? ""})")
+                            @($"Offer: {offerfunded.FundingOfferName ?? ""} ({offerfunded.StartDate?.ToStandardDateFormat() ?? ""} - {offerfunded.EndDate?.ToStandardDateFormat() ?? ""})")
                         </p>
                     }
                 </govuk-summary-list-row-value>
@@ -133,11 +133,11 @@
             </govuk-summary-list-row>
             <govuk-summary-list-row>
                 <govuk-summary-list-row-key> Operational Start Date</govuk-summary-list-row-key>
-                <govuk-summary-list-row-value>@Html.ValueFor(m => m.OperationalStartDate, "{0:MM/dd/yy hh:mm}")</govuk-summary-list-row-value>
+                <govuk-summary-list-row-value>@Model.OperationalStartDate.ToStandard12HourDateTimeFormat()</govuk-summary-list-row-value>
             </govuk-summary-list-row>
             <govuk-summary-list-row>
                 <govuk-summary-list-row-key> Operational End Date</govuk-summary-list-row-key>
-                <govuk-summary-list-row-value>@Html.ValueFor(m => m.OperationalEndDate, "{0:MM/dd/yy hh:mm}")</govuk-summary-list-row-value>
+                <govuk-summary-list-row-value>@Model.OperationalEndDate?.ToStandard12HourDateTimeFormat()</govuk-summary-list-row-value>
             </govuk-summary-list-row>
 
             @if (Model.Applications?.Any() ?? false)
@@ -189,7 +189,7 @@
         <form asp-controller="Changed" asp-action="QualificationDetails" method="post">
             @Html.HiddenFor(m => m.Version)
             @Html.HiddenFor(m => m.Qual.Qan)
-            @Html.HiddenFor(m => m.ChangedFieldNames)
+            @Html.HiddenFor(m => m.ChangeFieldsForDisplay)
             <div class="govuk-form-group">
                 <govuk-textarea asp-for="@Model.AdditionalActions.Note">
                     <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Comments</govuk-textarea-label>

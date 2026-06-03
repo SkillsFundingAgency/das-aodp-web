@@ -1,10 +1,9 @@
-﻿using FluentAssertions;
-using FluentAssertions.Execution;
-using SFA.DAS.AODP.Infrastructure.Common.IO;
+﻿using SFA.DAS.AODP.Infrastructure.Common.IO;
 using SFA.DAS.AODP.Models.Common;
 using SFA.DAS.AODP.Models.Exceptions;
 using SFA.DAS.AODP.Models.Settings;
 using System.Text;
+using Shouldly;
 using Xunit;
 
 namespace SFA.DAS.AODP.Infrastructure.UnitTests.Common.IO
@@ -37,23 +36,19 @@ namespace SFA.DAS.AODP.Infrastructure.UnitTests.Common.IO
         {
             var stream = new MemoryStream(Encoding.UTF8.GetBytes("valid"));
 
-            using var scope = new AssertionScope();
+            var act = () => _sut.ValidateOrThrow(ValidFileName, stream);
 
-            Action act = () => _sut.ValidateOrThrow(ValidFileName, stream);
-
-            act.Should().NotThrow();
-            stream.Position.Should().Be(0);
+            act.ShouldNotThrow();
+            stream.Position.ShouldBe(0);
         }
 
         [Fact]
         public void ValidateOrThrow_NullStream_ThrowsMissingFile()
         {
-            using var scope = new AssertionScope();
-
             var ex = Assert.Throws<FileUploadPolicyException>(() =>
                 _sut.ValidateOrThrow(ValidFileName, null));
 
-            ex.Reason.Should().Be(FileUploadRejectionReason.MissingFile);
+            ex.Reason.ShouldBe(FileUploadRejectionReason.MissingFile);
         }
 
         [Fact]
@@ -61,12 +56,10 @@ namespace SFA.DAS.AODP.Infrastructure.UnitTests.Common.IO
         {
             var stream = new MemoryStream(Encoding.UTF8.GetBytes("data"));
 
-            using var scope = new AssertionScope();
-
             var ex = Assert.Throws<FileUploadPolicyException>(() =>
                 _sut.ValidateOrThrow(EmptyFileName, stream));
 
-            ex.Reason.Should().Be(FileUploadRejectionReason.MissingFileName);
+            ex.Reason.ShouldBe(FileUploadRejectionReason.MissingFileName);
         }
 
         [Fact]
@@ -74,12 +67,10 @@ namespace SFA.DAS.AODP.Infrastructure.UnitTests.Common.IO
         {
             var stream = new MemoryStream(Encoding.UTF8.GetBytes("data"));
 
-            using var scope = new AssertionScope();
-
             var ex = Assert.Throws<FileUploadPolicyException>(() =>
                 _sut.ValidateOrThrow(InvalidFileName, stream));
 
-            ex.Reason.Should().Be(FileUploadRejectionReason.InvalidFileName);
+            ex.Reason.ShouldBe(FileUploadRejectionReason.InvalidFileName);
         }
 
         [Fact]
@@ -87,12 +78,10 @@ namespace SFA.DAS.AODP.Infrastructure.UnitTests.Common.IO
         {
             var stream = new MemoryStream(Encoding.UTF8.GetBytes("data"));
 
-            using var scope = new AssertionScope();
-
             var ex = Assert.Throws<FileUploadPolicyException>(() =>
                 _sut.ValidateOrThrow(DisallowedFileName, stream));
 
-            ex.Reason.Should().Be(FileUploadRejectionReason.FileTypeNotAllowed);
+            ex.Reason.ShouldBe(FileUploadRejectionReason.FileTypeNotAllowed);
         }
 
         [Fact]
@@ -100,12 +89,10 @@ namespace SFA.DAS.AODP.Infrastructure.UnitTests.Common.IO
         {
             var stream = new MemoryStream();
 
-            using var scope = new AssertionScope();
-
             var ex = Assert.Throws<FileUploadPolicyException>(() =>
                 _sut.ValidateOrThrow(ValidFileName, stream));
 
-            ex.Reason.Should().Be(FileUploadRejectionReason.EmptyFile);
+            ex.Reason.ShouldBe(FileUploadRejectionReason.EmptyFile);
         }
 
         [Fact]
@@ -113,12 +100,10 @@ namespace SFA.DAS.AODP.Infrastructure.UnitTests.Common.IO
         {
             var stream = new MemoryStream(new byte[OversizedBytes]);
 
-            using var scope = new AssertionScope();
-
             var ex = Assert.Throws<FileUploadPolicyException>(() =>
                 _sut.ValidateOrThrow(ValidFileName, stream));
 
-            ex.Reason.Should().Be(FileUploadRejectionReason.FileTooLarge);
+            ex.Reason.ShouldBe(FileUploadRejectionReason.FileTooLarge);
         }
 
         [Fact]
@@ -126,12 +111,10 @@ namespace SFA.DAS.AODP.Infrastructure.UnitTests.Common.IO
         {
             var stream = new NonSeekableStream(new MemoryStream(Encoding.UTF8.GetBytes("data")));
 
-            using var scope = new AssertionScope();
-
             var ex = Assert.Throws<FileUploadPolicyException>(() =>
                 _sut.ValidateOrThrow(ValidFileName, stream));
 
-            ex.Reason.Should().Be(FileUploadRejectionReason.UnknownFileSize);
+            ex.Reason.ShouldBe(FileUploadRejectionReason.UnknownFileSize);
         }
 
         private sealed class NonSeekableStream : Stream

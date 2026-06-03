@@ -1,5 +1,6 @@
 ﻿@using SFA.DAS.AODP.Web.Areas.Review.Controllers
 @using SFA.DAS.AODP.Web.Factories
+@using SFA.DAS.AODP.Web.Helpers
 @using SFA.DAS.AODP.Web.Models.BulkActions
 @using SFA.DAS.AODP.Web.Models.Qualifications
 @model SFA.DAS.AODP.Web.Models.Qualifications.NewQualificationsViewModel
@@ -38,25 +39,27 @@
                     <div class="govuk-grid-row">
                         <div class="govuk-grid-column-one-half">
                             <div class="govuk-form-group">
-                                <govuk-input asp-for="@Model.Filter.QualificationName" value="@Html.Encode(Model.Filter.QualificationName)" inputmode="text" spellcheck="false" autocomplete="off">
+                                <govuk-input for="@Model.Filter.QualificationName" value="@Html.Encode(Model.Filter.QualificationName)" inputmode="text" spellcheck="false" autocomplete="off">
                                     <govuk-input-label is-page-heading="false" class="govuk-label--s">Qualification Title</govuk-input-label>
                                 </govuk-input>
                             </div>
                             <div class="govuk-form-group">
-                                <govuk-input asp-for="@Model.Filter.QAN" value="@Html.Encode(Model.Filter.QAN)" inputmode="text" spellcheck="false" autocomplete="off">
+                                <govuk-input for="@Model.Filter.QAN" value="@Html.Encode(Model.Filter.QAN)" inputmode="text" spellcheck="false" autocomplete="off">
                                     <govuk-input-label is-page-heading="false" class="govuk-label--s">QAN</govuk-input-label>
                                 </govuk-input>
                             </div>
                             <div class="govuk-form-group">
-                                <govuk-input asp-for="@Model.Filter.Organisation" value="@Html.Encode(Model.Filter.Organisation)" inputmode="text" spellcheck="false" autocomplete="off">
+                                <govuk-input for="@Model.Filter.Organisation" value="@Html.Encode(Model.Filter.Organisation)" inputmode="text" spellcheck="false" autocomplete="off">
                                     <govuk-input-label is-page-heading="false" class="govuk-label--s">Awarding Organisation</govuk-input-label>
                                 </govuk-input>
                             </div>
                         </div>
+                    </div>
+                    <div class="govuk-grid-row">
                         <div class="govuk-grid-column-one-half">
                             <div class="govuk-form-group">
-                                <fieldset class="govuk-fieldset govuk-!-static-padding-left-5">
-                                    <govuk-checkboxes name="Filter[ProcessStatusIds]" asp-for="@Model.Filter.ProcessStatusIds">
+                                <fieldset class="govuk-fieldset">
+                                    <govuk-checkboxes name="Filter[ProcessStatusIds]" for="@Model.Filter.ProcessStatusIds">
 
                                         <govuk-checkboxes-fieldset>
 
@@ -77,10 +80,38 @@
                                 </fieldset>
                             </div>
                         </div>
+                        <div class="govuk-grid-column-one-half">
+                            <div class="govuk-form-group">
+                                <fieldset class="govuk-fieldset">
+
+                                    <govuk-checkboxes name="Filter[AgeGroups]" for="@Model.Filter.AgeGroups">
+
+                                        <govuk-checkboxes-fieldset>
+
+                                            <govuk-checkboxes-fieldset-legend is-page-heading="false" class="govuk-label--s">
+                                                <div class="govuk-label govuk-label--s">Age Groups</div>
+                                            </govuk-checkboxes-fieldset-legend>
+
+                                            @Html.RenderPartialAsync("Validation/_CheckboxValidationPartial", nameof(Model.Filter.AgeGroups))
+
+                                            @foreach (var age in AgeGroupHelper.GetOptions())
+                                            {
+                                                <govuk-checkboxes-item value="@age.Value">
+                                                    @age.Label
+                                                </govuk-checkboxes-item>
+                                            }
+
+                                        </govuk-checkboxes-fieldset>
+
+                                    </govuk-checkboxes>
+
+                                </fieldset>
+                            </div>
+                        </div>
                     </div>
                     <div class="govuk-grid-row">
                         <div class="govuk-grid-column-full">
-                            <govuk-select asp-for="@Model.PaginationViewModel.RecordsPerPage">
+                            <govuk-select for="@Model.PaginationViewModel.RecordsPerPage">
                                 <govuk-select-label>Qualifications Per Page</govuk-select-label>
                                 <govuk-select-item value="10" selected="true">10</govuk-select-item>
                                 <govuk-select-item value="20">20</govuk-select-item>
@@ -149,13 +180,14 @@
                         @{
                             var selectAllCheckboxesViewModel = SelectAllViewModelFactory.ForQualifications
                             (
-                            Model.PaginationViewModel.CurrentPage,
-                            Model.PaginationViewModel.RecordsPerPage,
-                            nameof(NewController).Replace("Controller", ""),
-                            Model.Filter.QualificationName,
-                            Model.Filter.Organisation,
-                            Model.Filter.QAN,
-                            Model.Filter.ProcessStatusIds
+                                Model.PaginationViewModel.CurrentPage,
+                                Model.PaginationViewModel.RecordsPerPage,
+                                nameof(NewController).Replace("Controller", ""),
+                                Model.Filter.QualificationName,
+                                Model.Filter.Organisation,
+                                Model.Filter.QAN,
+                                Model.Filter.ProcessStatusIds,
+                                Model.Filter.AgeGroups
                             );
                         }
 

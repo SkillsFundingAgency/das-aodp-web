@@ -28,6 +28,7 @@ public class NewQualificationDetailsViewModelTests
             Status = "StatusValue",
             Type = "TypeValue",
             Ssa = "SSA",
+            Name = "Qualification Name",
             Level = "LevelOne",
             SubLevel = "Sub",
             EqfLevel = "EQF1",

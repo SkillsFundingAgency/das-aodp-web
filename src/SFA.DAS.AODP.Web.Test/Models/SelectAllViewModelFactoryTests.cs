@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using SFA.DAS.AODP.Domain.Qualifications.Requests;
 using SFA.DAS.AODP.Web.Models.BulkActions;
-using Xunit;
 
 namespace SFA.DAS.AODP.Web.Tests.Models.BulkActions;
 
@@ -32,7 +29,8 @@ public class SelectAllViewModelFactoryTests
             name: null,
             organisation: null,
             qan: null,
-            processStatusIds: null);
+            processStatusIds: null,
+            ageGroups: null);
 
         Assert.Equal(CurrentPage, result.CurrentPage);
         Assert.Equal(RecordsPerPage, result.RecordsPerPage);
@@ -52,7 +50,8 @@ public class SelectAllViewModelFactoryTests
             name: Name,
             organisation: null,
             qan: null,
-            processStatusIds: null);
+            processStatusIds: null,
+            ageGroups: null);
 
         Assert.Equal(Name, result.RouteValues["name"]);
     }
@@ -67,7 +66,8 @@ public class SelectAllViewModelFactoryTests
             name: null,
             organisation: Organisation,
             qan: null,
-            processStatusIds: null);
+            processStatusIds: null,
+            ageGroups: null);
 
         Assert.Equal(Organisation, result.RouteValues["organisation"]);
     }
@@ -82,7 +82,8 @@ public class SelectAllViewModelFactoryTests
             name: null,
             organisation: null,
             qan: Qan,
-            processStatusIds: null);
+            processStatusIds: null,
+            ageGroups: null);
 
         Assert.Equal(Qan, result.RouteValues["qan"]);
     }
@@ -99,7 +100,8 @@ public class SelectAllViewModelFactoryTests
             null,
             null,
             null,
-            ids);
+            ids,
+            null);
 
         Assert.True(result.RouteValues.ContainsKey("processStatusIds"));
         Assert.Equal(ids, result.RouteValues["processStatusIds"]);
@@ -115,8 +117,63 @@ public class SelectAllViewModelFactoryTests
             null,
             null,
             null,
-            Enumerable.Empty<Guid>());
+            Enumerable.Empty<Guid>(),
+            null);
 
         Assert.False(result.RouteValues.ContainsKey("processStatusIds"));
     }
+
+    [Fact]
+    public void ForQualifications_Adds_AgeGroups_When_Not_Empty()
+    {
+        var ageGroups = new List<AgeGroup> { AgeGroup.SixteenToEighteen, AgeGroup.EighteenPlus };
+
+        var result = SelectAllViewModelFactory.ForQualifications(
+            DefaultCurrentPage,
+            DefaultRecordsPerPage,
+            QualificationsController,
+            null,
+            null,
+            null,
+            null,
+            ageGroups);
+
+        Assert.True(result.RouteValues.ContainsKey("ageGroups"));
+        Assert.Equal(ageGroups, result.RouteValues["ageGroups"]);
+    }
+
+    [Fact]
+    public void ForQualifications_Does_Not_Add_AgeGroups_When_Empty()
+    {
+        var result = SelectAllViewModelFactory.ForQualifications(
+            DefaultCurrentPage,
+            DefaultRecordsPerPage,
+            QualificationsController,
+            null,
+            null,
+            null,
+            null,
+            Enumerable.Empty<AgeGroup>());
+
+        Assert.False(result.RouteValues.ContainsKey("ageGroups"));
+    }
+
+    [Fact]
+    public void ForQualifications_Does_Not_Add_AgeGroups_When_Null()
+    {
+        var result = SelectAllViewModelFactory.ForQualifications(
+            DefaultCurrentPage,
+            DefaultRecordsPerPage,
+            QualificationsController,
+            null,
+            null,
+            null,
+            null,
+            null);
+
+        Assert.False(result.RouteValues.ContainsKey("ageGroups"));
+    }
+
+
+
 }
