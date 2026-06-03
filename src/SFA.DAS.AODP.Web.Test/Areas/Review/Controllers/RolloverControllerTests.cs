@@ -3,7 +3,9 @@ using FluentValidation.Results;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using Newtonsoft.Json;
 using SFA.DAS.AODP.Application;
@@ -46,6 +48,11 @@ public class RolloverControllerTests
             _approvalEndDateValidatorMock.Object,
             _csvFileReaderMock.Object,
             _userHelperServiceMock.Object);
+
+        _controller.TempData = new TempDataDictionary(
+         new DefaultHttpContext(),
+         Mock.Of<ITempDataProvider>()
+     );
     }
 
     private RolloverController CreateControllerWithSession(ISession session)
@@ -56,12 +63,22 @@ public class RolloverControllerTests
             _approvalEndDateValidatorMock.Object,
             _csvFileReaderMock.Object,
             _userHelperServiceMock.Object);
+
         var httpContext = new DefaultHttpContext();
         httpContext.Session = session;
+
+        
+
         controller.ControllerContext = new ControllerContext
         {
             HttpContext = httpContext
         };
+        
+        controller.TempData = new TempDataDictionary(
+            new DefaultHttpContext(),
+            Mock.Of<ITempDataProvider>()
+        );
+
         return controller;
     }
 
@@ -1419,7 +1436,7 @@ public class RolloverControllerTests
         {
             MaxApprovalEndDate = new RolloverFundingApprovalEndDate
             {
-                Day = 1,
+                Day = 15,
                 Month = 1,
                 Year = 2026
             }
