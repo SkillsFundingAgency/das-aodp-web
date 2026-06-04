@@ -1,14 +1,11 @@
 ﻿using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Models.Qualifications;
 
-namespace SFA.DAS.AODP.Application.Services
-{
-    public interface IQualificationTimelineHistoryBuilder
-    {
-        List<QualificationDiscussionHistory> BuildTimelineEntries(List<GetQualificationDetailsQueryResponse> versions);
+namespace SFA.DAS.AODP.Application.Services;
 
-        List<FieldChange> GetKeyFieldChanges(
-            GetQualificationDetailsQueryResponse latestVersion,
-            GetQualificationDetailsQueryResponse previousVersion);
-    }
+public interface IQualificationTimelineHistoryBuilder
+{
+    List<QualificationDiscussionHistory> BuildTimelineEntries(List<GetQualificationDetailsQueryResponse> versions);
+
+    List<FieldChange> GetKeyFieldChanges(GetQualificationDetailsQueryResponse latestVersion, GetQualificationDetailsQueryResponse previousVersion);
 }

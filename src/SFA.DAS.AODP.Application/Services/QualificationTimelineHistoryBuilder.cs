@@ -24,14 +24,12 @@ namespace SFA.DAS.AODP.Application.Services
         }
 
         public List<FieldChange> GetKeyFieldChanges(
-        GetQualificationDetailsQueryResponse latestVersion,
-        GetQualificationDetailsQueryResponse previousVersion)
+            GetQualificationDetailsQueryResponse latestVersion,
+            GetQualificationDetailsQueryResponse previousVersion)
         {
-            var fields =  latestVersion.VersionFieldChanges?.Split(
-                    ',',
-                    StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .ToList()
-                ?? [];
+            var fields =  latestVersion.VersionFieldChanges?
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .ToList() ?? [];
 
             var changes = new List<FieldChange>();
 
@@ -63,8 +61,8 @@ namespace SFA.DAS.AODP.Application.Services
                     case "Level":
                         changes.Add(new FieldChange(
                             "Level",
-                            previousVersion.Level?.ToString(),
-                            latestVersion.Level?.ToString()));
+                            previousVersion.Level,
+                            latestVersion.Level));
                         break;
 
                     case "Type":
@@ -84,15 +82,15 @@ namespace SFA.DAS.AODP.Application.Services
                     case "Ssa":
                         changes.Add(new FieldChange(
                             "SSA",
-                            previousVersion.Ssa?.ToString(),
-                            latestVersion.Ssa?.ToString()));
+                            previousVersion.Ssa,
+                            latestVersion.Ssa));
                         break;
 
                     case "GradingType":
                         changes.Add(new FieldChange(
                             "Grading type",
-                            previousVersion.GradingType?.ToString(),
-                            latestVersion.GradingType?.ToString()));
+                            previousVersion.GradingType,
+                            latestVersion.GradingType));
                         break;
 
                     case "OfferedInEngland":

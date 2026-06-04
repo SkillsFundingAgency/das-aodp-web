@@ -457,26 +457,5 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     "Invalid parameters.");
             }
         }
-
-        private class CsvExportResult
-        {
-            public bool Success { get; set; }
-            public string? ErrorMessage { get; set; }
-            public List<QualificationExport> QualificationExports { get; set; } = new List<QualificationExport>();
-        }
-
-        private class StatusValidationResult
-        {
-            public bool IsValid { get; set; }
-            public string? ErrorMessage { get; set; }
-            public string? ProcessedStatus { get; set; }
-        }
-    }
-
-    public class FieldMap
-    {
-        public string DBField { get; set; }
-        public string FriendlyName { get; set; }
-        public string ClassLocator { get; set; }
     }
 }
