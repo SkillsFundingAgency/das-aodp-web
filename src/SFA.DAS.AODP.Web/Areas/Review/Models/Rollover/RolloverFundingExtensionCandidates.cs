@@ -1,4 +1,6 @@
-﻿namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover
+﻿using SFA.DAS.AODP.Models.Rollover;
+
+namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover
 {
     public class RolloverFundingExtensionCandidates
     {
