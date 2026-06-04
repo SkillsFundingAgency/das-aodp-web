@@ -2,11 +2,12 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SFA.DAS.AODP.Application.Commands.Rollover;
 using Newtonsoft.Json;
+using SFA.DAS.AODP.Application.Commands.Rollover;
 using SFA.DAS.AODP.Application.Queries.Import;
 using SFA.DAS.AODP.Application.Queries.Review.Rollover;
 using SFA.DAS.AODP.Application.Validators;
+using SFA.DAS.AODP.Application.Queries.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Extensions;
 using SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover;
@@ -15,6 +16,7 @@ using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Extensions;
 using SFA.DAS.AODP.Web.Helpers.User;
+using System.Text;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers;
@@ -639,15 +641,31 @@ public class RolloverController : ControllerBase
 
         var response = await Send(command);
 
+        TempData["RolloverWorkflowRunId"] = response.RolloverWorkflowRunId;
+
         return RedirectToAction(nameof(InitialChecksExport));
+
     }
 
     [HttpGet]
+    [Route("api/rollover/GetRolloverCandidatesForExport")]
+    public async Task<IActionResult> GetRolloverCandidatesForExport([FromQuery]Guid rolloverWorkflowRunId)
+    {
+        var response = await Send(new GetRolloverCandidatesForExportQuery { RolloverWorkflowRunId = rolloverWorkflowRunId });
+
+        return File(response.FileContent, response.ContentType, response.FileName);
+    }
+
+
+
+    [HttpGet]
     [Route("/Review/Rollover/InitialChecksExport")]
-    public async Task<IActionResult> InitialChecksExport()
+    public IActionResult InitialChecksExport()
     {
         return View();
     }
+
+
 
     private Rollover GetSessionModel()
     {
