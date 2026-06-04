@@ -1,17 +1,18 @@
+using FluentValidation;
+using FluentValidation.Validators;
 using GovUk.Frontend.AspNetCore;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.FeatureManagement;
 using SFA.DAS.AODP.Authentication.Extensions;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Extensions.Startup;
+using SFA.DAS.AODP.Web.Models.OutputFile;
 using SFA.DAS.AODP.Web.Validators;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Reflection;
-using FluentValidation.Validators;
-using FluentValidation;
-using Microsoft.FeatureManagement;
-using SFA.DAS.AODP.Web.Models.OutputFile;
 using FeatureManagementOptions = SFA.DAS.AODP.Web.FeatureManagement.FeatureManagementOptions;
 
 [ExcludeFromCodeCoverage]
@@ -21,7 +22,7 @@ internal class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        Debug.WriteLine($"Environment: {builder.Environment.EnvironmentName}");
+        SetCulture();
 
         var configuration = builder.Configuration.LoadConfiguration(builder.Services, builder.Environment.IsDevelopment());
 
@@ -155,6 +156,15 @@ internal class Program
 
             });
         app.Run();
+    }
+
+    private static void SetCulture()
+    {
+        // Set the default culture to en-GB for all threads in the application this is to ensure dates and other formatting 
+        // that is impacted by culture is consistent across the application and in line with user expectations for a UK based application.
+        var targetCulture = new CultureInfo("en-GB");
+        CultureInfo.DefaultThreadCurrentCulture = targetCulture;
+        CultureInfo.DefaultThreadCurrentUICulture = targetCulture;
     }
 
     private static void AddRoutes(IEndpointRouteBuilder endpoints)
