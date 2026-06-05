@@ -1,0 +1,107 @@
+﻿@using SFA.DAS.AODP.Web.Areas.Review.Controllers
+@using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover
+@using SFA.DAS.AODP.Web.Extensions
+@using SFA.DAS.AODP.Web.Views.Shared
+@model SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.RolloverUploadQualificationsViewModel
+
+@{
+    ViewData["Title"] = "Upload candidates to rollover";
+
+    var backLinkModel = new BackLinkModel
+    {
+        Action = "Index",
+        Controller = "Rollover",
+        Area = "Review"
+    };
+
+    var fileHasError = ViewData.ModelState.TryGetValue(nameof(Model.File), out var fileState)
+                   && fileState.Errors.Count > 0;
+    var fileErrorMessage = fileHasError ? fileState.Errors.First().ErrorMessage : null;
+}
+
+@await Html.PartialAsync("_BackLinkPartial", backLinkModel)
+
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
+@if (fileHasError)
+{
+    <div class="govuk-error-summary" aria-labelledby="error-summary-title" role="alert">
+        <h2 class="govuk-error-summary__title">
+            There is a problem
+        </h2>
+        <div class="govuk-error-summary__body">
+            <ul class="govuk-list govuk-error-summary__list">
+                @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li><a href="#fileUpload">@fileErrorMessage</a></li>
+                }
+            </ul>
+        </div>
+    </div>
+}
+
+<h1 class="govuk-heading-l">@ViewData["Title"]</h1>
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <div class="govuk-warning-text">
+            <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+            <strong class="govuk-warning-text__text">
+                <span class="govuk-visually-hidden">Warning</span>
+                This should be a list of candidates that have been checked by a colleague and confirmed as being eligible for rollover
+            </strong>
+        </div>
+
+        <h2 class="govuk-body govuk-!-margin-bottom-1">Import file</h2>
+
+        <p class="govuk-hint">
+            This must be a correctly formatted CSV file. Data within the table cannot include any commas or special characters.
+        </p>
+
+        <p class="govuk-hint">
+            Do not close this window, navigate away or refresh the page until it’s done.
+        </p>
+    </div>
+</div>
+
+<form asp-area="Review" asp-controller="Rollover" asp-action="UploadQualificationsToRollover" method="post" enctype="multipart/form-data">
+
+    @Html.AntiForgeryToken()
+
+    @if (fileHasError)
+    {
+        <span class="govuk-error-message" id="File-error">
+            <span class="govuk-visually-hidden">Error:</span> @fileErrorMessage
+        </span>
+    }
+
+    <div class="govuk-form-group">
+        <input asp-for="File" id="fileUpload"
+               type="file"
+               class="govuk-file-upload"
+               accept=".csv,text/csv"
+               required />
+    </div>
+
+    <details class="govuk-details">
+        <summary class="govuk-details__summary">
+            <span class="govuk-details__summary-text">
+                Column headers required in the CSV file
+            </span>
+        </summary>
+        <div class="govuk-details__text">
+            <p>The formatted CSV must use these column names:</p>
+            <ul>
+                @foreach (var columnHeader in FundingExtensionCandidateColumns.Required)
+                {
+                    <li>@columnHeader</li>
+                }
+            </ul>
+        </div>
+    </details>
+
+    <button type="submit" id="continueButton" class="govuk-button" data-module="govuk-button">
+        Continue
+    </button>
+
+</form>

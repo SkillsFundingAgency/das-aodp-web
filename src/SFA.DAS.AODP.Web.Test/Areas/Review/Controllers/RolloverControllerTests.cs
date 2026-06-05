@@ -3,20 +3,22 @@ using FluentValidation.Results;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using Newtonsoft.Json;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.Rollover;
 using SFA.DAS.AODP.Application.Queries.Import;
 using SFA.DAS.AODP.Application.Queries.Review.Rollover;
+using SFA.DAS.AODP.Application.Queries.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.User;
-using SFA.DAS.AODP.Web.Validators;
 
 namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers;
 
@@ -46,6 +48,11 @@ public class RolloverControllerTests
             _approvalEndDateValidatorMock.Object,
             _csvFileReaderMock.Object,
             _userHelperServiceMock.Object);
+
+        _controller.TempData = new TempDataDictionary(
+         new DefaultHttpContext(),
+         Mock.Of<ITempDataProvider>()
+     );
     }
 
     private RolloverController CreateControllerWithSession(ISession session)
@@ -56,12 +63,22 @@ public class RolloverControllerTests
             _approvalEndDateValidatorMock.Object,
             _csvFileReaderMock.Object,
             _userHelperServiceMock.Object);
+
         var httpContext = new DefaultHttpContext();
         httpContext.Session = session;
+
+        
+
         controller.ControllerContext = new ControllerContext
         {
             HttpContext = httpContext
         };
+        
+        controller.TempData = new TempDataDictionary(
+            new DefaultHttpContext(),
+            Mock.Of<ITempDataProvider>()
+        );
+
         return controller;
     }
 
@@ -156,7 +173,7 @@ public class RolloverControllerTests
         var result = controller.Index(vm);
 
         var redirect = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal(nameof(RolloverController.UploadQualifications), redirect.ActionName);
+        Assert.Equal(nameof(RolloverController.UploadQualificationsToRollover), redirect.ActionName);
 
         var json = session.GetString("RolloverSession");
         Assert.NotNull(json);
@@ -177,17 +194,6 @@ public class RolloverControllerTests
 
         var redirect = Assert.IsType<RedirectToActionResult>(result);
         Assert.Equal(nameof(RolloverController.CheckData), redirect.ActionName);
-    }
-
-    [Fact]
-    public void UploadQualifications_Get_SetsTitle()
-    {
-        var controller = CreateControllerWithSession(CreateEmptySession());
-
-        var result = controller.UploadQualifications();
-
-        var viewResult = Assert.IsType<ViewResult>(result);
-        Assert.Equal("Upload qualifications to RollOver", viewResult.ViewData["Title"]);
     }
 
     [Fact]
@@ -1381,64 +1387,143 @@ public class RolloverControllerTests
         Assert.Equal("Test User", sentCommand.CreatedByUserName);
     }
 
-    private class TestSession : ISession
+    [Fact]
+    public async Task EnterRolloverFundingApprovalEndDate_InvalidModel_ReturnsViewWithModel()
     {
-        private readonly Dictionary<string, byte[]> _store = new();
+        // Arrange
+        var session = CreateEmptySession();
+        var controller = CreateControllerWithSession(session);
 
-        public bool IsAvailable => true;
-        public string Id { get; } = Guid.NewGuid().ToString();
-        public IEnumerable<string> Keys => _store.Keys;
+        var model = new RolloverFundingApprovalEndDateViewModel();
+        var validationResult = new ValidationResult(new[]
+        {
+        new ValidationFailure("MaxApprovalEndDate", "Required")
+    });
 
-        public void Clear() => _store.Clear();
+        _approvalEndDateValidatorMock
+            .Setup(v => v.ValidateAsync(model, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(validationResult);
 
-        public Task CommitAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
-        public Task LoadAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+        // Act
+        var result = await controller.EnterRolloverFundingApprovalEndDate(model);
 
-        public void Remove(string key) => _store.Remove(key);
-
-        public void Set(string key, byte[] value) => _store[key] = value;
-
-        public bool TryGetValue(string key, out byte[] value) => _store.TryGetValue(key, out value);
+        // Assert
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.Equal("EnterRolloverFundingApprovalEndDate", view.ViewName);
+        Assert.Same(model, view.Model);
     }
 
-    private class ThrowingSession : ISession
+    [Fact]
+    public async Task EnterRolloverFundingApprovalEndDate_ValidModel_SavesSession_AndSendsCommand_AndRedirects()
     {
-        private readonly bool _throwOnGet;
-        private readonly bool _throwOnSet;
+        // Arrange
+        var session = CreateEmptySession();
 
-        public ThrowingSession(bool throwOnGet, bool throwOnSet)
+        var controller = CreateControllerWithSession(session);
+
+        var model = new RolloverFundingApprovalEndDateViewModel
         {
-            _throwOnGet = throwOnGet;
-            _throwOnSet = throwOnSet;
-        }
+            MaxApprovalEndDate = new RolloverFundingApprovalEndDate
+            {
+                Day = 15,
+                Month = 1,
+                Year = 2026
+            }
+        };
 
-        public bool IsAvailable => true;
-        public string Id { get; } = Guid.NewGuid().ToString();
-        public IEnumerable<string> Keys => Array.Empty<string>();
+        _approvalEndDateValidatorMock
+            .Setup(v => v.ValidateAsync(model, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult());
 
-        public void Clear()
-        {
-            if (_throwOnSet) throw new Exception("Clear failed");
-        }
+        var expectedRunId = Guid.NewGuid();
 
-        public Task CommitAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
-        public Task LoadAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
+        _mediatorMock
+            .Setup(m => m.Send(It.IsAny<CreateRolloverWorkflowRunCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<CreateRolloverWorkflowRunCommandResponse>
+            {
+                Success = true,
+                Value = new CreateRolloverWorkflowRunCommandResponse
+                {
+                    RolloverWorkflowRunId = expectedRunId
+                }
+            });
 
-        public void Remove(string key)
-        {
-            if (_throwOnSet) throw new Exception("Remove failed");
-        }
+        _userHelperServiceMock
+            .Setup(x => x.GetUserDisplayName())
+            .Returns("Test User");
 
-        public void Set(string key, byte[] value)
-        {
-            if (_throwOnSet) throw new Exception("Set failed");
-        }
+        // Act
+        var result = await controller.EnterRolloverFundingApprovalEndDate(model);
 
-        public bool TryGetValue(string key, out byte[] value)
-        {
-            if (_throwOnGet) throw new Exception("Get failed");
-            value = Array.Empty<byte>();
-            return false;
-        }
+        // Assert redirect
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal(nameof(RolloverController.InitialChecksExport), redirect.ActionName);
+
+        // Assert TempData
+        Assert.Equal(expectedRunId, controller.TempData["RolloverWorkflowRunId"]);
+
+        // Assert session saved
+        var json = session.GetString("RolloverSession");
+        Assert.NotNull(json);
+        var saved = JsonConvert.DeserializeObject<Rollover>(json!);
+        Assert.NotNull(saved!.RolloverFundingApprovalEndDate);
+        Assert.Equal(15, saved.RolloverFundingApprovalEndDate.Day);
+        Assert.Equal(1, saved.RolloverFundingApprovalEndDate.Month);
+        Assert.Equal(2026, saved.RolloverFundingApprovalEndDate.Year);
+
+        // Assert mediator called
+        _mediatorMock.Verify(m => m.Send(
+            It.IsAny<CreateRolloverWorkflowRunCommand>(),
+            It.IsAny<CancellationToken>()),
+            Times.Once);
     }
+
+    [Fact]
+    public async Task GetRolloverCandidatesForExport_ReturnsFileResult()
+    {
+        // Arrange
+        var controller = CreateControllerWithSession(CreateEmptySession());
+
+        var workflowRunId = Guid.NewGuid();
+
+        var expectedBytes = new byte[] { 1, 2, 3 };
+        var expectedFileName = "export.csv";
+
+        _mediatorMock
+            .Setup(m => m.Send(It.IsAny<GetRolloverCandidatesForExportQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetRolloverCandidatesForExportQueryResponse>
+            {
+                Success = true,
+                Value = new GetRolloverCandidatesForExportQueryResponse
+                {
+                    FileContent = expectedBytes,
+                    FileName = expectedFileName,
+                    ContentType = "text/csv"
+                }
+            });
+
+        // Act
+        var result = await controller.GetRolloverCandidatesForExport(workflowRunId);
+
+        // Assert
+        var file = Assert.IsType<FileContentResult>(result);
+        Assert.Equal(expectedBytes, file.FileContents);
+        Assert.Equal("text/csv", file.ContentType);
+        Assert.Equal(expectedFileName, file.FileDownloadName);
+    }
+
+    [Fact]
+    public void InitialChecksExport_ReturnsView()
+    {
+        var controller = CreateControllerWithSession(CreateEmptySession());
+
+        var result = controller.InitialChecksExport();
+
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.Null(view.ViewName);
+    }
+
+
+
+
 }

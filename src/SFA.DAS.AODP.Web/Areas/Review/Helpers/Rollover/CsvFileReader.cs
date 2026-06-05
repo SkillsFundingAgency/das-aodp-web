@@ -68,6 +68,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover
 
             foreach (var row in rows.Skip(1))
             {
+                if (row.All(cell => string.IsNullOrWhiteSpace(cell?.Trim())))
+                    continue;
+
                 var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
                 foreach (var h in headerMap)
@@ -115,7 +118,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover
             var t = s.Trim();
             t = t.TrimStart('\uFEFF');
             t = t.Replace('\u00A0', ' ');
-            t = Regex.Replace(t, @"\s+", " ");
+            t = Regex.Replace(t, @"\s+", " ", RegexOptions.None, TimeSpan.FromMilliseconds(100));
             return t.ToLowerInvariant();
         }
 

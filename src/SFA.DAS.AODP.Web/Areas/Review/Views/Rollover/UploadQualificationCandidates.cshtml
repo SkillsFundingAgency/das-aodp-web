@@ -1,4 +1,5 @@
 ﻿@using SFA.DAS.AODP.Web.Areas.Review.Controllers
+@using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover
 @using SFA.DAS.AODP.Web.Extensions
 @using SFA.DAS.AODP.Web.Views.Shared
 @model SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.RolloverUploadQualificationCandidatesViewModel
@@ -47,10 +48,15 @@
 
     <h2 class="govuk-body govuk-!-margin-bottom-1">Import file</h2>
 
-    <p class="govuk-hint">
-        This must be a correctly formatted CSV file which includes: QAN, level, type,
-        SSA and AO. Data within the table cannot include any commas or special characters.
-    </p>
+    <p class="govuk-hint">This must be a correctly formatted CSV file and must use these column names:</p>
+
+        <ul class="govuk-hint">
+            @foreach (var columnHeader in QualificationImportColumns.Required)
+            {
+                <li>@columnHeader</li>
+            }
+        </ul>
+    <p class="govuk-hint">Data within the table cannot include any commas or special characters.</p>
 
     <p class="govuk-hint">
         Do not close this window, navigate away or refresh the page until it’s done.

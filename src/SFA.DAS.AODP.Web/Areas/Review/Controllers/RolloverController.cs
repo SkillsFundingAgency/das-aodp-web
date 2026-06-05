@@ -3,9 +3,9 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.Rollover;
-using Newtonsoft.Json;
 using SFA.DAS.AODP.Application.Queries.Import;
 using SFA.DAS.AODP.Application.Queries.Review.Rollover;
+using SFA.DAS.AODP.Application.Queries.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Extensions;
 using SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover;
@@ -14,6 +14,7 @@ using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Extensions;
 using SFA.DAS.AODP.Web.Helpers.User;
+using System.Text;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers;
@@ -24,7 +25,6 @@ public class RolloverController : ControllerBase
 {
     private readonly ILogger<RolloverController> _logger;
     private const string SessionKey = "RolloverSession";
-    private const string RolloverStartView = "RolloverStart";
     private readonly ICsvFileReader _csvFileReader;
     private readonly IValidator<RolloverEligibilityDatesViewModel> _rolloverEligibilityDatesViewModeValidator;
     private readonly IValidator<RolloverFundingApprovalEndDateViewModel> _rolloverFundingApprovalEndDateViewModelViewModeValidator;
@@ -72,7 +72,7 @@ public class RolloverController : ControllerBase
         return model.SelectedProcess switch
         {
             RolloverProcess.InitialSelection => RedirectToAction(nameof(CheckData)),
-            RolloverProcess.FinalUpload => RedirectToAction(nameof(UploadQualifications)),
+            RolloverProcess.FinalUpload => RedirectToAction(nameof(UploadQualificationsToRollover)),
             _ => View("RolloverStart", model)
         };
     }
@@ -86,10 +86,112 @@ public class RolloverController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/Review/Rollover/UploadQualifications")]
-    public IActionResult UploadQualifications()
+    [Route("/Review/Rollover/UploadQualificationsToRollover")]
+    public IActionResult UploadQualificationsToRollover()
     {
-        ViewData["Title"] = "Upload qualifications to RollOver";
+        return View();
+    }
+
+    [HttpPost]
+    [Route("/Review/Rollover/UploadQualificationsToRollover")]
+    public async Task<IActionResult> UploadQualificationsToRollover([FromForm] RolloverUploadQualificationsViewModel model)
+    {
+        var session = GetSessionModel();
+
+        if (model.File == null && session.RolloverFundingExtensionCandidates != null)
+        {
+            return RedirectToAction("RolloverSummary");
+        }
+
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        try
+        {
+            var file = await _csvFileReader.FileReadAsync(
+                model.File,
+                FundingExtensionCandidateColumns.Required,
+                FundingExtensionCandidateMapper.Map
+            );
+
+            var candidates = file.Items
+                .Select((c, index) =>
+                {
+                    c.RowNumber = index + 1;
+                    return c;
+                })
+                .ToList();
+
+            if (!file.IsValid)
+            {
+                foreach (var error in file.Errors)
+                    ModelState.AddModelError(nameof(model.File), error);
+
+                return View(model);
+            }
+
+
+            var command = new ValidateFundingExtensionCandidatesCommand
+            {
+                FundingExtensionCandidates = 
+                    candidates.Select(r => new FundingExtensionCandidateValidationItem
+                    {
+                        RowNumber = r.RowNumber,
+                        Qan = r.Qan,
+                        FundingStreamName = r.FundingStreamName,
+                        ProposedFundingEndDate = r.ProposedFundingApprovalEndDate.Value,
+                        RolloverStatus = r.RollOverStatus,
+                        ExclusionReason = r.ExclusionReason
+                    }).ToList()
+            };
+
+            var validationResponse = await Send(command);
+
+            foreach (var row in candidates)
+            {
+                var validatedCandidate = validationResponse.Candidates
+                    .FirstOrDefault(v => v.RowNumber == row.RowNumber);
+
+                if (validatedCandidate != null)
+                {
+                    row.ValidationErrors = validatedCandidate.Errors;
+                    row.IsValid = validatedCandidate.IsValid;
+                }
+            }
+
+            session.RolloverFundingExtensionCandidates = candidates;
+            SaveSessionModel(session);
+
+
+            if (!validationResponse.IsValid)
+            {
+                return RedirectToAction("RolloverValidationErrors");
+            }
+
+            return RedirectToAction("RolloverSummary");
+
+        }
+        catch (Exception ex)
+        {
+            LogException(ex);
+            ModelState.AddModelError("", "An unexpected error occurred while validating the file.");
+            return View(model);
+        }   
+    }
+
+    [HttpGet]
+    [Route("/Review/Rollover/RolloverSummary")]
+    public IActionResult RolloverSummary()
+    {
+        return View();
+    }
+
+    [HttpGet]
+    [Route("/Review/Rollover/RolloverValidationErrors")]
+    public IActionResult RolloverValidationErrors()
+    {
         return View();
     }
 
@@ -425,7 +527,6 @@ public class RolloverController : ControllerBase
         return View(model);
     }
 
-
     [HttpPost]
     [Route("/Review/Rollover/FundingStreamInclusionExclusion")]
     public async Task<IActionResult> FundingStreamInclusionExclusion(FundingStreamInclusionExclusionViewModel vm, string action)
@@ -576,15 +677,31 @@ public class RolloverController : ControllerBase
 
         var response = await Send(command);
 
+        TempData["RolloverWorkflowRunId"] = response.RolloverWorkflowRunId;
+
         return RedirectToAction(nameof(InitialChecksExport));
+
     }
 
     [HttpGet]
+    [Route("api/rollover/GetRolloverCandidatesForExport")]
+    public async Task<IActionResult> GetRolloverCandidatesForExport([FromQuery]Guid rolloverWorkflowRunId)
+    {
+        var response = await Send(new GetRolloverCandidatesForExportQuery { RolloverWorkflowRunId = rolloverWorkflowRunId });
+
+        return File(response.FileContent, response.ContentType, response.FileName);
+    }
+
+
+
+    [HttpGet]
     [Route("/Review/Rollover/InitialChecksExport")]
-    public async Task<IActionResult> InitialChecksExport()
+    public IActionResult InitialChecksExport()
     {
         return View();
     }
+
+
 
     private Rollover GetSessionModel()
     {

@@ -2,8 +2,37 @@
 @using SFA.DAS.AODP.Web.Views.Shared
 @{
     ViewData["Title"] = "Initial checks and export complete";
+
+    var rolloverWorkflowRunId = TempData["RolloverWorkflowRunId"]?.ToString();
 }
 
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
+@if (!string.IsNullOrWhiteSpace(rolloverWorkflowRunId))
+{
+    <iframe src="@Url.Action("GetRolloverCandidatesForExport", "Rollover", new { area = "Review", rolloverWorkflowRunId })"
+            title="Download frame" style="display:none" aria-hidden="true"></iframe>
+}
+
 <h1 class="govuk-heading-l">@ViewData["Title"]</h1>
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <p class="govuk-body">
+            You have exported a CSV file to your device with a list of candidates to be checked before completing rollover.
+        </p>
+        <h2 class="govuk-heading-m">What you can do now</h2>
+
+        <ul class="govuk-list govuk-list--bullet">
+            <li>Check through the file and make any necessary amends</li>
+            <li>Have the file quality assured by a colleague</li>
+            <li>Return to this service to upload the finalised list of funding streams for rollover</li>
+        </ul>
+
+        <p class="govuk-body">
+            <a asp-area="Review" asp-controller="Home" asp-action="Index" class="govuk-link">
+                Go to the QFAST homepage
+            </a>
+        </p>
+    </div>
+</div>
