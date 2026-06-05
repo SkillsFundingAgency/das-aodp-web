@@ -1,10 +1,11 @@
 ﻿@using SFA.DAS.AODP.Web.Areas.Review.Controllers
+@using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover
 @using SFA.DAS.AODP.Web.Extensions
 @using SFA.DAS.AODP.Web.Views.Shared
 @model SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.RolloverUploadQualificationsViewModel
 
 @{
-    ViewData["Title"] = "Upload qualifications to Rollover";
+    ViewData["Title"] = "Upload candidates to rollover";
 
     var backLinkModel = new BackLinkModel
     {
@@ -47,15 +48,14 @@
             <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
             <strong class="govuk-warning-text__text">
                 <span class="govuk-visually-hidden">Warning</span>
-                This should be a list of qualifications that have been checked by a colleague and confirmed as being eligible for rollover
+                This should be a list of candidates that have been checked by a colleague and confirmed as being eligible for rollover
             </strong>
         </div>
 
         <h2 class="govuk-body govuk-!-margin-bottom-1">Import file</h2>
 
         <p class="govuk-hint">
-            This must be a correctly formatted CSV file which includes: QAN, level, type,
-            SSA and AO and must not include any commas or special characters.
+            This must be a correctly formatted CSV file. Data within the table cannot include any commas or special characters.
         </p>
 
         <p class="govuk-hint">
@@ -64,7 +64,7 @@
     </div>
 </div>
 
-<form asp-area="Review" asp-controller="Rollover" asp-action="UploadQualifications" method="post" enctype="multipart/form-data">
+<form asp-area="Review" asp-controller="Rollover" asp-action="UploadQualificationsToRollover" method="post" enctype="multipart/form-data">
 
     @Html.AntiForgeryToken()
 
@@ -82,6 +82,23 @@
                accept=".csv,text/csv"
                required />
     </div>
+
+    <details class="govuk-details">
+        <summary class="govuk-details__summary">
+            <span class="govuk-details__summary-text">
+                Column headers required in the CSV file
+            </span>
+        </summary>
+        <div class="govuk-details__text">
+            <p>The formatted CSV must use these column names:</p>
+            <ul>
+                @foreach (var columnHeader in FundingExtensionCandidateColumns.Required)
+                {
+                    <li>@columnHeader</li>
+                }
+            </ul>
+        </div>
+    </details>
 
     <button type="submit" id="continueButton" class="govuk-button" data-module="govuk-button">
         Continue

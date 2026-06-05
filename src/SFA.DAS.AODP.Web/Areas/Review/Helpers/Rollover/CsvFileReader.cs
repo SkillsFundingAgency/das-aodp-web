@@ -68,6 +68,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover
 
             foreach (var row in rows.Skip(1))
             {
+                if (row.All(cell => string.IsNullOrWhiteSpace(cell?.Trim())))
+                    continue;
+
                 var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
                 foreach (var h in headerMap)
