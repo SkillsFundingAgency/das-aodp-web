@@ -113,7 +113,7 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
 
             Assert.Equal("application/zip", fileResult.ContentType);
             Assert.Equal(
-                "Test Org_123456_" + submissionId + ".zip",
+                "Test Org_123456_" + submissionId.ToString().PadLeft(6, '0') + ".zip",
                 fileResult.FileDownloadName
             );
         }
