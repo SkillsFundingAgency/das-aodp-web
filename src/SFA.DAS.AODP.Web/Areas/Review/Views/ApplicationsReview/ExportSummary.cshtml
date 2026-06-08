@@ -76,14 +76,15 @@
                             break;
 
                         case "Number":
-                            <div>@(answer?.NumberValue?.ToString() ?? "Not answered")</div>
+                            <div>@answer?.NumberValue.ToSmartNumber()</div>
+
                             break;
 
                         case "Date":
                             <div>
                                 @(
                                     answer?.DateValue.HasValue == true
-                                    ? answer.DateValue.Value.ToString("dd/MM/yyyy")
+                                    ? answer.DateValue.Value.ToShortDateFormat()
                                     : "Not answered"
                                 )
                             </div>

@@ -1,10 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using SFA.DAS.AODP.Application.Queries.Application.Form;
+﻿using SFA.DAS.AODP.Application.Queries.Application.Form;
 using SFA.DAS.AODP.Application.Queries.Application.Review;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview;
+using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Extensions;
-using SFA.DAS.AODP.Web.Models.Application;
 using System.IO.Compression;
 
 namespace SFA.DAS.AODP.Web.Helpers.Export
@@ -35,9 +34,9 @@ namespace SFA.DAS.AODP.Web.Helpers.Export
             string organisationFolder = metadata.OrganisationName.SanitiseFileName();
             string qanFolder =
                 string.IsNullOrWhiteSpace(metadata.Qan)
-                    ? "NoQAN"
+                    ? ApplicationExportConstants.NoQanFolderName
                     : metadata.Qan.SanitiseFileName();
-            string applicationFolder = ($"{metadata.SubmissionId}_{metadata.FormName.SanitiseFileName()}");
+            string applicationFolder = ($"{metadata.SubmissionId.ToString().PadLeft(6, '0')}_{metadata.FormName.SanitiseFileName()}");
 
             string basePath = $"{organisationFolder}/{qanFolder}/{applicationFolder}";
 
@@ -47,7 +46,7 @@ namespace SFA.DAS.AODP.Web.Helpers.Export
             using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Create, true))
             {
                 var summaryHtml = await GenerateSummaryHtml(exportData, files);
-                var summaryEntry = archive.CreateEntry($"{basePath}/summary.html");
+                var summaryEntry = archive.CreateEntry($"{basePath}/{ApplicationExportConstants.SummaryFileName}");
 
                 await using (var stream = summaryEntry.Open())
                 await using (var writer = new StreamWriter(stream))
@@ -57,24 +56,33 @@ namespace SFA.DAS.AODP.Web.Helpers.Export
 
                 foreach (var file in files)
                 {
-                    var questionId = ExtractQuestionIdFromBlobPath(file.FullPath);
+                    bool isMessageFile = file.FullPath.StartsWith($"{ApplicationExportConstants.MessageFolderName}/", StringComparison.OrdinalIgnoreCase);
 
                     string filePath;
 
-                    if (questionId != null && questionMap.TryGetValue(questionId.Value, out var info))
+                    if (!isMessageFile)
                     {
-                        var (sectionTitle, pageTitle, questionTitle) = info;
+                        var questionId = ExtractQuestionIdFromBlobPath(file.FullPath);
 
-                        filePath =
-                            $"{basePath}/" +
-                            $"{sectionTitle.SanitiseFileName()}/" +
-                            $"{pageTitle.SanitiseFileName()}/" +
-                            $"{questionTitle.SanitiseFileName()}/" +
-                            $"{file.FileNameWithPrefix.SanitiseFileName()}";
+                        if (questionId != null && questionMap.TryGetValue(questionId.Value, out var info))
+                        {
+                            var (sectionTitle, pageTitle, questionTitle) = info;
+
+                            filePath =
+                                $"{basePath}/" +
+                                $"{sectionTitle.SanitiseFileName()}/" +
+                                $"{pageTitle.SanitiseFileName()}/" +
+                                $"{questionTitle.SanitiseFileName()}/" +
+                                $"{file.FileNameWithPrefix.SanitiseFileName()}";
+                        }
+                        else
+                        {
+                            filePath = $"{basePath}/{file.FileNameWithPrefix.SanitiseFileName()}";
+                        }
                     }
                     else
                     {
-                        filePath = $"{basePath}/{file.FileNameWithPrefix}";
+                        filePath = $"{basePath}/{file.FileNameWithPrefix.SanitiseFileName()}";
                     }
 
                     await using var fileStream =
@@ -107,7 +115,7 @@ namespace SFA.DAS.AODP.Web.Helpers.Export
                 ApplicationSummaryModel = new ApplicationReadOnlyDetailsSummary(exportData.ApplicationMetadata)
             };
 
-            return await _htmlExportRenderer.RenderAsync("ExportSummary", exportSummaryModel);
+            return await _htmlExportRenderer.RenderAsync(ApplicationExportConstants.SummaryViewName, exportSummaryModel);
         }
 
         private Guid? ExtractQuestionIdFromBlobPath(string fullPath)

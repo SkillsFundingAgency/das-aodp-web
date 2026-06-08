@@ -8,6 +8,7 @@ using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Queries.Application.Review;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
+using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Helpers.Export;
 
 namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
@@ -88,7 +89,14 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
                 .Setup(x => x.ListBlobs(applicationId.ToString()))
                 .Returns(new List<UploadedBlob>
                 {
-            new UploadedBlob { FileName = "file1.txt", FullPath = "file1.txt" }
+                    new UploadedBlob { FileName = "questionfile.txt", FullPath = "12345/questionfile.txt" }
+                });
+
+            _fileServiceMock
+                .Setup(x => x.ListBlobs($"{ApplicationExportConstants.MessageFolderName}/{applicationId.ToString()}"))
+                .Returns(new List<UploadedBlob>
+                {
+                    new UploadedBlob { FileName = "messagefile.txt", FullPath = "messages/12345/messagefile.txt" }
                 });
 
             _exportServiceMock

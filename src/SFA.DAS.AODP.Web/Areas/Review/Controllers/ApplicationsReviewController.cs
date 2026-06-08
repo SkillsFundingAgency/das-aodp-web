@@ -785,13 +785,16 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
             var exportData = await Send(new GetApplicationExportDataQuery(applicationReviewId));
 
-            var files = _fileService.ListBlobs(applicationId.ToString());
+            var questionFiles = _fileService.ListBlobs(applicationId.ToString());
+            var messageFiles = _fileService.ListBlobs($"{ApplicationExportConstants.MessageFolderName}/{applicationId}");
+
+            var files = questionFiles.Concat(messageFiles).ToList();
 
             var zipBytes = await _exportService.GenerateExportZipAsync(exportData, files);
 
             var org = exportData.ApplicationMetadata.OrganisationName.SanitiseFileName();
-            var qan = exportData.ApplicationMetadata.Qan?.SanitiseFileName() ?? "NoQAN";
-            var submission = exportData.ApplicationMetadata.SubmissionId.ToString();
+            var qan = exportData.ApplicationMetadata.Qan?.SanitiseFileName() ?? ApplicationExportConstants.NoQanFolderName;
+            var submission = exportData.ApplicationMetadata.SubmissionId.ToString().PadLeft(6, '0');
 
             return File(zipBytes, "application/zip", $"{org}_{qan}_{submission}.zip");
         }
