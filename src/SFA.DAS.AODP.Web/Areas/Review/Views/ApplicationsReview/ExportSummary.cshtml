@@ -2,171 +2,166 @@
 @using Microsoft.AspNetCore.Html
 @using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
 @using SFA.DAS.AODP.Web.Extensions
-@model ApplicationExportViewModel;
+@using SFA.DAS.AODP.Web.Helpers.Export
+@model ApplicationExportViewModel
 
 @{
     var form = Model.ApplicationFormModel;
     var summary = Model.ApplicationSummaryModel;
-
-    string Safe(string? input)
-        => WebUtility.HtmlEncode(input ?? "");
 }
+
 <h1 class="title">Application Export</h1>
 
-<h2 class="subheading">Application Summary</h2>
+    <h2 class="subheading">Application Summary</h2>
 
-<table class="summary-table">
-    <tr>
-        <td>Submission ID</td>
-        <td>@summary.SubmissionId</td>
-    </tr>
-    <tr>
-        <td>Qualification Title</td>
-        <td>@summary.QualificationTitle</td>
-    </tr>
-    <tr>
-        <td>Organisation</td>
-        <td>@summary.OrganisationName</td>
-    </tr>
-    <tr>
-        <td>Form Name</td>
-        <td>@summary.FormName</td>
-    </tr>
-    <tr>
-        <td>QAN</td>
-        <td>@summary.Qan</td>
-    </tr>
-</table>
+    <table class="summary-table">
+        <tr>
+            <td>Submission ID</td>
+            <td>@summary.SubmissionId</td>
+        </tr>
+        <tr>
+            <td>Qualification Title</td>
+            <td>@summary.QualificationTitle</td>
+        </tr>
+        <tr>
+            <td>Organisation</td>
+            <td>@summary.OrganisationName</td>
+        </tr>
+        <tr>
+            <td>Form Name</td>
+            <td>@summary.FormName</td>
+        </tr>
+        <tr>
+            <td>QAN</td>
+            <td>@summary.Qan</td>
+        </tr>
+    </table>
 
-<h2 class="subheading">Application Form</h2>
+    <h2 class="subheading">Application Form</h2>
 
-@foreach (var section in form.Sections.OrderBy(s => s.Order))
-{
-    <h3 class="section-title">
-        @($"{section.Order}. Section: {section.Title}")
-    </h3>
-
-    @foreach (var page in section.Pages.OrderBy(p => p.Order))
+    @foreach (var section in form.Sections.OrderBy(s => s.Order))
     {
-        <h3 class="page-title">
-            @($"{section.Order}.{page.Order} Page: {page.Title}")
+        <h3 class="section-title">
+            @($"{section.Order}. Section: {section.Title}")
         </h3>
 
-        @foreach (var question in page.Questions.OrderBy(q => q.Order))
+        @foreach (var page in section.Pages.OrderBy(p => p.Order))
         {
-            var answer = question.Answer;
-            var qId = $"{section.Order}.{page.Order}.{question.Order}";
+            <h3 class="page-title">
+                @($"{section.Order}.{page.Order} Page: {page.Title}")
+            </h3>
 
-            <div class="question-block">
+            @foreach (var question in page.Questions.OrderBy(q => q.Order))
+            {
+                var answer = question.Answer;
+                var qId = QuestionReferenceHelper.GetReference(section.Order, page.Order, question.Order);
 
-                <div class="question-title">
-                    @qId @question.Title
+                <div class="question-block">
+
+                    <div class="question-title">
+                        @qId @question.Title
+                    </div>
+
+                    <div class="question-answer">
+
+                        @switch (question.Type)
+                        {
+                            case "Text":
+                                <div>@(answer?.TextValue ?? "Not answered")</div>
+                                break;
+
+                            case "TextArea":
+                                <div class="text-block">@(answer?.TextValue ?? "Not answered")</div>
+                                break;
+
+                            case "Number":
+                                <div>@answer?.NumberValue.ToSmartNumber()</div>
+                                break;
+
+                            case "Date":
+                                <div>
+                                    @(
+                                        answer?.DateValue.HasValue == true
+                                            ? answer.DateValue.Value.ToShortDateFormat()
+                                            : "Not answered"
+                                    )
+                                </div>
+                                break;
+
+                            case "Radio":
+                                <div class="option-list">
+                                    @foreach (var opt in question.QuestionOptions ?? Enumerable.Empty<dynamic>())
+                                    {
+                                        var selected = answer?.RadioChoiceValue == opt.Id.ToString();
+
+                                        <label class="option">
+                                            <input type="radio" disabled @(selected ? "checked" : "") />
+                                            <span>@opt.Value</span>
+                                        </label>
+                                    }
+                                </div>
+                                break;
+
+                            case "MultiChoice":
+                                <div class="option-list">
+                                    @foreach (var opt in question.QuestionOptions ?? Enumerable.Empty<dynamic>())
+                                    {
+                                        var selected = answer?.MultipleChoiceValue?.Contains(opt.Id.ToString()) == true;
+
+                                        <label class="option">
+                                            <input type="checkbox" disabled @(selected ? "checked" : "") />
+                                            <span>@opt.Value</span>
+                                        </label>
+                                    }
+                                </div>
+                                break;
+
+                            case "File":
+                                <div>
+                                    @if (answer?.Files?.Any() == true)
+                                    {
+                                        <ul class="file-list">
+                                            @foreach (var f in answer.Files)
+                                            {
+                                                <li>
+                                                    <a href="@($"./{qId}/{f.FileDisplayName}")">
+                                                        @f.FileDisplayName
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+                                    else
+                                    {
+                                        <span>No files uploaded</span>
+                                    }
+                                </div>
+                                break;
+
+                            default:
+                                <div>@(answer?.TextValue ?? "Not answered")</div>
+                                break;
+                        }
+
+                    </div>
                 </div>
-
-                <div class="question-answer">
-
-                    @switch (question.Type)
-                    {
-                        case "Text":
-                            <div>@(answer?.TextValue ?? "Not answered")</div>
-                            break;
-
-                        case "TextArea":
-                            <div class="text-block">@(answer?.TextValue ?? "Not answered")</div>
-                            break;
-
-                        case "Number":
-                            <div>@answer?.NumberValue.ToSmartNumber()</div>
-
-                            break;
-
-                        case "Date":
-                            <div>
-                                @(
-                                    answer?.DateValue.HasValue == true
-                                    ? answer.DateValue.Value.ToShortDateFormat()
-                                    : "Not answered"
-                                )
-                            </div>
-                            break;
-
-                        case "Radio":
-                            <div class="option-list">
-                                @foreach (var opt in question.QuestionOptions ?? Enumerable.Empty<dynamic>())
-                                {
-                                    var selected = answer?.RadioChoiceValue == opt.Id.ToString();
-
-                                    <label class="option">
-                                        <input type="radio" disabled @(selected ? "checked" : "") />
-                                        <span>@opt.Value</span>
-                                    </label>
-                                }
-                            </div>
-                            break;
-
-                        case "MultiChoice":
-                            <div class="option-list">
-                                @foreach (var opt in question.QuestionOptions ?? Enumerable.Empty<dynamic>())
-                                {
-                                    var selected = answer?.MultipleChoiceValue?.Contains(opt.Id.ToString()) == true;
-
-                                    <label class="option">
-                                        <input type="checkbox" disabled @(selected ? "checked" : "") />
-                                        <span>@opt.Value</span>
-                                    </label>
-                                }
-                            </div>
-                            break;
-
-                        case "File":
-                            <div>
-                                @if (answer?.Files?.Any() == true)
-                                {
-                                    <ul class="file-list">
-                                        @foreach (var f in answer.Files)
-                                        {
-                                            <li>@f.FileDisplayName</li>
-                                        }
-                                    </ul>
-                                }
-                                else
-                                {
-                                    <span>No files uploaded</span>
-                                }
-                            </div>
-                            break;
-
-                        default:
-                            <div>@(answer?.TextValue ?? "Not answered")</div>
-                            break;
-                    }
-
-                </div>
-            </div>
+            }
         }
     }
-}
 
-<!--Styles are included because this will be saved to a zip file -->
 <style>
     body {
         font-family: Arial, sans-serif;
-        font-size: 14px;
+        font-size: 15px;
         color: #111;
         margin: 20px;
-        line-height: 1.4;
+        line-height: 1.5;
     }
+
 
     h1 {
-
         font-size: 22px;
         margin-bottom: 12px;
-    }
-    h2.section-title {
-        font-size: 18px;
-        margin-top: 24px;
-        padding-bottom: 4px;
-        border-bottom: 1px solid #ddd;
     }
 
     h3.page-title {
@@ -178,7 +173,8 @@
 
     .question-block {
         margin: 10px 0;
-        padding-left: 6px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
     }
 
     .question-title {
@@ -188,11 +184,16 @@
 
     .question-answer {
         margin-left: 10px;
+        display: inline-block;
+        max-width: 800px;
     }
 
     .text-block {
         white-space: pre-wrap;
-        margin-top: 2px;
+        margin-top: 4px;
+        padding: 8px;
+        border-left: 3px solid #ddd;
+        background: #f9f9f9;
     }
 
     .option-list {

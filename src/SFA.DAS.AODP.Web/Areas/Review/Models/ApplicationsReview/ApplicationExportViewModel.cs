@@ -1,5 +1,4 @@
 ﻿using SFA.DAS.AODP.Application.Queries.Application.Review;
-using SFA.DAS.AODP.Application.Queries.Review;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
 {
@@ -8,6 +7,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
     {
         public ApplicationReadOnlyDetailsSummary ApplicationSummaryModel { get; set; }
         public ApplicationReadOnlyDetailsViewModel ApplicationFormModel { get; set; }
+        public Dictionary<Guid, string> QuestionMap { get; set; }
     }
 
     [ExcludeFromCodeCoverage]

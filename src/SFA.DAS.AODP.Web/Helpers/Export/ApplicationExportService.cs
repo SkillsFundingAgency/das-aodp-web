@@ -45,7 +45,7 @@ namespace SFA.DAS.AODP.Web.Helpers.Export
             using var zipStream = new MemoryStream();
             using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Create, true))
             {
-                var summaryHtml = await GenerateSummaryHtml(exportData, files);
+                var summaryHtml = await GenerateSummaryHtml(exportData, files, questionMap);
                 var summaryEntry = archive.CreateEntry($"{basePath}/{ApplicationExportConstants.SummaryFileName}");
 
                 await using (var stream = summaryEntry.Open())
@@ -64,15 +64,10 @@ namespace SFA.DAS.AODP.Web.Helpers.Export
                     {
                         var questionId = ExtractQuestionIdFromBlobPath(file.FullPath);
 
-                        if (questionId != null && questionMap.TryGetValue(questionId.Value, out var info))
+                        if (questionId != null && questionMap.TryGetValue(questionId.Value, out var questionReference))
                         {
-                            var (sectionTitle, pageTitle, questionTitle) = info;
-
                             filePath =
-                                $"{basePath}/" +
-                                $"{sectionTitle.SanitiseFileName()}/" +
-                                $"{pageTitle.SanitiseFileName()}/" +
-                                $"{questionTitle.SanitiseFileName()}/" +
+                                $"{basePath}/{questionReference}/" +
                                 $"{file.FileNameWithPrefix.SanitiseFileName()}";
                         }
                         else
@@ -82,7 +77,10 @@ namespace SFA.DAS.AODP.Web.Helpers.Export
                     }
                     else
                     {
-                        filePath = $"{basePath}/{file.FileNameWithPrefix.SanitiseFileName()}";
+                        filePath =
+                            $"{basePath}/" +
+                            $"{ApplicationExportConstants.MessageFolderName}/" +
+                            $"{file.FileNameWithPrefix.SanitiseFileName()}";
                     }
 
                     await using var fileStream =
@@ -102,7 +100,8 @@ namespace SFA.DAS.AODP.Web.Helpers.Export
 
         private async Task<string> GenerateSummaryHtml(
             GetApplicationExportDataQueryResponse exportData,
-            List<UploadedBlob> files)
+            List<UploadedBlob> files,
+            Dictionary<Guid, string> questionMap)
         {
             var readOnlyVm = ApplicationReadOnlyDetailsViewModel.Map(
                 exportData.ApplicationFormStructure,
@@ -112,7 +111,8 @@ namespace SFA.DAS.AODP.Web.Helpers.Export
             var exportSummaryModel = new ApplicationExportViewModel
             {
                 ApplicationFormModel = readOnlyVm,
-                ApplicationSummaryModel = new ApplicationReadOnlyDetailsSummary(exportData.ApplicationMetadata)
+                ApplicationSummaryModel = new ApplicationReadOnlyDetailsSummary(exportData.ApplicationMetadata),
+                QuestionMap = questionMap
             };
 
             return await _htmlExportRenderer.RenderAsync(ApplicationExportConstants.SummaryViewName, exportSummaryModel);
@@ -145,9 +145,9 @@ namespace SFA.DAS.AODP.Web.Helpers.Export
                 : null;
         }
 
-        private Dictionary<Guid, (string Section, string Page, string Question)> BuildQuestionMap(GetFormPreviewByIdQueryResponse form)
+        private Dictionary<Guid, string> BuildQuestionMap(GetFormPreviewByIdQueryResponse form)
         {
-            var map = new Dictionary<Guid, (string Section, string Page, string Question)>();
+            var map = new Dictionary<Guid, string>();
 
             foreach (var section in form.SectionsWithPagesAndQuestions)
             {
@@ -155,13 +155,12 @@ namespace SFA.DAS.AODP.Web.Helpers.Export
                 {
                     foreach (var question in page.Questions)
                     {
-                        map[question.Id] = (section.Title, page.Title, question.Title);
+                        map[question.Id] =
+                            $"{section.Order}.{page.Order}.{question.Order}";
                     }
                 }
             }
-
             return map;
         }
-
     }
 }

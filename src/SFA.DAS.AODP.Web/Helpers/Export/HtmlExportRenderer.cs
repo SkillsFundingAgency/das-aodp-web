@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using SFA.DAS.AODP.Web.Models.Application;
 
 namespace SFA.DAS.AODP.Web.Helpers.Export;
 public interface IHtmlExportRenderer
