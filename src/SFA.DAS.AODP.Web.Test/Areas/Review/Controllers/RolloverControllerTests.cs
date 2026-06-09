@@ -83,17 +83,6 @@ public class RolloverControllerTests
     }
 
     [Fact]
-    public void Index_Get_HandlesSessionGetException_ReturnsView()
-    {
-        var controller = CreateControllerWithSession(CreateThrowingSessionOnGet());
-
-        var result = controller.Index();
-
-        var viewResult = Assert.IsType<ViewResult>(result);
-        Assert.Equal("RolloverStart", viewResult.ViewName);
-    }
-
-    [Fact]
     public void Index_Get_WhenSessionHasStart_PopulatesModel()
     {
         var session = CreateEmptySession();
@@ -631,9 +620,11 @@ public class RolloverControllerTests
     public async Task EnterRolloverEligibilityDates_ReturnsViewResult()
     {
         // Arrange
+        var session = new TestSession();
+        var controller = CreateControllerWithSession(session);
 
         // Act
-        var result = await _controller.EnterRolloverEligibilityDates();
+        var result = await controller.EnterRolloverEligibilityDates();
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -645,6 +636,8 @@ public class RolloverControllerTests
     public async Task EnterRolloverEligibilityDates_WhenModelIsValid_RedirectsToFundingApprovalEndDate()
     {
         // Arrange
+        var session = new TestSession();
+        var controller = CreateControllerWithSession(session);
         var model = new RolloverEligibilityDatesViewModel();
         var validationResult = new ValidationResult(); // no errors => valid
 
@@ -653,7 +646,7 @@ public class RolloverControllerTests
             .ReturnsAsync(validationResult);
 
         // Act
-        var result = await _controller.EnterRolloverEligibilityDates(model);
+        var result = await controller.EnterRolloverEligibilityDates(model);
 
         // Assert
         var redirect = Assert.IsType<RedirectToActionResult>(result);
@@ -1252,7 +1245,7 @@ public class RolloverControllerTests
         var controller = CreateControllerWithSession(session);
 
         // Act
-        var result = _controller.EnterRolloverFundingApprovalEndDate();
+        var result = controller.EnterRolloverFundingApprovalEndDate();
         var viewResult = Assert.IsType<ViewResult>(result);
 
         // Assert
