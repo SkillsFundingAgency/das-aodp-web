@@ -1,19 +1,14 @@
-﻿using System.Collections.ObjectModel;
-using CsvHelper.Configuration;
-using CsvHelper.Configuration.Attributes;
+﻿using CsvHelper.Configuration;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using SFA.DAS.AODP.Application.Commands.Qualification;
 using SFA.DAS.AODP.Application.Commands.Qualifications;
-using SFA.DAS.AODP.Application.Commands.Review;
 using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Application.Services;
 using SFA.DAS.AODP.Models.Qualifications;
-using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Authentication;
-using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Extensions;
 using SFA.DAS.AODP.Web.Helpers.User;
@@ -23,6 +18,7 @@ using SFA.DAS.AODP.Web.Models.Qualifications;
 using System.Globalization;
 using System.Text.Json;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
+using ProcessStatus = SFA.DAS.AODP.Application.Queries.Qualifications.ProcessStatus;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 {
@@ -34,29 +30,34 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         private readonly ILogger<ChangedController> _logger;
         private readonly IMediator _mediator;
         private readonly IUserHelperService _userHelperService;
+        private readonly IQualificationTimelineHistoryBuilder _qualificationTimelineHistoryBuilder;
 
-        private static readonly Dictionary<string, KeyField> KeyFieldLookup = KeyField.All.ToDictionary(k => k.Key, k => k, StringComparer.OrdinalIgnoreCase);
+        private List<string> ReviewerAllowedStatuses { get; set; } =
+        [
+            ProcessStatusLookup.DecisionRequired.Name,
+            ProcessStatusLookup.NoActionRequired.Name,
+        ];
 
-                private List<string> ReviewerAllowedStatuses { get; set; } = new List<string>()
-                {
-                    ProcessStatus.DecisionRequired,
-                    ProcessStatus.NoActionRequired
-                };
-
-        private List<string> BulkUpdateAllowedStatuses { get; set; } = new List<string>()
-        {
-            ProcessStatus.DecisionRequired,
-            ProcessStatus.NoActionRequired,
-            ProcessStatus.OnHold
-        };
+        private List<string> BulkUpdateAllowedStatuses { get; set; } =
+        [
+            ProcessStatusLookup.DecisionRequired.Name,
+            ProcessStatusLookup.NoActionRequired.Name,
+            ProcessStatusLookup.OnHold.Name
+        ];
 
         public enum NewQualDataKeys { InvalidPageParams, CommentSaved}
 
-        public ChangedController(ILogger<ChangedController> logger, IMediator mediator, IUserHelperService userHelperService) : base(mediator, logger)
+        public ChangedController(
+                ILogger<ChangedController> logger, 
+                IMediator mediator, 
+                IUserHelperService userHelperService, 
+                IQualificationTimelineHistoryBuilder  qualificationTimelineHistoryBuilder
+            ) : base(mediator, logger)
         {
             _logger = logger;
             _mediator = mediator;
             this._userHelperService = userHelperService;
+            _qualificationTimelineHistoryBuilder = qualificationTimelineHistoryBuilder;
         }
 
         public async Task<IActionResult> Index(QualificationQuery qualificationQuery, bool selectAll = false)
@@ -93,7 +94,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     organisation = viewModel.Filter.Organisation,
                     qan = viewModel.Filter.QAN,
                     processStatusIds = viewModel.Filter.ProcessStatusIds,
-                    ageGroups = viewModel.Filter.AgeGroups,
                 });
             }
             catch (Exception ex)
@@ -163,47 +163,20 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
             try
             {
-                QualificationDetailsTimelineViewModel discussionHistoryDetailsResult = await Send(new GetDiscussionHistoriesForQualificationQuery { QualificationReference = qualificationReference });
-                
-                ChangedQualificationDetailsViewModel qualificationWithVersions = ChangedQualificationDetailsViewModel.MapToView(await Send(new GetQualificationDetailWithVersionsQuery { QualificationReference = qualificationReference }));
-
-                var latestVersionNumber = qualificationWithVersions.Qual.Versions.Max(i => i.Version) ?? 0;
-
-                var currentVersion = qualificationWithVersions.Qual.Versions.Where(i => i.Version == latestVersionNumber).First();
-                if (latestVersionNumber > 1)
+                var response = await Send(new GetQualificationTimelineQuery
                 {
-                    for (int? i = latestVersionNumber; i > 1; i--)
-                    {
-                        if (i != latestVersionNumber)
-                            currentVersion = qualificationWithVersions.Qual.Versions.Where(v => v.Version == i).FirstOrDefault();
-                        var previousVersion = qualificationWithVersions.Qual.Versions.Where(v => v.Version == i - 1).FirstOrDefault();
-                        var keyFieldsChanges = currentVersion?.GetChangedFields();
+                    QualificationReference = qualificationReference
+                });
 
-                        if (currentVersion == null || previousVersion == null) continue;
+                var viewModel = (QualificationDetailsTimelineViewModel)response;
+                viewModel.Qan = qualificationReference;
 
-                        GetKeyFieldChanges(currentVersion, previousVersion, keyFieldsChanges!);
-
-                        if (currentVersion.KeyFieldChanges.Any())
-                        {
-                            var notes = BuildChangeString(currentVersion);
-                            discussionHistoryDetailsResult.QualificationDiscussionHistories.Add(new()
-                            {
-                                Notes = notes,
-                                Title = "Change",
-                                UserDisplayName = "OFQUAL Import",
-                                Timestamp = currentVersion.InsertedTimestamp
-                            });
-                        }
-                    }
-                }
-                discussionHistoryDetailsResult.Qan = qualificationReference;
-                return View(discussionHistoryDetailsResult);
+                return View(viewModel); 
             }
             catch (Exception ex)
             {
                 LogException(ex);
                 return Redirect("/Home/Error");
-                ;
             }
         }
 
@@ -285,17 +258,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             return View(model);
         }
 
-        private static string BuildChangeString(ChangedQualificationDetailsViewModel qualVersion)
-        {
-            string comment = "";
-            foreach (var item in qualVersion.KeyFieldChanges)
-            {
-                comment += item.Name + "<br/>Was:" + item.Was + "<br/>"
-            + "Now:" + item.Now + "<br/><br/>"
-                ;
-            }
-            return comment;
-        }
+        
 
         [Route("/Review/Changed/QualificationDetails")]
         public async Task<IActionResult> QualificationDetails([FromQuery] string qualificationReference)
@@ -306,7 +269,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
             try
             {
-                var latestVersion = ChangedQualificationDetailsViewModel.MapToView(await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference }));
+                var latestVersion = ChangedQualificationDetailsViewModel.MapToView(
+                    await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference }));
+
                 latestVersion.ProcessStatuses = [.. await GetProcessStatuses()];
 
                 ShowNotificationIfKeyExists(NewQualDataKeys.CommentSaved.ToString(), ViewNotificationMessageType.Success, "The comment has been saved.");
@@ -322,35 +287,20 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 if (applications != null)
                     latestVersion.Applications = ApplicationMapper.Map(applications);
 
-                if (latestVersion.Version > 1)
-                {
-                    var previousVersion = await Send(new GetQualificationVersionQuery { QualificationReference = qualificationReference, Version = latestVersion.Version - 1 });
+                //if (latestVersion.Version > 1)
+                //{
+                //    var previousVersion = await Send(new GetQualificationVersionQuery() { QualificationReference = qualificationReference, Version = latestVersion.Version - 1 });
+                //    var currentVersionForComparison = await Send(new GetQualificationVersionQuery() { QualificationReference = qualificationReference, Version = latestVersion.Version });
 
-                    var keyFieldsChanges = latestVersion.GetChangedFields();
-                    GetKeyFieldChanges(latestVersion, ChangedQualificationDetailsViewModel.MapToView(previousVersion), keyFieldsChanges);
-                }
+                //    latestVersion.KeyFieldChanges = _qualificationTimelineHistoryBuilder.GetKeyFieldChanges(currentVersionForComparison, previousVersion);
+                //}
+
                 return View(latestVersion);
             }
             catch (Exception ex)
             {
                 LogException(ex);
                 return Redirect("/Home/Error");
-                ;
-            }
-        }
-
-        private static void GetKeyFieldChanges(ChangedQualificationDetailsViewModel latestVersion, ChangedQualificationDetailsViewModel previousVersion, IList<string> keyFieldsChanges)
-        {
-            foreach (var raw in keyFieldsChanges)
-            {
-                if (KeyFieldLookup.TryGetValue(raw, out var k))
-                {
-                    var change = KeyFieldChangeFactory.Create(k, latestVersion, previousVersion);
-                    if (change is not null)
-                    {
-                        latestVersion.KeyFieldChanges.Add(change);
-                    }
-                }
             }
         }
 
@@ -405,7 +355,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             return ReviewerAllowedStatuses.Contains(processStatName);
         }
 
-        public async Task<List<GetProcessStatusesQueryResponse.ProcessStatus>> GetProcessStatuses()
+        public async Task<List<ProcessStatus>> GetProcessStatuses()
         {
             var procStatuses = await Send(new GetProcessStatusesQuery());
             if (!_userHelperService.GetUserRoles().Contains(RoleConstants.QFAUApprover))

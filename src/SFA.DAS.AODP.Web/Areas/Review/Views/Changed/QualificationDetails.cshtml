@@ -1,5 +1,4 @@
-﻿@using SFA.DAS.AODP.Web.Extensions
-@using SFA.DAS.AODP.Web.Views.Shared
+﻿@using SFA.DAS.AODP.Web.Views.Shared
 @model SFA.DAS.AODP.Web.Models.Qualifications.ChangedQualificationDetailsViewModel
 
 @{
@@ -38,17 +37,17 @@
         <govuk-summary-list>
             <govuk-summary-list-row>
                 <govuk-summary-list-row-key>Status</govuk-summary-list-row-key>
-                <govuk-summary-list-row-value>@Model.ProcStatus.Name</govuk-summary-list-row-value>
+                <govuk-summary-list-row-value>@Model.CurrentProcessStatus.Name</govuk-summary-list-row-value>
             </govuk-summary-list-row>
             <govuk-summary-list-row>
                 <govuk-summary-list-row-key>Priority</govuk-summary-list-row-key>
                 <govuk-summary-list-row-value>@Model.Priority</govuk-summary-list-row-value>
             </govuk-summary-list-row>
-            @if (!string.IsNullOrEmpty(Model.ChangeFieldsForDisplay))
+            @if (!string.IsNullOrEmpty(Model.KeyFieldsForDisplay))
             {
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key>Changes</govuk-summary-list-row-key>
-                    <govuk-summary-list-row-value>@Model.ChangeFieldsForDisplay</govuk-summary-list-row-value>
+                    <govuk-summary-list-row-value>@Model.KeyFieldsForDisplay</govuk-summary-list-row-value>
                 </govuk-summary-list-row>
             }
             <govuk-summary-list-row>
@@ -58,6 +57,12 @@
             <govuk-summary-list-row>
                 <govuk-summary-list-row-key>Qualification title</govuk-summary-list-row-key>
                 <govuk-summary-list-row-value>@Model.Qual.QualificationName</govuk-summary-list-row-value>
+            </govuk-summary-list-row>
+            <govuk-summary-list-row>
+                <govuk-summary-list-row-key>Eligibility status</govuk-summary-list-row-key>
+                <govuk-summary-list-row-value>
+                    <partial name="_EligibilityStatus" model="Model.EligibleForFundingStatus" />
+                </govuk-summary-list-row-value>
             </govuk-summary-list-row>
             <govuk-summary-list-row>
                 <govuk-summary-list-row-key>Awarding organisation</govuk-summary-list-row-key>
@@ -165,16 +170,16 @@
             }
         </govuk-summary-list>
 
-        @if (Model.KeyFieldChanges.Any())
+        @if (Model.GetKeyFieldChanges().Any())
         {
             <h3 class="govuk-!-margin-top-8">Changes</h3>
 
             <div class="govuk-!-margin-bottom-8">
                 <govuk-summary-list>
-                    @foreach (var change in Model.KeyFieldChanges.OrderBy(item => item.Name))
+                    @foreach (var change in Model.GetKeyFieldChanges().OrderBy(item => item.KeyField.DisplayName))
                     {
                         <govuk-summary-list-row>
-                            <govuk-summary-list-row-key>@change.Name</govuk-summary-list-row-key>
+                            <govuk-summary-list-row-key>@change.KeyField</govuk-summary-list-row-key>
                             <govuk-summary-list-row-value>
                                 <p class="govuk-body govuk-!-font-weight-bold">Was:<span class="govuk-body govuk-!-font-weight-regular"> @change.Was</span></p>
                                 <p class="govuk-body govuk-!-font-weight-bold">Now:<span class="govuk-body govuk-!-font-weight-regular"> @change.Now</span></p>
@@ -189,7 +194,7 @@
         <form asp-controller="Changed" asp-action="QualificationDetails" method="post">
             @Html.HiddenFor(m => m.Version)
             @Html.HiddenFor(m => m.Qual.Qan)
-            @Html.HiddenFor(m => m.ChangeFieldsForDisplay)
+            @Html.HiddenFor(m => m.KeyFieldsForDisplay)
             <div class="govuk-form-group">
                 <govuk-textarea asp-for="@Model.AdditionalActions.Note">
                     <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Comments</govuk-textarea-label>

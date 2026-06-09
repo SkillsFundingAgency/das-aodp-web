@@ -9,11 +9,9 @@ using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.Qualification;
 using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
-using SFA.DAS.AODP.Domain.Qualifications.Requests;
-using SFA.DAS.AODP.Models.Qualifications;
+using SFA.DAS.AODP.Application.Services;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
-using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 using System.Security.Claims;
@@ -49,6 +47,7 @@ public class ChangedControllerTests
     private readonly Mock<IMediator> _mediator = new();
     private readonly Mock<IUserHelperService> _userHelper = new();
     private readonly Mock<ILogger<ChangedController>> _logger = new();
+    private readonly Mock<IQualificationTimelineHistoryBuilder> _timelineBuilder = new();
 
     private readonly IOptions<AodpConfiguration> _options =
         Options.Create(new AodpConfiguration
@@ -58,7 +57,7 @@ public class ChangedControllerTests
 
     private ChangedController CreateController()
     {
-        var controller = new ChangedController(_logger.Object, _mediator.Object, _userHelper.Object);
+        var controller = new ChangedController(_logger.Object, _mediator.Object, _userHelper.Object, _timelineBuilder.Object);
 
         var httpContext = new DefaultHttpContext();
         var claims = new[] { new Claim(ClaimTypes.Name, DefaultUserName) };
@@ -93,7 +92,7 @@ public class ChangedControllerTests
                 QualificationName = qualificationName,
                 Versions = new List<GetQualificationDetailsQueryResponse>()
             },
-            ProcStatus = new GetQualificationDetailsQueryResponse.ProcessStatus
+            ProcStatus = new ProcessStatus
             {
                 Id = Guid.NewGuid(),
                 Name = DecisionRequiredStatus
@@ -122,7 +121,7 @@ public class ChangedControllerTests
 
         foreach (var status in statuses)
         {
-            response.ProcessStatuses.Add(new GetProcessStatusesQueryResponse.ProcessStatus
+            response.ProcessStatuses.Add(new ProcessStatus
             {
                 Id = status.Id,
                 Name = status.Name
@@ -215,59 +214,14 @@ public class ChangedControllerTests
     }
 
     [Fact]
-    public async Task QualificationDetails_Get_WhenVersionGreaterThanOne_LoadsPreviousVersion_AndPopulatesKeyFieldChanges()
-    {
-        var controller = CreateController();
-
-        var latestVersion = CreateQualificationDetailsResponse(
-            DefaultQan,
-            version: VersionTwo,
-            qualificationName: "New Qualification Name",
-            organisationName: "New Organisation",
-            changedFieldNames: "Title,OrganisationName");
-
-        var previousVersion = CreateQualificationDetailsResponse(
-            DefaultQan,
-            version: VersionOne,
-            qualificationName: "Old Qualification Name",
-            organisationName: "Old Organisation");
-
-        var processStatusesResponse = CreateProcessStatusesResponse((Guid.NewGuid(), DecisionRequiredStatus));
-
-        _userHelper.Setup(u => u.GetUserRoles()).Returns(new List<string>());
-        SetupQualificationDetailsDependencies(latestVersion, processStatusesResponse);
-
-        _mediator.Setup(m => m.Send(It.IsAny<GetQualificationVersionQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetQualificationDetailsQueryResponse>
-            {
-                Success = true,
-                Value = previousVersion
-            });
-
-        var result = await controller.QualificationDetails(DefaultQan);
-
-        var view = Assert.IsType<ViewResult>(result);
-        var model = Assert.IsType<ChangedQualificationDetailsViewModel>(view.Model);
-
-        Assert.Multiple(() =>
-        {
-            Assert.Equal(VersionTwo, model.Version);
-            Assert.NotNull(model.KeyFieldChanges);
-            Assert.NotEmpty(model.KeyFieldChanges);
-            Assert.Contains(model.KeyFieldChanges, k => k.Name == "Title");
-            Assert.Contains(model.KeyFieldChanges, k => k.Name == "Organisation Name");
-        });
-    }
-
-    [Fact]
     public async Task QualificationDetails_Post_AddsComment_WhenNoProcStatusAndNote()
     {
         var controller = CreateController();
 
         var model = new ChangedQualificationDetailsViewModel
         {
-            Qual = new ChangedQualificationDetailsViewModel.Qualification { Qan = DefaultQan },
-            AdditionalActions = new ChangedQualificationDetailsViewModel.AdditionalFormActions
+            Qual = new Qualification { Qan = DefaultQan },
+            AdditionalActions = new AdditionalFormActions
             {
                 Note = DefaultComment,
                 ProcessStatusId = null
@@ -308,8 +262,8 @@ public class ChangedControllerTests
 
         var model = new ChangedQualificationDetailsViewModel
         {
-            Qual = new ChangedQualificationDetailsViewModel.Qualification { Qan = DefaultQan },
-            AdditionalActions = new ChangedQualificationDetailsViewModel.AdditionalFormActions
+            Qual = new Qualification { Qan = DefaultQan },
+            AdditionalActions = new AdditionalFormActions
             {
                 Note = string.Empty,
                 ProcessStatusId = null
@@ -349,8 +303,8 @@ public class ChangedControllerTests
 
         var model = new ChangedQualificationDetailsViewModel
         {
-            Qual = new ChangedQualificationDetailsViewModel.Qualification { Qan = DefaultQan },
-            AdditionalActions = new ChangedQualificationDetailsViewModel.AdditionalFormActions
+            Qual = new Qualification { Qan = DefaultQan },
+            AdditionalActions = new AdditionalFormActions
             {
                 Note = string.Empty,
                 ProcessStatusId = processStatusId
@@ -396,9 +350,9 @@ public class ChangedControllerTests
 
         var model = new ChangedQualificationDetailsViewModel
         {
-            Qual = new ChangedQualificationDetailsViewModel.Qualification { Qan = DefaultQan },
+            Qual = new Qualification { Qan = DefaultQan },
             Version = VersionOne,
-            AdditionalActions = new ChangedQualificationDetailsViewModel.AdditionalFormActions
+            AdditionalActions = new AdditionalFormActions
             {
                 Note = DefaultComment,
                 ProcessStatusId = processStatusId
@@ -448,9 +402,9 @@ public class ChangedControllerTests
 
         var model = new ChangedQualificationDetailsViewModel
         {
-            Qual = new ChangedQualificationDetailsViewModel.Qualification { Qan = DefaultQan },
+            Qual = new Qualification { Qan = DefaultQan },
             Version = VersionOne,
-            AdditionalActions = new ChangedQualificationDetailsViewModel.AdditionalFormActions
+            AdditionalActions = new AdditionalFormActions
             {
                 Note = DefaultComment,
                 ProcessStatusId = processStatusId
@@ -737,6 +691,48 @@ public class ChangedControllerTests
     }
 
     [Fact]
+    public async Task QualificationDetailsTimeline_ReturnsView_WithTimelineModel()
+    {
+        var controller = CreateController();
+
+        var timelineResponse = new QualificationDiscussionHistoriesResponse
+        {
+            QualificationDiscussionHistories = new List<QualificationDiscussionHistory>()
+        };
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetQualificationTimelineQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<QualificationDiscussionHistoriesResponse>
+            {
+                Success = true,
+                Value = timelineResponse
+            });
+
+        var result = await controller.QualificationDetailsTimeline(DefaultQan);
+
+        var view = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<QualificationDetailsTimelineViewModel>(view.Model);
+
+        _mediator.Verify(m => m.Send(
+            It.Is<GetQualificationTimelineQuery>(q => q.QualificationReference == DefaultQan),
+            It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task QualificationDetailsTimeline_ReturnsRedirect_WhenExceptionThrown()
+    {
+        var controller = CreateController();
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetQualificationTimelineQuery>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new Exception("boom"));
+
+        var result = await controller.QualificationDetailsTimeline(DefaultQan);
+
+        var redirect = Assert.IsType<RedirectResult>(result);
+        Assert.Equal("/Home/Error", redirect.Url);
+    }
+
+    [Fact]
     public async Task Index_ReturnsView_WithModel()
     {
         var controller = CreateController();
@@ -809,101 +805,5 @@ public class ChangedControllerTests
         {
             Assert.Equal("/Home/Error", redirect.Url);
         });
-    }
-
-    [Fact]
-    public async Task Index_Forwards_ProcessStatusIds_And_AgeGroups_To_Query()
-    {
-        var controller = CreateController();
-
-        var processStatusIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
-        var ageGroups = new List<AgeGroup> { AgeGroup.EighteenPlus };
-
-        GetChangedQualificationsQuery? captured = null;
-
-        _mediator.Setup(m => m.Send(It.IsAny<GetChangedQualificationsQuery>(), It.IsAny<CancellationToken>()))
-            .Callback<object, CancellationToken>((q, _) => captured = (GetChangedQualificationsQuery)q)
-            .ReturnsAsync(new BaseMediatrResponse<GetChangedQualificationsQueryResponse>
-            {
-                Success = true,
-                Value = new GetChangedQualificationsQueryResponse()
-            });
-
-        _mediator.Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetProcessStatusesQueryResponse>
-            {
-                Success = true,
-                Value = new GetProcessStatusesQueryResponse()
-            });
-
-        var query = new QualificationQuery
-        {
-            PageNumber = 1,
-            RecordsPerPage = DefaultRecordsPerPage,
-            ProcessStatusIds = processStatusIds,
-            AgeGroups = ageGroups
-        };
-
-        // Act
-        await controller.Index(query);
-
-        // Assert
-        Assert.NotNull(captured);
-        Assert.Equal(processStatusIds, captured!.ProcessStatusIds);
-        Assert.Equal(ageGroups, captured.AgeGroups);
-    }
-
-
-    [Fact]
-    public async Task Search_Includes_AgeGroups_In_Redirect()
-    {
-        var controller = CreateController();
-
-        var ageGroups = new List<AgeGroup> { AgeGroup.NineteenPlus };
-
-        var viewModel = new ChangedQualificationsViewModel
-        {
-            PaginationViewModel = new PaginationViewModel
-            {
-                RecordsPerPage = DefaultRecordsPerPage
-            },
-            Filter = new NewQualificationFilterViewModel
-            {
-                AgeGroups = ageGroups
-            }
-        };
-
-        var result = await controller.Search(viewModel);
-
-        var redirect = Assert.IsType<RedirectToActionResult>(result);
-
-        Assert.Equal(ageGroups, redirect.RouteValues!["ageGroups"]);
-    }
-
-    [Fact]
-    public async Task ChangePage_Preserves_ProcessStatusIds_And_AgeGroups()
-    {
-        var controller = CreateController();
-
-        var processStatusIds = new List<Guid> { Guid.NewGuid() };
-        var ageGroups = new List<AgeGroup> { AgeGroup.EighteenPlus };
-
-        var query = new QualificationQuery
-        {
-            PageNumber = DefaultPageNumber,
-            RecordsPerPage = DefaultRecordsPerPage,
-            ProcessStatusIds = processStatusIds,
-            AgeGroups = ageGroups,
-            Name = SearchName,
-            Organisation = SearchOrganisation,
-            Qan = SearchQan
-        };
-
-        var result = await controller.ChangePage(query, ChangedPageNumber);
-
-        var redirect = Assert.IsType<RedirectToActionResult>(result);
-
-        Assert.Equal(processStatusIds, redirect.RouteValues!["processStatusIds"]);
-        Assert.Equal(ageGroups, redirect.RouteValues!["ageGroups"]);
     }
 }

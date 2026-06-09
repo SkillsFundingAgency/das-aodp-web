@@ -35,6 +35,7 @@ public class GetQualificationDetailsQueryResponse
     public bool OfferedInEngland { get; set; }
     public bool OfferedInNi { get; set; }
     public bool? OfferedInternationally { get; set; }
+    public bool? IntentionToSeekFundingInEngland { get; set; }
     public string? Specialism { get; set; }
     public string? Pathways { get; set; }
     public string? AssessmentMethods { get; set; }
@@ -63,6 +64,8 @@ public class GetQualificationDetailsQueryResponse
     public bool? EighteenPlus { get; set; }
     public bool? NineteenPlus { get; set; }
     public string? ImportStatus { get; set; }
+    public bool? EligibleForFunding { get; set; }
+    public string? FundingEligibilityFailedFields { get; set; }
     public virtual LifecycleStage Stage { get; set; } = null!;
     public virtual AwardingOrganisation Organisation { get; set; } = null!;
     public virtual Qualification Qual { get; set; } = null!;
@@ -92,29 +95,5 @@ public class GetQualificationDetailsQueryResponse
         public string? QualificationName { get; set; }
         public List<QualificationDiscussionHistory> QualificationDiscussionHistories { get; set; } = new List<QualificationDiscussionHistory>();
         public List<GetQualificationDetailsQueryResponse> Versions { get; set; } = new List<GetQualificationDetailsQueryResponse>();
-    }
-
-    public partial class QualificationDiscussionHistory
-    {
-        public Guid Id { get; set; }
-        public Guid QualificationId { get; set; }
-        public Guid ActionTypeId { get; set; }
-        public string? UserDisplayName { get; set; }
-        public string? Notes { get; set; }
-        public DateTime? Timestamp { get; set; }
-        public virtual ActionType ActionType { get; set; } = null!;
-    }
-
-    public class ActionType
-    {
-        public Guid Id { get; set; }
-        public string? Description { get; set; }
-    }
-
-    public partial class ProcessStatus
-    {
-        public Guid Id { get; set; }
-        public string? Name { get; set; }
-        public int? IsOutcomeDecision { get; set; }
     }
 }

@@ -1,0 +1,325 @@
+using SFA.DAS.AODP.Application.Extensions;
+using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Models.Qualifications;
+using ActionType = SFA.DAS.AODP.Application.Queries.Qualifications.ActionType;
+
+namespace SFA.DAS.AODP.Application.Services
+{
+    //Builds additional timeline entries to describe
+    // - changed field values (if VersionFieldChanges contains field names)
+    // - eligibility failures (if FundingEligibilityFailedFields contains field names)
+    // - special case added for EligibleForFunding field changes to display the new value as "eligible" or "not eligible" rather than "true" or "false"
+    //
+    public class QualificationTimelineHistoryBuilder : IQualificationTimelineHistoryBuilder
+    {
+        public List<QualificationDiscussionHistory> BuildTimelineEntries(List<GetQualificationDetailsQueryResponse> versions)
+        {
+            var entries = new List<QualificationDiscussionHistory>();
+
+            entries.AddRange(BuildFundingEligibilityEntries(versions));
+            entries.AddRange(BuildFieldChangeEntries(versions));
+
+            return entries;
+        }
+
+        public List<KeyFieldChange> GetKeyFieldChanges(
+            GetQualificationDetailsQueryResponse latestVersion,
+            GetQualificationDetailsQueryResponse previousVersion)
+        {
+            var fields =  latestVersion.VersionFieldChanges?
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .ToList() ?? [];
+
+            var changes = new List<KeyFieldChange>();
+
+            foreach (var item in fields)
+            {
+                switch (item)
+                {
+                    case "EligibleForFunding":
+                        changes.Add(new KeyFieldChange(
+                            KeyField.EligibleForFunding,
+                            previousVersion.EligibleForFunding?.ToString(),
+                            latestVersion.EligibleForFunding?.ToString()));
+                        break;
+
+                    case "OrganisationName":
+                        changes.Add(new KeyFieldChange(
+                            KeyField.OrganisationName,
+                            previousVersion.Organisation?.NameOfqual,
+                            latestVersion.Organisation?.NameOfqual));
+                        break;
+
+                    case "Title":
+                        changes.Add(new KeyFieldChange(
+                            KeyField.Title,
+                            previousVersion.Name,
+                            latestVersion.Name));
+                        break;
+
+                    case "Level":
+                        changes.Add(new KeyFieldChange(
+                            KeyField.Level,
+                            previousVersion.Level,
+                            latestVersion.Level));
+                        break;
+
+                    case "Type":
+                        changes.Add(new KeyFieldChange(
+                            KeyField.Type,
+                            previousVersion.Type,
+                            latestVersion.Type));
+                        break;
+
+                    case "TotalCredits":
+                        changes.Add(new KeyFieldChange(
+                            KeyField.TotalCredits,
+                            previousVersion.TotalCredits?.ToString(),
+                            latestVersion.TotalCredits?.ToString()));
+                        break;
+
+                    case "Ssa":
+                        changes.Add(new KeyFieldChange(
+                            KeyField.Ssa,
+                            previousVersion.Ssa,
+                            latestVersion.Ssa));
+                        break;
+
+                    case "GradingType":
+                        changes.Add(new KeyFieldChange(
+                            KeyField.GradingType,
+                            previousVersion.GradingType,
+                            latestVersion.GradingType));
+                        break;
+
+                    case "OfferedInEngland":
+                        changes.Add(new KeyFieldChange(
+                            KeyField.OfferedInEngland,
+                            previousVersion.OfferedInEngland.ToString(),
+                            latestVersion.OfferedInEngland.ToString()));
+                        break;
+
+                    case "IntentionToSeekFundingInEngland":
+                        changes.Add(new KeyFieldChange(
+                            KeyField.IntentionToSeekFundingInEngland,
+                            previousVersion.IntentionToSeekFundingInEngland?.ToString(),
+                            latestVersion.IntentionToSeekFundingInEngland?.ToString()));
+                        break;
+
+                    case "PreSixteen":
+                        changes.Add(new KeyFieldChange(
+                            KeyField.PreSixteen,
+                            previousVersion.PreSixteen?.ToString(),
+                            latestVersion.PreSixteen?.ToString()));
+                        break;
+
+                    case "SixteenToEighteen":
+                        changes.Add(new KeyFieldChange(
+                            KeyField.SixteenToEighteen,
+                            previousVersion.SixteenToEighteen?.ToString(),
+                            latestVersion.SixteenToEighteen?.ToString()));
+                        break;
+
+                    case "EighteenPlus":
+                        changes.Add(new KeyFieldChange(
+                            KeyField.EighteenPlus,
+                            previousVersion.EighteenPlus?.ToString(),
+                            latestVersion.EighteenPlus?.ToString()));
+                        break;
+
+                    case "NineteenPlus":
+                        changes.Add(new KeyFieldChange(
+                            KeyField.NineteenPlus,
+                            previousVersion.NineteenPlus?.ToString(),
+                            latestVersion.NineteenPlus?.ToString()));
+                        break;
+
+                    case "Glh":
+                        changes.Add(new KeyFieldChange(
+                            KeyField.Glh,
+                            previousVersion.Glh?.ToString(),
+                            latestVersion.Glh?.ToString()));
+                        break;
+
+                    case "MinimumGlh":
+                        changes.Add(new KeyFieldChange(
+                            KeyField.MinimumGlh,
+                            previousVersion.MinimumGlh?.ToString(),
+                            latestVersion.MinimumGlh?.ToString()));
+                        break;
+
+                    case "Tqt":
+                        changes.Add(new KeyFieldChange(
+                            KeyField.Tqt,
+                            previousVersion.Tqt?.ToString(),
+                            latestVersion.Tqt?.ToString()));
+                        break;
+
+                    case "OperationalEndDate":
+                        changes.Add(new KeyFieldChange(
+                            KeyField.OperationalEndDate,
+                            previousVersion.OperationalEndDate?.ToStandard12HourDateTimeFormat(),
+                            latestVersion.OperationalEndDate?.ToStandard12HourDateTimeFormat()));
+                        break;
+
+                    case "OfferedInternationally":
+                        changes.Add(new KeyFieldChange(
+                            KeyField.OfferedInternationally,
+                            previousVersion.OfferedInternationally?.ToString(),
+                            latestVersion.OfferedInternationally?.ToString()));
+                        break;
+                }
+            }
+
+            return changes;
+        }
+
+        private List<QualificationDiscussionHistory> BuildFieldChangeEntries(List<GetQualificationDetailsQueryResponse> versions)
+        {
+            var history = new List<QualificationDiscussionHistory>();
+
+            if (versions.Count == 0)
+            {
+                return history;
+            }
+
+            var latestVersionNumber = versions.Max(i => i.Version) ?? 0;
+            var currentVersion = versions.FirstOrDefault(v => v.Version == latestVersionNumber);
+
+            if (latestVersionNumber <= 1 || currentVersion == null)
+            {
+                return history;
+            }
+
+            for (int? i = latestVersionNumber; i > 1; i--)
+            {
+                if (i != latestVersionNumber)
+                {
+                    currentVersion = versions.FirstOrDefault(v => v.Version == i);
+                }
+
+                var previousVersion = versions.FirstOrDefault(v => v.Version == i - 1);
+
+                if (currentVersion == null || previousVersion == null)
+                {
+                    continue;
+                }
+
+                var changeEntry = BuildChangeHistoryEntry(currentVersion, previousVersion);
+
+                if (changeEntry != null)
+                {
+                    history.Add(changeEntry);
+                }
+            }
+
+            return history;
+        }
+
+        private QualificationDiscussionHistory? BuildChangeHistoryEntry(
+            GetQualificationDetailsQueryResponse latestVersion,
+            GetQualificationDetailsQueryResponse previousVersion)
+        {
+            var keyFieldChanges = GetKeyFieldChanges(latestVersion, previousVersion);
+
+            if (keyFieldChanges.Count == 0)
+            {
+                return null;
+            }
+
+            return new QualificationDiscussionHistory
+            {
+                Notes = BuildChangeString(keyFieldChanges),
+                Title = "Change",
+                UserDisplayName = "OFQUAL Import",
+                Timestamp = latestVersion.InsertedTimestamp,
+                ActionType = new ActionType
+                {
+                    Id = Guid.Empty,
+                    Description = "change"
+                }
+            };
+        }
+
+        private static string BuildChangeString(List<KeyFieldChange> fieldChanges)
+        {
+            var items = fieldChanges.Select(x =>
+            {
+                if (x.KeyField.Matches(KeyField.EligibleForFunding.Key))
+                {
+                    return $"Eligibility status changed to {FormatEligibility(x.Now)}";
+                }
+
+                return $"{x.KeyField.DisplayName} changed from {FormatEligibility(x.Was)} to {FormatEligibility(x.Now)}";
+            }).ToList();
+
+            return TimelineFormattingHelper.ToDisplayString(
+                items,
+                string.Empty,
+                "The following fields changed:");
+        }
+
+        private static string FormatEligibility(string? now)
+        {
+            if (string.IsNullOrWhiteSpace(now))
+                return string.Empty;
+
+            return now.Trim().ToLowerInvariant() switch
+            {
+                "true" => "eligible",
+                "false" => "not eligible",
+                _ => now.Trim().ToLowerInvariant()
+            };
+        }
+
+        private static List<QualificationDiscussionHistory> BuildFundingEligibilityEntries(List<GetQualificationDetailsQueryResponse> versions)
+        {
+            var history = new List<QualificationDiscussionHistory>();
+
+            foreach (var version in versions)
+            {
+                var fundingEntry = BuildFundingEligibilityHistoryEntry(version);
+
+                if (fundingEntry != null)
+                {
+                    history.Add(fundingEntry);
+                }
+            }
+
+            return history;
+        }
+
+        private static QualificationDiscussionHistory? BuildFundingEligibilityHistoryEntry(
+            GetQualificationDetailsQueryResponse qualificationVersion)
+        {
+            if (string.IsNullOrWhiteSpace(qualificationVersion.FundingEligibilityFailedFields))
+            {
+                return null;
+            }
+
+            var fundingStatus = new EligibleForFundingStatus(
+                qualificationVersion.EligibleForFunding,
+                qualificationVersion.FundingEligibilityFailedFields);
+
+            var fundingNotes = fundingStatus.ToDisplayString();
+
+            if (string.IsNullOrWhiteSpace(fundingNotes))
+            {
+                return null;
+            }
+
+            return new QualificationDiscussionHistory
+            {
+                Notes = fundingNotes,
+                Title = "Change",
+                UserDisplayName = "OFQUAL Import",
+                Timestamp = qualificationVersion.InsertedTimestamp,
+                ActionType = new ActionType
+                {
+                    Id = Guid.Empty,
+                    Description = "change"
+                }
+            };
+        }
+    }
+}

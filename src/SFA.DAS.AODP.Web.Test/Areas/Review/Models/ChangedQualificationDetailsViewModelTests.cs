@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Models.Qualifications;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 
@@ -17,13 +18,10 @@ public class ChangedQualificationDetailsViewModelTests
         {
             Id = entity.Id,
             QualificationId = entity.QualificationId,
-            VersionFieldChangesId = entity.VersionFieldChangesId,
-            ProcessStatusId = entity.ProcessStatusId,
             AdditionalKeyChangesReceivedFlag = entity.AdditionalKeyChangesReceivedFlag,
             LifecycleStageId = entity.LifecycleStageId,
             ChangedFieldNames = entity.VersionFieldChanges,
             OutcomeJustificationNotes = entity.OutcomeJustificationNotes,
-            AwardingOrganisationId = entity.AwardingOrganisationId,
             Status = entity.Status,
             Type = entity.Type,
             Ssa = entity.Ssa,
@@ -64,22 +62,17 @@ public class ChangedQualificationDetailsViewModelTests
             InsertedTimestamp = entity.InsertedTimestamp,
             Version = entity.Version,
             AppearsOnPublicRegister = entity.AppearsOnPublicRegister,
-            LevelId = entity.LevelId,
-            TypeId = entity.TypeId,
-            SsaId = entity.SsaId,
-            GradingTypeId = entity.GradingTypeId,
-            GradingScaleId = entity.GradingScaleId,
             PreSixteen = entity.PreSixteen,
             SixteenToEighteen = entity.SixteenToEighteen,
             EighteenPlus = entity.EighteenPlus,
             NineteenPlus = entity.NineteenPlus,
             ImportStatus = entity.ImportStatus,
-            Stage = new ChangedQualificationDetailsViewModel.LifecycleStage
+            LifecycleStage = new LifecycleStage
             {
                 Id = entity.Stage.Id,
                 Name = entity.Stage.Name
             },
-            Organisation = new ChangedQualificationDetailsViewModel.AwardingOrganisation
+            Organisation = new AwardingOrganisation
             {
                 Id = entity.Organisation.Id,
                 Ukprn = entity.Organisation.Ukprn,
@@ -90,7 +83,7 @@ public class ChangedQualificationDetailsViewModelTests
                 Name_Dsi = entity.Organisation.Name_Dsi,
                 Acronym = entity.Organisation.Acronym
             },
-            Qual = new ChangedQualificationDetailsViewModel.Qualification
+            Qual = new Qualification
             {
                 Id = entity.Qual.Id,
                 Qan = entity.Qual.Qan,
@@ -99,13 +92,10 @@ public class ChangedQualificationDetailsViewModelTests
                 {
                     Id = i.Id,
                     QualificationId = i.QualificationId,
-                    VersionFieldChangesId = i.VersionFieldChangesId,
-                    ProcessStatusId = i.ProcessStatusId,
                     AdditionalKeyChangesReceivedFlag = i.AdditionalKeyChangesReceivedFlag,
                     LifecycleStageId = i.LifecycleStageId,
                     ChangedFieldNames = i.VersionFieldChanges,
                     OutcomeJustificationNotes = i.OutcomeJustificationNotes,
-                    AwardingOrganisationId = i.AwardingOrganisationId,
                     Status = i.Status,
                     Name = i.Name,
                     Type = i.Type,
@@ -146,22 +136,18 @@ public class ChangedQualificationDetailsViewModelTests
                     InsertedTimestamp = i.InsertedTimestamp,
                     Version = i.Version,
                     AppearsOnPublicRegister = i.AppearsOnPublicRegister,
-                    LevelId = i.LevelId,
-                    TypeId = i.TypeId,
-                    SsaId = i.SsaId,
-                    GradingTypeId = i.GradingTypeId,
-                    GradingScaleId = i.GradingScaleId,
                     PreSixteen = i.PreSixteen,
                     SixteenToEighteen = i.SixteenToEighteen,
                     EighteenPlus = i.EighteenPlus,
                     NineteenPlus = i.NineteenPlus,
                     ImportStatus = i.ImportStatus,
-                    Stage = new ChangedQualificationDetailsViewModel.LifecycleStage
+                    EligibleForFundingStatus = new EligibleForFundingStatus(false, null),
+                    LifecycleStage = new LifecycleStage
                     {
                         Id = i.Stage.Id,
                         Name = i.Stage.Name
                     },
-                    Organisation = new ChangedQualificationDetailsViewModel.AwardingOrganisation
+                    Organisation = new AwardingOrganisation
                     {
                         Id = i.Organisation.Id,
                         Ukprn = i.Organisation.Ukprn,
@@ -172,7 +158,7 @@ public class ChangedQualificationDetailsViewModelTests
                         Name_Dsi = i.Organisation.Name_Dsi,
                         Acronym = i.Organisation.Acronym
                     },
-                    Qual = new ChangedQualificationDetailsViewModel.Qualification
+                    Qual = new Qualification
                     {
                         Id = entity.Qual.Id,
                         Qan = entity.Qual.Qan,
@@ -180,12 +166,8 @@ public class ChangedQualificationDetailsViewModelTests
                     }
                 }).ToList()
             },
-            ProcStatus = new ChangedQualificationDetailsViewModel.ProcessStatus
-            {
-                Id = entity.ProcStatus.Id,
-                Name = entity.ProcStatus.Name,
-                IsOutcomeDecision = entity.ProcStatus.IsOutcomeDecision
-            }
+            CurrentProcessStatus = ProcessStatusLookup.FromName(entity.ProcStatus.Name!),
+            EligibleForFundingStatus = new EligibleForFundingStatus(false, null)
         };
 
         // Act
@@ -196,66 +178,7 @@ public class ChangedQualificationDetailsViewModelTests
     }
 
     [Fact]
-    public void ChangedFields_WhenChangedFieldNamesIsNull_ThenReturnsEmptyList()
-    {
-        // Arrange
-        var viewModel = new ChangedQualificationDetailsViewModel
-        {
-            ChangedFieldNames = null
-        };
-
-        // Act
-        var actual = viewModel.GetChangedFields();
-
-        // Assert
-        actual.ShouldBeEmpty();
-    }
-
-    [Fact]
-    public void ChangedFields_WhenChangedFieldNamesContainsEmptyEntries_ThenRemovesEmptyEntriesAndTrimsValues()
-    {
-        // Arrange
-        var keyField = KeyField.All[0];
-
-        var viewModel = new ChangedQualificationDetailsViewModel
-        {
-            ChangedFieldNames = $"  {keyField.Key}  , , NotAKeyField"
-        };
-
-        // Act
-        var actual = viewModel.GetChangedFields();
-
-        // Assert
-        actual.ShouldBeEquivalentTo(new List<string>
-        {
-            keyField.Key
-        });
-    }
-
-    [Fact]
-    public void ChangedFields_WhenChangedFieldNamesUsesDifferentCasing_ThenMatchesKeyFieldsCaseInsensitively()
-    {
-        // Arrange
-        var keyField = KeyField.All[0];
-        var changedFieldName = keyField.Key.ToUpperInvariant();
-
-        var viewModel = new ChangedQualificationDetailsViewModel
-        {
-            ChangedFieldNames = changedFieldName
-        };
-
-        // Act
-        var actual = viewModel.GetChangedFields();
-
-        // Assert
-        actual.ShouldBeEquivalentTo(new List<string>
-        {
-            changedFieldName
-        });
-    }
-
-    [Fact]
-    public void ChangeFieldsForDisplay_WhenChangedFieldsExist_ThenReturnsCommaSeparatedChangedFields()
+    public void KeyFieldsForDisplay_WhenChangedFieldsExist_ThenReturnsCommaSeparatedChangedFields()
     {
         // Arrange
         var firstKeyField = KeyField.All[0];
@@ -267,10 +190,10 @@ public class ChangedQualificationDetailsViewModelTests
         };
 
         // Act
-        var actual = viewModel.ChangeFieldsForDisplay;
+        var actual = viewModel.KeyFieldsForDisplay;
 
         // Assert
-        actual.ShouldBe($"{firstKeyField.Key}, {secondKeyField.Key}");
+        actual.ShouldBe($"{firstKeyField.DisplayName}, {secondKeyField.DisplayName}");
     }
 
     [Fact]
@@ -353,7 +276,7 @@ public class ChangedQualificationDetailsViewModelTests
         // Arrange
         var viewModel = new ChangedQualificationDetailsViewModel
         {
-            Stage = new ChangedQualificationDetailsViewModel.LifecycleStage
+            LifecycleStage = new LifecycleStage
             {
                 Name = "Completed"
             }
@@ -372,7 +295,7 @@ public class ChangedQualificationDetailsViewModelTests
         // Arrange
         var viewModel = new ChangedQualificationDetailsViewModel
         {
-            Stage = new ChangedQualificationDetailsViewModel.LifecycleStage
+            LifecycleStage = new LifecycleStage
             {
                 Name = "completed"
             }
@@ -391,7 +314,7 @@ public class ChangedQualificationDetailsViewModelTests
         // Arrange
         var viewModel = new ChangedQualificationDetailsViewModel
         {
-            Stage = new ChangedQualificationDetailsViewModel.LifecycleStage
+            LifecycleStage = new LifecycleStage
             {
                 Name = "In progress"
             }
@@ -410,7 +333,7 @@ public class ChangedQualificationDetailsViewModelTests
         // Arrange
         var viewModel = new ChangedQualificationDetailsViewModel
         {
-            Stage = null!
+            LifecycleStage = null!
         };
 
         // Act
@@ -424,14 +347,14 @@ public class ChangedQualificationDetailsViewModelTests
     public void ProcessStatusImplicitOperator_WhenModelIsProvided_ThenMapsAllProperties()
     {
         // Arrange
-        var model = new GetProcessStatusesQueryResponse.ProcessStatus
+        var model = new ProcessStatus
         {
             Id = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
             Name = "Approved",
             IsOutcomeDecision = 1
         };
 
-        var expected = new ChangedQualificationDetailsViewModel.ProcessStatus
+        var expected = new ProcessStatus
         {
             Id = model.Id,
             Name = model.Name,
@@ -439,7 +362,7 @@ public class ChangedQualificationDetailsViewModelTests
         };
 
         // Act
-        ChangedQualificationDetailsViewModel.ProcessStatus actual = model;
+        ProcessStatus actual = model;
 
         // Assert
         actual.ShouldBeEquivalentTo(expected);
@@ -471,7 +394,7 @@ public class ChangedQualificationDetailsViewModelTests
 
         var viewModel = new ChangedQualificationDetailsViewModel();
 
-        var expected = new List<ChangedQualificationDetailsViewModel.OfferFundingDetails>
+        var expected = new List<OfferFundingDetails>
         {
             new()
             {
@@ -603,7 +526,7 @@ public class ChangedQualificationDetailsViewModelTests
                         awardingOrganisationId)
                 ]
             },
-            ProcStatus = new GetQualificationDetailsQueryResponse.ProcessStatus
+            ProcStatus = new ProcessStatus
             {
                 Id = processStatusId,
                 Name = "Approved",

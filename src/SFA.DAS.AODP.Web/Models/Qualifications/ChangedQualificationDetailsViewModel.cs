@@ -1,16 +1,17 @@
 ﻿using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Models.Qualifications;
 using SFA.DAS.AODP.Web.Enums;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 
 namespace SFA.DAS.AODP.Web.Models.Qualifications;
 
+[ExcludeFromCodeCoverage]
 public class ChangedQualificationDetailsViewModel
 {
-    private readonly IList<KeyFieldPriorityMapping> _keyFields = KeyField.All.Select(k => new KeyFieldPriorityMapping(k, k.Priority)).ToList();
-
     public Guid Id { get; set; }
     public Guid QualificationId { get; set; }
+    public int AdditionalKeyChangesReceivedFlag { get; set; }
+    public Guid LifecycleStageId { get; set; }
     public string QualificationReference { get; set; } = string.Empty;
     public string AwardingOrganisationName { get; set; } = string.Empty;
     public string QualificationTitle { get; set; } = string.Empty;
@@ -19,16 +20,8 @@ public class ChangedQualificationDetailsViewModel
     public string SectorSubjectArea { get; set; } = string.Empty;
     public string? AgeGroup { get; set; }
     public string Name { get; set; } = null!;
-    public Guid VersionFieldChangesId { get; set; }
-    public Guid ProcessStatusId { get; set; }
-    public int AdditionalKeyChangesReceivedFlag { get; set; }
-    public Guid LifecycleStageId { get; set; }
     public string? ChangedFieldNames { get; set; }
-
-    public string ChangeFieldsForDisplay => string.Join(", ", GetChangedFields());
-
     public string? OutcomeJustificationNotes { get; set; }
-    public Guid AwardingOrganisationId { get; set; }
     public string Status { get; set; } = null!;
     public string Type { get; set; } = null!;
     public string Ssa { get; set; } = null!;
@@ -43,20 +36,14 @@ public class ChangedQualificationDetailsViewModel
     public int? MinimumGlh { get; set; }
     public int? MaximumGlh { get; set; }
     public DateTime RegulationStartDate { get; set; }
-    [DataType(DataType.DateTime)]
-    [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy HH:mm}")]
-
     public DateTime OperationalStartDate { get; set; }
-
-    [DataType(DataType.DateTime)]
-    [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy HH:mm}")]
-
     public DateTime? OperationalEndDate { get; set; }
     public DateTime? CertificationEndDate { get; set; }
     public DateTime? ReviewDate { get; set; }
     public bool OfferedInEngland { get; set; }
     public bool OfferedInNi { get; set; }
     public bool? OfferedInternationally { get; set; }
+    public bool? IntentionToSeekFundingInEngland { get; set; }
     public string? Specialism { get; set; }
     public string? Pathways { get; set; }
     public string? AssessmentMethods { get; set; }
@@ -75,74 +62,92 @@ public class ChangedQualificationDetailsViewModel
     public DateTime? InsertedTimestamp { get; set; }
     public int? Version { get; set; }
     public bool? AppearsOnPublicRegister { get; set; }
-    public int? LevelId { get; set; }
-    public int? TypeId { get; set; }
-    public int? SsaId { get; set; }
-    public int? GradingTypeId { get; set; }
-    public int? GradingScaleId { get; set; }
     public bool? PreSixteen { get; set; }
     public bool? SixteenToEighteen { get; set; }
     public bool? EighteenPlus { get; set; }
     public bool? NineteenPlus { get; set; }
     public string? ImportStatus { get; set; }
-    public bool? IntentionToSeekFundingInEngland { get; set; }
-    public virtual LifecycleStage Stage { get; set; } = null!;
-    public virtual AwardingOrganisation Organisation { get; set; } = null!;
-    public virtual Qualification Qual { get; set; } = null!;
-    public virtual ProcessStatus ProcStatus { get; set; } = null!;
-    public AdditionalFormActions AdditionalActions { get; set; } = new AdditionalFormActions();
-    public List<ProcessStatus> ProcessStatuses { get; set; } = new List<ProcessStatus>();
-    public List<OfferFundingDetails> FundingDetails { get; set; } = new();
+    public bool? EligibleForFunding { get; set; }
+    public string? FundingEligibilityFailedFields { get; set; }
+    public string EligibilityStatus { get; set; } = null!;
+    public EligibleForFundingStatus? EligibleForFundingStatus { get; set; }
+    public LifecycleStage? LifecycleStage { get; set; }
+    public AwardingOrganisation Organisation { get; set; } = null!;
+    public Qualification Qual { get; set; } = null!;
+    public ProcessStatusLookup CurrentProcessStatus { get; set; } = null!;
+    public AdditionalFormActions AdditionalActions { get; set; } = new();
+    public List<ProcessStatus> ProcessStatuses { get; set; } = [];
+    public List<OfferFundingDetails> FundingDetails { get; set; } = [];
     public bool? FundingsOffersOutcomeStatus { get; set; }
-    public List<ApplicationModel> Applications { get; set; } = new();
-    public bool IsQualificationCompleted => string.Equals(Stage?.Name, "Completed", StringComparison.OrdinalIgnoreCase);
+    public List<ApplicationModel> Applications { get; set; } = [];
 
-    public class OfferFundingDetails
+    public bool IsQualificationCompleted => string.Equals(LifecycleStage?.Name, "Completed", StringComparison.OrdinalIgnoreCase);
+
+    public KeyFieldPriority Priority => CalculatePriority();
+
+    private List<KeyFieldChange>? _keyFieldChanges;
+
+    public List<KeyFieldChange> GetKeyFieldChanges()
     {
-        public string FundingOfferName { get; set; }
-        [DisplayName("Start date")]
-        public DateOnly? StartDate { get; set; }
-        [DisplayName("End date")]
-        public DateOnly? EndDate { get; set; }
-    }
-
-    public KeyFieldPriority Priority => MapChangedFieldsToPriority();
-
-    public IList<string> GetChangedFields()
-    {
-        var splitEntries = ChangedFieldNames?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList() ?? [];
-        return splitEntries
-            .IntersectBy(_keyFields.Select(o => o.FieldName.Key), x => x, StringComparer.InvariantCultureIgnoreCase)
-            .ToList();
-    }
-
-    private KeyFieldPriority MapChangedFieldsToPriority()
-    {
-        var priority = KeyFieldPriority.Green;
-        
-        if (Status is ActionTypeEnum.NoActionRequired || !GetChangedFields().Any())
+        if (_keyFieldChanges is not null)
         {
-            return priority;
+            return _keyFieldChanges;
         }
 
-        var keyFieldPriorities = _keyFields
-            .ToDictionary(k => k.FieldName.Key, k => k.Priority, StringComparer.InvariantCultureIgnoreCase);
+        if (string.IsNullOrWhiteSpace(ChangedFieldNames))
+        {
+            _keyFieldChanges = [];
+            return _keyFieldChanges;
+        }
 
-        if (GetChangedFields()
-            .Any(c => 
-                keyFieldPriorities.TryGetValue(c, out var p) && p == KeyFieldPriority.Red))
+        var changedFields = ChangedFieldNames
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .ToList();
+
+        _keyFieldChanges = KeyField.All
+            .Where(kf => changedFields.Any(kf.Matches))
+            .Select(kf => new KeyFieldChange(kf, null, null))
+            .OrderByDescending(kfc => kfc.GetPriority().Rank)
+            .ToList();
+
+        return _keyFieldChanges;
+    }
+
+    public string? KeyFieldsForDisplay
+    {
+        get
+        {
+            var keyChanges = GetKeyFieldChanges();
+            return keyChanges.Count > 0 ? string.Join(", ", keyChanges.Select(o => o.KeyField.DisplayName)) : null;
+        }
+    }
+
+    private KeyFieldPriority CalculatePriority()
+    {
+        if (Status == ActionTypeEnum.NoActionRequired)
+        {
+            return KeyFieldPriority.Green;
+        }
+
+        var keyChanges = GetKeyFieldChanges();
+        if (keyChanges.Count == 0)
+        {
+            return KeyFieldPriority.Green;
+        }
+
+        var maxPriority = keyChanges.Max(kfc => kfc.GetPriority().Rank);
+
+        if (maxPriority >= KeyFieldPriority.Red.Rank)
         {
             return KeyFieldPriority.Red;
         }
 
-        if (GetChangedFields()
-            .Any(c => 
-                keyFieldPriorities.TryGetValue(c, out var p) && p == KeyFieldPriority.Yellow))
+        if (maxPriority >= KeyFieldPriority.Yellow.Rank)
         {
             return KeyFieldPriority.Yellow;
         }
 
-        return priority;
+        return KeyFieldPriority.Green;
     }
 
     internal void MapFundedOffers(GetFeedbackForQualificationFundingByIdQueryResponse feedbackForQualificationFunding)
@@ -158,83 +163,20 @@ public class ChangedQualificationDetailsViewModel
         }
     }
 
-    public List<KeyFieldChanges> KeyFieldChanges { get; set; } = [];
-
-    public partial class LifecycleStage
-    {
-        public Guid Id { get; set; }
-        public string? Name { get; set; }
-    }
-
-    public partial class AwardingOrganisation
-    {
-
-        public Guid Id { get; set; }
-        public int? Ukprn { get; set; }
-        public string? RecognitionNumber { get; set; }
-        public string? NameLegal { get; set; }
-        public string? NameOfqual { get; set; }
-        public string? NameGovUk { get; set; }
-        public string? Name_Dsi { get; set; }
-        public string? Acronym { get; set; }
-    }
-
-    public partial class Qualification
-    {
-        public Guid Id { get; set; }
-        public string Qan { get; set; } = null!;
-        public string? QualificationName { get; set; }
-
-        public List<ChangedQualificationDetailsViewModel> Versions { get; set; }
-    }
-
-    public class ActionType
-    {
-        public Guid Id { get; set; }
-        public string? Description { get; set; }
-    }
-
-    public partial class ProcessStatus
-    {
-        public Guid Id { get; set; }
-        public string? Name { get; set; }
-        public int? IsOutcomeDecision { get; set; }
-
-        public static implicit operator ProcessStatus(GetProcessStatusesQueryResponse.ProcessStatus model)
-        {
-            return new ProcessStatus
-            {
-                Id = model.Id,
-                Name = model.Name,
-                IsOutcomeDecision = model.IsOutcomeDecision,
-            };
-        }
-    }
-
-    public class AdditionalFormActions
-    {
-        [HtmlAttributeName("comment")]
-        public string Note { get; set; } = string.Empty;
-        public Guid? ProcessStatusId { get; set; }
-    }
-
     public static ChangedQualificationDetailsViewModel MapToView(GetQualificationDetailsQueryResponse entity)
     {
-        return new ChangedQualificationDetailsViewModel()
+        return new ChangedQualificationDetailsViewModel
         {
             Id = entity.Id,
+            Name = entity.Name,
             QualificationId = entity.QualificationId,
-            VersionFieldChangesId = entity.VersionFieldChangesId,
-            ProcessStatusId = entity.ProcessStatusId,
             AdditionalKeyChangesReceivedFlag = entity.AdditionalKeyChangesReceivedFlag,
             LifecycleStageId = entity.LifecycleStageId,
             ChangedFieldNames = entity.VersionFieldChanges,
             OutcomeJustificationNotes = entity.OutcomeJustificationNotes,
-            AwardingOrganisationId = entity.AwardingOrganisationId,
             Status = entity.Status,
             Type = entity.Type,
             Ssa = entity.Ssa,
-            Name = entity.Name,
             Level = entity.Level,
             SubLevel = entity.SubLevel,
             EqfLevel = entity.EqfLevel,
@@ -253,6 +195,7 @@ public class ChangedQualificationDetailsViewModel
             OfferedInEngland = entity.OfferedInEngland,
             OfferedInNi = entity.OfferedInNi,
             OfferedInternationally = entity.OfferedInternationally,
+            IntentionToSeekFundingInEngland = entity.IntentionToSeekFundingInEngland, 
             Specialism = entity.Specialism,
             Pathways = entity.Pathways,
             AssessmentMethods = entity.AssessmentMethods,
@@ -271,17 +214,15 @@ public class ChangedQualificationDetailsViewModel
             InsertedTimestamp = entity.InsertedTimestamp,
             Version = entity.Version,
             AppearsOnPublicRegister = entity.AppearsOnPublicRegister,
-            LevelId = entity.LevelId,
-            TypeId = entity.TypeId,
-            SsaId = entity.SsaId,
-            GradingTypeId = entity.GradingTypeId,
-            GradingScaleId = entity.GradingScaleId,
             PreSixteen = entity.PreSixteen,
             SixteenToEighteen = entity.SixteenToEighteen,
             EighteenPlus = entity.EighteenPlus,
             NineteenPlus = entity.NineteenPlus,
             ImportStatus = entity.ImportStatus,
-            Stage = new LifecycleStage
+            EligibleForFunding = entity.EligibleForFunding,
+            FundingEligibilityFailedFields = entity.FundingEligibilityFailedFields,
+            EligibleForFundingStatus = new EligibleForFundingStatus(entity.EligibleForFunding ?? false, entity.FundingEligibilityFailedFields),
+            LifecycleStage = new LifecycleStage
             {
                 Id = entity.Stage.Id,
                 Name = entity.Stage.Name,
@@ -302,20 +243,16 @@ public class ChangedQualificationDetailsViewModel
                 Id = entity.Qual.Id,
                 Qan = entity.Qual.Qan,
                 QualificationName = entity.Qual.QualificationName,
-                Versions = entity.Qual.Versions.Select(i => new ChangedQualificationDetailsViewModel()
+                Versions = entity.Qual.Versions.Select(i => new ChangedQualificationDetailsViewModel
                 {
-
                     Id = i.Id,
                     QualificationId = i.QualificationId,
-                    VersionFieldChangesId = i.VersionFieldChangesId,
-                    ProcessStatusId = i.ProcessStatusId,
+                    Name = i.Name,
                     AdditionalKeyChangesReceivedFlag = i.AdditionalKeyChangesReceivedFlag,
                     LifecycleStageId = i.LifecycleStageId,
                     ChangedFieldNames = i.VersionFieldChanges,
                     OutcomeJustificationNotes = i.OutcomeJustificationNotes,
-                    AwardingOrganisationId = i.AwardingOrganisationId,
                     Status = i.Status,
-                    Name = i.Name,
                     Type = i.Type,
                     Ssa = i.Ssa,
                     Level = i.Level,
@@ -336,6 +273,7 @@ public class ChangedQualificationDetailsViewModel
                     OfferedInEngland = i.OfferedInEngland,
                     OfferedInNi = i.OfferedInNi,
                     OfferedInternationally = i.OfferedInternationally,
+                    IntentionToSeekFundingInEngland = i.IntentionToSeekFundingInEngland,
                     Specialism = i.Specialism,
                     Pathways = i.Pathways,
                     AssessmentMethods = i.AssessmentMethods,
@@ -354,17 +292,15 @@ public class ChangedQualificationDetailsViewModel
                     InsertedTimestamp = i.InsertedTimestamp,
                     Version = i.Version,
                     AppearsOnPublicRegister = i.AppearsOnPublicRegister,
-                    LevelId = i.LevelId,
-                    TypeId = i.TypeId,
-                    SsaId = i.SsaId,
-                    GradingTypeId = i.GradingTypeId,
-                    GradingScaleId = i.GradingScaleId,
                     PreSixteen = i.PreSixteen,
                     SixteenToEighteen = i.SixteenToEighteen,
                     EighteenPlus = i.EighteenPlus,
                     NineteenPlus = i.NineteenPlus,
                     ImportStatus = i.ImportStatus,
-                    Stage = new LifecycleStage
+                    EligibleForFunding = i.EligibleForFunding,
+                    EligibleForFundingStatus = new EligibleForFundingStatus(i.EligibleForFunding ?? false, i.FundingEligibilityFailedFields),
+                    FundingEligibilityFailedFields = i.FundingEligibilityFailedFields,
+                    LifecycleStage = new LifecycleStage
                     {
                         Id = i.Stage.Id,
                         Name = i.Stage.Name,
@@ -385,18 +321,63 @@ public class ChangedQualificationDetailsViewModel
                         Id = entity.Qual.Id,
                         Qan = entity.Qual.Qan,
                         QualificationName = entity.Qual.QualificationName
-                    }
-
-
+                    },
                 }).ToList()
             },
-            ProcStatus = new ProcessStatus()
-            {
-                Id = entity.ProcStatus.Id,
-                Name = entity.ProcStatus.Name,
-                IsOutcomeDecision = entity.ProcStatus.IsOutcomeDecision,
-            },
+            CurrentProcessStatus = ProcessStatusLookup.FromName(entity.ProcStatus.Name!)
 
         };
     }
+}
+
+public class OfferFundingDetails
+{
+    public string FundingOfferName { get; set; } = null!;
+
+    [DisplayName("Start date")]
+    public DateOnly? StartDate { get; set; }
+
+    [DisplayName("End date")]
+    public DateOnly? EndDate { get; set; }
+}
+
+public class LifecycleStage
+{
+    public Guid Id { get; set; }
+    public string? Name { get; set; }
+}
+
+public class AwardingOrganisation
+{
+
+    public Guid Id { get; set; }
+    public int? Ukprn { get; set; }
+    public string? RecognitionNumber { get; set; }
+    public string? NameLegal { get; set; }
+    public string? NameOfqual { get; set; }
+    public string? NameGovUk { get; set; }
+    public string? Name_Dsi { get; set; }
+    public string? Acronym { get; set; }
+}
+
+public class Qualification
+{
+    public Guid Id { get; set; }
+    public string Qan { get; set; } = null!;
+    public string? QualificationName { get; set; }
+
+    public List<ChangedQualificationDetailsViewModel> Versions { get; set; } = [];
+}
+
+public class ActionType
+{
+    public Guid Id { get; set; }
+    public string? Description { get; set; }
+}
+
+public class AdditionalFormActions
+{
+    [HtmlAttributeName("comment")]
+    public string Note { get; set; } = string.Empty;
+    public Guid? ProcessStatusId { get; set; }
 }

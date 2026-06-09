@@ -3,37 +3,37 @@ using AutoFixture.AutoMoq;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Moq;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
-using SFA.DAS.AODP.Models.Settings;
+using SFA.DAS.AODP.Application.Services;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 using System.Diagnostics.CodeAnalysis;
-using static SFA.DAS.AODP.Application.Queries.Qualifications.GetProcessStatusesQueryResponse;
+using SFA.DAS.AODP.Models.Qualifications;
 
-namespace SFA.DAS.AODP.Web.Test.Controllers;
+namespace SFA.DAS.AODP.Web.UnitTests.Controllers;
 
 public class ReviewChangedControllerTests
 {
     private readonly IFixture _fixture;
-    private readonly Mock<ILogger<ChangedController>> _loggerMock;
-    private readonly Mock<IUserHelperService> _userHelper;
     private readonly Mock<IMediator> _mediatorMock;
     private readonly ChangedController _controller;
 
     public ReviewChangedControllerTests()
     {
         _fixture = new Fixture().Customize(new AutoMoqCustomization());
-        _loggerMock = _fixture.Freeze<Mock<ILogger<ChangedController>>>();
-        _userHelper = _fixture.Freeze<Mock<IUserHelperService>>();
+        var loggerMock = _fixture.Freeze<Mock<ILogger<ChangedController>>>();
+        var userHelper = _fixture.Freeze<Mock<IUserHelperService>>();
         _mediatorMock = _fixture.Freeze<Mock<IMediator>>();
+        _mediatorMock = _fixture.Freeze<Mock<IMediator>>();
+        var timelineBuilder = _fixture.Freeze<Mock<IQualificationTimelineHistoryBuilder>>();
 
-        _controller = new ChangedController(_loggerMock.Object, _mediatorMock.Object, _userHelper.Object);
+        _controller = new ChangedController(loggerMock.Object, _mediatorMock.Object, userHelper.Object,
+            timelineBuilder.Object);
 
-        _userHelper
+        userHelper
             .Setup(u => u.GetUserRoles())
             .Returns(new List<string>());
 
@@ -42,11 +42,11 @@ public class ReviewChangedControllerTests
             Success = true,
             Value = new GetProcessStatusesQueryResponse
             {
-                ProcessStatuses = new List<GetProcessStatusesQueryResponse.ProcessStatus>
-            {
-                new() { Id = Guid.NewGuid(), Name = "Decision Required" },
-                new() { Id = Guid.NewGuid(), Name = "No Action Required" }
-            }
+                ProcessStatuses = new List<ProcessStatus>
+                {
+                    new() { Id = Guid.NewGuid(), Name = "Decision Required" },
+                    new() { Id = Guid.NewGuid(), Name = "No Action Required" }
+                }
             }
         };
 
@@ -62,9 +62,12 @@ public class ReviewChangedControllerTests
         // Arrange
         var queryResponse = _fixture.Create<BaseMediatrResponse<GetChangedQualificationsQueryResponse>>();
         queryResponse.Success = true;
-        queryResponse.Value.Data = _fixture.CreateMany<ChangedQualification>(2).ToList();
+        queryResponse.Value.Data = _fixture
+            .Build<ChangedQualification>()
+            .With(x => x.Status, ProcessStatusLookup.DecisionRequired.Name)
+            .CreateMany(2).ToList();
 
-        _mediatorMock.Setup(m => m.Send(It.IsAny<GetChangedQualificationsQuery>(), default))
+        _mediatorMock.Setup(m => m.Send(It.IsAny<GetChangedQualificationsQuery>(), CancellationToken.None))
                      .ReturnsAsync(queryResponse);
 
         // Act
@@ -72,7 +75,7 @@ public class ReviewChangedControllerTests
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
-        var model = Assert.IsAssignableFrom<ChangedQualificationsViewModel>(viewResult.ViewData.Model);
+        Assert.IsAssignableFrom<ChangedQualificationsViewModel>(viewResult.ViewData.Model);
     }
 
     [Fact]
@@ -81,12 +84,16 @@ public class ReviewChangedControllerTests
         // Arrange
         var queryResponse = _fixture.Create<BaseMediatrResponse<GetChangedQualificationsQueryResponse>>();
         queryResponse.Success = true;
-        queryResponse.Value.Data = _fixture.CreateMany<ChangedQualification>(2).ToList();
+        queryResponse.Value.Data = _fixture
+            .Build<ChangedQualification>()
+            .With(x => x.Status, ProcessStatusLookup.DecisionRequired.Name)
+            .CreateMany(2).ToList();
+
         queryResponse.Value.TotalRecords = 2;
         queryResponse.Value.Take = 10;
         queryResponse.Value.Skip = 0;
 
-        _mediatorMock.Setup(m => m.Send(It.IsAny<GetChangedQualificationsQuery>(), default))
+        _mediatorMock.Setup(m => m.Send(It.IsAny<GetChangedQualificationsQuery>(), CancellationToken.None))
                      .ReturnsAsync(queryResponse);
 
         var qualificationQuery =
@@ -104,9 +111,8 @@ public class ReviewChangedControllerTests
         var model = Assert.IsAssignableFrom<ChangedQualificationsViewModel>(viewResult.ViewData.Model);
         Assert.Equal(2, model.ChangedQualifications.Count);
         Assert.Equal(queryResponse.Value.Data[0].Subject, model.ChangedQualifications[0].Subject);
-        Assert.Equal(queryResponse.Value.Data[0].Status, model.ChangedQualifications[0].Status);
+        Assert.Equal(queryResponse.Value.Data[0].Status, model.ChangedQualifications[0].CurrentProcessStatus.Name);
         Assert.Equal(queryResponse.Value.Data[0].AwardingOrganisation, model.ChangedQualifications[0].AwardingOrganisationName);
-        Assert.Equal(queryResponse.Value.Data[0].Status, model.ChangedQualifications[0].Status);
     }
 
     [Fact]
@@ -141,15 +147,15 @@ public class ReviewChangedControllerTests
         var queryResponse = _fixture.Create<BaseMediatrResponse<GetQualificationDetailsQueryResponse>>();
         queryResponse.Success = true;
 
-        _mediatorMock.Setup(m => m.Send(It.IsAny<GetQualificationDetailsQuery>(), default))
-                     .ReturnsAsync(queryResponse);
+        _mediatorMock.Setup(m => m.Send(It.IsAny<GetQualificationDetailsQuery>(), CancellationToken.None))
+            .ReturnsAsync(queryResponse);
 
         // Act
         var result = await _controller.QualificationDetails("Ref123");
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
-        var model = Assert.IsAssignableFrom<ChangedQualificationDetailsViewModel>(viewResult.ViewData.Model);
+        Assert.IsAssignableFrom<ChangedQualificationDetailsViewModel>(viewResult.ViewData.Model);
     }
 
     [Fact(Skip = "This test is being ignored for now.")]
@@ -161,13 +167,13 @@ public class ReviewChangedControllerTests
         queryResponse.Success = false;
         queryResponse.ErrorMessage = "No details found for qualification reference: Ref123";
 
-        _mediatorMock.Setup(m => m.Send(It.IsAny<GetQualificationDetailsQuery>(), default))
-                     .ReturnsAsync(queryResponse);
+        _mediatorMock.Setup(m => m.Send(It.IsAny<GetQualificationDetailsQuery>(), CancellationToken.None))
+            .ReturnsAsync(queryResponse);
 
         // Act
         try
         {
-            var result = await _controller.QualificationDetails("Ref123");
+            await _controller.QualificationDetails("Ref123");
             Assert.Fail();
         }
         catch (Exception ex)
@@ -183,7 +189,7 @@ public class ReviewChangedControllerTests
         var result = await _controller.QualificationDetails(string.Empty);
 
         // Assert
-        var badRequestResult = Assert.IsType<RedirectResult>(result);
+        Assert.IsType<RedirectResult>(result);
     }
 
     [Fact]
@@ -194,7 +200,7 @@ public class ReviewChangedControllerTests
         queryResponse.Success = true;
         queryResponse.Value.Data = _fixture.CreateMany<ChangedQualification>(2).ToList();
 
-        _mediatorMock.Setup(m => m.Send(It.IsAny<GetChangedQualificationsQuery>(), default))
+        _mediatorMock.Setup(m => m.Send(It.IsAny<GetChangedQualificationsQuery>(), CancellationToken.None))
                      .ReturnsAsync(queryResponse);
 
         // Act
@@ -213,7 +219,7 @@ public class ReviewChangedControllerTests
         queryResponse.Success = true;
         queryResponse.Value.Data = _fixture.CreateMany<ChangedQualification>(2).ToList();
 
-        _mediatorMock.Setup(m => m.Send(It.IsAny<GetChangedQualificationsQuery>(), default))
+        _mediatorMock.Setup(m => m.Send(It.IsAny<GetChangedQualificationsQuery>(), CancellationToken.None))
                      .ReturnsAsync(queryResponse);
 
         QualificationQuery qualificationQuery =
@@ -236,7 +242,11 @@ public class ReviewChangedControllerTests
     public async Task Search()
     {
         // Arrange
-        var viewModel = new ChangedQualificationsViewModel();
+        var viewModel = new ChangedQualificationsViewModel
+        {
+            PaginationViewModel = new PaginationViewModel(10, 1, 1),
+            Filter = new NewQualificationFilterViewModel()
+        };
 
         // Act
         var result = await _controller.Search(viewModel);
@@ -244,7 +254,7 @@ public class ReviewChangedControllerTests
         // Assert
         var viewResult = Assert.IsType<RedirectToActionResult>(result);
         Assert.Equal("Index", viewResult.ActionName);
-        Assert.Equal(viewModel.PaginationViewModel.RecordsPerPage, viewResult.RouteValues["recordsPerPage"]);
+        Assert.Equal(viewModel.PaginationViewModel.RecordsPerPage, viewResult.RouteValues!["recordsPerPage"]);
         Assert.Equal(viewModel.Filter.Organisation, viewResult.RouteValues["organisation"]);
         Assert.Equal(viewModel.Filter.QualificationName, viewResult.RouteValues["name"]);
         Assert.Equal(viewModel.Filter.QAN, viewResult.RouteValues["qan"]);

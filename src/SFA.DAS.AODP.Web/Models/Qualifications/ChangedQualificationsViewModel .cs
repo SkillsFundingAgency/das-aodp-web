@@ -1,12 +1,11 @@
 ﻿using SFA.DAS.AODP.Application.Queries.Qualifications;
-using SFA.DAS.AODP.Domain.Qualifications.Requests;
+using SFA.DAS.AODP.Models.Qualifications;
 using SFA.DAS.AODP.Web.Extensions;
 using SFA.DAS.AODP.Web.Models.BulkActions;
-using SFA.DAS.AODP.Web.Helpers;
 
 namespace SFA.DAS.AODP.Web.Models.Qualifications
 {
-    public class ChangedQualificationsViewModel: QualificationsBulkActionPageViewModel
+    public class ChangedQualificationsViewModel : QualificationsBulkActionPageViewModel
     {
         public ChangedQualificationsViewModel()
         {
@@ -24,44 +23,29 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
 
         public JobStatusViewModel JobStatusViewModel { get; set; }
 
-        public List<ProcessStatus> ProcessStatuses { get; set; } = new List<ProcessStatus>();
-
-        public class ProcessStatus
-        {
-            public Guid Id { get; set; }
-            public string? Name { get; set; }
-            public int? IsOutcomeDecision { get; set; }
-            public static implicit operator ProcessStatus(GetProcessStatusesQueryResponse.ProcessStatus v)
-            {
-                return new ProcessStatus
-                {
-                    Id = v.Id,
-                    Name = v.Name,
-                    IsOutcomeDecision = v.IsOutcomeDecision,
-                };
-            }
-        }
+        public List<ProcessStatus> ProcessStatuses { get; set; } = [];
 
         public static ChangedQualificationsViewModel Map(
             GetChangedQualificationsQueryResponse response, 
-            List<GetProcessStatusesQueryResponse.ProcessStatus> processStatuses,
+            List<ProcessStatus> processStatuses,
             QualificationQuery qualificationQuery)
         {
             var viewModel = new ChangedQualificationsViewModel();
             viewModel.PaginationViewModel = new PaginationViewModel(response.TotalRecords, response.Skip, response.Take);
-            viewModel.ChangedQualifications= response.Data.Select(s => new ChangedQualificationDetailsViewModel()
+            viewModel.ChangedQualifications = response.Data.Select(s => new ChangedQualificationDetailsViewModel
             {
                 QualificationId = s.QualificationId,
-                QualificationReference=s.QualificationReference,
+                QualificationReference = s.QualificationReference,
                 AwardingOrganisationName = s.AwardingOrganisation,
-                QualificationTitle=s.QualificationTitle,
-                QualificationType=s.QualificationType,
-                Subject=s.Subject,
-                Level=s.Level,
-                SectorSubjectArea=s.SectorSubjectArea,
-                AgeGroup = s.AgeGroup,
+                QualificationTitle = s.QualificationTitle,
+                QualificationType = s.QualificationType,
+                Subject = s.Subject,
+                Level = s.Level,
+                SectorSubjectArea = s.SectorSubjectArea,
+                AgeGroup = s.AgeGroup,  
                 ChangedFieldNames = s.ChangedFieldNames,
-                Status=s.Status
+                CurrentProcessStatus = ProcessStatusLookup.FromName(s.Status),
+                EligibilityStatus = (s.EligibleForFunding ?? false) ? "Eligible" : "Not eligible"
 
             }).ToList();
             viewModel.Filter = qualificationQuery.ToQualificationFilterViewModel();
@@ -71,12 +55,7 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
                 LastRunTime = response.Job.LastRunTime,
                 Status = response.Job.Status
             };
-            viewModel.ProcessStatuses = processStatuses.Select(v => new ProcessStatus()
-            {
-                Id = v.Id,
-                Name = v.Name,
-                IsOutcomeDecision = v.IsOutcomeDecision,
-            }).ToList();
+            viewModel.ProcessStatuses = processStatuses;
 
             return viewModel;
         }

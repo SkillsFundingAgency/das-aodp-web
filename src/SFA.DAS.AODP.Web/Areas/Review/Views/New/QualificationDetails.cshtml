@@ -1,5 +1,4 @@
 ﻿@using System.Globalization
-@using SFA.DAS.AODP.Web.Extensions
 @using SFA.DAS.AODP.Web.Views.Shared
 @model SFA.DAS.AODP.Web.Models.Qualifications.NewQualificationDetailsViewModel
 
@@ -61,6 +60,12 @@
             <govuk-summary-list-row>
                 <govuk-summary-list-row-key>Qualification title</govuk-summary-list-row-key>
                 <govuk-summary-list-row-value>@Model.Qual.QualificationName</govuk-summary-list-row-value>
+            </govuk-summary-list-row>
+            <govuk-summary-list-row>
+                <govuk-summary-list-row-key>Eligibility status</govuk-summary-list-row-key>
+                <govuk-summary-list-row-value>
+                    <partial name="_EligibilityStatus" model="Model.EligibleForFundingStatus" />
+                </govuk-summary-list-row-value>
             </govuk-summary-list-row>
             <govuk-summary-list-row>
                 <govuk-summary-list-row-key>Awarding organisation</govuk-summary-list-row-key>
