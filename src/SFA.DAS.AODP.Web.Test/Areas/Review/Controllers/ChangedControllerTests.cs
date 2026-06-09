@@ -9,6 +9,7 @@ using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.Qualification;
 using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Domain.Qualifications.Requests;
 using SFA.DAS.AODP.Models.Qualifications;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
@@ -809,5 +810,101 @@ public class ChangedControllerTests
         {
             Assert.Equal("/Home/Error", redirect.Url);
         });
+    }
+
+    [Fact]
+    public async Task Index_Forwards_ProcessStatusIds_And_AgeGroups_To_Query()
+    {
+        var controller = CreateController();
+
+        var processStatusIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
+        var ageGroups = new List<AgeGroup> { AgeGroup.EighteenPlus };
+
+        GetChangedQualificationsQuery? captured = null;
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetChangedQualificationsQuery>(), It.IsAny<CancellationToken>()))
+            .Callback<object, CancellationToken>((q, _) => captured = (GetChangedQualificationsQuery)q)
+            .ReturnsAsync(new BaseMediatrResponse<GetChangedQualificationsQueryResponse>
+            {
+                Success = true,
+                Value = new GetChangedQualificationsQueryResponse()
+            });
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetProcessStatusesQueryResponse>
+            {
+                Success = true,
+                Value = new GetProcessStatusesQueryResponse()
+            });
+
+        var query = new QualificationQuery
+        {
+            PageNumber = 1,
+            RecordsPerPage = DefaultRecordsPerPage,
+            ProcessStatusIds = processStatusIds,
+            AgeGroups = ageGroups
+        };
+
+        // Act
+        await controller.Index(query);
+
+        // Assert
+        Assert.NotNull(captured);
+        Assert.Equal(processStatusIds, captured!.ProcessStatusIds);
+        Assert.Equal(ageGroups, captured.AgeGroups);
+    }
+
+
+    [Fact]
+    public async Task Search_Includes_AgeGroups_In_Redirect()
+    {
+        var controller = CreateController();
+
+        var ageGroups = new List<AgeGroup> { AgeGroup.NineteenPlus };
+
+        var viewModel = new ChangedQualificationsViewModel
+        {
+            PaginationViewModel = new PaginationViewModel
+            {
+                RecordsPerPage = DefaultRecordsPerPage
+            },
+            Filter = new NewQualificationFilterViewModel
+            {
+                AgeGroups = ageGroups
+            }
+        };
+
+        var result = await controller.Search(viewModel);
+
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+
+        Assert.Equal(ageGroups, redirect.RouteValues!["ageGroups"]);
+    }
+
+    [Fact]
+    public async Task ChangePage_Preserves_ProcessStatusIds_And_AgeGroups()
+    {
+        var controller = CreateController();
+
+        var processStatusIds = new List<Guid> { Guid.NewGuid() };
+        var ageGroups = new List<AgeGroup> { AgeGroup.EighteenPlus };
+
+        var query = new QualificationQuery
+        {
+            PageNumber = DefaultPageNumber,
+            RecordsPerPage = DefaultRecordsPerPage,
+            ProcessStatusIds = processStatusIds,
+            AgeGroups = ageGroups,
+            Name = SearchName,
+            Organisation = SearchOrganisation,
+            Qan = SearchQan
+        };
+
+        var result = await controller.ChangePage(query, ChangedPageNumber);
+
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+
+        Assert.Equal(processStatusIds, redirect.RouteValues!["processStatusIds"]);
+        Assert.Equal(ageGroups, redirect.RouteValues!["ageGroups"]);
     }
 }

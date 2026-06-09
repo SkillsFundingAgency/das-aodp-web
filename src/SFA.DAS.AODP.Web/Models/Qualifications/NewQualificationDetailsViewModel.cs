@@ -143,14 +143,6 @@ public class NewQualificationDetailsViewModel
         public Guid? ProcessStatusId { get; set; }
     }
 
-    public class Application
-    {
-        public Guid Id { get; set; }
-        public string? Name { get; set; }
-        public DateTime? CreatedDate { get; set; }
-        public DateTime? SubmittedDate { get; set; }
-    }
-
     public static implicit operator NewQualificationDetailsViewModel(GetQualificationDetailsQueryResponse entity)
     {
         return new NewQualificationDetailsViewModel()
@@ -241,20 +233,6 @@ public class NewQualificationDetailsViewModel
                 IsOutcomeDecision = entity.ProcStatus.IsOutcomeDecision,
             }
         };
-    }
-
-    internal void MapApplications(GetApplicationsByQanQueryResponse applications)
-    {
-        foreach (var application in applications.Applications)
-        {
-            Applications.Add(new()
-            {
-                Id = application.Id,
-                Name = application.Name,
-                CreatedDate = application.CreatedDate,
-                SubmittedDate = application.SubmittedDate
-            });
-        }
     }
 }
 
