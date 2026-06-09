@@ -32,8 +32,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         private readonly IUserHelperService _userHelperService;
         private List<string> ReviewerAllowedStatuses { get; set; } = new List<string>()
         {
-            ProcessStatus.DecisionRequired,
-            ProcessStatus.NoActionRequired,
+            ProcessStatusLookup.DecisionRequired.Name,
+            ProcessStatusLookup.NoActionRequired.Name,
         };
         public enum NewQualDataKeys { InvalidPageParams, CommentSaved}
 
@@ -383,7 +383,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             return ReviewerAllowedStatuses.Contains(processStatName);
         }
 
-        public async Task<List<GetProcessStatusesQueryResponse.ProcessStatus>> GetProcessStatuses()
+        public async Task<List<ProcessStatus>> GetProcessStatuses()
         {
             var procStatuses = await Send(new GetProcessStatusesQuery());
             if (!_userHelperService.GetUserRoles().Contains(RoleConstants.QFAUApprover))
@@ -418,7 +418,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             NewQualificationsViewModel? postedModel = null)
         {
             var procStatuses = await Send(new GetProcessStatusesQuery());
-            var statuses = procStatuses.ProcessStatuses ?? new List<GetProcessStatusesQueryResponse.ProcessStatus>();
+            var statuses = procStatuses.ProcessStatuses;
 
             NewQualificationsViewModel vm;
 

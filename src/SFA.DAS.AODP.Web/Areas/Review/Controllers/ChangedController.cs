@@ -18,6 +18,7 @@ using SFA.DAS.AODP.Web.Models.Qualifications;
 using System.Globalization;
 using System.Text.Json;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
+using ProcessStatus = SFA.DAS.AODP.Application.Queries.Qualifications.ProcessStatus;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 {
@@ -33,16 +34,16 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
         private List<string> ReviewerAllowedStatuses { get; set; } =
         [
-            ProcessStatus.DecisionRequired,
-            ProcessStatus.NoActionRequired,
+            ProcessStatusLookup.DecisionRequired.Name,
+            ProcessStatusLookup.NoActionRequired.Name,
         ];
 
-        private List<string> BulkUpdateAllowedStatuses { get; set; } = new List<string>()
-        {
-            ProcessStatus.DecisionRequired,
-            ProcessStatus.NoActionRequired,
-            ProcessStatus.OnHold
-        };
+        private List<string> BulkUpdateAllowedStatuses { get; set; } =
+        [
+            ProcessStatusLookup.DecisionRequired.Name,
+            ProcessStatusLookup.NoActionRequired.Name,
+            ProcessStatusLookup.OnHold.Name
+        ];
 
         public enum NewQualDataKeys { InvalidPageParams, CommentSaved}
 
@@ -268,7 +269,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
             try
             {
-                ChangedQualificationDetailsViewModel latestVersion = await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference });
+                var latestVersion = ChangedQualificationDetailsViewModel.MapToView(
+                    await Send(new GetQualificationDetailsQuery { QualificationReference = qualificationReference }));
+
                 latestVersion.ProcessStatuses = [.. await GetProcessStatuses()];
 
                 ShowNotificationIfKeyExists(NewQualDataKeys.CommentSaved.ToString(), ViewNotificationMessageType.Success, "The comment has been saved.");
@@ -284,14 +287,14 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 if (applications != null)
                     latestVersion.Applications = ApplicationMapper.Map(applications);
 
-                if (latestVersion.Version > 1)
-                {
-                    var previousVersion = await Send(new GetQualificationVersionQuery() { QualificationReference = qualificationReference, Version = latestVersion.Version - 1 });
-                    var currentVersionForComparison = await Send(new GetQualificationVersionQuery() { QualificationReference = qualificationReference, Version = latestVersion.Version });
+                //if (latestVersion.Version > 1)
+                //{
+                //    var previousVersion = await Send(new GetQualificationVersionQuery() { QualificationReference = qualificationReference, Version = latestVersion.Version - 1 });
+                //    var currentVersionForComparison = await Send(new GetQualificationVersionQuery() { QualificationReference = qualificationReference, Version = latestVersion.Version });
 
-                    latestVersion.KeyFieldChanges = _qualificationTimelineHistoryBuilder.GetKeyFieldChanges(
-                        previousVersion, currentVersionForComparison);
-                }
+                //    latestVersion.KeyFieldChanges = _qualificationTimelineHistoryBuilder.GetKeyFieldChanges(currentVersionForComparison, previousVersion);
+                //}
+
                 return View(latestVersion);
             }
             catch (Exception ex)
@@ -352,7 +355,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             return ReviewerAllowedStatuses.Contains(processStatName);
         }
 
-        public async Task<List<GetProcessStatusesQueryResponse.ProcessStatus>> GetProcessStatuses()
+        public async Task<List<ProcessStatus>> GetProcessStatuses()
         {
             var procStatuses = await Send(new GetProcessStatusesQuery());
             if (!_userHelperService.GetUserRoles().Contains(RoleConstants.QFAUApprover))

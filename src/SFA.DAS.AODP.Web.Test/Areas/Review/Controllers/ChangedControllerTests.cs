@@ -92,7 +92,7 @@ public class ChangedControllerTests
                 QualificationName = qualificationName,
                 Versions = new List<GetQualificationDetailsQueryResponse>()
             },
-            ProcStatus = new GetQualificationDetailsQueryResponse.ProcessStatus
+            ProcStatus = new ProcessStatus
             {
                 Id = Guid.NewGuid(),
                 Name = DecisionRequiredStatus
@@ -121,7 +121,7 @@ public class ChangedControllerTests
 
         foreach (var status in statuses)
         {
-            response.ProcessStatuses.Add(new GetProcessStatusesQueryResponse.ProcessStatus
+            response.ProcessStatuses.Add(new ProcessStatus
             {
                 Id = status.Id,
                 Name = status.Name
@@ -220,8 +220,8 @@ public class ChangedControllerTests
 
         var model = new ChangedQualificationDetailsViewModel
         {
-            Qual = new ChangedQualificationDetailsViewModel.Qualification { Qan = DefaultQan },
-            AdditionalActions = new ChangedQualificationDetailsViewModel.AdditionalFormActions
+            Qual = new Qualification { Qan = DefaultQan },
+            AdditionalActions = new AdditionalFormActions
             {
                 Note = DefaultComment,
                 ProcessStatusId = null
@@ -262,8 +262,8 @@ public class ChangedControllerTests
 
         var model = new ChangedQualificationDetailsViewModel
         {
-            Qual = new ChangedQualificationDetailsViewModel.Qualification { Qan = DefaultQan },
-            AdditionalActions = new ChangedQualificationDetailsViewModel.AdditionalFormActions
+            Qual = new Qualification { Qan = DefaultQan },
+            AdditionalActions = new AdditionalFormActions
             {
                 Note = string.Empty,
                 ProcessStatusId = null
@@ -303,8 +303,8 @@ public class ChangedControllerTests
 
         var model = new ChangedQualificationDetailsViewModel
         {
-            Qual = new ChangedQualificationDetailsViewModel.Qualification { Qan = DefaultQan },
-            AdditionalActions = new ChangedQualificationDetailsViewModel.AdditionalFormActions
+            Qual = new Qualification { Qan = DefaultQan },
+            AdditionalActions = new AdditionalFormActions
             {
                 Note = string.Empty,
                 ProcessStatusId = processStatusId
@@ -350,9 +350,9 @@ public class ChangedControllerTests
 
         var model = new ChangedQualificationDetailsViewModel
         {
-            Qual = new ChangedQualificationDetailsViewModel.Qualification { Qan = DefaultQan },
+            Qual = new Qualification { Qan = DefaultQan },
             Version = VersionOne,
-            AdditionalActions = new ChangedQualificationDetailsViewModel.AdditionalFormActions
+            AdditionalActions = new AdditionalFormActions
             {
                 Note = DefaultComment,
                 ProcessStatusId = processStatusId
@@ -402,9 +402,9 @@ public class ChangedControllerTests
 
         var model = new ChangedQualificationDetailsViewModel
         {
-            Qual = new ChangedQualificationDetailsViewModel.Qualification { Qan = DefaultQan },
+            Qual = new Qualification { Qan = DefaultQan },
             Version = VersionOne,
-            AdditionalActions = new ChangedQualificationDetailsViewModel.AdditionalFormActions
+            AdditionalActions = new AdditionalFormActions
             {
                 Note = DefaultComment,
                 ProcessStatusId = processStatusId

@@ -7,5 +7,5 @@ public interface IQualificationTimelineHistoryBuilder
 {
     List<QualificationDiscussionHistory> BuildTimelineEntries(List<GetQualificationDetailsQueryResponse> versions);
 
-    List<FieldChange> GetKeyFieldChanges(GetQualificationDetailsQueryResponse latestVersion, GetQualificationDetailsQueryResponse previousVersion);
+    List<KeyFieldChange> GetKeyFieldChanges(GetQualificationDetailsQueryResponse latestVersion, GetQualificationDetailsQueryResponse previousVersion);
 }

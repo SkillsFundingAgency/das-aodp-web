@@ -1,4 +1,5 @@
-﻿using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Application.Extensions;
+using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Models.Qualifications;
 using ActionType = SFA.DAS.AODP.Application.Queries.Qualifications.ActionType;
 
@@ -11,8 +12,6 @@ namespace SFA.DAS.AODP.Application.Services
     //
     public class QualificationTimelineHistoryBuilder : IQualificationTimelineHistoryBuilder
     {
-        private const string DateTimeFormat = "MM/dd/yy HH:mm";
-
         public List<QualificationDiscussionHistory> BuildTimelineEntries(List<GetQualificationDetailsQueryResponse> versions)
         {
             var entries = new List<QualificationDiscussionHistory>();
@@ -23,7 +22,7 @@ namespace SFA.DAS.AODP.Application.Services
             return entries;
         }
 
-        public List<FieldChange> GetKeyFieldChanges(
+        public List<KeyFieldChange> GetKeyFieldChanges(
             GetQualificationDetailsQueryResponse latestVersion,
             GetQualificationDetailsQueryResponse previousVersion)
         {
@@ -31,155 +30,141 @@ namespace SFA.DAS.AODP.Application.Services
                 .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                 .ToList() ?? [];
 
-            var changes = new List<FieldChange>();
+            var changes = new List<KeyFieldChange>();
 
             foreach (var item in fields)
             {
                 switch (item)
                 {
                     case "EligibleForFunding":
-                        changes.Add(new FieldChange(
-                            "Eligibility status",
+                        changes.Add(new KeyFieldChange(
+                            KeyField.EligibleForFunding,
                             previousVersion.EligibleForFunding?.ToString(),
                             latestVersion.EligibleForFunding?.ToString()));
                         break;
 
                     case "OrganisationName":
-                        changes.Add(new FieldChange(
-                            "Organisation name",
+                        changes.Add(new KeyFieldChange(
+                            KeyField.OrganisationName,
                             previousVersion.Organisation?.NameOfqual,
                             latestVersion.Organisation?.NameOfqual));
                         break;
 
                     case "Title":
-                        changes.Add(new FieldChange(
-                            "Title",
+                        changes.Add(new KeyFieldChange(
+                            KeyField.Title,
                             previousVersion.Name,
                             latestVersion.Name));
                         break;
 
                     case "Level":
-                        changes.Add(new FieldChange(
-                            "Level",
+                        changes.Add(new KeyFieldChange(
+                            KeyField.Level,
                             previousVersion.Level,
                             latestVersion.Level));
                         break;
 
                     case "Type":
-                        changes.Add(new FieldChange(
-                            "Type",
+                        changes.Add(new KeyFieldChange(
+                            KeyField.Type,
                             previousVersion.Type,
                             latestVersion.Type));
                         break;
 
                     case "TotalCredits":
-                        changes.Add(new FieldChange(
-                            "Total credits",
+                        changes.Add(new KeyFieldChange(
+                            KeyField.TotalCredits,
                             previousVersion.TotalCredits?.ToString(),
                             latestVersion.TotalCredits?.ToString()));
                         break;
 
                     case "Ssa":
-                        changes.Add(new FieldChange(
-                            "SSA",
+                        changes.Add(new KeyFieldChange(
+                            KeyField.Ssa,
                             previousVersion.Ssa,
                             latestVersion.Ssa));
                         break;
 
                     case "GradingType":
-                        changes.Add(new FieldChange(
-                            "Grading type",
+                        changes.Add(new KeyFieldChange(
+                            KeyField.GradingType,
                             previousVersion.GradingType,
                             latestVersion.GradingType));
                         break;
 
                     case "OfferedInEngland":
-                        changes.Add(new FieldChange(
-                            "Offered in England",
+                        changes.Add(new KeyFieldChange(
+                            KeyField.OfferedInEngland,
                             previousVersion.OfferedInEngland.ToString(),
                             latestVersion.OfferedInEngland.ToString()));
                         break;
 
                     case "IntentionToSeekFundingInEngland":
-                        changes.Add(new FieldChange(
-                            "Intention to seek funding in England",
+                        changes.Add(new KeyFieldChange(
+                            KeyField.IntentionToSeekFundingInEngland,
                             previousVersion.IntentionToSeekFundingInEngland?.ToString(),
                             latestVersion.IntentionToSeekFundingInEngland?.ToString()));
                         break;
 
                     case "PreSixteen":
-                        changes.Add(new FieldChange(
-                            "Pre-sixteen",
+                        changes.Add(new KeyFieldChange(
+                            KeyField.PreSixteen,
                             previousVersion.PreSixteen?.ToString(),
                             latestVersion.PreSixteen?.ToString()));
                         break;
 
                     case "SixteenToEighteen":
-                        changes.Add(new FieldChange(
-                            "Sixteen to eighteen",
+                        changes.Add(new KeyFieldChange(
+                            KeyField.SixteenToEighteen,
                             previousVersion.SixteenToEighteen?.ToString(),
                             latestVersion.SixteenToEighteen?.ToString()));
                         break;
 
                     case "EighteenPlus":
-                        changes.Add(new FieldChange(
-                            "Eighteen plus",
+                        changes.Add(new KeyFieldChange(
+                            KeyField.EighteenPlus,
                             previousVersion.EighteenPlus?.ToString(),
                             latestVersion.EighteenPlus?.ToString()));
                         break;
 
                     case "NineteenPlus":
-                        changes.Add(new FieldChange(
-                            "Nineteen plus",
+                        changes.Add(new KeyFieldChange(
+                            KeyField.NineteenPlus,
                             previousVersion.NineteenPlus?.ToString(),
                             latestVersion.NineteenPlus?.ToString()));
                         break;
 
                     case "Glh":
-                        changes.Add(new FieldChange(
-                            "Guided learning hours (GLH)",
+                        changes.Add(new KeyFieldChange(
+                            KeyField.Glh,
                             previousVersion.Glh?.ToString(),
                             latestVersion.Glh?.ToString()));
                         break;
 
                     case "MinimumGlh":
-                        changes.Add(new FieldChange(
-                            "Minimum GLH",
+                        changes.Add(new KeyFieldChange(
+                            KeyField.MinimumGlh,
                             previousVersion.MinimumGlh?.ToString(),
                             latestVersion.MinimumGlh?.ToString()));
                         break;
 
                     case "Tqt":
-                        changes.Add(new FieldChange(
-                            "Total qualification time (TQT)",
+                        changes.Add(new KeyFieldChange(
+                            KeyField.Tqt,
                             previousVersion.Tqt?.ToString(),
                             latestVersion.Tqt?.ToString()));
                         break;
 
                     case "OperationalEndDate":
-                        changes.Add(new FieldChange(
-                            "Operational end date",
-                            previousVersion.OperationalEndDate?.ToString(DateTimeFormat),
-                            latestVersion.OperationalEndDate?.ToString(DateTimeFormat)));
-                        break;
-
-                    case "LastUpdatedDate":
-                        changes.Add(new FieldChange(
-                            "Last updated date",
-                            previousVersion.LastUpdatedDate.ToString(DateTimeFormat),
-                            latestVersion.LastUpdatedDate.ToString(DateTimeFormat)));
-                        break;
-
-                    case "Version":
-                        changes.Add(new FieldChange(
-                            "Version",
-                            previousVersion.Version?.ToString(),
-                            latestVersion.Version?.ToString()));
+                        changes.Add(new KeyFieldChange(
+                            KeyField.OperationalEndDate,
+                            previousVersion.OperationalEndDate?.ToStandard12HourDateTimeFormat(),
+                            latestVersion.OperationalEndDate?.ToStandard12HourDateTimeFormat()));
                         break;
 
                     case "OfferedInternationally":
-                        changes.Add(new FieldChange(
-                            "Offered internationally",
+                        changes.Add(new KeyFieldChange(
+                            KeyField.OfferedInternationally,
                             previousVersion.OfferedInternationally?.ToString(),
                             latestVersion.OfferedInternationally?.ToString()));
                         break;
@@ -256,16 +241,16 @@ namespace SFA.DAS.AODP.Application.Services
             };
         }
 
-        private static string BuildChangeString(List<FieldChange> fieldChanges)
+        private static string BuildChangeString(List<KeyFieldChange> fieldChanges)
         {
             var items = fieldChanges.Select(x =>
             {
-                if (x.Name.Equals("Eligibility status", StringComparison.OrdinalIgnoreCase))
+                if (x.KeyField.Matches(KeyField.EligibleForFunding.Key))
                 {
-                    return $"{x.Name} changed to {FormatEligibility(x.Now)}";
+                    return $"Eligibility status changed to {FormatEligibility(x.Now)}";
                 }
 
-                return $"{x.Name} changed from {x.Was?.ToLower()} to {x.Now?.ToLower()}";
+                return $"{x.KeyField.DisplayName} changed from {FormatEligibility(x.Was)} to {FormatEligibility(x.Now)}";
             }).ToList();
 
             return TimelineFormattingHelper.ToDisplayString(
@@ -329,7 +314,7 @@ namespace SFA.DAS.AODP.Application.Services
                 Title = "Change",
                 UserDisplayName = "OFQUAL Import",
                 Timestamp = qualificationVersion.InsertedTimestamp,
-                ActionType = new Queries.Qualifications.ActionType
+                ActionType = new ActionType
                 {
                     Id = Guid.Empty,
                     Description = "change"

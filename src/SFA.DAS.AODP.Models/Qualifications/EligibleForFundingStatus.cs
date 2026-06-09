@@ -1,6 +1,6 @@
 ﻿namespace SFA.DAS.AODP.Models.Qualifications
 {
-    public class EligibleForFundingStatus
+    public record EligibleForFundingStatus
     {
         public bool IsEligible { get; }
         public List<string> IneligibleReasons { get; }

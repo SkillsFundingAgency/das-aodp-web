@@ -1,7 +1,8 @@
 ﻿using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Application.Services;
+using Shouldly;
 
-namespace SFA.DAS.Aodp.UnitTests.Application.Services;
+namespace SFA.DAS.AODP.Application.UnitTests.Services;
 
 public class QualificationTimelineHistoryBuilderTests
 {
@@ -41,7 +42,7 @@ public class QualificationTimelineHistoryBuilderTests
 
         var result = _builder.GetKeyFieldChanges(latest, previous);
 
-        Assert.Empty(result);
+        result.ShouldBeEmpty();
     }
 
     [Fact]
@@ -52,7 +53,7 @@ public class QualificationTimelineHistoryBuilderTests
 
         var result = _builder.GetKeyFieldChanges(latest, previous);
 
-        Assert.Empty(result);
+        result.ShouldBeEmpty();
     }
 
     [Fact]
@@ -63,9 +64,9 @@ public class QualificationTimelineHistoryBuilderTests
 
         var result = _builder.GetKeyFieldChanges(latest, previous);
 
-        Assert.Equal(2, result.Count);
-        Assert.Contains(result, x => x.Name == "Title");
-        Assert.Contains(result, x => x.Name == "Organisation name");
+        result.Count.ShouldBe(2);
+        result.ShouldContain(x => x.KeyField.DisplayName == "Title");
+        result.ShouldContain(x => x.KeyField.DisplayName == "Organisation name");
     }
 
     [Theory]
@@ -83,20 +84,17 @@ public class QualificationTimelineHistoryBuilderTests
 
         var change = Assert.Single(result);
 
-        Assert.Multiple(() =>
-        {
-            Assert.Equal(expectedName, change.Name);
-            Assert.Equal(expectedWas, change.Was);
-            Assert.Equal(expectedNow, change.Now);
-        });
+        change.KeyField.DisplayName.ShouldBe(expectedName);
+        change.Was.ShouldBe(expectedWas);
+        change.Now.ShouldBe(expectedNow);
     }
 
     [Fact]
     public void BuildTimelineEntries_WithNoVersions_ReturnsEmpty()
     {
-        var result = _builder.BuildTimelineEntries(new List<GetQualificationDetailsQueryResponse>());
+        var result = _builder.BuildTimelineEntries([]);
 
-        Assert.Empty(result);
+        result.ShouldBeEmpty();
     }
 
     [Fact]
@@ -106,7 +104,7 @@ public class QualificationTimelineHistoryBuilderTests
 
         var result = _builder.BuildTimelineEntries(CreateVersions(versionOne));
 
-        Assert.Empty(result);
+        result.ShouldBeEmpty();
     }
 
     [Fact]
@@ -124,13 +122,11 @@ public class QualificationTimelineHistoryBuilderTests
 
         var item = Assert.Single(result);
 
-        Assert.Multiple(() =>
-        {
-            Assert.Equal(ChangeTitle, item.Title);
-            Assert.Equal(OfqualImportUser, item.UserDisplayName);
-            Assert.Equal(VersionOneTimestamp, item.Timestamp);
-            Assert.False(string.IsNullOrWhiteSpace(item.Notes));
-        });
+        result.ShouldContain(item);
+        item.Title.ShouldBe(ChangeTitle);
+        item.UserDisplayName.ShouldBe(OfqualImportUser);
+        item.Timestamp.ShouldBe(VersionOneTimestamp);
+        item.Notes.ShouldNotBeNullOrWhiteSpace();
     }
 
     [Fact]
@@ -147,7 +143,7 @@ public class QualificationTimelineHistoryBuilderTests
 
         var result = _builder.BuildTimelineEntries(CreateVersions(versionThree, versionOne));
 
-        Assert.Empty(result);
+        result.ShouldBeEmpty();
     }
 
     [Fact]
@@ -158,7 +154,7 @@ public class QualificationTimelineHistoryBuilderTests
 
         var result = _builder.BuildTimelineEntries(CreateVersions(versionTwo, versionOne));
 
-        Assert.Empty(result);
+        result.ShouldBeEmpty();
     }
 
     [Fact]
@@ -169,7 +165,7 @@ public class QualificationTimelineHistoryBuilderTests
 
         var result = _builder.BuildTimelineEntries(CreateVersions(versionTwo, versionOne));
 
-        Assert.Empty(result);
+        result.ShouldBeEmpty();
     }
 
     [Theory]
@@ -189,19 +185,16 @@ public class QualificationTimelineHistoryBuilderTests
 
         var result = _builder.BuildTimelineEntries(CreateVersions(versionOne));
 
-        Assert.Equal(expectedCount, result.Count);
+        result.Count.ShouldBe(expectedCount);
 
         if (expectedCount == 1)
         {
-            var item = Assert.Single(result);
+            var item = result.Single();
 
-            Assert.Multiple(() =>
-            {
-                Assert.Equal(ChangeTitle, item.Title);
-                Assert.Equal(OfqualImportUser, item.UserDisplayName);
-                Assert.Equal(VersionOneTimestamp, item.Timestamp);
-                Assert.False(string.IsNullOrWhiteSpace(item.Notes));
-            });
+            item.Title.ShouldBe(ChangeTitle);
+            item.UserDisplayName.ShouldBe(OfqualImportUser);
+            item.Timestamp.ShouldBe(VersionOneTimestamp);
+            item.Notes.ShouldNotBeNullOrWhiteSpace();
         }
     }
 
@@ -217,11 +210,19 @@ public class QualificationTimelineHistoryBuilderTests
 
         var result = _builder.BuildTimelineEntries(CreateVersions(versionTwo, versionOne));
 
-        Assert.Equal(2, result.Count);
-        Assert.All(result, x => Assert.Equal(ChangeTitle, x.Title));
-        Assert.All(result, x => Assert.Equal(OfqualImportUser, x.UserDisplayName));
-        Assert.Contains(result, x => x.Timestamp == VersionTwoTimestamp && x.Notes.Contains("Title changed from"));
-        Assert.Contains(result, x => x.Timestamp == VersionTwoTimestamp && !string.IsNullOrWhiteSpace(x.Notes) && !x.Notes.Contains("Title changed from"));
+        result.Count.ShouldBe(2);
+        result.ShouldAllBe(x => x.Title == ChangeTitle);
+        result.ShouldAllBe(x => x.UserDisplayName == OfqualImportUser);
+
+        result.ShouldContain(x =>
+            x.Timestamp == VersionTwoTimestamp &&
+            x.Notes != null &&
+            x.Notes.Contains("Title changed from"));
+
+        result.ShouldContain(x =>
+            x.Timestamp == VersionTwoTimestamp &&
+            !string.IsNullOrWhiteSpace(x.Notes) &&
+            !x.Notes.Contains("Title changed from"));
     }
 
     [Fact]
@@ -242,46 +243,44 @@ public class QualificationTimelineHistoryBuilderTests
 
         var result = _builder.BuildTimelineEntries(CreateVersions(versionThree, versionTwo, versionOne));
 
-        Assert.Equal(2, result.Count);
-        Assert.Equal(VersionThreeTimestamp, result[0].Timestamp);
-        Assert.Equal(VersionTwoTimestamp, result[1].Timestamp);
+        result.Count.ShouldBe(2);
+        result[0].Timestamp.ShouldBe(VersionThreeTimestamp);
+        result[1].Timestamp.ShouldBe(VersionTwoTimestamp);
     }
 
     #region Test Data
     public static IEnumerable<object[]> RecognisedFieldCases()
     {
-        yield return new object[] { "EligibleForFunding", "Eligibility status", "True", "False" };
-        yield return new object[] { "OrganisationName", "Organisation name", OrganisationNameOld, OrganisationNameNew };
-        yield return new object[] { "Title", "Title", QualificationNameOld, QualificationNameNew };
-        yield return new object[] { "Level", "Level", "level 1", "level 2" };
-        yield return new object[] { "Type", "Type", TypeOld, TypeNew };
-        yield return new object[] { "TotalCredits", "Total credits", "10", "20" };
-        yield return new object[] { "Ssa", "SSA", "ssa 1", "ssa 2" };
-        yield return new object[] { "GradingType", "Grading type", GradingTypeOld, GradingTypeNew };
-        yield return new object[] { "OfferedInEngland", "Offered in England", "True", "False" };
-        yield return new object[] { "IntentionToSeekFundingInEngland", "Intention to seek funding in England", "False", "True" };
-        yield return new object[] { "PreSixteen", "Pre-sixteen", "False", "True" };
-        yield return new object[] { "SixteenToEighteen", "Sixteen to eighteen", "True", "False" };
-        yield return new object[] { "EighteenPlus", "Eighteen plus", "False", "True" };
-        yield return new object[] { "NineteenPlus", "Nineteen plus", "True", "False" };
-        yield return new object[] { "Glh", "Guided learning hours (GLH)", "100", "200" };
-        yield return new object[] { "MinimumGlh", "Minimum GLH", "90", "95" };
-        yield return new object[] { "Tqt", "Total qualification time (TQT)", "120", "240" };
-        yield return new object[] { "OperationalEndDate", "Operational end date", "12/31/26 14:30", "01/31/27 09:15" };
-        yield return new object[] { "LastUpdatedDate", "Last updated date", "01/01/26 10:00", "01/02/26 10:00" };
-        yield return new object[] { "Version", "Version", "1", "2" };
-        yield return new object[] { "OfferedInternationally", "Offered internationally", "False", "True" };
+        yield return ["EligibleForFunding", "Eligibility status", "True", "False"];
+        yield return ["OrganisationName", "Organisation name", OrganisationNameOld, OrganisationNameNew];
+        yield return ["Title", "Title", QualificationNameOld, QualificationNameNew];
+        yield return ["Level", "Level", "level 1", "level 2"];
+        yield return ["Type", "Type", TypeOld, TypeNew];
+        yield return ["TotalCredits", "Total credits", "10", "20"];
+        yield return ["Ssa", "SSA", "ssa 1", "ssa 2"];
+        yield return ["GradingType", "Grading type", GradingTypeOld, GradingTypeNew];
+        yield return ["OfferedInEngland", "Offered in England", "True", "False"];
+        yield return ["IntentionToSeekFundingInEngland", "Intention to seek funding in England", "False", "True"];
+        yield return ["PreSixteen", "Pre-sixteen", "False", "True"];
+        yield return ["SixteenToEighteen", "Sixteen to eighteen", "True", "False"];
+        yield return ["EighteenPlus", "Eighteen plus", "False", "True"];
+        yield return ["NineteenPlus", "Nineteen plus", "True", "False"];
+        yield return ["Glh", "Guided learning hours (GLH)", "100", "200"];
+        yield return ["MinimumGlh", "Minimum GLH", "90", "95"];
+        yield return ["Tqt", "Total qualification time (TQT)", "120", "240"];
+        yield return ["OperationalEndDate", "Operational end date", "31 December 2026, 02:30:00 pm", "31 January 2027, 09:15:00 am"];
+        yield return ["OfferedInternationally", "Offered internationally", "False", "True"];
     }
 
     public static IEnumerable<object?[]> FundingEntryCases()
     {
-        yield return new object?[] { null, true, 0 };
-        yield return new object?[] { null, false, 0 };
-        yield return new object?[] { "", false, 0 };
-        yield return new object?[] { "   ", false, 0 };
-        yield return new object?[] { FailedFields, true, 0 };
-        yield return new object?[] { FailedFields, null, 1 };
-        yield return new object?[] { FailedFields, false, 1 };
+        yield return [null, true, 0];
+        yield return [null, false, 0];
+        yield return ["", false, 0];
+        yield return ["   ", false, 0];
+        yield return [FailedFields, true, 0];
+        yield return [FailedFields, null, 1];
+        yield return [FailedFields, false, 1];
     }
 
     #endregion Test Data
@@ -325,10 +324,10 @@ public class QualificationTimelineHistoryBuilderTests
             EligibleForFunding = eligibleForFunding,
             InsertedTimestamp = insertedTimestamp,
             LastUpdatedDate = insertedTimestamp,
-            Level = level,
-            Type = type,
+            Level = level!,
+            Type = type!,
             TotalCredits = totalCredits,
-            Ssa = ssa,
+            Ssa = ssa!,
             GradingType = gradingType,
             OfferedInEngland = offeredInEngland,
             IntentionToSeekFundingInEngland = intentionToSeekFundingInEngland,
@@ -347,7 +346,7 @@ public class QualificationTimelineHistoryBuilderTests
                 Id = Guid.NewGuid(),
                 Qan = QualificationReference,
                 QualificationName = qualificationName,
-                Versions = new List<GetQualificationDetailsQueryResponse>()
+                Versions = []
             },
             Organisation = new GetQualificationDetailsQueryResponse.AwardingOrganisation
             {

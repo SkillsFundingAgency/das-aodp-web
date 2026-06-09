@@ -1,6 +1,5 @@
-namespace SFA.DAS.AODP.Web.Models.Qualifications;
+namespace SFA.DAS.AODP.Models.Qualifications;
 
-[ExcludeFromCodeCoverage]
 public sealed record KeyFieldPriority(string Name, int Rank)
 {
     public static readonly KeyFieldPriority Green = new(nameof(Green), 0);

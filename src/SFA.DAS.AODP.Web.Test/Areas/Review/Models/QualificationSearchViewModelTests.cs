@@ -81,10 +81,10 @@ public class QualificationSearchViewModelTests
                 }
         };
 
-        var processStatuses = new List<GetProcessStatusesQueryResponse.ProcessStatus>
+        var processStatuses = new List<ProcessStatus>
             {
-                new GetProcessStatusesQueryResponse.ProcessStatus { Id = q1StatusId, Name = "Approved" },
-                new GetProcessStatusesQueryResponse.ProcessStatus { Id = q2StatusId, Name = "Hold" }
+                new() { Id = q1StatusId, Name = "Approved" },
+                new() { Id = q2StatusId, Name = "Hold" }
             };
 
         var searchTerm = "search-me";
@@ -130,7 +130,7 @@ public class QualificationSearchViewModelTests
                 }
         };
 
-        var processStatuses = new List<GetProcessStatusesQueryResponse.ProcessStatus>(); 
+        var processStatuses = new List<ProcessStatus>(); 
 
         // Act
         var vm = QualificationSearchViewModel.Map(response, processStatuses, "");

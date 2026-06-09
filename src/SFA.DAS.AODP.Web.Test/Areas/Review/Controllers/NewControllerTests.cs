@@ -3,25 +3,19 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Moq;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.Qualification;
 using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
-using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Qualifications;
-using Xunit;
-using static SFA.DAS.AODP.Application.Queries.Qualifications.QualificationDiscussionHistoriesResponse;
 
 namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers;
 
 public class NewControllerTests
 {
-    private const string FindRegulatedQualificationUrl = "http://find";
-
     private const string QualificationReference = "61054902";
     private const string EmptyQualificationReference = "";
     private const string ShortQualificationReference = "Q";
@@ -93,7 +87,7 @@ public class NewControllerTests
         _mediator.Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Success(new GetProcessStatusesQueryResponse
             {
-                ProcessStatuses = new List<GetProcessStatusesQueryResponse.ProcessStatus>()
+                ProcessStatuses = new List<ProcessStatus>()
             }));
 
         var qualificationQuery = new QualificationQuery
@@ -122,7 +116,7 @@ public class NewControllerTests
         _mediator.Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Success(new GetProcessStatusesQueryResponse
             {
-                ProcessStatuses = new List<GetProcessStatusesQueryResponse.ProcessStatus>()
+                ProcessStatuses = new List<ProcessStatus>()
             }));
 
         var newQualsResponse = new GetNewQualificationsQueryResponse
@@ -373,14 +367,14 @@ public class NewControllerTests
             {
                 ProcessStatusId = processStatusId
             },
-            ProcessStatuses = new List<NewQualificationDetailsViewModel.ProcessStatus>
-        {
-            new()
-            {
-                Id = processStatusId,
-                Name = NotAllowedStatus
-            }
-        },
+            ProcessStatuses =
+            [
+                new()
+                {
+                    Id = processStatusId,
+                    Name = NotAllowedStatus
+                }
+            ],
             Stage = new NewQualificationDetailsViewModel.LifecycleStage
             {
                 Name = DraftStage
@@ -390,7 +384,7 @@ public class NewControllerTests
         _mediator.Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Success(new GetProcessStatusesQueryResponse
             {
-                ProcessStatuses = new List<GetProcessStatusesQueryResponse.ProcessStatus>
+                ProcessStatuses = new List<ProcessStatus>
                 {
                 new()
                 {
@@ -490,7 +484,7 @@ public class NewControllerTests
                 QualificationName = QualificationName,
                 Versions = new List<GetQualificationDetailsQueryResponse>()
             },
-            ProcStatus = new GetQualificationDetailsQueryResponse.ProcessStatus
+            ProcStatus = new ProcessStatus
             {
                 Id = Guid.NewGuid(),
                 Name = DecisionRequiredStatus
@@ -512,7 +506,7 @@ public class NewControllerTests
         };
 
         var processStatusesResponse = new GetProcessStatusesQueryResponse();
-        processStatusesResponse.ProcessStatuses.Add(new GetProcessStatusesQueryResponse.ProcessStatus
+        processStatusesResponse.ProcessStatuses.Add(new ProcessStatus
         {
             Id = Guid.NewGuid(),
             Name = DecisionRequiredStatus
@@ -614,7 +608,7 @@ public class NewControllerTests
                 QualificationName = QualificationName,
                 Versions = new List<GetQualificationDetailsQueryResponse>()
             },
-            ProcStatus = new GetQualificationDetailsQueryResponse.ProcessStatus
+            ProcStatus = new ProcessStatus
             {
                 Id = Guid.NewGuid(),
                 Name = DecisionRequiredStatus
@@ -636,7 +630,7 @@ public class NewControllerTests
         };
 
         var processStatusesResponse = new GetProcessStatusesQueryResponse();
-        processStatusesResponse.ProcessStatuses.Add(new GetProcessStatusesQueryResponse.ProcessStatus
+        processStatusesResponse.ProcessStatuses.Add(new ProcessStatus
         {
             Id = Guid.NewGuid(),
             Name = DecisionRequiredStatus

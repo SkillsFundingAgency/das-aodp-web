@@ -96,11 +96,4 @@ public class GetQualificationDetailsQueryResponse
         public List<QualificationDiscussionHistory> QualificationDiscussionHistories { get; set; } = new List<QualificationDiscussionHistory>();
         public List<GetQualificationDetailsQueryResponse> Versions { get; set; } = new List<GetQualificationDetailsQueryResponse>();
     }
-
-    public partial class ProcessStatus
-    {
-        public Guid Id { get; set; }
-        public string? Name { get; set; }
-        public int? IsOutcomeDecision { get; set; }
-    }
 }

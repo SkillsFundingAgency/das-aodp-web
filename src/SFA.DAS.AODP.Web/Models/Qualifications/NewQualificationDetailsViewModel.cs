@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Razor.TagHelpers;
-using SFA.DAS.AODP.Application.Queries.Qualifications;
+﻿using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Models.Qualifications;
 using System.ComponentModel;
 
@@ -133,23 +132,6 @@ public class NewQualificationDetailsViewModel
         public string? Description { get; set; }
     }
 
-    public partial class ProcessStatus
-    {
-        public Guid Id { get; set; }
-        public string? Name { get; set; }
-        public int? IsOutcomeDecision { get; set; }
-
-        public static implicit operator ProcessStatus(GetProcessStatusesQueryResponse.ProcessStatus model)
-        {
-            return new ProcessStatus
-            {
-                Id = model.Id,
-                Name = model.Name,
-                IsOutcomeDecision = model.IsOutcomeDecision,
-            };
-        }
-    }
-
     public class AdditionalFormActions
     {
         [HtmlAttributeName("comment")]
@@ -244,12 +226,7 @@ public class NewQualificationDetailsViewModel
                 Qan = entity.Qual.Qan,
                 QualificationName = entity.Qual.QualificationName
             },
-            ProcStatus = new ProcessStatus()
-            {
-                Id = entity.ProcStatus.Id,
-                Name = entity.ProcStatus.Name,
-                IsOutcomeDecision = entity.ProcStatus.IsOutcomeDecision,
-            }
+            ProcStatus = entity.ProcStatus
         };
     }
 }

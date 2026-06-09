@@ -216,9 +216,9 @@
                                                             @qualification.QualificationTitle
                                                         </a>
                                                     </td>
-                                                    <td class="govuk-table__cell">@qualification.ChangedFieldNames</td>
+                                                    <td class="govuk-table__cell">@qualification.KeyFieldsForDisplay</td>
                                                     <td class="govuk-table__cell">@qualification.EligibilityStatus</td>
-                                                    <td class="govuk-table__cell">@qualification.ProcessStatus</td>
+                                                    <td class="govuk-table__cell">@qualification.Priority/@qualification.CurrentProcessStatus.Name</td>
                                                 </tr>
                                             }
                                         </tbody>
