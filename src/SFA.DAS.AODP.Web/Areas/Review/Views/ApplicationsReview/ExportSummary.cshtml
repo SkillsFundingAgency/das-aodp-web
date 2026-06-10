@@ -67,7 +67,7 @@
                         @switch (question.Type)
                         {
                             case "Text":
-                                <div>@(answer?.TextValue ?? "Not answered")</div>
+                                <div class="text-block">@(answer?.TextValue ?? "Not answered")</div>
                                 break;
 
                             case "TextArea":
@@ -192,8 +192,6 @@
         white-space: pre-wrap;
         margin-top: 4px;
         padding: 8px;
-        border-left: 3px solid #ddd;
-        background: #f9f9f9;
     }
 
     .option-list {

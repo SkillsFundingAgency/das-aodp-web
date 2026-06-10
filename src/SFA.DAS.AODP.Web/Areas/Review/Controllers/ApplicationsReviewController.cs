@@ -792,11 +792,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
             var zipBytes = await _exportService.GenerateExportZipAsync(exportData, files);
 
-            var org = exportData.ApplicationMetadata.OrganisationName.SanitiseFileName();
-            var qan = exportData.ApplicationMetadata.Qan?.SanitiseFileName() ?? ApplicationExportConstants.NoQanFolderName;
-            var submission = exportData.ApplicationMetadata.SubmissionId.ToString().PadLeft(6, '0');
-
-            return File(zipBytes, "application/zip", $"{org}_{qan}_{submission}.zip");
+            return File(zipBytes, "application/zip", ApplicationExportPathBuilder.GetZipFileName(exportData.ApplicationMetadata));
         }
 
         private async Task<Guid> GetApplicationIdWithAccessValidation(Guid applicationReviewId)

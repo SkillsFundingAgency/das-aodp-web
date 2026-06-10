@@ -31,14 +31,7 @@ namespace SFA.DAS.AODP.Web.Helpers.Export
             var metadata = exportData.ApplicationMetadata;
             var form = exportData.ApplicationFormStructure;
 
-            string organisationFolder = metadata.OrganisationName.SanitiseFileName();
-            string qanFolder =
-                string.IsNullOrWhiteSpace(metadata.Qan)
-                    ? ApplicationExportConstants.NoQanFolderName
-                    : metadata.Qan.SanitiseFileName();
-            string applicationFolder = ($"{metadata.SubmissionId.ToString().PadLeft(6, '0')}_{metadata.FormName.SanitiseFileName()}");
-
-            string basePath = $"{organisationFolder}/{qanFolder}/{applicationFolder}";
+            string basePath = ApplicationExportPathBuilder.GetBasePath(exportData.ApplicationMetadata);
 
             var questionMap = BuildQuestionMap(form);
 
