@@ -21,8 +21,9 @@ public class GetApplicationsForReviewQueryResponse
         public bool NewMessage { get; set; }
         public string FindRegulatedQualificationUrl { get; set; } = string.Empty;
 
-        public string Reviewer1 { get; set; }
-        public string Reviewer2 { get; set; }
+        public string Reviewer1 { get; set; } = string.Empty;
+        public string Reviewer2 { get; set; } = string.Empty;
+        public DateTime? SubmittedAt { get; set; }
 
     }
 

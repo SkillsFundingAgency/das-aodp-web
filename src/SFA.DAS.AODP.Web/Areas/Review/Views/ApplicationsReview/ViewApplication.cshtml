@@ -130,7 +130,7 @@
 
                                 <div class="govuk-form-group govuk-!-margin-bottom-0">
                                     <div class="select-picker qan-input">
-                                        <govuk-input asp-for="Qan" value="@Html.Encode(Model.Qan)" autocomplete="off">
+                                        <govuk-input for="Qan" value="@Html.Encode(Model.Qan)" autocomplete="off">
                                             <govuk-input-label class="govuk-visually-hidden">Update QAN</govuk-input-label>
                                         </govuk-input>
                                         <govuk-button class="govuk-button govuk-button--secondary" type="submit">Change</govuk-button>
@@ -162,7 +162,7 @@
 
                                     <div class="govuk-form-group govuk-!-margin-bottom-0">
                                         <div class="select-picker">
-                                            <govuk-input asp-for="@currentUserReview.Owner" value="@Html.Encode(currentUserReview.Owner)" name="Owner" autocomplete="off">
+                                            <govuk-input for="@currentUserReview.Owner" value="@Html.Encode(currentUserReview.Owner)" name="Owner" autocomplete="off">
                                                 <govuk-input-label class="govuk-visually-hidden">Update owner</govuk-input-label>
                                             </govuk-input>
                                             <govuk-button class="govuk-button  govuk-button--secondary" type="submit">Update</govuk-button>

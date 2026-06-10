@@ -21,13 +21,13 @@
     @Html.HiddenFor(m => m.Id)
 
     <div class="govuk-form-group">
-        <govuk-input disabled="@disableEditing" asp-for="@Model.Title" inputmode="text" pattern="[0-9]*" spellcheck="false" autocomplete="off">
+        <govuk-input disabled="@disableEditing" for="@Model.Title" inputmode="text" pattern="[0-9]*" spellcheck="false" autocomplete="off">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Name</govuk-input-label>
         </govuk-input>
     </div>
     <div class="govuk-form-group">
 
-        <govuk-textarea disabled="@disableEditing" asp-for="@Model.Description">
+        <govuk-textarea disabled="@disableEditing" for="@Model.Description">
             <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Description</govuk-textarea-label>
             <govuk-textarea-hint>This field supports Markdown. </govuk-textarea-hint>
         </govuk-textarea>
@@ -53,13 +53,13 @@
     </div>
 
     <div class="govuk-form-group">
-        <govuk-input asp-for="@Model.Version" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" disabled=true spellcheck="false">
+        <govuk-input for="@Model.Version" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" disabled=true spellcheck="false">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Version</govuk-input-label>
         </govuk-input>
     </div>
 
     <div class="govuk-form-group">
-        <govuk-input asp-for="@Model.Status" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" disabled=true spellcheck="false">
+        <govuk-input for="@Model.Status" input-class="govuk-input--width-10" inputmode="text" pattern="[0-9]*" disabled=true spellcheck="false">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Status</govuk-input-label>
         </govuk-input>
 
