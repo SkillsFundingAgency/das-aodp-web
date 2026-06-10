@@ -19,6 +19,7 @@ using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview;
 using SFA.DAS.AODP.Web.Constants;
+using SFA.DAS.AODP.Web.Helpers.Export;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Application;
 using SFA.DAS.AODP.Web.Models.Applications;
@@ -39,6 +40,7 @@ public class ApplicationsReviewControllerBulkActionTests
     private readonly ApplicationsReviewController _controller;
     private readonly Mock<IUrlHelper> _urlHelperMock;
     private readonly Mock<IFileService> _fileServiceMock = new();
+    private readonly Mock<IApplicationExportService> _applicationExportService = new();
 
     public ApplicationsReviewControllerBulkActionTests()
     {
@@ -53,12 +55,15 @@ public class ApplicationsReviewControllerBulkActionTests
             FindRegulatedQualificationUrl = "https://find-a-qualification.services.ofqual.gov.uk/qualifications/"
         });
 
+        _applicationExportService = _fixture.Freeze<Mock<IApplicationExportService>>();
+
         _controller = new ApplicationsReviewController(
             _loggerMock.Object,
             _mediatorMock.Object,
             _userHelperMock.Object,
             _fileServiceMock.Object,
-            _aodpOptions);
+            _aodpOptions,
+            _applicationExportService.Object);
 
         _controller.ControllerContext = new ControllerContext
         {

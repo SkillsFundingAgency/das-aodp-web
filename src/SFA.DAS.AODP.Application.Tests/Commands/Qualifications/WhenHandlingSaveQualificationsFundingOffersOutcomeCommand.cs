@@ -2,7 +2,7 @@ using AutoFixture;
 using AutoFixture.AutoMoq;
 using Moq;
 using SFA.DAS.AODP.Domain.Interfaces;
-using AutoFixture.Kernel;
+using SFA.DAS.AODP.UnitTests.Helper;
 
 namespace SFA.DAS.AODP.Application.Tests.Commands.Qualifications
 {
@@ -20,18 +20,7 @@ namespace SFA.DAS.AODP.Application.Tests.Commands.Qualifications
             _handler = new SaveQualificationsFundingOffersOutcomeCommandHandler(_apiClientMock.Object);
         }
 
-        public class DateOnlySpecimenBuilder : ISpecimenBuilder
-        {
-            public object Create(object request, ISpecimenContext context)
-            {
-                if (request is Type type && type == typeof(DateOnly))
-                {
-                    return new DateOnly(2023, 1, 1); // a valid date
-                }
-
-                return new NoSpecimen();
-            }
-        }
+        
 
         [Fact]
         public async Task Then_The_CommandResult_Is_Returned_As_Expected()

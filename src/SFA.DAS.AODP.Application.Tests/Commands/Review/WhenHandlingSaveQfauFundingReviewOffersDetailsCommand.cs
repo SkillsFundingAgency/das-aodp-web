@@ -1,6 +1,5 @@
 ﻿using AutoFixture;
-using AutoFixture.AutoMoq;
-using AutoFixture.Kernel;
+using SFA.DAS.AODP.UnitTests.Helper;
 using Moq;
 using SFA.DAS.AODP.Domain.Interfaces;
 
@@ -18,19 +17,6 @@ namespace SFA.DAS.AODP.Application.Tests.Commands.Review
             _fixture.Customizations.Add(new DateOnlySpecimenBuilder());
             _handler = new(_apiClient.Object);
 
-        }
-
-        public class DateOnlySpecimenBuilder : ISpecimenBuilder
-        {
-            public object Create(object request, ISpecimenContext context)
-            {
-                if (request is Type type && type == typeof(DateOnly))
-                {
-                    return new DateOnly(2023, 1, 1); // a valid date
-                }
-
-                return new NoSpecimen();
-            }
         }
 
         [Fact]

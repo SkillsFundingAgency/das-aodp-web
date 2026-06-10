@@ -23,9 +23,12 @@
 		<PackageReference Include="coverlet.msbuild" Version="10.0.1">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-		</PackageReference>		<PackageReference Include="Microsoft.Build" Version="18.6.3" />
+		</PackageReference>		
+		<PackageReference Include="Microsoft.Build" Version="18.6.3" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
-		<PackageReference Include="Shouldly" Version="4.3.0" />
+		<PackageReference Include="Shouldly" Version="4.3.0" />	
+		<PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="10.0.8" />
+		<PackageReference Include="OpenTelemetry.Api" Version="1.15.3" />
 		<PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -37,6 +40,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\SFA.DAS.AODP.Application\SFA.DAS.AODP.Application.csproj" />
+		<ProjectReference Include="..\SFA.DAS.AODP.UnitTests.Helper\SFA.DAS.AODP.UnitTests.Helper.csproj" />
 		<ProjectReference Include="..\SFA.DAS.AODP.Web\SFA.DAS.AODP.Web.csproj" />
 	</ItemGroup>
 
