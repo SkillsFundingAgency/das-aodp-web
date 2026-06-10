@@ -53,12 +53,19 @@
 
     @if (Model.Type == QuestionType.Text)
     {
-        <input class="govuk-input @inputErrorClass"
-               id="@questionHtmlId"
-               name="Questions[@(Model.Order - 1)][Answer][TextValue]"
-               value="@Model.Answer?.TextValue"
-               type="text"
-               aria-describedby="@ariaDescribedBy">
+        @if (ViewBag.IsSubmitted)
+        {
+            <div class="readonly-answer">@(Model.Answer?.TextValue?.Trim())</div>
+        }
+        else
+        {
+            <input class="govuk-input @inputErrorClass"
+                   id="@questionHtmlId"
+                   name="Questions[@(Model.Order - 1)][Answer][TextValue]"
+                   value="@Model.Answer?.TextValue"
+                   type="text"
+                   aria-describedby="@ariaDescribedBy">
+        }
     }
     else if (Model.Type == QuestionType.Number)
     {
@@ -74,11 +81,18 @@
 
     else if (Model.Type == QuestionType.TextArea)
     {
-        <textarea class="govuk-textarea @inputErrorClass"
-                  id="@questionHtmlId"
-                  name="Questions[@(Model.Order - 1)][Answer][TextValue]"
-                  type="text"
-                  aria-describedby="@ariaDescribedBy">@Model.Answer?.TextValue</textarea>
+        @if (ViewBag.IsSubmitted)
+        {
+            <div class="readonly-answer">@(Model.Answer?.TextValue?.Trim())</div>
+        }
+        else
+        {
+            <textarea class="govuk-textarea @inputErrorClass"
+                      id="@questionHtmlId"
+                      name="Questions[@(Model.Order - 1)][Answer][TextValue]"
+                      type="text"
+                      aria-describedby="@ariaDescribedBy">@Model.Answer?.TextValue</textarea>
+        }
     }
 
     else if (Model.Type == QuestionType.Radio)

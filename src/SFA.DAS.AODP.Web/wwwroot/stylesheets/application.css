@@ -224,3 +224,15 @@
     .checkbox-cell .govuk-checkboxes__label {
         padding-left: 0;
     }
+
+
+.readonly-answer {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 40px;
+    padding: 8px 12px;
+    border: 2px solid #b1b4b6;
+    color: #505a5f;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+}
