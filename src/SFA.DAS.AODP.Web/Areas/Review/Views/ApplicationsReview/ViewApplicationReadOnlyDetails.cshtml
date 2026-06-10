@@ -107,21 +107,11 @@
 
                 @if (question.Type == QuestionType.Text.ToString())
                 {
-                    <input class="govuk-input"
-                           id="@questionHtmlId"
-                           name="@questionHtmlId"
-                           value="@answer?.TextValue"
-                           type="text"
-                           disabled>
+                    <div class="readonly-answer">@answer?.TextValue</div>
                 }
-
                 else if (question.Type == QuestionType.TextArea.ToString())
                 {
-                    <textarea class="govuk-textarea govuk-!-margin-bottom-1"
-                              id="@questionHtmlId"
-                              name="@questionHtmlId"
-                              type="text"
-                              disabled>@answer?.TextValue</textarea>
+                    <div class="readonly-answer">@answer?.TextValue</div>
                 }
                 else if (question.Type == QuestionType.Number.ToString())
                 {

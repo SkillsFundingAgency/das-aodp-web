@@ -1,5 +1,6 @@
 ﻿@using SFA.DAS.AODP.Web.Areas.Review.Controllers
 @using SFA.DAS.AODP.Web.Factories
+@using SFA.DAS.AODP.Web.Helpers
 @using SFA.DAS.AODP.Web.Models.BulkActions
 @using SFA.DAS.AODP.Web.Models.Qualifications
 @model SFA.DAS.AODP.Web.Models.Qualifications.ChangedQualificationsViewModel
@@ -60,11 +61,15 @@
                                     </govuk-input>
                                 </div>
                             </div>
+                          
+                        </div>
+                        <div class="govuk-grid-row">
                             <div class="govuk-grid-column-one-half">
                                 <div class="govuk-form-group">
                                     <fieldset class="govuk-fieldset govuk-!-static-padding-left-5">
                                         <govuk-checkboxes name="Filter[ProcessStatusIds]" for="@Model.Filter.ProcessStatusIds">
                                             <govuk-checkboxes-fieldset>
+
                                                 <govuk-checkboxes-fieldset-legend is-page-heading="false" class="govuk-label--s">
                                                     <div class="govuk-label govuk-label--s">Status</div>
                                                 </govuk-checkboxes-fieldset-legend>
@@ -75,13 +80,42 @@
                                                 {
                                                     <govuk-checkboxes-item checked="@Model.Filter.ProcessStatusIds?.Contains(status.Id)" value="@status.Id">@status.Name</govuk-checkboxes-item>
                                                 }
+
                                             </govuk-checkboxes-fieldset>
+
                                         </govuk-checkboxes>
                                     </fieldset>
                                 </div>
                             </div>
-                        </div>
+                            <div class="govuk-grid-column-one-half">
+                                <div class="govuk-form-group">
+                                    <fieldset class="govuk-fieldset">
 
+                                        <govuk-checkboxes name="Filter[AgeGroups]" for="@Model.Filter.AgeGroups">
+
+                                            <govuk-checkboxes-fieldset>
+
+                                                <govuk-checkboxes-fieldset-legend is-page-heading="false" class="govuk-label--s">
+                                                    <div class="govuk-label govuk-label--s">Age Groups</div>
+                                                </govuk-checkboxes-fieldset-legend>
+
+                                                @Html.RenderPartialAsync("Validation/_CheckboxValidationPartial", nameof(Model.Filter.AgeGroups))
+
+                                                @foreach (var age in AgeGroupHelper.GetOptions())
+                                                {
+                                                    <govuk-checkboxes-item value="@age.Value">
+                                                        @age.Label
+                                                    </govuk-checkboxes-item>
+                                                }
+
+                                            </govuk-checkboxes-fieldset>
+
+                                        </govuk-checkboxes>
+
+                                    </fieldset>
+                                </div>
+                            </div>
+                        </div>
                         <div class="govuk-grid-row">
                             <div class="govuk-grid-column-full">
                                 <govuk-select for="@Model.PaginationViewModel.RecordsPerPage">
@@ -164,7 +198,8 @@
                                     Model.Filter.QualificationName,
                                     Model.Filter.Organisation,
                                     Model.Filter.QAN,
-                                    Model.Filter.ProcessStatusIds
+                                    Model.Filter.ProcessStatusIds,
+                                    Model.Filter.AgeGroups
                                 );
                             }
 
@@ -181,6 +216,7 @@
                                                 <th class="govuk-table__header">Qualification Title</th>
                                                 <th class="govuk-table__header">Changes</th>
                                                 <th class="govuk-table__header">Priority / Status</th>
+                                                <th class="govuk-table__header">Age Group(s)</th>
                                             </tr>
                                         </thead>
                                         <tbody class="govuk-table__body">
@@ -214,8 +250,9 @@
                                                             @qualification.QualificationTitle
                                                         </a>
                                                     </td>
-                                                    <td class="govuk-table__cell">@qualification.ChangedFieldNames</td>
+                                                    <td class="govuk-table__cell">@qualification.ChangeFieldsForDisplay</td>
                                                     <td class="govuk-table__cell">@qualification.Status</td>
+                                                    <td class="govuk-table__cell">@qualification.AgeGroup</td>
                                                 </tr>
                                             }
                                         </tbody>

@@ -1,11 +1,8 @@
-﻿using Microsoft.AspNetCore.Components.Forms;
-using SFA.DAS.AODP.Application.Queries.Qualifications;
+﻿using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Domain.Qualifications.Requests;
+using SFA.DAS.AODP.Models.Qualifications;
 using SFA.DAS.AODP.Web.Extensions;
 using SFA.DAS.AODP.Web.Models.BulkActions;
-using SFA.DAS.AODP.Web.Validators.Attributes;
-using SFA.DAS.AODP.Web.Validators.Messages;
-using SFA.DAS.AODP.Web.Validators.Patterns;
-using System.ComponentModel.DataAnnotations;
 
 namespace SFA.DAS.AODP.Web.Models.Qualifications
 {
@@ -28,6 +25,16 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
         public JobStatusViewModel JobStatusViewModel { get; set; }
         public List<ProcessStatus> ProcessStatuses { get; set; } = new List<ProcessStatus>();
 
+        public IEnumerable<(AgeGroup Value, string Label)> AvailableAgeGroups =>
+            Enum.GetValues<AgeGroup>()
+                .Select(x => (x, x switch
+                {
+                    AgeGroup.Pre16 => "Pre-16",
+                    AgeGroup.SixteenToEighteen => "16 to 18",
+                    AgeGroup.EighteenPlus => "18+",
+                    AgeGroup.NineteenPlus => "19+",
+                    _ => x.ToString()
+                }));
         public class ProcessStatus
         {
             public Guid Id { get; set; }
