@@ -48,7 +48,7 @@
             <span asp-validation-for="BulkActionInputViewModel.Reviewer1" class="govuk-error-message"></span>
 
             <div class="govuk-form-group">
-                <label class="govuk-label govuk-label--s" for="BulkActionInputViewModel.Reviewer1">Reviewer 1</label>
+                <label class="govuk-label govuk-label--s" asp-for="BulkActionInputViewModel.Reviewer1">Reviewer 1</label>
                 <select class="govuk-select"
                         id="BulkActionInputViewModel.Reviewer1"
                         asp-for="BulkActionInputViewModel.Reviewer1"
@@ -57,7 +57,7 @@
             </div>
 
             <div class="govuk-form-group">
-                <label class="govuk-label govuk-label--s" for="BulkActionInputViewModel.Reviewer2">Reviewer 2</label>
+                <label class="govuk-label govuk-label--s" asp-for="BulkActionInputViewModel.Reviewer2">Reviewer 2</label>
                 <select class="govuk-select"
                         asp-for="BulkActionInputViewModel.Reviewer2"
                         asp-items="Model.ReviewerOptions">
