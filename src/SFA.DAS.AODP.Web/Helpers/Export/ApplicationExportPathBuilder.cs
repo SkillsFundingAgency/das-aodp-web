@@ -9,6 +9,7 @@ namespace SFA.DAS.AODP.Web.Helpers.Export
         public static string GetZipFileName(ApplicationExportMetadataResponse metadata)
         {
             var org = metadata.OrganisationName.SanitiseFileName();
+            org = org.Length <= 50 ? org : org[..50];
             var qan = string.IsNullOrWhiteSpace(metadata.Qan)
                 ? ApplicationExportConstants.NoQanFolderName
                 : metadata.Qan.SanitiseFileName();
@@ -16,18 +17,6 @@ namespace SFA.DAS.AODP.Web.Helpers.Export
 
             return $"{org}_{qan}_{submission}.zip";
         }
-
-        public static string GetBasePath(ApplicationExportMetadataResponse metadata)
-        {
-            var org = metadata.OrganisationName.SanitiseFileName();
-            var qan = string.IsNullOrWhiteSpace(metadata.Qan)
-                ? ApplicationExportConstants.NoQanFolderName
-                : metadata.Qan.SanitiseFileName();
-
-            var applicationFolder =
-                $"{metadata.SubmissionId.ToString().PadLeft(6, '0')}_{metadata.FormName.SanitiseFileName()}";
-
-            return $"{org}/{qan}/{applicationFolder}";
-        }
+        
     }
 }

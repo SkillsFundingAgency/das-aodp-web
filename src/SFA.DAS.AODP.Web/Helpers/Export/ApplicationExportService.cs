@@ -31,15 +31,13 @@ namespace SFA.DAS.AODP.Web.Helpers.Export
             var metadata = exportData.ApplicationMetadata;
             var form = exportData.ApplicationFormStructure;
 
-            string basePath = ApplicationExportPathBuilder.GetBasePath(exportData.ApplicationMetadata);
-
             var questionMap = BuildQuestionMap(form);
 
             using var zipStream = new MemoryStream();
             using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Create, true))
             {
                 var summaryHtml = await GenerateSummaryHtml(exportData, files, questionMap);
-                var summaryEntry = archive.CreateEntry($"{basePath}/{ApplicationExportConstants.SummaryFileName}");
+                var summaryEntry = archive.CreateEntry(ApplicationExportConstants.SummaryFileName);
 
                 await using (var stream = summaryEntry.Open())
                 await using (var writer = new StreamWriter(stream))
@@ -60,18 +58,17 @@ namespace SFA.DAS.AODP.Web.Helpers.Export
                         if (questionId != null && questionMap.TryGetValue(questionId.Value, out var questionReference))
                         {
                             filePath =
-                                $"{basePath}/{questionReference}/" +
+                                $"{questionReference}/" +
                                 $"{file.FileNameWithPrefix.SanitiseFileName()}";
                         }
                         else
                         {
-                            filePath = $"{basePath}/{file.FileNameWithPrefix.SanitiseFileName()}";
+                            filePath = $"{file.FileNameWithPrefix.SanitiseFileName()}";
                         }
                     }
                     else
                     {
                         filePath =
-                            $"{basePath}/" +
                             $"{ApplicationExportConstants.MessageFolderName}/" +
                             $"{file.FileNameWithPrefix.SanitiseFileName()}";
                     }

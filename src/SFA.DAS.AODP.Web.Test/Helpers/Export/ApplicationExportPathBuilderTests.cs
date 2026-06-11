@@ -39,54 +39,19 @@ public class ApplicationExportPathBuilderTests
     }
 
     [Fact]
-    public void GetBasePath_ReturnsExpectedPath()
+    public void GetZipFileName_TruncatesLongOrganisationNames()
     {
         var metadata = new ApplicationExportMetadataResponse
         {
-            OrganisationName = "Test Org",
-            Qan = "12345",
-            SubmissionId = 42,
-            FormName = "My Form"
+            OrganisationName = "AldertonBridgewoodCavernlyDunmorexLoxburyMeridonHillcrossFarnleyEastwoodGroupX",
+            Qan = "78945612",
+            SubmissionId = 123456
         };
 
-        var result = ApplicationExportPathBuilder.GetBasePath(metadata);
+        var result = ApplicationExportPathBuilder.GetZipFileName(metadata);
 
         Assert.Equal(
-            "Test Org/12345/000042_My Form",
+            $"AldertonBridgewoodCavernlyDunmorexLoxburyMeridonHi_78945612_123456.zip",
             result);
-    }
-
-    [Fact]
-    public void GetBasePath_WhenQanMissing_UsesNoQanFolderName()
-    {
-        var metadata = new ApplicationExportMetadataResponse
-        {
-            OrganisationName = "Test Org",
-            Qan = null,
-            SubmissionId = 42,
-            FormName = "My Form"
-        };
-
-        var result = ApplicationExportPathBuilder.GetBasePath(metadata);
-
-        Assert.Equal(
-            $"Test Org/{ApplicationExportConstants.NoQanFolderName}/000042_My Form",
-            result);
-    }
-
-    [Fact]
-    public void GetBasePath_PadsSubmissionIdToSixDigits()
-    {
-        var metadata = new ApplicationExportMetadataResponse
-        {
-            OrganisationName = "Org",
-            Qan = "123",
-            SubmissionId = 7,
-            FormName = "Form"
-        };
-
-        var result = ApplicationExportPathBuilder.GetBasePath(metadata);
-
-        Assert.Contains("/000007_Form", result);
     }
 }
