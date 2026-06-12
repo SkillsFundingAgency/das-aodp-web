@@ -1,4 +1,6 @@
-﻿namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover
+﻿using SFA.DAS.AODP.Models.Rollover;
+
+namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover
 {
     public static class FundingExtensionCandidateMapper
     {
@@ -26,11 +28,13 @@
             {
                 Qan = Get(FundingExtensionCandidateColumns.Qan),
                 QualificationTitle = Get(FundingExtensionCandidateColumns.QualificationTitle),
+                AwardingOrganisation = Get(FundingExtensionCandidateColumns.AwardingOrganisation),
                 QualificationLevel = Get(FundingExtensionCandidateColumns.QualificationLevel),
                 QualificationType = Get(FundingExtensionCandidateColumns.QualificationType),
                 Ssa = Get(FundingExtensionCandidateColumns.Ssa),
                 OperationalEndDate = ParseDate(Get(FundingExtensionCandidateColumns.OperationalEndDate)),
                 OfferedInEngland = ParseBool(Get(FundingExtensionCandidateColumns.OfferedInEngland)),
+                FundedInEngland = ParseBool(Get(FundingExtensionCandidateColumns.FundedInEngland)),
                 Glh = Get(FundingExtensionCandidateColumns.Glh),
                 Tqt = Get(FundingExtensionCandidateColumns.Tqt),
                 PreSixteen = ParseBool(Get(FundingExtensionCandidateColumns.Pre16)),
@@ -43,7 +47,8 @@
                 RollOverStatus = Get(FundingExtensionCandidateColumns.RollOverStatus),
                 ExclusionReason = Get(FundingExtensionCandidateColumns.ExclusionReason),
                 CurrentFundingApprovalEndDate = ParseDate(Get(FundingExtensionCandidateColumns.CurrentFundingApprovalEndDate)),
-                ProposedFundingApprovalEndDate = ParseDate(Get(FundingExtensionCandidateColumns.ProposedFundingApprovalEndDate))
+                ProposedFundingApprovalEndDate = ParseDate(Get(FundingExtensionCandidateColumns.ProposedFundingApprovalEndDate)),
+                Comments = Get(FundingExtensionCandidateColumns.Comments)
             };
         }
     }

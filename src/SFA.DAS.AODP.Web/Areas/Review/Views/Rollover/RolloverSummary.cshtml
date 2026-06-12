@@ -1,9 +1,41 @@
-﻿@{
+﻿@model SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.RolloverSummaryViewModel;
+@{
     ViewData["Title"] = "Rollover summary";
+
+    var backLinkModel = new BackLinkModel
+    {
+        Action = "Index",
+        Controller = "Rollover",
+        Area = "Review"
+    };
 }
 
-<a class="govuk-back-link" asp-area="Review" asp-action="Index" asp-controller="Rollover" asp-area="Review">Back</a>
+<a class="govuk-back-link" asp-area="Review" asp-action="Index" asp-controller="Rollover">Back</a>
                 
 <h1 class="govuk-heading-l">@ViewData["Title"]</h1>
 
-<p class="govuk-body">Content to be implemented (Award-897).</p>
+<p class="govuk-body">
+    <strong>This will rollover @Model.RolloverCandidatesInRun candidates</strong>.
+</p>
+
+<p class="govuk-body">
+    There are currently @Model.AvailableRolloverCandidates candidates for rollover.
+</p>
+
+<h2 class="govuk-heading-m">You have:</h2>
+
+<ul class="govuk-list govuk-list--bullet">
+    <li>reviewed these @Model.EligibleCandidatesInRun candidates for rollover and marked them as eligible</li>
+    <li>reviewed @Model.IneligibleCandidatesInRun candidates and marked them as being ineligible for rollover</li>
+</ul>
+
+<p class="govuk-body">
+    There will be @Model.RemainingRolloverCandidates candidates for rollover left to review after submitting these.
+</p>
+
+<form method="post">
+    <button class="govuk-button govuk-button--primary" data-module="govuk-button">
+        Submit rollover
+    </button>
+</form>
+

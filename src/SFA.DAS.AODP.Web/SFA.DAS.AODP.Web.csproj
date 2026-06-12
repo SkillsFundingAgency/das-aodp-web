@@ -65,6 +65,7 @@
 	<ItemGroup>
 	  <Folder Include="Providers\" />
 	  <Folder Include="Validators\NewFolder\" />
+	  <Folder Include="Views\Shared\Rollover\" />
 	</ItemGroup>
 
 	<PropertyGroup>

@@ -47,7 +47,8 @@ public class RolloverControllerTests
             _eligibilityDatesValidatorMock.Object,
             _approvalEndDateValidatorMock.Object,
             _csvFileReaderMock.Object,
-            _userHelperServiceMock.Object);
+            _userHelperServiceMock.Object,
+            _cacheServiceMock.Object);
 
         _controller.TempData = new TempDataDictionary(
          new DefaultHttpContext(),
@@ -62,7 +63,8 @@ public class RolloverControllerTests
             _eligibilityDatesValidatorMock.Object,
             _approvalEndDateValidatorMock.Object,
             _csvFileReaderMock.Object,
-            _userHelperServiceMock.Object);
+            _userHelperServiceMock.Object,
+            _cacheServiceMock.Object);
 
         var httpContext = new DefaultHttpContext();
         httpContext.Session = session;

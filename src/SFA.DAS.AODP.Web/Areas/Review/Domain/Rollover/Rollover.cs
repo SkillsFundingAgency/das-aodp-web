@@ -1,5 +1,5 @@
-﻿using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
-using System.Diagnostics.CodeAnalysis;
+﻿using SFA.DAS.AODP.Models.Rollover;
+using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
 

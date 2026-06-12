@@ -6,6 +6,7 @@ using SFA.DAS.AODP.Application.Commands.Rollover;
 using SFA.DAS.AODP.Application.Queries.Import;
 using SFA.DAS.AODP.Application.Queries.Review.Rollover;
 using SFA.DAS.AODP.Application.Queries.Rollover;
+using SFA.DAS.AODP.Infrastructure.Cache;
 using SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Extensions;
 using SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover;
@@ -29,18 +30,21 @@ public class RolloverController : ControllerBase
     private readonly IValidator<RolloverEligibilityDatesViewModel> _rolloverEligibilityDatesViewModeValidator;
     private readonly IValidator<RolloverFundingApprovalEndDateViewModel> _rolloverFundingApprovalEndDateViewModelViewModeValidator;
     private readonly IUserHelperService _userHelperService;
+    private readonly ICacheService _cacheService;
 
     public RolloverController(ILogger<RolloverController> logger,
         IMediator mediator,
         IValidator<RolloverEligibilityDatesViewModel> validatorEligibilityDates,
         IValidator<RolloverFundingApprovalEndDateViewModel> validatorApprovalEndDate,
         ICsvFileReader csvFileReader,
-        IUserHelperService userHelperService) : base(mediator, logger)
+        IUserHelperService userHelperService,
+        ICacheService cacheService) : base(mediator, logger)
     {
         _logger = logger;
         _rolloverEligibilityDatesViewModeValidator = validatorEligibilityDates;
         _rolloverFundingApprovalEndDateViewModelViewModeValidator = validatorApprovalEndDate;
         _csvFileReader = csvFileReader;
+        _cacheService = cacheService;
         _userHelperService = userHelperService;
     }
 
@@ -89,7 +93,7 @@ public class RolloverController : ControllerBase
     [Route("/Review/Rollover/UploadQualificationsToRollover")]
     public IActionResult UploadQualificationsToRollover()
     {
-        return View();
+        return View(new RolloverUploadQualificationsViewModel());
     }
 
     [HttpPost]
@@ -135,42 +139,34 @@ public class RolloverController : ControllerBase
 
             var command = new ValidateFundingExtensionCandidatesCommand
             {
-                FundingExtensionCandidates = 
-                    candidates.Select(r => new FundingExtensionCandidateValidationItem
-                    {
-                        RowNumber = r.RowNumber,
-                        Qan = r.Qan,
-                        FundingStreamName = r.FundingStreamName,
-                        ProposedFundingEndDate = r.ProposedFundingApprovalEndDate.Value,
-                        RolloverStatus = r.RollOverStatus,
-                        ExclusionReason = r.ExclusionReason
-                    }).ToList()
+                FundingExtensionCandidates = candidates
             };
 
             var validationResponse = await Send(command);
 
-            foreach (var row in candidates)
+            if (!validationResponse.IsValid)
             {
-                var validatedCandidate = validationResponse.Candidates
-                    .FirstOrDefault(v => v.RowNumber == row.RowNumber);
+                var token = Guid.NewGuid().ToString("N");
 
-                if (validatedCandidate != null)
+                await _cacheService.SetAsync(
+                    $"download:validation:{token}",
+                    validationResponse.ValidatedCandidateFile);
+
+                model.ValidationResult = new RolloverUploadValidationResult
                 {
-                    row.ValidationErrors = validatedCandidate.Errors;
-                    row.IsValid = validatedCandidate.IsValid;
-                }
+                    IsValid = false,
+                    ErrorFileToken = token,
+                    FailedCandidateCount = validationResponse.FailedCandidateCount,
+                    TotalCandidates = validationResponse.TotalCandidates
+                };
+
+                return View("RolloverValidationErrors", model);
             }
 
             session.RolloverFundingExtensionCandidates = candidates;
             SaveSessionModel(session);
 
-
-            if (!validationResponse.IsValid)
-            {
-                return RedirectToAction("RolloverValidationErrors");
-            }
-
-            return RedirectToAction("RolloverSummary");
+            return RedirectToAction("RolloverSummary", new RolloverSummaryViewModel());
 
         }
         catch (Exception ex)
@@ -182,17 +178,44 @@ public class RolloverController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/Review/Rollover/RolloverSummary")]
-    public IActionResult RolloverSummary()
+    [Route("/Review/Rollover/DownloadCandidateValidationErrors")]
+    public async Task<IActionResult> DownloadCandidateValidationErrors(string token)
     {
-        return View();
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return BadRequest();
+        }
+
+        var cacheKey = $"download:validation:{token}";
+
+        var fileBytes = await _cacheService.GetAsync<byte[]>(cacheKey);
+
+        if (fileBytes == null || fileBytes.Length == 0)
+        {
+            return NotFound();
+        }
+
+        await _cacheService.RemoveAsync(cacheKey);
+
+        return File(
+            fileBytes,
+            "text/csv",
+            "validation-errors.csv"
+        );
+    }
+
+    [HttpGet]
+    [Route("/Review/Rollover/RolloverSummary")]
+    public IActionResult RolloverSummary(RolloverSummaryViewModel model)
+    {
+        return View(model);
     }
 
     [HttpGet]
     [Route("/Review/Rollover/RolloverValidationErrors")]
-    public IActionResult RolloverValidationErrors()
+    public async Task<IActionResult> RolloverValidationErrors(RolloverUploadQualificationsViewModel model)
     {
-        return View();
+        return View(model);
     }
 
     [HttpGet]

@@ -1,0 +1,29 @@
+﻿@using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover
+@model RolloverUploadQualificationsViewModel
+
+<p class="govuk-body"><strong>@Model.ValidationResult?.FailedCandidateCount</strong> candidates have failed validation.</p>
+
+<p class="govuk-body"><strong>A csv file containing the validation errors has been downloaded.</strong></p>
+
+<p class="govuk-body">The validation failure reasons could include:</p>
+
+<ul class="govuk-list govuk-list--bullet">
+    <li>the candidate is no longer eligible for rollover </li>
+    <li>the candidate is not included in the current rollover run</li>
+    <li>the candidate has an invalid rollover status </li>
+    <li>the candidate is marked as exclude, but is missing an exclusion reason</li>
+    <li>the candidate was not in the original scope for rollover</li>
+</ul>
+
+<p class="govuk-body">You must fix these errors, then import the file again to complete the rollover.</p>
+
+@if (Model?.ValidationResult?.IsValid == false)
+{
+    @if (!string.IsNullOrWhiteSpace(Model.ValidationResult.ErrorFileToken))
+    {
+        <iframe src="@Url.Action(
+            "DownloadCandidateValidationErrors",
+            "Rollover",
+            new { area = "Review", token = Model.ValidationResult.ErrorFileToken })" style="display:none"></iframe>
+    }
+}

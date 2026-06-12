@@ -8,6 +8,8 @@ using Moq;
 using Newtonsoft.Json;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.Rollover;
+using SFA.DAS.AODP.Infrastructure.Cache;
+using SFA.DAS.AODP.Models.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover;
@@ -24,6 +26,8 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
         private readonly Mock<IValidator<RolloverEligibilityDatesViewModel>> _eligibilityDatesValidatorMock;
         private readonly Mock<IValidator<RolloverFundingApprovalEndDateViewModel>> _approvalEndDateValidatorMock;
         private readonly Mock<IUserHelperService> _userHelperServiceMock;
+        private readonly Mock<ICacheService> _cacheServiceMock;
+
 
         public UploadQualificationsToRolloverTests()
         {
@@ -33,6 +37,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
             _eligibilityDatesValidatorMock = new Mock<IValidator<RolloverEligibilityDatesViewModel>>();
             _approvalEndDateValidatorMock = new Mock<IValidator<RolloverFundingApprovalEndDateViewModel>>();
             _userHelperServiceMock = new Mock<IUserHelperService>();
+            _cacheServiceMock = new Mock<ICacheService>();
         }
 
         private RolloverController CreateController(ISession session)
@@ -43,7 +48,8 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
                 _eligibilityDatesValidatorMock.Object,
                 _approvalEndDateValidatorMock.Object,
                 _csvFileReaderMock.Object,
-                _userHelperServiceMock.Object);
+                _userHelperServiceMock.Object,
+                _cacheServiceMock.Object);
 
             var httpContext = new DefaultHttpContext();
             httpContext.Session = session;
@@ -168,7 +174,6 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
                     Value = new ValidateFundingExtensionCandidatesCommandResponse
                     {
                         IsValid = false,
-                        Candidates = new List<CandidateValidationResult>()
                     }
                 });
 
@@ -217,7 +222,6 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
                     Value = new ValidateFundingExtensionCandidatesCommandResponse
                     {
                         IsValid = true,
-                        Candidates = new List<CandidateValidationResult>()
                     }
                 });
 

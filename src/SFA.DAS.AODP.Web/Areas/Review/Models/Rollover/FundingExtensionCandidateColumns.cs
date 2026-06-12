@@ -10,7 +10,7 @@
         public const string Ssa = "SSA";
         public const string OperationalEndDate = "OperationalEndDate";
         public const string OfferedInEngland = "OfferedInEngland";
-        public const string FundedInEngalnd = "FundedInEngland";
+        public const string FundedInEngland = "FundedInEngland";
         public const string Glh = "GLH";
         public const string Tqt = "TQT";
         public const string Pre16 = "Pre16";
@@ -36,7 +36,7 @@
             Ssa,
             OperationalEndDate,
             OfferedInEngland,
-            FundedInEngalnd,
+            FundedInEngland,
             Glh,
             Tqt,
             Pre16,
