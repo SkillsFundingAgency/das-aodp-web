@@ -64,24 +64,12 @@ public class ApplicationMessagesViewModel : IHasRelatedLinks
 
 public class ApplicationMessageViewModel : TimelineItemBase
 {
-    public string MessageType { get; set; }
+    public string MessageType { get; set; } = null!;
     public UserType UserType { get; set; }
     public MessageTypeConfiguration MessageTypeConfiguration => MessageTypeConfigurationRules.GetMessageSharingSettings(MessageType);
     public string MessageTypeDisplay => MessageTypeConfiguration.DisplayName;
-    public string SentByEmail { get; set; }
+    public string SentByEmail { get; set; } = null!;
     public override string TimelineTitle => $"{MessageHeader}";
-    public override string TimelineMetadata
-    {
-        get
-        {
-            return $"{SentByName}, {SentAt.ToString("dd MMM yyyy 'at' HH:mm", CultureInfo.InvariantCulture)}";
-        }
-    }
-    public override bool ShowText
-    {
-        get
-        {
-            return (Text.Length > 0) ? true : false;
-        }
-    }
+    public override string TimelineMetadata => $"Qualification Funding Approval Unit, {SentAt.ToString("dd MMM yyyy 'at' HH:mm", CultureInfo.InvariantCulture)}";
+    public override bool ShowText => Text.Length > 0;
 }
