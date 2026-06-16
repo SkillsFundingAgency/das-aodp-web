@@ -1,4 +1,4 @@
-﻿using SFA.DAS.AODP.Web.Views.Shared;
+﻿using SFA.DAS.AODP.Application.Commands.Rollover;
 using System.ComponentModel.DataAnnotations;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover
@@ -9,38 +9,40 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover
         [Required(ErrorMessage = "You must select a CSV file.")]
         public IFormFile File { get; set; }
 
-        public RolloverUploadPageState State { get; set; }
-
-        public RolloverUploadValidationResult? ValidationResult { get; set; } = new();
-
-        private static readonly BackLinkModel _backLinkModel = new()
-        {
-            Action = "Index",
-            Controller = "Rollover",
-            Area = "Review"
-        };
-
-        public BackLinkModel BackLinkModel => _backLinkModel;
+        public RolloverValidationErrorViewModel? ValidationSummary { get; set; }
 
     }
 
     [ExcludeFromCodeCoverage]
-    public class RolloverUploadValidationResult
+    public class RolloverValidationErrorViewModel
     {
-        public bool IsValid { get; set; }
-
-        public int TotalCandidates { get; set; }
-
         public int FailedCandidateCount { get; set; }
 
         public string? ErrorFileToken { get; set; }
     }
 
-    public enum RolloverUploadPageState
+    [ExcludeFromCodeCoverage]
+    public class RolloverSummaryViewModel
     {
-        Empty,          // initial upload view
-        FileError,      // CSV parsing/file format error
-        ValidationFailed, // business validation failed
-        ReadyToSubmit   // valid file, can proceed
+        public int TotalCandidatesCount { get; set; }
+
+        public int CandidatesExtendedInUploadCount { get; set; }
+
+        public int TotalCandidatesToBeExtendedCount { get; set; }
+
+        public int TotalCandidatesToBeExcludedCount { get; set; }
+
+        public int TotalCandidatesToBeReviewedCount { get; set; }
+
+        public RolloverSummaryViewModel() { }
+        public RolloverSummaryViewModel(FundingExtensionSummary summaryFromResponse)
+        {
+            TotalCandidatesCount = summaryFromResponse.TotalCandidatesCount;
+            CandidatesExtendedInUploadCount = summaryFromResponse.CandidatesExtendedInUploadCount;
+            TotalCandidatesToBeExtendedCount = summaryFromResponse.TotalCandidatesToBeExtendedCount;
+            TotalCandidatesToBeExcludedCount = summaryFromResponse.TotalCandidatesToBeExcludedCount;
+            TotalCandidatesToBeReviewedCount = summaryFromResponse.TotalCandidatesToBeReviewedCount;
+        }
+
     }
 }

@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing.Matching;
 using SFA.DAS.AODP.Application.Commands.Rollover;
 using SFA.DAS.AODP.Application.Queries.Import;
 using SFA.DAS.AODP.Application.Queries.Review.Rollover;
@@ -144,30 +145,31 @@ public class RolloverController : ControllerBase
 
             var validationResponse = await Send(command);
 
+            session.RolloverFundingExtensionCandidates = candidates;
+            SaveSessionModel(session);
+
             if (!validationResponse.IsValid)
             {
                 var token = Guid.NewGuid().ToString("N");
 
                 await _cacheService.SetAsync(
                     $"download:validation:{token}",
-                    validationResponse.ValidatedCandidateFile);
+                    validationResponse.ValidationFailureSummary?.ValidatedCandidateFile);
 
-                model.ValidationResult = new RolloverUploadValidationResult
+                model.ValidationSummary = new RolloverValidationErrorViewModel
                 {
-                    IsValid = false,
                     ErrorFileToken = token,
-                    FailedCandidateCount = validationResponse.FailedCandidateCount,
-                    TotalCandidates = validationResponse.TotalCandidates
+                    FailedCandidateCount = validationResponse?.ValidationFailureSummary?.FailedCandidateCount ?? 0
                 };
 
-                return View("RolloverValidationErrors", model);
+                return View(nameof(RolloverValidationErrors), model);
             }
+            else
+            {
+                var summaryModel = new RolloverSummaryViewModel(validationResponse?.ValidationSuccessSummary!);
+                return RedirectToAction(nameof(RolloverSummary), summaryModel);
 
-            session.RolloverFundingExtensionCandidates = candidates;
-            SaveSessionModel(session);
-
-            return RedirectToAction("RolloverSummary", new RolloverSummaryViewModel());
-
+            }
         }
         catch (Exception ex)
         {
@@ -210,6 +212,41 @@ public class RolloverController : ControllerBase
     {
         return View(model);
     }
+
+    [HttpPost]
+    [Route("/Review/Rollover/RolloverSummary")]
+    public async Task<IActionResult> RolloverSummary()
+    {
+        var session = GetSessionModel();
+
+        var command = new ApplyFundingExtensionsCommand
+        {
+            Items = session.RolloverFundingExtensionCandidates.Select(
+                x => new FundingExtensionItem 
+                { 
+                    Qan =  x.Qan,
+                    FundingStreamName = x.FundingStreamName,
+                    RolloverStatus = x.RollOverStatus,
+                    ExclusionReason = x.ExclusionReason,
+                    ProposedFundingApprovalEndDate = x.ProposedFundingApprovalEndDate.Value,
+                    Comments = x.Comments
+                }).ToList()
+        };
+
+        await Send(command);
+
+        ClearSessionModel();
+
+        return RedirectToAction(nameof(RolloverSubmitted));
+    }
+
+    [HttpGet]
+    [Route("/Review/Rollover/RolloverSubmitted")]
+    public async Task<IActionResult> RolloverSubmitted()
+    {
+        return View();
+    }
+
 
     [HttpGet]
     [Route("/Review/Rollover/RolloverValidationErrors")]
@@ -752,4 +789,17 @@ public class RolloverController : ControllerBase
             LogException(ex);
         }
     }
+
+    private void ClearSessionModel()
+    {
+        try
+        {
+            HttpContext.Session.Remove(SessionKey);
+        }
+        catch (Exception ex)
+        {
+            LogException(ex);
+        }
+    }
+
 }

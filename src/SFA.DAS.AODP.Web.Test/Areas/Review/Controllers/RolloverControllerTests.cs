@@ -13,6 +13,7 @@ using SFA.DAS.AODP.Application.Commands.Rollover;
 using SFA.DAS.AODP.Application.Queries.Import;
 using SFA.DAS.AODP.Application.Queries.Review.Rollover;
 using SFA.DAS.AODP.Application.Queries.Rollover;
+using SFA.DAS.AODP.Infrastructure.Cache;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover;
@@ -32,6 +33,7 @@ public class RolloverControllerTests
     private readonly Mock<IValidator<RolloverEligibilityDatesViewModel>> _validatorMock;
     private readonly Mock<ICsvFileReader> _csvFileReaderMock;
     private readonly Mock<IUserHelperService> _userHelperServiceMock;
+    private readonly Mock<ICacheService> _cacheServiceMock;
 
     public RolloverControllerTests()
     {

@@ -5,12 +5,18 @@
     ViewData["Title"] = "There are validation errors in the file you imported"; 
 }
 
-@await Html.PartialAsync("_BackLinkPartial", Model.BackLinkModel);
+<div class="govuk-width-container">
+    <main class="govuk-main-wrapper">
+        <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds" id="guide-contents">
+                <partial name="_FileUploadErrors" model="Model" />
 
-<partial name="_FileUploadErrors" model="Model" />
+                <h1 class="govuk-heading-l">@ViewData["Title"]</h1>
 
-<h1 class="govuk-heading-l">@ViewData["Title"]</h1>
+                <partial name="_RolloverCandidatesValidationErrors" model="Model" />
 
-<partial name="_RolloverCandidatesValidationErrors" model="Model" />
-
-<partial name="_ValidateCandidatesFileUpload" model="Model" />
+                <partial name="_ValidateCandidatesFileUpload" model="Model" />
+            </<div>
+        </div>
+    </main>
+</div>

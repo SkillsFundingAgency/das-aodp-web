@@ -260,7 +260,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
         {
             var controller = CreateController(EmptySession());
 
-            var result = controller.RolloverSummary();
+            var result = controller.RolloverSummary(new RolloverSummaryViewModel { });
 
             Assert.IsType<ViewResult>(result);
         }
@@ -270,7 +270,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
         {
             var controller = CreateController(EmptySession());
 
-            var result = controller.RolloverValidationErrors();
+            var result = controller.RolloverValidationErrors(new RolloverUploadQualificationsViewModel( ));
 
             Assert.IsType<ViewResult>(result);
         }

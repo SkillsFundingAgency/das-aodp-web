@@ -2,6 +2,7 @@
 using SFA.DAS.AODP.Application.Commands.Rollover;
 using SFA.DAS.AODP.Domain.Interfaces;
 using SFA.DAS.AODP.Domain.Rollover;
+using Xunit.Sdk;
 
 namespace SFA.DAS.AODP.Application.UnitTests.Commands.Rollover
 {
@@ -27,9 +28,15 @@ namespace SFA.DAS.AODP.Application.UnitTests.Commands.Rollover
 
             var expectedApiResponse = new ValidateFundingExtensionCandidatesCommandResponse
             {
-                TotalCandidates = 1,
-                FailedCandidateCount = 0,
-                IsValid = true
+                IsValid = true,
+                ValidationSuccessSummary = new FundingExtensionSummary
+                {
+                    TotalCandidatesCount = 24,
+                    CandidatesExtendedInUploadCount = 1,
+                    TotalCandidatesToBeExtendedCount = 4,
+                    TotalCandidatesToBeExcludedCount = 4,
+                    TotalCandidatesToBeReviewedCount = 16
+                }
             };
 
             _mockApiClient
@@ -43,9 +50,7 @@ namespace SFA.DAS.AODP.Application.UnitTests.Commands.Rollover
             // Assert
             Assert.True(result.Success);
             Assert.NotNull(result.Value);
-            Assert.Equal(expectedApiResponse.TotalCandidates, result.Value!.TotalCandidates);
-            Assert.Equal(expectedApiResponse.FailedCandidateCount, result.Value!.FailedCandidateCount);
-            Assert.Equal(expectedApiResponse.IsValid, result.Value!.IsValid);
+            Assert.Equal(expectedApiResponse.ValidationSuccessSummary, result.Value.ValidationSuccessSummary);
             Assert.Null(result.ErrorMessage);
 
             _mockApiClient.Verify(c =>
