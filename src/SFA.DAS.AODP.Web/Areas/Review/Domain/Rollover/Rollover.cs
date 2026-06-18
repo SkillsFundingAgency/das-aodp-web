@@ -34,7 +34,12 @@ public record QueryBuilderFilters
 
     public IList<SectorSubjectArea> SectorSubjectAreas { get; set; } = [];
 
+    public SectorSubjectAreaSelectionType SectorSubjectAreasSelectionType { get; set; } = SectorSubjectAreaSelectionType.None;
+
     public IList<AwardingOrganisation> AwardingOrganisations { get; set; } = [];
+
+    public AwardingOrganisationSelectionType AwardingOrganisationSelectionType { get; set; } = AwardingOrganisationSelectionType.None;
+
 
     public QueryBuilderFilters SetLevels(IList<QualificationLevel> levels)
     {
@@ -50,16 +55,18 @@ public record QueryBuilderFilters
         return this;
     }
 
-    public QueryBuilderFilters SetSectorSubjectAreas(IList<SectorSubjectArea> sectorSubjectAreas)
+    public QueryBuilderFilters SetSectorSubjectAreas(IList<SectorSubjectArea> sectorSubjectAreas, SectorSubjectAreaSelectionType selectionType)
     {
         SectorSubjectAreas = sectorSubjectAreas;
+        SectorSubjectAreasSelectionType = selectionType;
 
         return this;
     }
 
-    public QueryBuilderFilters SetAwardingOrganisations(IList<AwardingOrganisation> awardingOrganisations)
+    public QueryBuilderFilters SetAwardingOrganisations(IList<AwardingOrganisation> awardingOrganisations, AwardingOrganisationSelectionType selectionType)
     {
         AwardingOrganisations = awardingOrganisations;
+        AwardingOrganisationSelectionType = selectionType;
 
         return this;
     }

@@ -21,7 +21,7 @@
     
     @await Html.PartialAsync("_ValidationSummaryPartial")
 
-    <form-group asp-for="@Model.SelectedAwardingOrganisations">
+    <form-group asp-for="@Model.SelectionType">
 
         <fieldset class="govuk-fieldset" aria-describedby="awarding-organisation-hint @(hasGroupError ? "awarding-organisation-error" : "")">
             

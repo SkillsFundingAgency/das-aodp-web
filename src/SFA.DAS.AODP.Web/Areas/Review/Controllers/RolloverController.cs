@@ -1,10 +1,8 @@
-﻿using DocumentFormat.OpenXml.Vml.Spreadsheet;
-using FluentValidation;
+﻿using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.Rollover;
-using Newtonsoft.Json;
 using SFA.DAS.AODP.Application.Queries.Import;
 using SFA.DAS.AODP.Application.Queries.Review.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
@@ -611,7 +609,7 @@ public class RolloverController : ControllerBase
     [ValidateAntiForgeryToken]
     public IActionResult SelectLevels(SelectQualificationLevelsViewModel model, string action)
     {
-        if (!ModelState.IsValid)
+        if (!ModelState.IsValid && action != "selectAll")
         {
             return View(model);
         }
@@ -666,7 +664,7 @@ public class RolloverController : ControllerBase
     [ValidateAntiForgeryToken]
     public IActionResult SelectTypes(SelectQualificationTypesViewModel model, string action)
     {
-        if (!ModelState.IsValid)
+        if (!ModelState.IsValid && action != "selectAll")
         {
             return View(model);
         }
@@ -694,21 +692,24 @@ public class RolloverController : ControllerBase
         var session = GetSessionModel();
         var model = new SelectSectorSubjectAreasModel();
 
+        model.SelectionType = session.QueryBuilderFilters.SectorSubjectAreasSelectionType;
+
         if (session.QueryBuilderFilters.SectorSubjectAreas.Count > 0)
         {
             model.SelectedSectorSubjectAreas = session.QueryBuilderFilters.SectorSubjectAreas.ToList();
         }
+
         return View(model);
     }
 
     [HttpPost]
     [Route("/Review/Rollover/SelectSectorSubjectArea")]
     [ValidateAntiForgeryToken]
-    public IActionResult SelectSectorSubjectArea(SelectSectorSubjectAreasModel model)
+    public IActionResult SelectSectorSubjectArea(SelectSectorSubjectAreasModel model, string action)
     {
         var session = GetSessionModel();
 
-        ModelState.Clear();
+        //ModelState.Clear();
 
         if (model.SelectionType is SectorSubjectAreaSelectionType.None)
         {
@@ -728,7 +729,7 @@ public class RolloverController : ControllerBase
             }
         }
 
-        session.QueryBuilderFilters.SetSectorSubjectAreas(model.SelectedSectorSubjectAreas);
+        session.QueryBuilderFilters.SetSectorSubjectAreas(model.SelectedSectorSubjectAreas, model.SelectionType);
 
         SaveSessionModel(session);
 
@@ -739,7 +740,16 @@ public class RolloverController : ControllerBase
     [Route("/Review/Rollover/SelectAwardingOrganisations")]
     public IActionResult SelectAwardingOrganisations()
     {
+        var session = GetSessionModel();
         var model = new SelectAwardingOrganisationsViewModel();
+
+        model.SelectionType = session.QueryBuilderFilters.AwardingOrganisationSelectionType;
+
+        if (session.QueryBuilderFilters.AwardingOrganisations.Count > 0)
+        {
+            model.SelectedAwardingOrganisations = session.QueryBuilderFilters.AwardingOrganisations.ToList();
+        }
+
         return View(model);
     }
 
@@ -748,7 +758,7 @@ public class RolloverController : ControllerBase
     [ValidateAntiForgeryToken]
     public IActionResult SelectAwardingOrganisations(SelectAwardingOrganisationsViewModel model, string action)
     {
-        ModelState.Clear();
+        //ModelState.Clear();
 
         if (model.SelectionType is AwardingOrganisationSelectionType.None)
         {
@@ -770,7 +780,7 @@ public class RolloverController : ControllerBase
 
         var session = GetSessionModel();
 
-        session.QueryBuilderFilters.SetAwardingOrganisations(model.SelectedAwardingOrganisations);
+        session.QueryBuilderFilters.SetAwardingOrganisations(model.SelectedAwardingOrganisations, model.SelectionType);
 
         SaveSessionModel(session);
 
