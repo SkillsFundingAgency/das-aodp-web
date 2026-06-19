@@ -4,24 +4,24 @@ using SFA.DAS.AODP.Domain.Rollover;
 
 namespace SFA.DAS.AODP.Application.Commands.Rollover
 {
-    public class ApplyFundingExtensionsCommandHandler
-        : IRequestHandler<ApplyFundingExtensionsCommand, BaseMediatrResponse<ApplyFundingExtensionsCommandResponse>>
+    public class SubmitRolloverExtensionCommandHandler
+        : IRequestHandler<SubmitRolloverExtensionCommand, BaseMediatrResponse<SubmitRolloverExtensionCommandResponse>>
     {
         private readonly IApiClient _apiClient;
-        public ApplyFundingExtensionsCommandHandler(IApiClient apiClient)
+        public SubmitRolloverExtensionCommandHandler(IApiClient apiClient)
         {
             _apiClient = apiClient;
         }
 
-        public async Task<BaseMediatrResponse<ApplyFundingExtensionsCommandResponse>> Handle(
-            ApplyFundingExtensionsCommand request, 
+        public async Task<BaseMediatrResponse<SubmitRolloverExtensionCommandResponse>> Handle(
+            SubmitRolloverExtensionCommand request, 
             CancellationToken cancellationToken)
         {
-            var response = new BaseMediatrResponse<ApplyFundingExtensionsCommandResponse>();
+            var response = new BaseMediatrResponse<SubmitRolloverExtensionCommandResponse>();
 
             try
             {
-                var result = await _apiClient.PostWithResponseCode<ApplyFundingExtensionsCommandResponse>(new ApplyFundingExtensionsApiRequest()
+                var result = await _apiClient.PostWithResponseCode<SubmitRolloverExtensionCommandResponse>(new SubmitRolloverExtensionApiRequest()
                 {
                     Data = request
                 });

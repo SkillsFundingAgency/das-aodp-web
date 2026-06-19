@@ -3,7 +3,6 @@
 
     public class FundingExtensionCandidate
     {
-        public int RowNumber { get; set; }
         public string? Qan { get; set; }
         public string? QualificationTitle { get; set; }
         public string?  AwardingOrganisation { get; set; }

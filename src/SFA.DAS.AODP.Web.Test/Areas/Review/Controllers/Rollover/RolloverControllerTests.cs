@@ -1,11 +1,6 @@
-﻿using FluentValidation;
-using FluentValidation.Results;
-using MediatR;
+﻿using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Moq;
 using Newtonsoft.Json;
 using SFA.DAS.AODP.Application;
@@ -13,87 +8,20 @@ using SFA.DAS.AODP.Application.Commands.Rollover;
 using SFA.DAS.AODP.Application.Queries.Import;
 using SFA.DAS.AODP.Application.Queries.Review.Rollover;
 using SFA.DAS.AODP.Application.Queries.Rollover;
-using SFA.DAS.AODP.Infrastructure.Cache;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
-using SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 using SFA.DAS.AODP.Web.Enums;
-using SFA.DAS.AODP.Web.Helpers.User;
 
 namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers;
 
-public class RolloverControllerTests
+public class RolloverControllerTests : RolloverControllerTestBase
 {
-    private readonly Mock<ILogger<RolloverController>> _loggerMock;
-    private readonly Mock<IMediator> _mediatorMock;
-    private readonly RolloverController _controller;
-    private readonly Mock<IValidator<RolloverEligibilityDatesViewModel>> _eligibilityDatesValidatorMock;
-    private readonly Mock<IValidator<RolloverFundingApprovalEndDateViewModel>> _approvalEndDateValidatorMock;
-    private readonly Mock<IValidator<RolloverEligibilityDatesViewModel>> _validatorMock;
-    private readonly Mock<ICsvFileReader> _csvFileReaderMock;
-    private readonly Mock<IUserHelperService> _userHelperServiceMock;
-    private readonly Mock<ICacheService> _cacheServiceMock;
-
-    public RolloverControllerTests()
-    {
-        _loggerMock = new Mock<ILogger<RolloverController>>();
-        _mediatorMock = new Mock<IMediator>();
-        _validatorMock = new Mock<IValidator<RolloverEligibilityDatesViewModel>>();
-        _csvFileReaderMock = new Mock<ICsvFileReader>();
-        _eligibilityDatesValidatorMock = new Mock<IValidator<RolloverEligibilityDatesViewModel>>();
-        _approvalEndDateValidatorMock = new Mock<IValidator<RolloverFundingApprovalEndDateViewModel>>();
-        _userHelperServiceMock = new Mock<IUserHelperService>();
-        _controller = new RolloverController(_loggerMock.Object,
-            _mediatorMock.Object,
-            _eligibilityDatesValidatorMock.Object,
-            _approvalEndDateValidatorMock.Object,
-            _csvFileReaderMock.Object,
-            _userHelperServiceMock.Object,
-            _cacheServiceMock.Object);
-
-        _controller.TempData = new TempDataDictionary(
-         new DefaultHttpContext(),
-         Mock.Of<ITempDataProvider>()
-     );
-    }
-
-    private RolloverController CreateControllerWithSession(ISession session)
-    {
-        var controller = new RolloverController(_loggerMock.Object,
-            _mediatorMock.Object,
-            _eligibilityDatesValidatorMock.Object,
-            _approvalEndDateValidatorMock.Object,
-            _csvFileReaderMock.Object,
-            _userHelperServiceMock.Object,
-            _cacheServiceMock.Object);
-
-        var httpContext = new DefaultHttpContext();
-        httpContext.Session = session;
-
-        
-
-        controller.ControllerContext = new ControllerContext
-        {
-            HttpContext = httpContext
-        };
-        
-        controller.TempData = new TempDataDictionary(
-            new DefaultHttpContext(),
-            Mock.Of<ITempDataProvider>()
-        );
-
-        return controller;
-    }
-
-    private static ISession CreateEmptySession() => new TestSession();
-    private static ISession CreateThrowingSessionOnGet() => new ThrowingSession(throwOnGet: true, throwOnSet: false);
-    private static ISession CreateThrowingSessionOnSet() => new ThrowingSession(throwOnGet: false, throwOnSet: true);
-
+    
     [Fact]
     public void Index_Get_ReturnsRolloverStartView_WithEmptyModel_WhenNoSession()
     {
-        var controller = CreateControllerWithSession(CreateEmptySession());
+        var controller = CreateController(CreateEmptySession());
 
         var result = controller.Index();
 
@@ -106,7 +34,7 @@ public class RolloverControllerTests
     [Fact]
     public void Index_Get_HandlesSessionGetException_ReturnsView()
     {
-        var controller = CreateControllerWithSession(CreateThrowingSessionOnGet());
+        var controller = CreateController(CreateThrowingSessionOnGet());
 
         var result = controller.Index();
 
@@ -121,8 +49,7 @@ public class RolloverControllerTests
         var sessionModel = new Rollover { Start = new RolloverStart { SelectedProcess = RolloverProcess.FinalUpload } };
         session.SetString("RolloverSession", JsonConvert.SerializeObject(sessionModel));
 
-        var controller = CreateControllerWithSession(session);
-
+        var controller = CreateController(session);
         var result = controller.Index();
 
         // Assert
@@ -134,7 +61,7 @@ public class RolloverControllerTests
     [Fact]
     public void Index_Post_InvalidModelState_ReturnsStartView_WithSameModel()
     {
-        var controller = CreateControllerWithSession(CreateEmptySession());
+        var controller = CreateController(CreateEmptySession());
         controller.ModelState.AddModelError("SelectedProcess", "required");
 
         var vm = new RolloverStartViewModel();
@@ -150,7 +77,7 @@ public class RolloverControllerTests
     public void Index_Post_SelectedProcessInitialSelection_SavesSessionAndRedirects()
     {
         var session = CreateEmptySession();
-        var controller = CreateControllerWithSession(session);
+        var controller = CreateController(session);
 
         var vm = new RolloverStartViewModel { SelectedProcess = RolloverProcess.InitialSelection };
 
@@ -170,7 +97,7 @@ public class RolloverControllerTests
     public void Index_Post_SelectedProcessFinalUpload_SavesSessionAndRedirects()
     {
         var session = CreateEmptySession();
-        var controller = CreateControllerWithSession(session);
+        var controller = CreateController(session);
 
         var vm = new RolloverStartViewModel { SelectedProcess = RolloverProcess.FinalUpload };
 
@@ -190,7 +117,7 @@ public class RolloverControllerTests
     public void Index_Post_SaveSessionThrows_DoesNotBubbleException_Redirects()
     {
         var session = CreateThrowingSessionOnSet();
-        var controller = CreateControllerWithSession(session);
+        var controller = CreateController(session);
 
         var vm = new RolloverStartViewModel { SelectedProcess = RolloverProcess.InitialSelection };
 
@@ -215,7 +142,7 @@ public class RolloverControllerTests
             }
         };
         session.SetString("RolloverSession", JsonConvert.SerializeObject(sessionModel));
-        var controller = CreateControllerWithSession(session);
+        var controller = CreateController(session);
 
         var result = await controller.CheckData();
 
@@ -237,7 +164,7 @@ public class RolloverControllerTests
         var defundingDate = new DateTime(2025, 11, 27, 12, 0, 0);
         var pldnsDate = new DateTime(2025, 11, 27, 13, 0, 0);
 
-        _mediatorMock
+        MediatorMock
             .Setup(m => m.Send(It.IsAny<GetJobRunsQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((GetJobRunsQuery q, CancellationToken ct) =>
             {
@@ -276,7 +203,7 @@ public class RolloverControllerTests
             });
 
         var session = CreateEmptySession();
-        var controller = CreateControllerWithSession(session);
+        var controller = CreateController(session);
 
         var result = await controller.CheckData();
 
@@ -301,11 +228,11 @@ public class RolloverControllerTests
     [Fact]
     public async Task CheckData_Get_SaveSessionThrows_DoesNotBubbleException_ReturnsView()
     {
-        _mediatorMock
+        MediatorMock
             .Setup(m => m.Send(It.IsAny<GetJobRunsQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new BaseMediatrResponse<GetJobRunsQueryResponse> { Success = true, Value = new GetJobRunsQueryResponse { JobRuns = new List<JobRun>() } });
 
-        var controller = CreateControllerWithSession(CreateThrowingSessionOnSet());
+        var controller = CreateController(CreateThrowingSessionOnSet());
 
         var result = await controller.CheckData();
 
@@ -327,7 +254,7 @@ public class RolloverControllerTests
         };
         session.SetString("RolloverSession", JsonConvert.SerializeObject(sessionModel));
 
-        var controller = CreateControllerWithSession(session);
+        var controller = CreateController(session);
         controller.ModelState.AddModelError("any", "error");
 
         var posted = new RolloverImportStatusViewModel
@@ -349,7 +276,7 @@ public class RolloverControllerTests
     {
         var session = CreateEmptySession();
         session.SetString("RolloverSession", JsonConvert.SerializeObject(new Rollover { PreviousData = new RolloverPreviousData { CandidateCount = 7 } }));
-        var controller = CreateControllerWithSession(session);
+        var controller = CreateController(session);
 
         var posted = new RolloverImportStatusViewModel
         {
@@ -365,7 +292,7 @@ public class RolloverControllerTests
     [Fact]
     public async Task CheckData_Post_ValidModel_WhenMediatorReturnsCandidates_SavesPreviousDataAndRedirects()
     {
-        _mediatorMock
+        MediatorMock
             .Setup(m => m.Send(It.IsAny<GetRolloverWorkflowCandidatesCountQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new BaseMediatrResponse<GetRolloverWorkflowCandidatesCountQueryResponse>
             {
@@ -374,7 +301,7 @@ public class RolloverControllerTests
             });
 
         var session = CreateEmptySession();
-        var controller = CreateControllerWithSession(session);
+        var controller = CreateController(session);
 
         var posted = new RolloverImportStatusViewModel
         {
@@ -407,7 +334,7 @@ public class RolloverControllerTests
         };
         session.SetString("RolloverSession", JsonConvert.SerializeObject(sessionModel));
 
-        var controller = CreateControllerWithSession(session);
+        var controller = CreateController(session);
 
         var result = await controller.PreviousFile();
 
@@ -421,16 +348,16 @@ public class RolloverControllerTests
     [Fact]
     public async Task PreviousFile_Get_WhenNoSession_CallsMediatorAndSavesSession()
     {
-        _mediatorMock
+        MediatorMock
             .Setup(m => m.Send(It.IsAny<GetRolloverWorkflowCandidatesCountQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new BaseMediatrResponse<GetRolloverWorkflowCandidatesCountQueryResponse>
             {
                 Success = true,
                 Value = new GetRolloverWorkflowCandidatesCountQueryResponse { TotalRecords = 1 }
-            });
+            }); 
 
         var session = CreateEmptySession();
-        var controller = CreateControllerWithSession(session);
+        var controller = CreateController(session);
 
         var result = await controller.PreviousFile();
 
@@ -449,7 +376,7 @@ public class RolloverControllerTests
     [Fact]
     public async Task PreviousFile_Post_InvalidModel_ReturnsView()
     {
-        var controller = CreateControllerWithSession(CreateEmptySession());
+        var controller = CreateController(CreateEmptySession());
         controller.ModelState.AddModelError("x", "error");
 
         var model = new RolloverPreviousDataViewModel();
@@ -466,7 +393,7 @@ public class RolloverControllerTests
     {
         var session = CreateEmptySession();
         session.SetString("RolloverSession", JsonConvert.SerializeObject(new Rollover { PreviousData = new RolloverPreviousData() }));
-        var controller = CreateControllerWithSession(session);
+        var controller = CreateController(session);
 
         var model = new RolloverPreviousDataViewModel
         {
@@ -490,7 +417,7 @@ public class RolloverControllerTests
     {
         var session = CreateEmptySession();
         session.SetString("RolloverSession", JsonConvert.SerializeObject(new Rollover { PreviousData = new RolloverPreviousData() }));
-        var controller = CreateControllerWithSession(session);
+        var controller = CreateController(session);
 
         var model = new RolloverPreviousDataViewModel
         {
@@ -508,24 +435,13 @@ public class RolloverControllerTests
     [Fact]
     public void SelectCandidates_Get_SetsTitle_AndReturnActionDefault()
     {
-        var controller = CreateControllerWithSession(CreateEmptySession());
+        var controller = CreateController(CreateEmptySession());
 
         var result = controller.SelectCandidates();
 
         var viewResult = Assert.IsType<ViewResult>(result);
         var model = viewResult.Model as RolloverSelectCandidatesViewModel;
         Assert.Equal(nameof(RolloverController.CheckData), model.ReturnUrl);
-    }
-
-    [Fact]
-    public void SelectFundingStreams_Get_SetsTitle()
-    {
-        var controller = CreateControllerWithSession(CreateEmptySession());
-
-        var result = controller.SelectFundingStreams();
-
-        var viewResult = Assert.IsType<ViewResult>(result);
-        Assert.Equal("Select funding stream(s)", viewResult.ViewData["Title"]);
     }
 
     [Fact]
@@ -543,7 +459,7 @@ public class RolloverControllerTests
         };
         session.Set("RolloverSession", System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(saved)));
 
-        var controller = CreateControllerWithSession(session);
+        var controller = CreateController(session);
 
         // act
         var result = controller.SelectCandidates();
@@ -560,7 +476,7 @@ public class RolloverControllerTests
     public void SelectCandidates_Post_InvalidModelState_ReturnsViewAndSetsTitle()
     {
         // arrange
-        var controller = CreateControllerWithSession(new TestSession());
+        var controller = CreateController(new TestSession());
         controller.ModelState.AddModelError("SelectedOption", "required");
 
         var posted = new RolloverSelectCandidatesViewModel
@@ -583,7 +499,7 @@ public class RolloverControllerTests
     {
         // arrange
         var session = new TestSession();
-        var controller = CreateControllerWithSession(session);
+        var controller = CreateController(session);
 
         var posted = new RolloverSelectCandidatesViewModel
         {
@@ -613,7 +529,7 @@ public class RolloverControllerTests
     {
         // arrange
         var session = new TestSession();
-        var controller = CreateControllerWithSession(session);
+        var controller = CreateController(session);
 
         var posted = new RolloverSelectCandidatesViewModel
         {
@@ -641,7 +557,7 @@ public class RolloverControllerTests
     public void RolloverQueryBuilder_Get_SetsTitle()
     {
         // arrange
-        var controller = CreateControllerWithSession(new TestSession());
+        var controller = CreateController(new TestSession());
 
         // act
         var result = controller.RolloverQueryBuilder();
@@ -656,9 +572,10 @@ public class RolloverControllerTests
     public async Task EnterRolloverEligibilityDates_ReturnsViewResult()
     {
         // Arrange
+        var controller = CreateController(new TestSession());
 
         // Act
-        var result = await _controller.EnterRolloverEligibilityDates();
+        var result = await controller.EnterRolloverEligibilityDates();
 
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
@@ -670,511 +587,21 @@ public class RolloverControllerTests
     public async Task EnterRolloverEligibilityDates_WhenModelIsValid_RedirectsToFundingApprovalEndDate()
     {
         // Arrange
+        var controller = CreateController(new TestSession());
         var model = new RolloverEligibilityDatesViewModel();
         var validationResult = new ValidationResult(); // no errors => valid
 
-        _eligibilityDatesValidatorMock
+        EligibilityDatesValidatorMock
             .Setup(v => v.ValidateAsync(model, It.IsAny<CancellationToken>()))
             .ReturnsAsync(validationResult);
 
         // Act
-        var result = await _controller.EnterRolloverEligibilityDates(model);
+        var result = await controller.EnterRolloverEligibilityDates(model);
 
         // Assert
         var redirect = Assert.IsType<RedirectToActionResult>(result);
         Assert.Equal(nameof(RolloverController.EnterRolloverFundingApprovalEndDate), redirect.ActionName);
-        _eligibilityDatesValidatorMock.Verify(v => v.ValidateAsync(model, It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    [Fact]
-    public async Task UploadQualificationCandidates_ShouldRedirect_WhenValidMatchesFound()
-    {
-        // Arrange
-        var uploadedModel = new RolloverUploadQualificationCandidatesViewModel
-        {
-            File = Mock.Of<IFormFile>()
-        };
-
-        var qan = "12345";
-
-        var csvResult = new CsvFileReaderResult<QualificationCandidate>();
-        csvResult.Items.Add(new QualificationCandidate { QualificationNumber = qan });
-
-        _csvFileReaderMock
-        .Setup(x => x.FileReadAsync(
-            uploadedModel.File,
-            QualificationImportColumns.Required,
-            QualificationCandidateMapper.Map))
-        .ReturnsAsync(csvResult);
-
-        _mediatorMock
-        .Setup(x => x.Send(It.IsAny<GetRolloverCandidatesQuery>(), default))
-        .ReturnsAsync(new BaseMediatrResponse<GetRolloverCandidatesQueryResponse>
-        {
-            Success = true,
-            Value = new GetRolloverCandidatesQueryResponse
-            {
-                RolloverCandidates = new List<RolloverCandidate>
-                {
-                    new RolloverCandidate
-                    {
-                        QualificationNumber = "12345"
-                    }
-                }
-            }
-        });
-
-        var session = CreateEmptySession();
-        var controller = CreateControllerWithSession(session);
-
-        // Act
-        var result = await controller.UploadQualificationCandidates(uploadedModel);
-
-        // Assert
-        var json = session.GetString("RolloverSession");
-        Assert.NotNull(json);
-        var saved = JsonConvert.DeserializeObject<Rollover>(json!);
-
-        Assert.NotNull(saved);
-        Assert.NotNull(saved!.RolloverCandidates);
-        Assert.NotEmpty(saved.RolloverCandidates);
-
-        // Assert value matches
-        var rollovercandidate = saved.RolloverCandidates.First();
-        Assert.Equal(qan, rollovercandidate.QualificationNumber);
-    }
-
-    [Fact]
-    public async Task UploadQualificationCandidates_ShouldRedirect_WhenFileNullAndSessionHasCandidates()
-    {
-        // Arrange
-        var session = CreateEmptySession();
-
-        var sessionModel = new Rollover
-        {
-            RolloverCandidates = new List<QualificationCandidate>
-        {
-            new QualificationCandidate { QualificationNumber = "12345" }
-        }
-        };
-
-        session.SetString("RolloverSession", JsonConvert.SerializeObject(sessionModel));
-
-        var controller = CreateControllerWithSession(session);
-
-        var vm = new RolloverUploadQualificationCandidatesViewModel
-        {
-            File = null
-        };
-
-        // Act
-        var result = await controller.UploadQualificationCandidates(vm);
-
-        // Assert
-        var redirect = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal("FundingStreamInclusionExclusion", redirect.ActionName);
-    }
-
-    [Fact]
-    public async Task UploadQualificationCandidates_ShouldReturnView_WhenModelStateInvalid()
-    {
-        // Arrange
-        var session = CreateEmptySession();
-        var controller = CreateControllerWithSession(session);
-
-        var vm = new RolloverUploadQualificationCandidatesViewModel
-        {
-            File = Mock.Of<IFormFile>()
-        };
-
-        controller.ModelState.AddModelError("File", "Required");
-
-        // Act
-        var result = await controller.UploadQualificationCandidates(vm);
-
-        // Assert
-        var view = Assert.IsType<ViewResult>(result);
-        Assert.Same(vm, view.Model);
-    }
-
-    [Fact]
-    public async Task UploadQualificationCandidates_ShouldReturnView_WhenCsvIsInvalid()
-    {
-        // Arrange
-        var session = CreateEmptySession();
-        var controller = CreateControllerWithSession(session);
-
-        var vm = new RolloverUploadQualificationCandidatesViewModel
-        {
-            File = Mock.Of<IFormFile>()
-        };
-
-        var csvResult = new CsvFileReaderResult<QualificationCandidate>
-        {
-            Errors = { "Invalid CSV", "Missing columns" }
-        };
-
-        _csvFileReaderMock
-            .Setup(x => x.FileReadAsync(
-                vm.File,
-                QualificationImportColumns.Required,
-                QualificationCandidateMapper.Map))
-            .ReturnsAsync(csvResult);
-
-        // Act
-        var result = await controller.UploadQualificationCandidates(vm);
-
-        // Assert
-        var view = Assert.IsType<ViewResult>(result);
-        Assert.False(controller.ModelState.IsValid);
-
-        var errors = controller.ModelState[nameof(vm.File)].Errors.Select(e => e.ErrorMessage);
-        Assert.Contains("Invalid CSV", errors);
-        Assert.Contains("Missing columns", errors);
-    }
-
-    [Fact]
-    public async Task UploadQualificationCandidates_ShouldReturnView_WhenNoMatchedCandidatesFound()
-    {
-        // Arrange
-        var session = CreateEmptySession();
-        var controller = CreateControllerWithSession(session);
-
-        var vm = new RolloverUploadQualificationCandidatesViewModel
-        {
-            File = Mock.Of<IFormFile>()
-        };
-
-        var csvResult = new CsvFileReaderResult<QualificationCandidate>
-        {
-            Items = { new QualificationCandidate { QualificationNumber = "11111" } }
-        };
-
-        _csvFileReaderMock
-            .Setup(x => x.FileReadAsync(
-                vm.File,
-                QualificationImportColumns.Required,
-                QualificationCandidateMapper.Map))
-            .ReturnsAsync(csvResult);
-
-        _mediatorMock
-            .Setup(x => x.Send(It.IsAny<GetRolloverCandidatesQuery>(), default))
-            .ReturnsAsync(new BaseMediatrResponse<GetRolloverCandidatesQueryResponse>
-            {
-                Success = true,
-                Value = new GetRolloverCandidatesQueryResponse
-                {
-                    RolloverCandidates = new List<RolloverCandidate>() // no matches
-                }
-            });
-
-        // Act
-        var result = await controller.UploadQualificationCandidates(vm);
-
-        // Assert
-        var view = Assert.IsType<ViewResult>(result);
-        Assert.True(controller.ModelState.ContainsKey(nameof(vm.File)));
-
-        var msg = controller.ModelState[nameof(vm.File)]
-            .Errors.First().ErrorMessage;
-
-        Assert.Equal("No valid candidates found.", msg);
-    }
-
-    [Fact]
-    public async Task UploadQualificationCandidates_ShouldReturnView_WhenMediatorReturnsNull()
-    {
-        // Arrange
-        var session = CreateEmptySession();
-        var controller = CreateControllerWithSession(session);
-
-        var vm = new RolloverUploadQualificationCandidatesViewModel
-        {
-            File = Mock.Of<IFormFile>()
-        };
-
-        var csvResult = new CsvFileReaderResult<QualificationCandidate>
-        {
-            Items = { new QualificationCandidate { QualificationNumber = "12345" } }
-        };
-
-        _csvFileReaderMock
-            .Setup(x => x.FileReadAsync(
-                vm.File,
-                QualificationImportColumns.Required,
-                QualificationCandidateMapper.Map))
-            .ReturnsAsync(csvResult);
-
-        _mediatorMock
-            .Setup(x => x.Send(It.IsAny<GetRolloverCandidatesQuery>(), default))
-            .ReturnsAsync((BaseMediatrResponse<GetRolloverCandidatesQueryResponse>)null!);
-
-        // Act
-        var result = await controller.UploadQualificationCandidates(vm);
-
-        // Assert: no crash, fallback behaviour = no matches
-        var view = Assert.IsType<ViewResult>(result);
-        Assert.True(controller.ModelState.ContainsKey(nameof(vm.File)));
-    }
-
-    [Fact]
-    public async Task FundingStreamInclusionExclusion_WhenSessionExists_ReturnsViewWithModel()
-    {
-        // Arrange
-        var session = CreateEmptySession();
-        var id = Guid.NewGuid();
-        var sessionModel = new Rollover
-        {
-            RolloverFundingStream = new RolloverFundingStream
-            {
-                FundingStreams = new List<FundingStream> { new() { Id = id } },
-                SelectedIds = new List<Guid> { id }
-            }
-        };
-        session.SetString("RolloverSession", JsonConvert.SerializeObject(sessionModel));
-
-        var controller = CreateControllerWithSession(session);
-
-        // Assert
-        var result = await controller.FundingStreamInclusionExclusion();
-        var viewResult = Assert.IsType<ViewResult>(result);
-        var vm = Assert.IsType<FundingStreamInclusionExclusionViewModel>(viewResult.Model);
-
-        Assert.NotNull(result);
-        Assert.Equal(id, vm.FundingStreams.First().Id);
-        Assert.Contains(id, vm.SelectedIds);
-    }
-
-    [Fact]
-    public async Task FundingStreamInclusionExclusion_NoSession_BuildsFundingStreamsAndSaves()
-    {
-        // Arrange
-        var session = CreateEmptySession();
-        var id = Guid.NewGuid();
-        var sessionModel = new Rollover
-        {
-            RolloverCandidates = new List<QualificationCandidate>
-            {
-                new QualificationCandidate
-                {
-                    FundingOfferId = id
-                }
-            }
-        };
-
-        session.SetString("RolloverSession", JsonConvert.SerializeObject(sessionModel));
-
-        var controller = CreateControllerWithSession(session);
-
-        // Act
-        var result = await controller.FundingStreamInclusionExclusion();
-        var viewResult = Assert.IsType<ViewResult>(result);
-        var vm = Assert.IsType<FundingStreamInclusionExclusionViewModel>(viewResult.Model);
-
-        // Assert
-        Assert.NotNull(result);
-        Assert.Single(vm.FundingStreams);
-        Assert.Equal(id, vm.FundingStreams.First().Id);
-
-        // Session should now contain RolloverFundingStream
-        var updatedSessionJson = session.GetString("RolloverSession");
-        var updatedSession = JsonConvert.DeserializeObject<Rollover>(updatedSessionJson);
-
-        Assert.NotNull(updatedSession.RolloverFundingStream);
-        Assert.Single(updatedSession.RolloverFundingStream.FundingStreams);
-        Assert.Equal(id, updatedSession.RolloverFundingStream.FundingStreams.First().Id);
-    }
-
-    [Fact]
-    public async Task FundingStreamInclusionExclusion_NoFundingStreams_AddsModelError()
-    {
-        // Arrange
-        var session = CreateEmptySession();
-
-        // RolloverCandidates exists but leads to zero funding streams
-        var sessionModel = new Rollover
-        {
-            RolloverCandidates = new List<QualificationCandidate>()
-        };
-
-        session.SetString("RolloverSession", JsonConvert.SerializeObject(sessionModel));
-
-        var controller = CreateControllerWithSession(session);
-
-        // Act
-        var result = await controller.FundingStreamInclusionExclusion();
-        var viewResult = Assert.IsType<ViewResult>(result);
-        var vm = Assert.IsType<FundingStreamInclusionExclusionViewModel>(viewResult.Model);
-
-        // Assert
-        Assert.True(!controller.ModelState.IsValid);
-        Assert.True(controller.ModelState.ContainsKey(nameof(vm.FundingStreams)));
-
-        var error = controller.ModelState[nameof(vm.FundingStreams)]
-            .Errors
-            .First()
-            .ErrorMessage;
-
-        Assert.Equal("No Funding Streams found.", error);
-    }
-
-    [Fact]
-    public async Task FundingStreamInclusionExclusion_SelectAll_ReturnsViewWithAllIdsSelected()
-    {
-        // Arrange
-        var session = CreateEmptySession();
-        var id1 = Guid.NewGuid();
-        var id2 = Guid.NewGuid();
-        var sessionModel = new Rollover
-        {
-            RolloverFundingStream = new RolloverFundingStream
-            {
-                FundingStreams = new List<FundingStream>
-            {
-                new FundingStream { Id = id1 },
-                new FundingStream { Id = id2 }
-            },
-                SelectedIds = new List<Guid>()
-            }
-        };
-
-        session.SetString("RolloverSession", JsonConvert.SerializeObject(sessionModel));
-
-        var controller = CreateControllerWithSession(session);
-
-        var vm = new FundingStreamInclusionExclusionViewModel
-        {
-            SelectedIds = new List<Guid>()
-        };
-
-        // Act
-        var result = await controller.FundingStreamInclusionExclusion(vm, "selectAll");
-        var viewResult = Assert.IsType<ViewResult>(result);
-        var returnedVm = Assert.IsType<FundingStreamInclusionExclusionViewModel>(viewResult.Model);
-
-        // Assert
-        Assert.Equal(2, returnedVm.SelectedIds.Count);
-        Assert.Contains(id1, returnedVm.SelectedIds);
-        Assert.Contains(id2, returnedVm.SelectedIds);
-
-        Assert.Empty(controller.ModelState); // ModelState cleared
-    }
-
-    [Fact]
-    public async Task FundingStreamInclusionExclusion_NoSelection_ReturnsModelError()
-    {
-        // Arrange
-        var session = CreateEmptySession();
-        var id = Guid.NewGuid();
-        var sessionModel = new Rollover
-        {
-            RolloverFundingStream = new RolloverFundingStream
-            {
-                FundingStreams = new List<FundingStream>
-            {
-                new FundingStream { Id = id }
-            }
-            }
-        };
-
-        session.SetString("RolloverSession", JsonConvert.SerializeObject(sessionModel));
-
-        var controller = CreateControllerWithSession(session);
-
-        var vm = new FundingStreamInclusionExclusionViewModel
-        {
-            SelectedIds = null
-        };
-
-        // Act
-        var result = await controller.FundingStreamInclusionExclusion(vm, action: "");
-        var viewResult = Assert.IsType<ViewResult>(result);
-
-        // Assert
-        Assert.True(!controller.ModelState.IsValid);
-        Assert.True(controller.ModelState.ContainsKey(nameof(vm.SelectedIds)));
-
-        var error = controller.ModelState[nameof(vm.SelectedIds)].Errors.First().ErrorMessage;
-        Assert.Equal("Select at least one funding stream.", error);
-    }
-
-    [Fact]
-    public async Task FundingStreamInclusionExclusion_InvalidSelection_ReturnsError()
-    {
-        // Arrange
-        var session = CreateEmptySession();
-        var id = Guid.NewGuid();
-        var sessionModel = new Rollover
-        {
-            RolloverFundingStream = new RolloverFundingStream
-            {
-                FundingStreams = new List<FundingStream>
-            {
-                new FundingStream { Id = id }
-            }
-            }
-        };
-
-        session.SetString("RolloverSession", JsonConvert.SerializeObject(sessionModel));
-
-        var controller = CreateControllerWithSession(session);
-
-        var vm = new FundingStreamInclusionExclusionViewModel
-        {
-            SelectedIds = new List<Guid> { Guid.NewGuid() } // not in FS1
-        };
-
-        // Act
-        var result = await controller.FundingStreamInclusionExclusion(vm, action: "");
-        var viewResult = Assert.IsType<ViewResult>(result);
-
-        // Assert
-        Assert.True(!controller.ModelState.IsValid);
-        Assert.True(controller.ModelState.ContainsKey(""));
-
-        var error = controller.ModelState[""].Errors.First().ErrorMessage;
-        Assert.Equal("Invalid selection", error);
-    }
-
-    [Fact]
-    public async Task FundingStreamInclusionExclusion_ValidSelection_SavesSessionAndRedirects()
-    {
-        // Arrange
-        var session = CreateEmptySession();
-        var id = Guid.NewGuid();
-        var sessionModel = new Rollover
-        {
-            RolloverFundingStream = new RolloverFundingStream
-            {
-                FundingStreams = new List<FundingStream>
-                {
-                    new FundingStream { Id = id}
-                }
-            }
-        };
-
-        session.SetString("RolloverSession", JsonConvert.SerializeObject(sessionModel));
-
-        var controller = CreateControllerWithSession(session);
-
-        var vm = new FundingStreamInclusionExclusionViewModel
-        {
-            SelectedIds = new List<Guid> { id },
-            FundingStreams = sessionModel.RolloverFundingStream.FundingStreams
-        };
-
-        // Act
-        var result = await controller.FundingStreamInclusionExclusion(vm, action: "");
-        var redirect = Assert.IsType<RedirectToActionResult>(result);
-
-        // Assert redirect
-        Assert.Equal(nameof(controller.EnterRolloverEligibilityDates), redirect.ActionName);
-
-        // Assert session updated
-        var updatedJson = session.GetString("RolloverSession");
-        var updated = JsonConvert.DeserializeObject<Rollover>(updatedJson);
-
-        Assert.Equal(id, updated.RolloverFundingStream.SelectedIds.First());
+        EligibilityDatesValidatorMock.Verify(v => v.ValidateAsync(model, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -1182,7 +609,7 @@ public class RolloverControllerTests
     {
         // Arrange
         var session = CreateEmptySession();
-        var controller = CreateControllerWithSession(session);
+        var controller = CreateController(session);
 
         // Act
         var result = await controller.EnterRolloverEligibilityDates();
@@ -1211,7 +638,7 @@ public class RolloverControllerTests
         var session = CreateEmptySession();
         session.SetString("RolloverSession", JsonConvert.SerializeObject(sessionModel));
 
-        var controller = CreateControllerWithSession(session);
+        var controller = CreateController(session);
 
         // Act
         var result = await controller.EnterRolloverEligibilityDates();
@@ -1245,7 +672,7 @@ public class RolloverControllerTests
             OperationalEndDate = new RolloverEligibilityDate { Day = 0, Month = 0, Year = 0 }
         };
 
-        _eligibilityDatesValidatorMock
+        EligibilityDatesValidatorMock
             .Setup(v => v.ValidateAsync(model, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ValidationResult(new[]
             {
@@ -1254,7 +681,7 @@ public class RolloverControllerTests
             }));
 
         var session = CreateEmptySession();
-        var controller = CreateControllerWithSession(session);
+        var controller = CreateController(session);
 
         // Act
         var result = await controller.EnterRolloverEligibilityDates(model);
@@ -1265,7 +692,7 @@ public class RolloverControllerTests
         Assert.Same(model, view.Model);
 
         // also ensure validator was invoked
-        _eligibilityDatesValidatorMock.Verify(v => v.ValidateAsync(model, It.IsAny<CancellationToken>()), Times.Once);
+        EligibilityDatesValidatorMock.Verify(v => v.ValidateAsync(model, It.IsAny<CancellationToken>()), Times.Once);
     }
 
 
@@ -1274,10 +701,10 @@ public class RolloverControllerTests
     {
         // Arrange
         var session = CreateEmptySession();
-        var controller = CreateControllerWithSession(session);
+        var controller = CreateController(session);
 
         // Act
-        var result = _controller.EnterRolloverFundingApprovalEndDate();
+        var result = controller.EnterRolloverFundingApprovalEndDate();
         var viewResult = Assert.IsType<ViewResult>(result);
 
         // Assert
@@ -1290,7 +717,7 @@ public class RolloverControllerTests
         // Arrange
         var model = new RolloverFundingApprovalEndDateViewModel();
 
-        _approvalEndDateValidatorMock
+        ApprovalEndDateValidatorMock
             .Setup(v => v.ValidateAsync(model, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ValidationResult(new[]
             {
@@ -1298,7 +725,7 @@ public class RolloverControllerTests
             }));
 
         var session = new TestSession();
-        var controller = CreateControllerWithSession(session);
+        var controller = CreateController(session);
 
         // Act
         var result = await controller.EnterRolloverFundingApprovalEndDate(model);
@@ -1320,7 +747,7 @@ public class RolloverControllerTests
             MaxApprovalEndDate = new RolloverFundingApprovalEndDate { Day = date.Day, Month = date.Month, Year = date.Year }
         };
 
-        _approvalEndDateValidatorMock
+        ApprovalEndDateValidatorMock
             .Setup(v => v.ValidateAsync(model, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ValidationResult());
 
@@ -1352,12 +779,12 @@ public class RolloverControllerTests
         var session = CreateEmptySession();
         session.SetString("RolloverSession", JsonConvert.SerializeObject(sessionModel));
 
-        var controller = CreateControllerWithSession(session);
+        var controller = CreateController(session);
 
         // Track what command was sent to mediator
         CreateRolloverWorkflowRunCommand? sentCommand = null;
 
-        _mediatorMock
+        MediatorMock
             .Setup(m => m.Send(It.IsAny<CreateRolloverWorkflowRunCommand>(), It.IsAny<CancellationToken>()))
             .Callback<object, CancellationToken>((cmd, _) => sentCommand = (CreateRolloverWorkflowRunCommand)cmd)
             .ReturnsAsync(new BaseMediatrResponse<CreateRolloverWorkflowRunCommandResponse>
@@ -1366,7 +793,7 @@ public class RolloverControllerTests
                 Value = new CreateRolloverWorkflowRunCommandResponse { RolloverWorkflowRunId = Guid.NewGuid() }
             });
 
-        _userHelperServiceMock
+        UserHelperServiceMock
             .Setup(s => s.GetUserDisplayName())
             .Returns("Test User");
 
@@ -1396,7 +823,7 @@ public class RolloverControllerTests
     {
         // Arrange
         var session = CreateEmptySession();
-        var controller = CreateControllerWithSession(session);
+        var controller = CreateController(session);
 
         var model = new RolloverFundingApprovalEndDateViewModel();
         var validationResult = new ValidationResult(new[]
@@ -1404,7 +831,7 @@ public class RolloverControllerTests
         new ValidationFailure("MaxApprovalEndDate", "Required")
     });
 
-        _approvalEndDateValidatorMock
+        ApprovalEndDateValidatorMock
             .Setup(v => v.ValidateAsync(model, It.IsAny<CancellationToken>()))
             .ReturnsAsync(validationResult);
 
@@ -1423,7 +850,7 @@ public class RolloverControllerTests
         // Arrange
         var session = CreateEmptySession();
 
-        var controller = CreateControllerWithSession(session);
+        var controller = CreateController(session);
 
         var model = new RolloverFundingApprovalEndDateViewModel
         {
@@ -1435,13 +862,13 @@ public class RolloverControllerTests
             }
         };
 
-        _approvalEndDateValidatorMock
+        ApprovalEndDateValidatorMock
             .Setup(v => v.ValidateAsync(model, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ValidationResult());
 
         var expectedRunId = Guid.NewGuid();
 
-        _mediatorMock
+        MediatorMock
             .Setup(m => m.Send(It.IsAny<CreateRolloverWorkflowRunCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new BaseMediatrResponse<CreateRolloverWorkflowRunCommandResponse>
             {
@@ -1452,7 +879,7 @@ public class RolloverControllerTests
                 }
             });
 
-        _userHelperServiceMock
+        UserHelperServiceMock
             .Setup(x => x.GetUserDisplayName())
             .Returns("Test User");
 
@@ -1476,7 +903,7 @@ public class RolloverControllerTests
         Assert.Equal(2026, saved.RolloverFundingApprovalEndDate.Year);
 
         // Assert mediator called
-        _mediatorMock.Verify(m => m.Send(
+        MediatorMock.Verify(m => m.Send(
             It.IsAny<CreateRolloverWorkflowRunCommand>(),
             It.IsAny<CancellationToken>()),
             Times.Once);
@@ -1486,14 +913,14 @@ public class RolloverControllerTests
     public async Task GetRolloverCandidatesForExport_ReturnsFileResult()
     {
         // Arrange
-        var controller = CreateControllerWithSession(CreateEmptySession());
+        var controller = CreateController(CreateEmptySession());
 
         var workflowRunId = Guid.NewGuid();
 
         var expectedBytes = new byte[] { 1, 2, 3 };
         var expectedFileName = "export.csv";
 
-        _mediatorMock
+        MediatorMock
             .Setup(m => m.Send(It.IsAny<GetRolloverCandidatesForExportQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new BaseMediatrResponse<GetRolloverCandidatesForExportQueryResponse>
             {
@@ -1519,7 +946,7 @@ public class RolloverControllerTests
     [Fact]
     public void InitialChecksExport_ReturnsView()
     {
-        var controller = CreateControllerWithSession(CreateEmptySession());
+        var controller = CreateController(CreateEmptySession());
 
         var result = controller.InitialChecksExport();
 

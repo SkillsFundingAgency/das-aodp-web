@@ -2,31 +2,30 @@
 using SFA.DAS.AODP.Application.Commands.Rollover;
 using SFA.DAS.AODP.Domain.Interfaces;
 using SFA.DAS.AODP.Domain.Rollover;
-using Xunit.Sdk;
 
 namespace SFA.DAS.AODP.Application.UnitTests.Commands.Rollover
 {
-    public class ValidateFundingExtensionCandidatesCommandHandlerTests
+    public class ValidateRolloverExtensionCommandHandlerTests
     {
         private readonly Mock<IApiClient> _mockApiClient;
-        private readonly ValidateFundingExtensionCandidatesCommandHandler _handler;
+        private readonly ValidateRolloverExtensionCommandHandler _handler;
 
-        public ValidateFundingExtensionCandidatesCommandHandlerTests()
+        public ValidateRolloverExtensionCommandHandlerTests()
         {
             _mockApiClient = new Mock<IApiClient>();
-            _handler = new ValidateFundingExtensionCandidatesCommandHandler(_mockApiClient.Object);
+            _handler = new ValidateRolloverExtensionCommandHandler(_mockApiClient.Object);
         }
 
         [Fact]
         public async Task Handle_ReturnsSuccess_WhenApiReturnsResponse()
         {
             // Arrange
-            var request = new ValidateFundingExtensionCandidatesCommand
+            var request = new ValidateRolloverExtensionCommand
             {
-                FundingExtensionCandidates = []
+                RolloverCandidates = []
             };
 
-            var expectedApiResponse = new ValidateFundingExtensionCandidatesCommandResponse
+            var expectedApiResponse = new ValidateRolloverExtensionCommandResponse
             {
                 IsValid = true,
                 ValidationSuccessSummary = new FundingExtensionSummary
@@ -40,8 +39,8 @@ namespace SFA.DAS.AODP.Application.UnitTests.Commands.Rollover
             };
 
             _mockApiClient
-                .Setup(c => c.PostWithResponseCode<ValidateFundingExtensionCandidatesCommandResponse>(
-                    It.IsAny<ValidateFundingExtensionCandidatesApiRequest>()))
+                .Setup(c => c.PostWithResponseCode<ValidateRolloverExtensionCommandResponse>(
+                    It.IsAny<ValidateRolloverExtensionApiRequest>()))
                 .ReturnsAsync(expectedApiResponse);
 
             // Act
@@ -54,8 +53,8 @@ namespace SFA.DAS.AODP.Application.UnitTests.Commands.Rollover
             Assert.Null(result.ErrorMessage);
 
             _mockApiClient.Verify(c =>
-                c.PostWithResponseCode<ValidateFundingExtensionCandidatesCommandResponse>(
-                    It.IsAny<ValidateFundingExtensionCandidatesApiRequest>()),
+                c.PostWithResponseCode<ValidateRolloverExtensionCommandResponse>(
+                    It.IsAny<ValidateRolloverExtensionApiRequest>()),
                 Times.Once);
         }
 
@@ -63,11 +62,11 @@ namespace SFA.DAS.AODP.Application.UnitTests.Commands.Rollover
         public async Task Handle_ReturnsFailure_WhenApiThrowsException()
         {
             // Arrange
-            var request = new ValidateFundingExtensionCandidatesCommand();
+            var request = new ValidateRolloverExtensionCommand();
 
             _mockApiClient
-                .Setup(c => c.PostWithResponseCode<ValidateFundingExtensionCandidatesCommandResponse>(
-                    It.IsAny<ValidateFundingExtensionCandidatesApiRequest>()))
+                .Setup(c => c.PostWithResponseCode<ValidateRolloverExtensionCommandResponse>(
+                    It.IsAny<ValidateRolloverExtensionApiRequest>()))
                 .ThrowsAsync(new Exception("API failed"));
 
             // Act
@@ -78,8 +77,8 @@ namespace SFA.DAS.AODP.Application.UnitTests.Commands.Rollover
             Assert.Equal("API failed", result.ErrorMessage);
 
             _mockApiClient.Verify(c =>
-                c.PostWithResponseCode<ValidateFundingExtensionCandidatesCommandResponse>(
-                    It.IsAny<ValidateFundingExtensionCandidatesApiRequest>()),
+                c.PostWithResponseCode<ValidateRolloverExtensionCommandResponse>(
+                    It.IsAny<ValidateRolloverExtensionApiRequest>()),
                 Times.Once);
         }
 
@@ -87,21 +86,21 @@ namespace SFA.DAS.AODP.Application.UnitTests.Commands.Rollover
         public async Task Handle_SendsCorrectApiRequest()
         {
             // Arrange
-            var request = new ValidateFundingExtensionCandidatesCommand
+            var request = new ValidateRolloverExtensionCommand
             {
-                FundingExtensionCandidates = []
+                RolloverCandidates = []
             };
 
-            ValidateFundingExtensionCandidatesApiRequest? captured = null;
+            ValidateRolloverExtensionApiRequest? captured = null;
 
             _mockApiClient
-                .Setup(c => c.PostWithResponseCode<ValidateFundingExtensionCandidatesCommandResponse>(
+                .Setup(c => c.PostWithResponseCode<ValidateRolloverExtensionCommandResponse>(
                     It.IsAny<IPostApiRequest>()))
                 .Callback<IPostApiRequest>(req =>
                 {
-                    captured = req as ValidateFundingExtensionCandidatesApiRequest;
+                    captured = req as ValidateRolloverExtensionApiRequest;
                 })
-                .ReturnsAsync(new ValidateFundingExtensionCandidatesCommandResponse());
+                .ReturnsAsync(new ValidateRolloverExtensionCommandResponse());
 
             // Act
             await _handler.Handle(request, CancellationToken.None);

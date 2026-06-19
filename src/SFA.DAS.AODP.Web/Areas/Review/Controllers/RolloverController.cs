@@ -121,14 +121,6 @@ public class RolloverController : ControllerBase
                 FundingExtensionCandidateMapper.Map
             );
 
-            var candidates = file.Items
-                .Select((c, index) =>
-                {
-                    c.RowNumber = index + 1;
-                    return c;
-                })
-                .ToList();
-
             if (!file.IsValid)
             {
                 foreach (var error in file.Errors)
@@ -137,15 +129,24 @@ public class RolloverController : ControllerBase
                 return View(model);
             }
 
-
-            var command = new ValidateFundingExtensionCandidatesCommand
+            var command = new ValidateRolloverExtensionCommand
             {
-                FundingExtensionCandidates = candidates
+                RolloverCandidates = file.Items.Select(
+                    x => new RolloverCandidateForValidation 
+                    { 
+                        Qan = x.Qan,
+                        FundingStreamName = x.FundingStreamName,
+                        RollOverStatus = x.RollOverStatus,
+                        ExclusionReason = x.ExclusionReason,
+                        ProposedFundingApprovalEndDate = x.ProposedFundingApprovalEndDate,
+                        Comments = x.Comments
+                    }
+                    ).ToList()
             };
 
             var validationResponse = await Send(command);
 
-            session.RolloverFundingExtensionCandidates = candidates;
+            session.RolloverFundingExtensionCandidates = file.Items;
             SaveSessionModel(session);
 
             if (!validationResponse.IsValid)
@@ -219,7 +220,7 @@ public class RolloverController : ControllerBase
     {
         var session = GetSessionModel();
 
-        var command = new ApplyFundingExtensionsCommand
+        var command = new SubmitRolloverExtensionCommand
         {
             Items = session.RolloverFundingExtensionCandidates.Select(
                 x => new FundingExtensionItem 
@@ -697,15 +698,6 @@ public class RolloverController : ControllerBase
             return View("EnterRolloverFundingApprovalEndDate", model);
         }
 
-        session.RolloverFundingApprovalEndDate = new RolloverFundingApprovalEndDate
-        {
-            Day = model.MaxApprovalEndDate?.Day,
-            Month = model.MaxApprovalEndDate?.Month,
-            Year = model.MaxApprovalEndDate?.Year,
-        };
-
-        SaveSessionModel(session);
-
         var candidates = session.RolloverCandidates ?? new List<QualificationCandidate>();
         var eligibility = session.RolloverEligibilityDates;
         var stream = session.RolloverFundingStream;
@@ -737,7 +729,15 @@ public class RolloverController : ControllerBase
 
         var response = await Send(command);
 
+        session.RolloverFundingApprovalEndDate = new RolloverFundingApprovalEndDate
+        {
+            Day = model.MaxApprovalEndDate?.Day,
+            Month = model.MaxApprovalEndDate?.Month,
+            Year = model.MaxApprovalEndDate?.Year,
+        };
         TempData["RolloverWorkflowRunId"] = response.RolloverWorkflowRunId;
+        session.WorkflowRunId = response.RolloverWorkflowRunId;
+        SaveSessionModel(session);
 
         return RedirectToAction(nameof(InitialChecksExport));
 

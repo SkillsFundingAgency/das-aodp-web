@@ -236,5 +236,105 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Helpers
             Assert.Contains("The selected file contains more than 1000 rows. Upload a CSV file that contains less than 1000 rows.", result.Errors);
         }
 
+        [Fact]
+        public async Task FileReadAsync_IgnoresBlankLines()
+        {
+            var reader = CreateReader();
+
+            var file = CreateFormFile(
+                @"Qualification number,Title,Awarding organisation,Funding offer,Funding approval end date
+
+            123,Maths,NCFE,Yes,2025-12-31
+
+            ");
+
+            var result = await reader.FileReadAsync(
+                file,
+                RequiredHeaders,
+                row => row["qualification number"]
+            );
+
+            Assert.True(result.IsValid);
+            Assert.Single(result.Items);
+            Assert.Equal("123", result.Items[0]);
+        }
+
+        [Fact]
+        public async Task FileReadAsync_IgnoresRowsWithOnlyCommas()
+        {
+            var reader = CreateReader();
+
+            var file = CreateFormFile(
+                @"Qualification number,Title,Awarding organisation,Funding offer,Funding approval end date
+                ,,,,
+                123,Maths,NCFE,Yes,2025-12-31");
+
+            var result = await reader.FileReadAsync(
+                file,
+                RequiredHeaders,
+                row => row["qualification number"]
+            );
+
+            Assert.True(result.IsValid);
+            Assert.Single(result.Items);
+        }
+
+        [Fact]
+        public async Task FileReadAsync_ParsesQuotedValuesCorrectly()
+        {
+            var reader = CreateReader();
+
+            var file = CreateFormFile(
+                @"Qualification number,Title,Awarding organisation,Funding offer,Funding approval end date
+                ""123,456"", ""My, Qualification"", NCFE, Yes, 2025-12-31");
+
+            var result = await reader.FileReadAsync(
+                file,
+                RequiredHeaders,
+                row => row["title"]
+            );
+
+            Assert.True(result.IsValid);
+            Assert.Single(result.Items);
+            Assert.Equal("My, Qualification", result.Items[0]);
+        }
+
+        [Fact]
+        public async Task FileReadAsync_IgnoresExtraColumns()
+        {
+            var reader = CreateReader();
+
+            var file = CreateFormFile(
+                @"Qualification number,Title,Awarding organisation,Funding offer,Funding approval end date
+        123,Maths,NCFE,Yes,2025-12-31,EXTRA1,EXTRA2");
+
+            var result = await reader.FileReadAsync(
+                file,
+                RequiredHeaders,
+                row => row["qualification number"]
+            );
+
+            Assert.True(result.IsValid);
+            Assert.Single(result.Items);
+        }
+
+        [Fact]
+        public async Task FileReadAsync_FillsMissingMiddleColumn()
+        {
+            var reader = CreateReader();
+
+            var file = CreateFormFile(
+                @"Qualification number,Title,Awarding organisation,Funding offer,Funding approval end date
+        123,Maths,,Yes,2025-12-31");
+
+            var result = await reader.FileReadAsync(
+                file,
+                RequiredHeaders,
+                row => row["awarding organisation"]
+            );
+
+            Assert.True(result.IsValid);
+            Assert.Equal("", result.Items[0]);
+        }
     }
 }

@@ -1,77 +1,22 @@
-﻿using FluentValidation;
-using MediatR;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.Rollover;
-using SFA.DAS.AODP.Infrastructure.Cache;
 using SFA.DAS.AODP.Models.Rollover;
-using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
-using SFA.DAS.AODP.Web.Helpers.User;
 
 namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
 {
-    public class UploadQualificationsToRolloverTests
+    public class UploadQualificationsToRolloverTests : RolloverControllerTestBase
     {
-        private readonly Mock<ICsvFileReader> _csvFileReaderMock;
-        private readonly Mock<IMediator> _mediatorMock;
-        private readonly Mock<ILogger<RolloverController>> _loggerMock;
-        private readonly Mock<IValidator<RolloverEligibilityDatesViewModel>> _eligibilityDatesValidatorMock;
-        private readonly Mock<IValidator<RolloverFundingApprovalEndDateViewModel>> _approvalEndDateValidatorMock;
-        private readonly Mock<IUserHelperService> _userHelperServiceMock;
-        private readonly Mock<ICacheService> _cacheServiceMock;
-
-
-        public UploadQualificationsToRolloverTests()
-        {
-            _csvFileReaderMock = new Mock<ICsvFileReader>();
-            _mediatorMock = new Mock<IMediator>();
-            _loggerMock = new Mock<ILogger<RolloverController>>();
-            _eligibilityDatesValidatorMock = new Mock<IValidator<RolloverEligibilityDatesViewModel>>();
-            _approvalEndDateValidatorMock = new Mock<IValidator<RolloverFundingApprovalEndDateViewModel>>();
-            _userHelperServiceMock = new Mock<IUserHelperService>();
-            _cacheServiceMock = new Mock<ICacheService>();
-        }
-
-        private RolloverController CreateController(ISession session)
-        {
-            var controller = new RolloverController(
-                _loggerMock.Object,
-                _mediatorMock.Object,
-                _eligibilityDatesValidatorMock.Object,
-                _approvalEndDateValidatorMock.Object,
-                _csvFileReaderMock.Object,
-                _userHelperServiceMock.Object,
-                _cacheServiceMock.Object);
-
-            var httpContext = new DefaultHttpContext();
-            httpContext.Session = session;
-
-            controller.ControllerContext = new ControllerContext
-            {
-                HttpContext = httpContext
-            };
-
-            controller.TempData = new TempDataDictionary(
-                new DefaultHttpContext(),
-                Mock.Of<ITempDataProvider>());
-
-            return controller;
-        }
-
-        private static ISession EmptySession() => new TestSession();
-
         [Fact]
         public async Task UploadQualificationsToRollover_WhenFileNullAndSessionHasCandidates_RedirectsToSummary()
         {
-            var session = EmptySession();
+            var session = CreateEmptySession();
             var rollover = new Rollover
             {
                 RolloverFundingExtensionCandidates = new List<FundingExtensionCandidate>()
@@ -94,7 +39,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
         [Fact]
         public async Task UploadQualificationsToRollover_InvalidModelState_ReturnsViewWithModel()
         {
-            var controller = CreateController(EmptySession());
+            var controller = CreateController(CreateEmptySession());
             controller.ModelState.AddModelError("File", "required");
 
             var model = new RolloverUploadQualificationsViewModel();
@@ -108,7 +53,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
         [Fact]
         public async Task UploadQualificationsToRollover_WhenCsvInvalid_ReturnsViewWithErrors()
         {
-            var controller = CreateController(EmptySession());
+            var controller = CreateController(CreateEmptySession());
 
             var model = new RolloverUploadQualificationsViewModel
             {
@@ -120,7 +65,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
                 Errors = { "Bad row", "Missing column" }
             };
 
-            _csvFileReaderMock
+            CsvFileReaderMock
                 .Setup(x => x.FileReadAsync(
                     model.File,
                     FundingExtensionCandidateColumns.Required,
@@ -136,9 +81,9 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
 
 
         [Fact]
-        public async Task UploadQualificationsToRollover_WhenValidationFails_RedirectsToValidationErrors()
+        public async Task UploadQualificationsToRollover_WhenValidationFails_ReturnsValidationErrorsView()
         {
-            var controller = CreateController(EmptySession());
+            var controller = CreateController(CreateEmptySession());
 
             var model = new RolloverUploadQualificationsViewModel
             {
@@ -154,39 +99,50 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
                         Qan = "123",
                         FundingStreamName = "FS",
                         ProposedFundingApprovalEndDate = DateTime.UtcNow,
-                        RollOverStatus = "Extend"
+                        RollOverStatus = "Extend",
+                        
                     }
                 }
             };
 
-            _csvFileReaderMock
+            CsvFileReaderMock
                 .Setup(x => x.FileReadAsync(
                     model.File,
                     FundingExtensionCandidateColumns.Required,
                     FundingExtensionCandidateMapper.Map))
                 .ReturnsAsync(csvResult);
 
-            _mediatorMock
-                .Setup(m => m.Send(It.IsAny<ValidateFundingExtensionCandidatesCommand>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new BaseMediatrResponse<ValidateFundingExtensionCandidatesCommandResponse>
+            MediatorMock
+                .Setup(m => m.Send(It.IsAny<ValidateRolloverExtensionCommand>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<ValidateRolloverExtensionCommandResponse>
                 {
                     Success = true,
-                    Value = new ValidateFundingExtensionCandidatesCommandResponse
+                    Value = new ValidateRolloverExtensionCommandResponse
                     {
                         IsValid = false,
+                        ValidationFailureSummary = new ValidationFailureSummary
+                        {
+                            FailedCandidateCount = 1,
+                            ValidatedCandidateFile = new byte[] { 0x01, 0x02, 0x03 },
+  
+                        }
                     }
                 });
 
             var result = await controller.UploadQualificationsToRollover(model);
 
-            var redirect = Assert.IsType<RedirectToActionResult>(result);
-            Assert.Equal("RolloverValidationErrors", redirect.ActionName);
+            var view = Assert.IsType<ViewResult>(result);
+            Assert.Equal("RolloverValidationErrors", view.ViewName);
+
+            var returnedModel = Assert.IsType<RolloverUploadQualificationsViewModel>(view.Model);
+            Assert.NotNull(returnedModel.ValidationSummary);
+            Assert.Equal(1, returnedModel.ValidationSummary.FailedCandidateCount);
         }
 
         [Fact]
         public async Task UploadQualificationsToRollover_WhenValidationSucceeds_RedirectsToSummary()
         {
-            var controller = CreateController(EmptySession());
+            var controller = CreateController(CreateEmptySession());
 
             var model = new RolloverUploadQualificationsViewModel
             {
@@ -207,21 +163,22 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
                 }
             };
 
-            _csvFileReaderMock
+            CsvFileReaderMock
                 .Setup(x => x.FileReadAsync(
                     model.File,
                     FundingExtensionCandidateColumns.Required,
                     FundingExtensionCandidateMapper.Map))
                 .ReturnsAsync(csvResult);
 
-            _mediatorMock
-                .Setup(m => m.Send(It.IsAny<ValidateFundingExtensionCandidatesCommand>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new BaseMediatrResponse<ValidateFundingExtensionCandidatesCommandResponse>
+            MediatorMock
+                .Setup(m => m.Send(It.IsAny<ValidateRolloverExtensionCommand>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<ValidateRolloverExtensionCommandResponse>
                 {
                     Success = true,
-                    Value = new ValidateFundingExtensionCandidatesCommandResponse
+                    Value = new ValidateRolloverExtensionCommandResponse
                     {
                         IsValid = true,
+                        ValidationSuccessSummary = new FundingExtensionSummary()
                     }
                 });
 
@@ -234,14 +191,14 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
         [Fact]
         public async Task UploadQualificationsToRollover_WhenExceptionThrown_ReturnsViewWithError()
         {
-            var controller = CreateController(EmptySession());
+            var controller = CreateController(CreateEmptySession());
 
             var model = new RolloverUploadQualificationsViewModel
             {
                 File = Mock.Of<IFormFile>()
             };
 
-            _csvFileReaderMock
+            CsvFileReaderMock
                 .Setup(x => x.FileReadAsync(
                     It.IsAny<IFormFile>(),
                     It.IsAny<string[]>(),
@@ -258,19 +215,9 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
         [Fact]
         public void RolloverSummary_ReturnsView()
         {
-            var controller = CreateController(EmptySession());
+            var controller = CreateController(CreateEmptySession());
 
             var result = controller.RolloverSummary(new RolloverSummaryViewModel { });
-
-            Assert.IsType<ViewResult>(result);
-        }
-
-        [Fact]
-        public void RolloverValidationErrors_ReturnsView()
-        {
-            var controller = CreateController(EmptySession());
-
-            var result = controller.RolloverValidationErrors(new RolloverUploadQualificationsViewModel( ));
 
             Assert.IsType<ViewResult>(result);
         }
