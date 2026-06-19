@@ -19,7 +19,7 @@
 
 @if (!string.IsNullOrWhiteSpace(Model?.ValidationSummary?.ErrorFileToken))
 {
-    <iframe src="@Url.Action(
+    <iframe title="Validation Errors" src="@Url.Action(
         "DownloadCandidateValidationErrors",
         "Rollover",
         new

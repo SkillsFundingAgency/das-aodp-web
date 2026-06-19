@@ -1,5 +1,6 @@
 ﻿namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover
 {
+    [ExcludeFromCodeCoverage]
     public static class FundingExtensionCandidateColumns
     {
         public const string Qan = "QAN";
