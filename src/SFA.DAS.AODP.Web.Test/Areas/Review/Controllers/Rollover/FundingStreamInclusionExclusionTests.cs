@@ -126,7 +126,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
             var vm = new FundingStreamInclusionExclusionViewModel
             {
                 FundingStreams = new List<FundingStream> { fs },
-                SelectedIds = null
+                SelectedIds = new()
             };
 
             var result = await controller.FundingStreamInclusionExclusion(vm, action: "");
@@ -231,6 +231,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
             var json = System.Text.Encoding.UTF8.GetString(bytes);
             var updated = JsonConvert.DeserializeObject<Rollover>(json);
 
+            Assert.NotNull(updated);
             Assert.NotNull(updated.RolloverFundingStream);
             Assert.Single(updated.RolloverFundingStream.SelectedIds);
         }

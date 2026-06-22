@@ -6,7 +6,7 @@
         ViewData.ModelState.TryGetValue(nameof(Model.File), out var fileState)
         && fileState.Errors.Count > 0;
 
-    var fileErrorMessage = fileHasError ? fileState.Errors.First().ErrorMessage : null;
+    var fileErrorMessage = fileHasError ? fileState?.Errors.First().ErrorMessage : null;
 }
 
 @if (fileHasError)

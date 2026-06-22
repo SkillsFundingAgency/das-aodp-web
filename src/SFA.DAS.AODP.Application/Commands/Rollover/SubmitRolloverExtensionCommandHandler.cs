@@ -26,6 +26,13 @@ namespace SFA.DAS.AODP.Application.Commands.Rollover
                     Data = request
                 });
 
+                if (result == null)
+                {
+                    response.Success = false;
+                    response.ErrorMessage = "The API returned no data.";
+                    return response;
+                }
+
                 response.Value =  result;
                 response.Success = true;
             }

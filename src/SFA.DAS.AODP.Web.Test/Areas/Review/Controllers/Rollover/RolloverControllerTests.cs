@@ -440,7 +440,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
         var result = controller.SelectCandidates();
 
         var viewResult = Assert.IsType<ViewResult>(result);
-        var model = viewResult.Model as RolloverSelectCandidatesViewModel;
+        var model = Assert.IsType<RolloverSelectCandidatesViewModel>(viewResult.Model);
         Assert.Equal(nameof(RolloverController.CheckData), model.ReturnUrl);
     }
 

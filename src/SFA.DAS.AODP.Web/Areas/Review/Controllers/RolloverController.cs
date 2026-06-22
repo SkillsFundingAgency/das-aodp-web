@@ -16,7 +16,6 @@ using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Extensions;
 using SFA.DAS.AODP.Web.Helpers.User;
-using System.Text;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers;
@@ -50,7 +49,7 @@ public class RolloverController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/Review/Rollover")]
+    [Route("review/rollover")]
     public IActionResult Index()
     {
         var session = GetSessionModel();
@@ -62,7 +61,7 @@ public class RolloverController : ControllerBase
     }
 
     [HttpPost]
-    [Route("/Review/Rollover")]
+    [Route("review/rollover")]
     public IActionResult Index(RolloverStartViewModel model)
     {
         if (!ModelState.IsValid)
@@ -83,7 +82,7 @@ public class RolloverController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/Review/Rollover/InitialSelection")]
+    [Route("review/rollover/initialselection")]
     public IActionResult InitialSelection()
     {
         ViewData["Title"] = "Initial selection of qualificaton";
@@ -91,14 +90,14 @@ public class RolloverController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/Review/Rollover/UploadQualificationsToRollover")]
+    [Route("review/rollover/uploadqualificationstorollover")]
     public IActionResult UploadQualificationsToRollover()
     {
         return View(new RolloverUploadQualificationsViewModel());
     }
 
     [HttpPost]
-    [Route("/Review/Rollover/UploadQualificationsToRollover")]
+    [Route("review/rollover/uploadqualificationstorollover")]
     public async Task<IActionResult> UploadQualificationsToRollover([FromForm] RolloverUploadQualificationsViewModel model)
     {
         var session = GetSessionModel();
@@ -135,8 +134,8 @@ public class RolloverController : ControllerBase
                     x => new RolloverCandidateForValidation 
                     { 
                         Qan = x.Qan,
-                        FundingStreamName = x.FundingStreamName,
-                        RollOverStatus = x.RollOverStatus,
+                        FundingStreamName = x.FundingStreamName ?? string.Empty,
+                        RollOverStatus = x.RollOverStatus ?? string.Empty,
                         ExclusionReason = x.ExclusionReason,
                         ProposedFundingApprovalEndDate = x.ProposedFundingApprovalEndDate,
                         Comments = x.Comments
@@ -155,19 +154,21 @@ public class RolloverController : ControllerBase
 
                 await _cacheService.SetAsync(
                     $"download:validation:{token}",
-                    validationResponse.ValidationFailureSummary?.ValidatedCandidateFile);
+                    validationResponse.ValidationFailureSummary?.ValidatedCandidateFile ?? Array.Empty<byte>()
+                );
+
 
                 model.ValidationSummary = new RolloverValidationErrorViewModel
                 {
                     ErrorFileToken = token,
-                    FailedCandidateCount = validationResponse?.ValidationFailureSummary?.FailedCandidateCount ?? 0
+                    FailedCandidateCount = validationResponse.ValidationFailureSummary?.FailedCandidateCount ?? 0
                 };
 
                 return View(nameof(RolloverValidationErrors), model);
             }
             else
             {
-                var summaryModel = new RolloverSummaryViewModel(validationResponse?.ValidationSuccessSummary!);
+                var summaryModel = new RolloverSummaryViewModel(validationResponse.ValidationSuccessSummary!);
                 return RedirectToAction(nameof(RolloverSummary), summaryModel);
 
             }
@@ -181,7 +182,7 @@ public class RolloverController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/Review/Rollover/DownloadCandidateValidationErrors")]
+    [Route("review/rollover/downloadcandidatevalidationerrors")]
     public async Task<IActionResult> DownloadCandidateValidationErrors(string token)
     {
         if (string.IsNullOrWhiteSpace(token))
@@ -208,28 +209,34 @@ public class RolloverController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/Review/Rollover/RolloverSummary")]
+    [Route("review/rollover/rolloversummary")]
     public IActionResult RolloverSummary(RolloverSummaryViewModel model)
     {
         return View(model);
     }
 
     [HttpPost]
-    [Route("/Review/Rollover/RolloverSummary")]
+    [Route("review/rollover/rolloversummary")]
     public async Task<IActionResult> RolloverSummary()
     {
         var session = GetSessionModel();
+
+        if (session.RolloverFundingExtensionCandidates == null ||
+            session.RolloverFundingExtensionCandidates.Count == 0)
+        {
+            return RedirectToAction(nameof(UploadQualificationsToRollover));
+        }
 
         var command = new SubmitRolloverExtensionCommand
         {
             Items = session.RolloverFundingExtensionCandidates.Select(
                 x => new FundingExtensionItem 
                 { 
-                    Qan =  x.Qan,
-                    FundingStreamName = x.FundingStreamName,
-                    RolloverStatus = x.RollOverStatus,
+                    Qan =  x.Qan!,
+                    FundingStreamName = x.FundingStreamName!,
+                    RolloverStatus = x.RollOverStatus!,
                     ExclusionReason = x.ExclusionReason,
-                    ProposedFundingApprovalEndDate = x.ProposedFundingApprovalEndDate.Value,
+                    ProposedFundingApprovalEndDate = x.ProposedFundingApprovalEndDate!.Value,
                     Comments = x.Comments
                 }).ToList()
         };
@@ -242,7 +249,7 @@ public class RolloverController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/Review/Rollover/RolloverSubmitted")]
+    [Route("Review/Rollover/RolloverSubmitted")]
     public async Task<IActionResult> RolloverSubmitted()
     {
         return View();
@@ -250,14 +257,14 @@ public class RolloverController : ControllerBase
 
 
     [HttpGet]
-    [Route("/Review/Rollover/RolloverValidationErrors")]
+    [Route("review/rollover/rollovervalidationerrors")]
     public async Task<IActionResult> RolloverValidationErrors(RolloverUploadQualificationsViewModel model)
     {
         return View(model);
     }
 
     [HttpGet]
-    [Route("/Review/Rollover/CheckData")]
+    [Route("review/rollover/checkdata")]
     public async Task<IActionResult> CheckData()
     {
         var session = GetSessionModel();
@@ -322,7 +329,7 @@ public class RolloverController : ControllerBase
     }
 
     [HttpPost]
-    [Route("/Review/Rollover/CheckData")]
+    [Route("review/rollover/checkdata")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CheckData([FromForm] RolloverImportStatusViewModel model)
     {
@@ -374,7 +381,7 @@ public class RolloverController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/Review/Rollover/PreviousFile")]
+    [Route("review/rollover/previousfile")]
     public async Task<IActionResult> PreviousFile()
     {
         var session = GetSessionModel();
@@ -404,7 +411,7 @@ public class RolloverController : ControllerBase
     }
 
     [HttpPost]
-    [Route("/Review/Rollover/PreviousFile")]
+    [Route("review/rollover/previousfile")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> PreviousFile(RolloverPreviousDataViewModel model)
     {
@@ -433,7 +440,7 @@ public class RolloverController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/Review/Rollover/SelectCandidates")]
+    [Route("review/rollover/selectcandidates")]
     public IActionResult SelectCandidates([FromQuery] string? returnAction = null)
     {
         var session = GetSessionModel();
@@ -453,7 +460,7 @@ public class RolloverController : ControllerBase
     }
 
     [HttpPost]
-    [Route("/Review/Rollover/SelectCandidates")]
+    [Route("review/rollover/selectcandidates")]
     [ValidateAntiForgeryToken]
     public IActionResult SelectCandidates([FromForm] RolloverSelectCandidatesViewModel model)
     {
@@ -475,7 +482,7 @@ public class RolloverController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/Review/Rollover/RolloverQueryBuilder")]
+    [Route("review/rollover/rolloverqerybuilder")]
     public IActionResult RolloverQueryBuilder()
     {
         ViewData["Title"] = "Rollover Query Builder";
@@ -483,7 +490,7 @@ public class RolloverController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/Review/Rollover/SelectFundingStreams")]
+    [Route("review/rollover/selectfundingstreams")]
     public IActionResult SelectFundingStreams()
     {
         ViewData["Title"] = "Select funding stream(s)";
@@ -491,19 +498,19 @@ public class RolloverController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/Review/Rollover/UploadQualificationCandidates")]
+    [Route("review/rollover/uploadqualificationcandidates")]
     public async Task<IActionResult> UploadQualificationCandidates()
     {
         return View(new RolloverUploadQualificationCandidatesViewModel());
     }
 
     [HttpPost]
-    [Route("/Review/Rollover/UploadQualificationCandidates")]
+    [Route("review/rollover/uploadqualificationcandidates")]
     public async Task<IActionResult> UploadQualificationCandidates([FromForm] RolloverUploadQualificationCandidatesViewModel model)
     {
         var session = GetSessionModel();
 
-        if (model.File == null && session.RolloverCandidates.Any())
+        if (model.File == null && session.RolloverCandidates.Count > 0)
         {
             return RedirectToAction("FundingStreamInclusionExclusion");
         }
@@ -555,7 +562,7 @@ public class RolloverController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/Review/Rollover/FundingStreamInclusionExclusion")]
+    [Route("review/rollover/fundingstreaminclusionexclusion")]
     public async Task<IActionResult> FundingStreamInclusionExclusion()
     {
         var session = GetSessionModel();
@@ -589,7 +596,7 @@ public class RolloverController : ControllerBase
     }
 
     [HttpPost]
-    [Route("/Review/Rollover/FundingStreamInclusionExclusion")]
+    [Route("review/rollover/fundingstreaminclusionexclusion")]
     public async Task<IActionResult> FundingStreamInclusionExclusion(FundingStreamInclusionExclusionViewModel vm, string action)
     {
         var session = GetSessionModel();
@@ -632,7 +639,7 @@ public class RolloverController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/Review/Rollover/EnterRolloverEligibilityDates")]
+    [Route("review/rollover/enterrollovereligibilitydates")]
     public async Task<IActionResult> EnterRolloverEligibilityDates()
     {
         var session = GetSessionModel();
@@ -648,7 +655,7 @@ public class RolloverController : ControllerBase
     }
 
     [HttpPost]
-    [Route("/Review/Rollover/EnterRolloverEligibilityDates")]
+    [Route("review/rollover/enterrollovereligibilitydates")]
     public async Task<IActionResult> EnterRolloverEligibilityDates(RolloverEligibilityDatesViewModel model)
     {
         var session = GetSessionModel();
@@ -672,7 +679,7 @@ public class RolloverController : ControllerBase
     }
 
     [HttpGet]
-    [Route("/Review/Rollover/EnterRolloverFundingApprovalEndDate")]
+    [Route("review/rollover/enterrolloverfundingapprovalenddate")]
     public IActionResult EnterRolloverFundingApprovalEndDate()
     {
         var session = GetSessionModel();
@@ -685,7 +692,7 @@ public class RolloverController : ControllerBase
     }
 
     [HttpPost]
-    [Route("/Review/Rollover/EnterRolloverFundingApprovalEndDate")]
+    [Route("review/rollover/enterrolloverfundingapprovalenddate")]
     public async Task<IActionResult> EnterRolloverFundingApprovalEndDate(RolloverFundingApprovalEndDateViewModel model)
     {
         var session = GetSessionModel();
@@ -744,7 +751,7 @@ public class RolloverController : ControllerBase
     }
 
     [HttpGet]
-    [Route("api/rollover/GetRolloverCandidatesForExport")]
+    [Route("review/rollover/GetRolloverCandidatesForExport")]
     public async Task<IActionResult> GetRolloverCandidatesForExport([FromQuery]Guid rolloverWorkflowRunId)
     {
         var response = await Send(new GetRolloverCandidatesForExportQuery { RolloverWorkflowRunId = rolloverWorkflowRunId });
@@ -755,7 +762,7 @@ public class RolloverController : ControllerBase
 
 
     [HttpGet]
-    [Route("/Review/Rollover/InitialChecksExport")]
+    [Route("review/rollover/InitialChecksExport")]
     public IActionResult InitialChecksExport()
     {
         return View();

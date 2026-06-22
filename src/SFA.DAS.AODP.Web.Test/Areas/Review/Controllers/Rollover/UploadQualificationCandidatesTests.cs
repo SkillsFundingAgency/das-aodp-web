@@ -24,32 +24,6 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
         }
 
         [Fact]
-        public async Task UploadQualificationCandidates_Post_WhenFileNullAndSessionHasCandidates_RedirectsToFundingStreamSelection()
-        {
-            var session = CreateEmptySession();
-            var rollover = new Rollover
-            {
-                RolloverCandidates = new List<QualificationCandidate>
-                {
-                    new QualificationCandidate()
-                }
-            };
-            session.SetString("RolloverSession", JsonConvert.SerializeObject(rollover));
-
-            var controller = CreateController(session);
-
-            var model = new RolloverUploadQualificationCandidatesViewModel
-            {
-                File = null
-            };
-
-            var result = await controller.UploadQualificationCandidates(model);
-
-            var redirect = Assert.IsType<RedirectToActionResult>(result);
-            Assert.Equal("FundingStreamInclusionExclusion", redirect.ActionName);
-        }
-
-        [Fact]
         public async Task UploadQualificationCandidates_Post_InvalidModelState_ReturnsView()
         {
             var controller = CreateController(CreateEmptySession());

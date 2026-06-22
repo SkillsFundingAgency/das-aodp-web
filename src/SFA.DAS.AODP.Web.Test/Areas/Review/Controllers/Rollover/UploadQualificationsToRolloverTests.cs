@@ -25,10 +25,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
 
             var controller = CreateController(session);
 
-            var model = new RolloverUploadQualificationsViewModel
-            {
-                File = null
-            };
+            var model = new RolloverUploadQualificationsViewModel();
 
             var result = await controller.UploadQualificationsToRollover(model);
 

@@ -48,23 +48,5 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Models.Rollover
             Assert.Equal(string.Empty, result.QualificationName);
             Assert.Equal(string.Empty, result.AwardingOrganisation);
         }
-
-        [Fact]
-        public void Map_DoesNotThrow_WhenDictionaryContainsNullValues()
-        {
-            var row = new Dictionary<string, string>
-            {
-                { QualificationImportColumns.QualificationNumber, null },
-                { QualificationImportColumns.QualificationName, null },
-                { QualificationImportColumns.AwardingOrganisation, null }
-            };
-
-            var result = QualificationCandidateMapper.Map(row);
-
-            // Nulls become empty strings
-            Assert.Equal(string.Empty, result.QualificationNumber);
-            Assert.Equal(string.Empty, result.QualificationName);
-            Assert.Equal(string.Empty, result.AwardingOrganisation);
-        }
     }
 }

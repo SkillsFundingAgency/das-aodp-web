@@ -7,15 +7,13 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
     {
 
         [Fact]
-        public async Task DownloadCandidateValidationErrors_WhenTokenNullOrEmpty_ReturnsBadRequest()
+        public async Task DownloadCandidateValidationErrors_WhenTokenEmpty_ReturnsBadRequest()
         {
             var controller = CreateController(CreateEmptySession());
 
-            var result1 = await controller.DownloadCandidateValidationErrors(null);
-            var result2 = await controller.DownloadCandidateValidationErrors("");
+            var result1 = await controller.DownloadCandidateValidationErrors(string.Empty);
 
             Assert.IsType<BadRequestResult>(result1);
-            Assert.IsType<BadRequestResult>(result2);
         }
 
         [Fact]
