@@ -16,10 +16,9 @@
     <p>A CSV file has been exported to your device which lists all validation errors found in the rollover file.</p>
     <p>You must fix these errors, then import the file again to complete rollover.</p>
 
-    <p>Some qualifications could not be included and have been removed from the file:</p>
-
     @if (Model?.ValidationSummary?.NotValidCandidates.Count > 0)
     {
+        <p>Some qualifications could not be included and have been removed from the file:</p>
         <details class="govuk-details govuk-!-margin-top-4">
             <summary class="govuk-details__summary">
                 <span class="govuk-details__summary-text">
