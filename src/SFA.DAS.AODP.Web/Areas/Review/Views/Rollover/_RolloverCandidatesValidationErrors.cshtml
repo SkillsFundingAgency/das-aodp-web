@@ -15,6 +15,49 @@
 <div class="govuk-inset-text">
     <p>A CSV file has been exported to your device which lists all validation errors found in the rollover file.</p>
     <p>You must fix these errors, then import the file again to complete rollover.</p>
+
+    <p>Some qualifications could not be included and have been removed from the file:</p>
+
+    @if (Model?.ValidationSummary?.NotValidCandidates.Count > 0)
+    {
+        <details class="govuk-details govuk-!-margin-top-4">
+            <summary class="govuk-details__summary">
+                <span class="govuk-details__summary-text">
+                    View candidates that were removed
+                </span>
+            </summary>
+
+            <div class="govuk-details__text">
+                <table class="govuk-table govuk-table--small govuk-!-margin-bottom-2">
+                    <thead>
+                        <tr>
+                            <th class="govuk-table__header govuk-body-s">QAN</th>
+                            <th class="govuk-table__header govuk-body-s">Funding stream</th>
+                            <th class="govuk-table__header govuk-body-s">Error</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.ValidationSummary.NotValidCandidates)
+                        {
+                            <tr>
+                                <td class="govuk-table__cell govuk-body-s">@item.Qan</td>
+                                <td class="govuk-table__cell govuk-body-s">@item.FundingStream</td>
+                                <td class="govuk-table__cell govuk-body-s">
+                                    <ul class="govuk-list govuk-list--bullet govuk-body-s govuk-!-margin-bottom-0">
+                                        @foreach (var err in item.ErrorMessages)
+                                        {
+                                            <li>@err</li>
+                                        }
+                                    </ul>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+            </div>
+        </details>
+    }
 </div>
 
 @if (!string.IsNullOrWhiteSpace(Model?.ValidationSummary?.ErrorFileToken))

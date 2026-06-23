@@ -157,11 +157,20 @@ public class RolloverController : ControllerBase
                     validationResponse.ValidationFailureSummary?.ValidatedCandidateFile ?? Array.Empty<byte>()
                 );
 
+                var notValidForRollover = validationResponse.ValidationFailureSummary?.NotIncludedInRollover?
+                    .Select(c => new RolloverValidationErrorItem
+                    {
+                        Qan = c.Qan,
+                        FundingStream = c.FundingStream,
+                        ErrorMessages = c.Errors
+                    })
+                    .ToList() ?? new List<RolloverValidationErrorItem>();
 
                 model.ValidationSummary = new RolloverValidationErrorViewModel
                 {
                     ErrorFileToken = token,
-                    FailedCandidateCount = validationResponse.ValidationFailureSummary?.FailedCandidateCount ?? 0
+                    FailedCandidateCount = validationResponse.ValidationFailureSummary?.FailedCandidateCount ?? 0,
+                    NotValidCandidates = notValidForRollover
                 };
 
                 return View(nameof(RolloverValidationErrors), model);

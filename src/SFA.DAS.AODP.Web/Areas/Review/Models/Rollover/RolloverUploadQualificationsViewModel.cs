@@ -19,6 +19,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover
         public int FailedCandidateCount { get; set; }
 
         public string? ErrorFileToken { get; set; }
+        public List<RolloverValidationErrorItem> NotValidCandidates { get; set; } = new();
+
     }
 
     [ExcludeFromCodeCoverage]
@@ -44,5 +46,13 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover
             TotalCandidatesToBeReviewedCount = summaryFromResponse.TotalCandidatesToBeReviewedCount;
         }
 
+    }
+
+    [ExcludeFromCodeCoverage]
+    public class RolloverValidationErrorItem
+    {
+        public string Qan { get; set; } = string.Empty;
+        public string FundingStream { get; set; } = string.Empty;
+        public List<string> ErrorMessages { get; set; } = new();
     }
 }

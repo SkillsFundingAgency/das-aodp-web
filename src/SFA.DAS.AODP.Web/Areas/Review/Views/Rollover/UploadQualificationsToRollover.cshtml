@@ -6,8 +6,16 @@
 
 @{
     ViewData["Title"] = "Upload candidates to rollover";
+
+    var backLinkModel = new BackLinkModel
+    {
+        Action = nameof(RolloverController.Index),
+        Controller = "Rollover",
+        Area = "Review"
+    };
 }
 
+@await Html.PartialAsync("_BackLinkPartial", backLinkModel)
 
 <partial name="_FileUploadErrors" model="Model" />
 

@@ -16,8 +16,11 @@ namespace SFA.DAS.AODP.Application.Commands.Rollover
     [ExcludeFromCodeCoverage]
     public class ValidationFailureSummary
     {
+        public string? GeneralFailureMessage { get; set; }
         public int FailedCandidateCount { get; set; }
         public byte[]? ValidatedCandidateFile { get; set; }
+        public List<CandidateNotIncludedInRollover> NotIncludedInRollover { get; set; } = new();
+
     }
 
     [ExcludeFromCodeCoverage]
@@ -29,5 +32,13 @@ namespace SFA.DAS.AODP.Application.Commands.Rollover
         public int TotalCandidatesToBeExcludedCount { get; set; }
         public int TotalCandidatesToBeReviewedCount { get; set; }
 
+    }
+
+    [ExcludeFromCodeCoverage]
+    public class CandidateNotIncludedInRollover
+    {
+        public required string Qan { get; set; }
+        public required string FundingStream { get; set; }
+        public List<string> Errors { get; set; } = new();
     }
 }
