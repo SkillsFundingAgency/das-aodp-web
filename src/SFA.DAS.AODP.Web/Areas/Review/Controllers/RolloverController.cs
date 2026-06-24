@@ -100,13 +100,6 @@ public class RolloverController : ControllerBase
     [Route("review/rollover/uploadqualificationstorollover")]
     public async Task<IActionResult> UploadQualificationsToRollover([FromForm] RolloverUploadQualificationsViewModel model)
     {
-        var session = GetSessionModel();
-
-        if (model.File == null && session.RolloverFundingExtensionCandidates != null)
-        {
-            return RedirectToAction("RolloverSummary");
-        }
-
         if (!ModelState.IsValid)
         {
             return View(model);
@@ -145,6 +138,7 @@ public class RolloverController : ControllerBase
 
             var validationResponse = await Send(command);
 
+            var session = GetSessionModel();
             session.RolloverFundingExtensionCandidates = file.Items;
             SaveSessionModel(session);
 
