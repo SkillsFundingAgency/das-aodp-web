@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.Rollover;
 using SFA.DAS.AODP.Application.Queries.Import;
 using SFA.DAS.AODP.Application.Queries.Review.Rollover;
+using SFA.DAS.AODP.Models.Qualifications;
 using SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Extensions;
 using SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover;
@@ -588,6 +589,7 @@ public class RolloverController : ControllerBase
         }
         catch (Exception ex)
         {
+            LogException(ex);
             throw;
         }
     }
@@ -722,6 +724,13 @@ public class RolloverController : ControllerBase
 
         if (model.SelectionType is SectorSubjectAreaSelectionType.SpecificSelection)
         {
+            if (action == "selectAll")
+            {
+                model.SelectedSectorSubjectAreas = SectorSubjectArea.All.ToList();
+                ModelState.Clear();
+                return View(model);
+            }
+
             if (model.SelectedSectorSubjectAreas.Count <= 0)
             {
                 ModelState.AddModelError($"{nameof(model.SelectedSectorSubjectAreas)}", "You must select at least one SSA");
@@ -771,6 +780,13 @@ public class RolloverController : ControllerBase
 
         if (model.SelectionType is AwardingOrganisationSelectionType.SpecificSelection)
         {
+            if (action == "selectAll")
+            {
+                //model.SelectedAwardingOrganisations = new List<AwardingOrganisation>;
+                ModelState.Clear();
+                return View(model);
+            }
+
             if (model.SelectedAwardingOrganisations.Count <= 0)
             {
                 ModelState.AddModelError($"{nameof(model.SelectedAwardingOrganisations)}", "You must select at least one awarding organisation");
