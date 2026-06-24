@@ -513,13 +513,6 @@ public class RolloverController : ControllerBase
     [Route("review/rollover/uploadqualificationcandidates")]
     public async Task<IActionResult> UploadQualificationCandidates([FromForm] RolloverUploadQualificationCandidatesViewModel model)
     {
-        var session = GetSessionModel();
-
-        if (model.File == null && session.RolloverCandidates.Count > 0)
-        {
-            return RedirectToAction("FundingStreamInclusionExclusion");
-        }
-
         if (!ModelState.IsValid)
         {
             return View(model);
@@ -558,6 +551,7 @@ public class RolloverController : ControllerBase
             return View(model);
         }
 
+        var session = GetSessionModel();
         session.RolloverCandidates = matchedCsv;
         session.RolloverFundingStream = null;
 
