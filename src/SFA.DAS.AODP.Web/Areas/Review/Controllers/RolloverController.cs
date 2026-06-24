@@ -93,6 +93,7 @@ public class RolloverController : ControllerBase
     [Route("review/rollover/uploadqualificationstorollover")]
     public IActionResult UploadQualificationsToRollover()
     {
+        ModelState.Clear();
         return View(new RolloverUploadQualificationsViewModel());
     }
 
@@ -504,6 +505,7 @@ public class RolloverController : ControllerBase
     [Route("review/rollover/uploadqualificationcandidates")]
     public async Task<IActionResult> UploadQualificationCandidates()
     {
+        ModelState.Clear();
         return View(new RolloverUploadQualificationCandidatesViewModel());
     }
 

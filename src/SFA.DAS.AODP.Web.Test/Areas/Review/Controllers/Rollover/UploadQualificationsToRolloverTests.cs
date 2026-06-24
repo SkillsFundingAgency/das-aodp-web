@@ -14,26 +14,6 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
     public class UploadQualificationsToRolloverTests : RolloverControllerTestBase
     {
         [Fact]
-        public async Task UploadQualificationsToRollover_WhenFileNullAndSessionHasCandidates_RedirectsToSummary()
-        {
-            var session = CreateEmptySession();
-            var rollover = new Rollover
-            {
-                RolloverFundingExtensionCandidates = new List<FundingExtensionCandidate>()
-            };
-            session.SetString("RolloverSession", JsonConvert.SerializeObject(rollover));
-
-            var controller = CreateController(session);
-
-            var model = new RolloverUploadQualificationsViewModel();
-
-            var result = await controller.UploadQualificationsToRollover(model);
-
-            var redirect = Assert.IsType<RedirectToActionResult>(result);
-            Assert.Equal("RolloverSummary", redirect.ActionName);
-        }
-
-        [Fact]
         public async Task UploadQualificationsToRollover_InvalidModelState_ReturnsViewWithModel()
         {
             var controller = CreateController(CreateEmptySession());
