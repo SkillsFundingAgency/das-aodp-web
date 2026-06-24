@@ -13,7 +13,7 @@
     @Html.HiddenFor(m => m.Page)
     @Html.AntiForgeryToken()
     <div class="govuk-form-group @(ViewData.ModelState["SatisfactionScore"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
-        <govuk-radios asp-for="SatisfactionScore">
+        <govuk-radios for="SatisfactionScore">
             <govuk-radios-fieldset>
                 <govuk-radios-fieldset-legend is-page-heading="false" class="govuk-fieldset__legend--s">
                     Overall, how did you feel about the service you received today?

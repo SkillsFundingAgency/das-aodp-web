@@ -6,11 +6,12 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
-using SFA.DAS.AODP.Application.Services;
+using SFA.DAS.AODP.UnitTests.Helper;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 using System.Diagnostics.CodeAnalysis;
+using SFA.DAS.AODP.Application.Services;
 using SFA.DAS.AODP.Models.Qualifications;
 
 namespace SFA.DAS.AODP.Web.UnitTests.Controllers;
@@ -24,8 +25,15 @@ public class ReviewChangedControllerTests
     public ReviewChangedControllerTests()
     {
         _fixture = new Fixture().Customize(new AutoMoqCustomization());
+
         var loggerMock = _fixture.Freeze<Mock<ILogger<ChangedController>>>();
         var userHelper = _fixture.Freeze<Mock<IUserHelperService>>();
+
+        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
+            .ForEach(b => _fixture.Behaviors.Remove(b));
+        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
+        _fixture.Customizations.Add(new DateOnlySpecimenBuilder());
+
         _mediatorMock = _fixture.Freeze<Mock<IMediator>>();
         _mediatorMock = _fixture.Freeze<Mock<IMediator>>();
         var timelineBuilder = _fixture.Freeze<Mock<IQualificationTimelineHistoryBuilder>>();
@@ -242,11 +250,7 @@ public class ReviewChangedControllerTests
     public async Task Search()
     {
         // Arrange
-        var viewModel = new ChangedQualificationsViewModel
-        {
-            PaginationViewModel = new PaginationViewModel(10, 1, 1),
-            Filter = new NewQualificationFilterViewModel()
-        };
+        var viewModel = new ChangedQualificationsViewModel();
 
         // Act
         var result = await _controller.Search(viewModel);
