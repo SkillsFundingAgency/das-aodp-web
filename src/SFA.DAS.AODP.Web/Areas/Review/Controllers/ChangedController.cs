@@ -287,13 +287,13 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 if (applications != null)
                     latestVersion.Applications = ApplicationMapper.Map(applications);
 
-                //if (latestVersion.Version > 1)
-                //{
-                //    var previousVersion = await Send(new GetQualificationVersionQuery() { QualificationReference = qualificationReference, Version = latestVersion.Version - 1 });
-                //    var currentVersionForComparison = await Send(new GetQualificationVersionQuery() { QualificationReference = qualificationReference, Version = latestVersion.Version });
+                if (latestVersion.Version > 1)
+                {
+                    var previousVersion = await Send(new GetQualificationVersionQuery() { QualificationReference = qualificationReference, Version = latestVersion.Version - 1 });
+                    var currentVersionForComparison = await Send(new GetQualificationVersionQuery() { QualificationReference = qualificationReference, Version = latestVersion.Version });
 
-                //    latestVersion.KeyFieldChanges = _qualificationTimelineHistoryBuilder.GetKeyFieldChanges(currentVersionForComparison, previousVersion);
-                //}
+                    latestVersion.KeyFieldChanges = _qualificationTimelineHistoryBuilder.GetKeyFieldChanges(currentVersionForComparison, previousVersion);
+                }
 
                 return View(latestVersion);
             }

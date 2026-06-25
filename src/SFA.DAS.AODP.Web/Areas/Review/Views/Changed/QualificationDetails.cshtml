@@ -176,7 +176,7 @@
 
             <div class="govuk-!-margin-bottom-8">
                 <govuk-summary-list>
-                    @foreach (var change in Model.GetKeyFieldChanges().OrderBy(item => item.KeyField.DisplayName))
+                    @foreach (var change in Model.KeyFieldChanges.OrderBy(item => item.KeyField.DisplayName))
                     {
                         <govuk-summary-list-row>
                             <govuk-summary-list-row-key>@change.KeyField</govuk-summary-list-row-key>

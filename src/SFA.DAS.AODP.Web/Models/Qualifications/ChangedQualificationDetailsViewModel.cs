@@ -122,6 +122,8 @@ public class ChangedQualificationDetailsViewModel
         }
     }
 
+    public List<KeyFieldChange> KeyFieldChanges { get; set; }
+
     private KeyFieldPriority CalculatePriority()
     {
         if (Status == ActionTypeEnum.NoActionRequired)
