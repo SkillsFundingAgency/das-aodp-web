@@ -2,7 +2,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing.Matching;
 using SFA.DAS.AODP.Application.Commands.Rollover;
 using SFA.DAS.AODP.Application.Queries.Import;
 using SFA.DAS.AODP.Application.Queries.Review.Rollover;
@@ -94,7 +93,7 @@ public class RolloverController : ControllerBase
     public IActionResult UploadQualificationsToRollover()
     {
         ModelState.Clear();
-        return View(new RolloverUploadQualificationsViewModel());
+        return View(new RolloverUploadQualificationsViewModel { ReturnViewName = nameof(UploadQualificationsToRollover) });
     }
 
     [HttpPost]
@@ -103,7 +102,7 @@ public class RolloverController : ControllerBase
     {
         if (!ModelState.IsValid)
         {
-            return View(model);
+            return View(model.ReturnViewName, model);
         }
 
         try
@@ -119,7 +118,7 @@ public class RolloverController : ControllerBase
                 foreach (var error in file.Errors)
                     ModelState.AddModelError(nameof(model.File), error);
 
-                return View(model);
+                return View(model.ReturnViewName, model);
             }
 
             var command = new ValidateRolloverExtensionCommand
@@ -168,6 +167,7 @@ public class RolloverController : ControllerBase
                     NotValidCandidates = notValidForRollover
                 };
 
+
                 return View(nameof(RolloverValidationErrors), model);
             }
             else
@@ -181,7 +181,7 @@ public class RolloverController : ControllerBase
         {
             LogException(ex);
             ModelState.AddModelError("", "An unexpected error occurred while validating the file.");
-            return View(model);
+            return View(model.ReturnViewName, model);
         }   
     }
 
@@ -264,6 +264,7 @@ public class RolloverController : ControllerBase
     [Route("review/rollover/rollovervalidationerrors")]
     public async Task<IActionResult> RolloverValidationErrors(RolloverUploadQualificationsViewModel model)
     {
+        model.ReturnViewName = nameof(RolloverValidationErrors);
         return View(model);
     }
 
@@ -708,16 +709,19 @@ public class RolloverController : ControllerBase
         var eligibility = session.RolloverEligibilityDates;
         var stream = session.RolloverFundingStream;
 
+        var fundingOfferIds = stream?
+            .SelectedIds
+            .Distinct()
+            .ToList() ?? new ();
+
         var academicYear = candidates
             .Select(c => c.AcademicYear)
             .FirstOrDefault(y => !string.IsNullOrWhiteSpace(y));
 
+        //Only send candidates if their offer type is selected
         var candidateIds = candidates
+            .Where(c => fundingOfferIds.Contains(c.FundingOfferId))
             .Select(c => c.RolloverCandidateId)
-            .Distinct()
-            .ToList();
-
-        var fundingOfferIds = (stream?.SelectedIds ?? Enumerable.Empty<Guid>())
             .Distinct()
             .ToList();
 

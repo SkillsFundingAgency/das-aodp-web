@@ -14,27 +14,32 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
     public class UploadQualificationsToRolloverTests : RolloverControllerTestBase
     {
         [Fact]
-        public async Task UploadQualificationsToRollover_InvalidModelState_ReturnsViewWithModel()
+        public async Task UploadQualificationsToRollover_InvalidModelState_ReturnsCorrectView()
         {
             var controller = CreateController(CreateEmptySession());
             controller.ModelState.AddModelError("File", "required");
 
-            var model = new RolloverUploadQualificationsViewModel();
+            var model = new RolloverUploadQualificationsViewModel
+            {
+                ReturnViewName = "UploadQualificationsToRollover"
+            };
 
             var result = await controller.UploadQualificationsToRollover(model);
 
             var view = Assert.IsType<ViewResult>(result);
+            Assert.Equal("UploadQualificationsToRollover", view.ViewName);
             Assert.Same(model, view.Model);
         }
 
         [Fact]
-        public async Task UploadQualificationsToRollover_WhenCsvInvalid_ReturnsViewWithErrors()
+        public async Task UploadQualificationsToRollover_WhenCsvInvalid_ReturnsCorrectViewWithErrors()
         {
             var controller = CreateController(CreateEmptySession());
 
             var model = new RolloverUploadQualificationsViewModel
             {
-                File = Mock.Of<IFormFile>()
+                File = Mock.Of<IFormFile>(),
+                ReturnViewName = "UploadQualificationsToRollover"
             };
 
             var csvResult = new CsvFileReaderResult<FundingExtensionCandidate>
@@ -52,10 +57,10 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
             var result = await controller.UploadQualificationsToRollover(model);
 
             var view = Assert.IsType<ViewResult>(result);
+            Assert.Equal("UploadQualificationsToRollover", view.ViewName);
             Assert.Same(model, view.Model);
             Assert.True(controller.ModelState.ContainsKey("File"));
         }
-
 
         [Fact]
         public async Task UploadQualificationsToRollover_WhenValidationFails_ReturnsValidationErrorsView()
@@ -64,7 +69,8 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
 
             var model = new RolloverUploadQualificationsViewModel
             {
-                File = Mock.Of<IFormFile>()
+                File = Mock.Of<IFormFile>(),
+                ReturnViewName = "UploadQualificationsToRollover"
             };
 
             var csvResult = new CsvFileReaderResult<FundingExtensionCandidate>
@@ -77,7 +83,6 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
                         FundingStreamName = "FS",
                         ProposedFundingApprovalEndDate = DateTime.UtcNow,
                         RollOverStatus = "Extend",
-                        
                     }
                 }
             };
@@ -101,7 +106,6 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
                         {
                             FailedCandidateCount = 1,
                             ValidatedCandidateFile = new byte[] { 0x01, 0x02, 0x03 },
-  
                         }
                     }
                 });
@@ -123,7 +127,8 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
 
             var model = new RolloverUploadQualificationsViewModel
             {
-                File = Mock.Of<IFormFile>()
+                File = Mock.Of<IFormFile>(),
+                ReturnViewName = "UploadQualificationsToRollover"
             };
 
             var csvResult = new CsvFileReaderResult<FundingExtensionCandidate>
@@ -166,13 +171,14 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
         }
 
         [Fact]
-        public async Task UploadQualificationsToRollover_WhenExceptionThrown_ReturnsViewWithError()
+        public async Task UploadQualificationsToRollover_WhenExceptionThrown_ReturnsCorrectViewWithError()
         {
             var controller = CreateController(CreateEmptySession());
 
             var model = new RolloverUploadQualificationsViewModel
             {
-                File = Mock.Of<IFormFile>()
+                File = Mock.Of<IFormFile>(),
+                ReturnViewName = "UploadQualificationsToRollover"
             };
 
             CsvFileReaderMock
@@ -185,6 +191,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
             var result = await controller.UploadQualificationsToRollover(model);
 
             var view = Assert.IsType<ViewResult>(result);
+            Assert.Equal("UploadQualificationsToRollover", view.ViewName);
             Assert.Same(model, view.Model);
             Assert.True(controller.ModelState.ContainsKey(""));
         }
