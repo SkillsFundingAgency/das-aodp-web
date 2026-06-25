@@ -102,7 +102,7 @@ public class RolloverController : ControllerBase
     {
         if (!ModelState.IsValid)
         {
-            return View(model.ReturnViewName, model);
+            return View(model);
         }
 
         try
@@ -118,7 +118,7 @@ public class RolloverController : ControllerBase
                 foreach (var error in file.Errors)
                     ModelState.AddModelError(nameof(model.File), error);
 
-                return View(model.ReturnViewName, model);
+                return View(model);
             }
 
             var command = new ValidateRolloverExtensionCommand
@@ -130,7 +130,7 @@ public class RolloverController : ControllerBase
                         FundingStreamName = x.FundingStreamName ?? string.Empty,
                         RollOverStatus = x.RollOverStatus ?? string.Empty,
                         ExclusionReason = x.ExclusionReason,
-                        ProposedFundingApprovalEndDate = x.ProposedFundingApprovalEndDate,
+                        ProposedFundingApprovalEndDate = x.ProposedFundingApprovalEndDate.HasValue ? x.ProposedFundingApprovalEndDate.Value : default,
                         Comments = x.Comments
                     }
                     ).ToList()
@@ -181,7 +181,7 @@ public class RolloverController : ControllerBase
         {
             LogException(ex);
             ModelState.AddModelError("", "An unexpected error occurred while validating the file.");
-            return View(model.ReturnViewName, model);
+            return View(model);
         }   
     }
 
