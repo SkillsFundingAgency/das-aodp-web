@@ -8,16 +8,29 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 [ExcludeFromCodeCoverage]
 public record SelectAwardingOrganisationsViewModel
 {
-    public List<AwardingOrganisation> SelectedAwardingOrganisations { get; set; } = [];
+    public List<Guid> SelectedAwardingOrganisationIds { get; set; } = [];
 
-    public List<CheckboxItem> AwardingOrganisations { get; set; } = new List<CheckboxItem>
-    {
-        new CheckboxItem
-        {
-            Value = "1st Awards Ltd",
-            LabelText = "1st Awards Ltd"
-        }
-    };
+    public List<CheckboxItem> AwardingOrganisations { get; set; } = [];
 
     public AwardingOrganisationSelectionType SelectionType { get; set; }
+
+    public static SelectAwardingOrganisationsViewModel Create(
+        IEnumerable<AwardingOrganisation> awardingOrganisations,
+        IEnumerable<Guid> selectedAwardingOrganisationIds,
+        AwardingOrganisationSelectionType selectionType = AwardingOrganisationSelectionType.None)
+    {
+        var selectedIds = selectedAwardingOrganisationIds.Distinct().ToList();
+
+        return new SelectAwardingOrganisationsViewModel
+        {
+            SelectionType = selectionType,
+            SelectedAwardingOrganisationIds = selectedIds,
+            AwardingOrganisations = awardingOrganisations.Select(o => new CheckboxItem
+            {
+                Value = o.Id.ToString(),
+                LabelText = o.NameOfqual ?? o.NameLegal ?? o.NameGovUk ?? o.Acronym ?? o.Id.ToString(),
+                IsChecked = selectedIds.Contains(o.Id)
+            }).ToList()
+        };
+    }
 }

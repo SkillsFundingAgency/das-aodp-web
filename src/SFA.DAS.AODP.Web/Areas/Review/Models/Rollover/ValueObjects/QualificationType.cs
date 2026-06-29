@@ -64,7 +64,9 @@ public record QualificationType
 
     public static bool TryParse(string? value, out QualificationType? result)
     {
-        result = All.SingleOrDefault(x => string.Equals(x.Name, value, StringComparison.OrdinalIgnoreCase));
+        result = All.SingleOrDefault(x =>
+            string.Equals(x.Id.ToString(), value, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(x.Name, value, StringComparison.OrdinalIgnoreCase));
         return result is not null;
     }
 

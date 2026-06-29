@@ -8,6 +8,7 @@ using SFA.DAS.AODP.Authentication.Extensions;
 using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Extensions.Startup;
+using SFA.DAS.AODP.Web.Middleware;
 using SFA.DAS.AODP.Web.Models.OutputFile;
 using SFA.DAS.AODP.Web.Validators;
 using System.Diagnostics;
@@ -112,6 +113,8 @@ internal class Program
             app.UseExceptionHandler("/Home/Error");
             app.UseHsts(); // Use the configured HSTS options
         }
+
+        app.UseMiddleware<MediatrExceptionLoggingMiddleware>();
 
         app.UseGovUkFrontend();
 

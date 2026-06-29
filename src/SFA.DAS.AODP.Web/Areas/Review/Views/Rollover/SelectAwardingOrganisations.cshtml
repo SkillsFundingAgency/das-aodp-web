@@ -12,7 +12,7 @@
         Area = "Review"
     };
 
-    var hasGroupError = ViewData.ModelState.ContainsKey("AwardingOrganisations");
+    var hasGroupError = ViewData.ModelState.ContainsKey(nameof(Model.SelectedAwardingOrganisationIds));
 }
 
 @await Html.PartialAsync("_BackLinkPartial", backLinkModel)
@@ -21,7 +21,7 @@
     
     @await Html.PartialAsync("_ValidationSummaryPartial")
 
-    <form-group asp-for="@Model.SelectedAwardingOrganisations">
+    <form-group asp-for="@Model.SelectedAwardingOrganisationIds">
 
         <fieldset class="govuk-fieldset" aria-describedby="awarding-organisation-hint @(hasGroupError ? "awarding-organisation-error" : "")">
             
@@ -67,13 +67,13 @@
             
             <div class="govuk-radios__conditional" id="conditional-sector-subject-areas-specific-selection">
 
-                <form-group asp-for="@Model.SelectedAwardingOrganisations">
+                <form-group asp-for="@Model.SelectedAwardingOrganisationIds">
                     <fieldset class="govuk-fieldset" role="group">
                             
-                        @if (ViewData.ModelState.ContainsKey(nameof(Model.SelectedAwardingOrganisations)))
+                        @if (ViewData.ModelState.ContainsKey(nameof(Model.SelectedAwardingOrganisationIds)))
                         {
                             <p id="awarding-organisation-error" class="govuk-error-message">
-                                <span class="govuk-visually-hidden">Error:</span>@ViewData.ModelState[nameof(Model.SelectedAwardingOrganisations)]?.Errors.First().ErrorMessage
+                                <span class="govuk-visually-hidden">Error:</span>@ViewData.ModelState[nameof(Model.SelectedAwardingOrganisationIds)]?.Errors.First().ErrorMessage
                             </p>
                         }
 
@@ -85,7 +85,7 @@
                             Select all
                         </button>
 
-                        <checkboxes asp-for="@Model.SelectedAwardingOrganisations" items="@Model.AwardingOrganisations"></checkboxes>
+                        <checkboxes asp-for="@Model.SelectedAwardingOrganisationIds" items="@Model.AwardingOrganisations"></checkboxes>
                     </fieldset>
                 </form-group>
             </div>

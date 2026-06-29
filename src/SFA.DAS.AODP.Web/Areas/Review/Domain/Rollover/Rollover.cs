@@ -1,5 +1,4 @@
-﻿using SFA.DAS.AODP.Models.Qualifications;
-using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
+﻿using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.ValueObjects;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
@@ -28,39 +27,31 @@ public record Rollover
 
 public record QueryBuilderFilters
 {
-    public IList<QualificationLevel> Levels { get; set; } = [];
+    public IReadOnlyList<QualificationLevel> Levels { get; init; } = [];
 
-    public IList<QualificationType> Types { get; set; } = [];
+    public IReadOnlyList<QualificationType> Types { get; init; } = [];
 
-    public IList<SectorSubjectArea> SectorSubjectAreas { get; set; } = [];
+    public IReadOnlyList<SectorSubjectArea> SectorSubjectAreas { get; init; } = [];
 
-    public IList<AwardingOrganisation> AwardingOrganisations { get; set; } = [];
+    public IReadOnlyList<Guid> AwardingOrganisationIds { get; init; } = [];
 
-    public QueryBuilderFilters SetLevels(IList<QualificationLevel> levels)
-    {
-        Levels = levels;
+    public AwardingOrganisationSelectionType AwardingOrganisationSelectionType { get; init; }
 
-        return this;
-    }
+    public QueryBuilderFilters SetLevels(IEnumerable<QualificationLevel> levels)
+        => this with { Levels = levels.ToList() };
 
-    public QueryBuilderFilters SetTypes(IList<QualificationType> types)
-    {
-        Types = types;
+    public QueryBuilderFilters SetTypes(IEnumerable<QualificationType> types)
+        => this with { Types = types.ToList() };
 
-        return this;
-    }
+    public QueryBuilderFilters SetSectorSubjectAreas(IEnumerable<SectorSubjectArea> sectorSubjectAreas)
+        => this with { SectorSubjectAreas = sectorSubjectAreas.ToList() };
 
-    public QueryBuilderFilters SetSectorSubjectAreas(IList<SectorSubjectArea> sectorSubjectAreas)
-    {
-        SectorSubjectAreas = sectorSubjectAreas;
-
-        return this;
-    }
-
-    public QueryBuilderFilters SetAwardingOrganisations(IList<AwardingOrganisation> awardingOrganisations)
-    {
-        AwardingOrganisations = awardingOrganisations;
-
-        return this;
-    }
+    public QueryBuilderFilters SetAwardingOrganisations(
+        IEnumerable<Guid> awardingOrganisationIds,
+        AwardingOrganisationSelectionType selectionType = AwardingOrganisationSelectionType.None)
+        => this with
+        {
+            AwardingOrganisationIds = awardingOrganisationIds.ToList(),
+            AwardingOrganisationSelectionType = selectionType
+        };
 }
