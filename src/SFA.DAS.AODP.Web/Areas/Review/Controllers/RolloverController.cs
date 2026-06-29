@@ -62,7 +62,7 @@ public class RolloverController : ControllerBase
 
     [HttpPost]
     [Route("review/rollover")]
-    public IActionResult Index(RolloverStartViewModel model)
+    public async Task<IActionResult> Index(RolloverStartViewModel model)
     {
         if (!ModelState.IsValid)
         {
@@ -73,12 +73,15 @@ public class RolloverController : ControllerBase
         (session.Start ??= new RolloverStart()).SetStart(session, model);
         SaveSessionModel(session);
 
-        return model.SelectedProcess switch
+        var candidateCount = await Send(new GetRolloverWorkflowCandidatesCountQuery());
+
+        if (model.SelectedProcess is RolloverProcess.FinalUpload && candidateCount.TotalRecords is 0)
         {
-            RolloverProcess.InitialSelection => RedirectToAction(nameof(CheckData)),
-            RolloverProcess.FinalUpload => RedirectToAction(nameof(UploadQualificationsToRollover)),
-            _ => View("RolloverStart", model)
-        };
+            ModelState.AddModelError(nameof(model.SelectedProcess), "There is no existing rollover run in progress");
+            return View("RolloverStart", model);
+        }
+
+        return RedirectToAction(nameof(CheckData));
     }
 
     [HttpGet]
