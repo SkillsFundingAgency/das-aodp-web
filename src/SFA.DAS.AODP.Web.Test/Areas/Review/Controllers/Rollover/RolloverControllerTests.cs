@@ -809,6 +809,12 @@ public class RolloverControllerTests : RolloverControllerTestBase
 
         var sessionModel = new Rollover
         {
+            RolloverFundingApprovalEndDate = new RolloverFundingApprovalEndDate
+            {
+                Day = 01,
+                Month = 08,
+                Year = 2027
+            },
             RolloverCandidates = new List<QualificationCandidate>
             {
                 new QualificationCandidate
@@ -821,7 +827,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
             RolloverEligibilityDates = new RolloverEligibilityDates
             {
                 FundingEndDate = new RolloverEligibilityDate { Day = date.Day, Month = date.Month, Year = date.Year },
-                OperationalEndDate = new RolloverEligibilityDate { Day = date.Day, Month = date.Month, Year = date.Year }
+                OperationalEndDate = new RolloverEligibilityDate { Day = date.Day, Month = date.Month, Year = date.Year },
             },
             RolloverFundingStream = new RolloverFundingStream
             {
@@ -870,6 +876,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
         Assert.Contains(candidateId, sentCommand.RolloverCandidateIds);
         Assert.Contains(fundingOfferId, sentCommand.FundingOfferIds);
         Assert.Equal("Test User", sentCommand.CreatedByUserName);
+        Assert.Equal(new DateTime(2028, 03, 15), sentCommand.MaximumApprovalFundingEndDate);
     }
 
     [Fact]

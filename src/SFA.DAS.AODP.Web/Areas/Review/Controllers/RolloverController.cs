@@ -739,7 +739,7 @@ public class RolloverController : ControllerBase
             SelectionMethod = SelectionMethod.FileUpload,
             FundingEndDateEligibilityThreshold = session.RolloverEligibilityDates?.FundingEndDate?.ToDateTime(),
             OperationalEndDateEligibilityThreshold = session.RolloverEligibilityDates?.OperationalEndDate?.ToDateTime(),
-            MaximumApprovalFundingEndDate = session.RolloverFundingApprovalEndDate?.ToDateTime(),
+            MaximumApprovalFundingEndDate = model.MaxApprovalEndDate?.ToDateTime(),
             RolloverCandidateIds = candidateIds,
             FundingOfferIds = fundingOfferIds,
             CreatedByUserName = _userHelperService.GetUserDisplayName()
