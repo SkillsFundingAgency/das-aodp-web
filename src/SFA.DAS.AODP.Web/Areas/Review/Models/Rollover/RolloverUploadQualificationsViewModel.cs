@@ -1,4 +1,5 @@
 ﻿using SFA.DAS.AODP.Application.Commands.Rollover;
+using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using System.ComponentModel.DataAnnotations;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover
@@ -10,6 +11,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover
         public IFormFile File { get; set; }
 
         public RolloverValidationErrorViewModel? ValidationSummary { get; set; }
+
+        public string ReturnViewName { get; set; } = nameof(RolloverController.UploadQualificationsToRollover);
 
     }
 

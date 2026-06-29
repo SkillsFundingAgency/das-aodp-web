@@ -2,7 +2,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing.Matching;
 using SFA.DAS.AODP.Application.Commands.Rollover;
 using SFA.DAS.AODP.Application.Queries.Import;
 using SFA.DAS.AODP.Application.Queries.Review.Rollover;
@@ -97,7 +96,7 @@ public class RolloverController : ControllerBase
     public IActionResult UploadQualificationsToRollover()
     {
         ModelState.Clear();
-        return View(new RolloverUploadQualificationsViewModel());
+        return View(new RolloverUploadQualificationsViewModel { ReturnViewName = nameof(UploadQualificationsToRollover) });
     }
 
     [HttpPost]
@@ -134,7 +133,7 @@ public class RolloverController : ControllerBase
                         FundingStreamName = x.FundingStreamName ?? string.Empty,
                         RollOverStatus = x.RollOverStatus ?? string.Empty,
                         ExclusionReason = x.ExclusionReason,
-                        ProposedFundingApprovalEndDate = x.ProposedFundingApprovalEndDate,
+                        ProposedFundingApprovalEndDate = x.ProposedFundingApprovalEndDate.HasValue ? x.ProposedFundingApprovalEndDate.Value : default,
                         Comments = x.Comments
                     }
                     ).ToList()
@@ -170,6 +169,7 @@ public class RolloverController : ControllerBase
                     FailedCandidateCount = validationResponse.ValidationFailureSummary?.FailedCandidateCount ?? 0,
                     NotValidCandidates = notValidForRollover
                 };
+
 
                 return View(nameof(RolloverValidationErrors), model);
             }
@@ -267,6 +267,7 @@ public class RolloverController : ControllerBase
     [Route("review/rollover/rollovervalidationerrors")]
     public async Task<IActionResult> RolloverValidationErrors(RolloverUploadQualificationsViewModel model)
     {
+        model.ReturnViewName = nameof(RolloverValidationErrors);
         return View(model);
     }
 
@@ -516,13 +517,6 @@ public class RolloverController : ControllerBase
     [Route("review/rollover/uploadqualificationcandidates")]
     public async Task<IActionResult> UploadQualificationCandidates([FromForm] RolloverUploadQualificationCandidatesViewModel model)
     {
-        var session = GetSessionModel();
-
-        if (model.File == null && session.RolloverCandidates.Count > 0)
-        {
-            return RedirectToAction("FundingStreamInclusionExclusion");
-        }
-
         if (!ModelState.IsValid)
         {
             return View(model);
@@ -561,6 +555,7 @@ public class RolloverController : ControllerBase
             return View(model);
         }
 
+        var session = GetSessionModel();
         session.RolloverCandidates = matchedCsv;
         session.RolloverFundingStream = null;
 
@@ -717,16 +712,19 @@ public class RolloverController : ControllerBase
         var eligibility = session.RolloverEligibilityDates;
         var stream = session.RolloverFundingStream;
 
+        var fundingOfferIds = stream?
+            .SelectedIds
+            .Distinct()
+            .ToList() ?? new ();
+
         var academicYear = candidates
             .Select(c => c.AcademicYear)
             .FirstOrDefault(y => !string.IsNullOrWhiteSpace(y));
 
+        //Only send candidates if their offer type is selected
         var candidateIds = candidates
+            .Where(c => fundingOfferIds.Contains(c.FundingOfferId))
             .Select(c => c.RolloverCandidateId)
-            .Distinct()
-            .ToList();
-
-        var fundingOfferIds = (stream?.SelectedIds ?? Enumerable.Empty<Guid>())
             .Distinct()
             .ToList();
 

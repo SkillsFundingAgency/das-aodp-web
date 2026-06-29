@@ -761,7 +761,8 @@ public class RolloverControllerTests : RolloverControllerTestBase
                 new QualificationCandidate
                 {
                     AcademicYear = "2024/25",
-                    RolloverCandidateId = candidateId
+                    RolloverCandidateId = candidateId,
+                    FundingOfferId = fundingOfferId,
                 }
             },
             RolloverEligibilityDates = new RolloverEligibilityDates

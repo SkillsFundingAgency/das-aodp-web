@@ -11,9 +11,9 @@ namespace SFA.DAS.AODP.Application.Commands.Rollover
 
     public class FundingExtensionItem
     {
-        public required string Qan { get; set; }
-        public required string FundingStreamName { get; set; }
-        public required string RolloverStatus { get; set; }
+        public string Qan { get; set; }
+        public string FundingStreamName { get; set; }
+        public string RolloverStatus { get; set; }
         public string? ExclusionReason { get; set; }
         public DateTime ProposedFundingApprovalEndDate { get; set; }
         public string? Comments { get; set; }
