@@ -59,14 +59,14 @@ public class RolloverControllerTests : RolloverControllerTestBase
     }
 
     [Fact]
-    public void Index_Post_InvalidModelState_ReturnsStartView_WithSameModel()
+    public async Task Index_Post_InvalidModelState_ReturnsStartView_WithSameModel()
     {
         var controller = CreateController(CreateEmptySession());
         controller.ModelState.AddModelError("SelectedProcess", "required");
 
         var vm = new RolloverStartViewModel();
 
-        var result = controller.Index(vm);
+        var result = await controller.Index(vm);
 
         var viewResult = Assert.IsType<ViewResult>(result);
         Assert.Equal("RolloverStart", viewResult.ViewName);
@@ -74,14 +74,24 @@ public class RolloverControllerTests : RolloverControllerTestBase
     }
 
     [Fact]
-    public void Index_Post_SelectedProcessInitialSelection_SavesSessionAndRedirects()
+    public async Task Index_Post_SelectedProcessInitialSelection_SavesSessionAndRedirects()
     {
         var session = CreateEmptySession();
         var controller = CreateController(session);
 
         var vm = new RolloverStartViewModel { SelectedProcess = RolloverProcess.InitialSelection };
 
-        var result = controller.Index(vm);
+        MediatorMock.Setup(o => o.Send(It.IsAny<GetRolloverWorkflowCandidatesCountQuery>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetRolloverWorkflowCandidatesCountQueryResponse>
+            {
+                Success = true,
+                Value = new GetRolloverWorkflowCandidatesCountQueryResponse
+                {
+                    TotalRecords = 1
+                }
+            });
+
+        var result = await controller.Index(vm);
 
         var redirect = Assert.IsType<RedirectToActionResult>(result);
         Assert.Equal(nameof(RolloverController.CheckData), redirect.ActionName);
@@ -94,14 +104,24 @@ public class RolloverControllerTests : RolloverControllerTestBase
     }
 
     [Fact]
-    public void Index_Post_SelectedProcessFinalUpload_SavesSessionAndRedirects()
+    public async Task Index_Post_SelectedProcessFinalUpload_SavesSessionAndRedirects()
     {
         var session = CreateEmptySession();
         var controller = CreateController(session);
 
         var vm = new RolloverStartViewModel { SelectedProcess = RolloverProcess.FinalUpload };
 
-        var result = controller.Index(vm);
+        MediatorMock.Setup(o => o.Send(It.IsAny<GetRolloverWorkflowCandidatesCountQuery>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetRolloverWorkflowCandidatesCountQueryResponse>
+            {
+                Success = true,
+                Value = new GetRolloverWorkflowCandidatesCountQueryResponse
+                {
+                    TotalRecords = 1
+                }
+            });
+
+        var result = await controller.Index(vm);
 
         var redirect = Assert.IsType<RedirectToActionResult>(result);
         Assert.Equal(nameof(RolloverController.UploadQualificationsToRollover), redirect.ActionName);
@@ -114,14 +134,47 @@ public class RolloverControllerTests : RolloverControllerTestBase
     }
 
     [Fact]
-    public void Index_Post_SaveSessionThrows_DoesNotBubbleException_Redirects()
+    public async Task Index_Post_SelectedProcessFinalUpload_NoRolloverInProgress_AddModelError()
+    {
+        var session = CreateEmptySession();
+        var controller = CreateController(session);
+
+        var vm = new RolloverStartViewModel { SelectedProcess = RolloverProcess.FinalUpload };
+
+        MediatorMock.Setup(o => o.Send(It.IsAny<GetRolloverWorkflowCandidatesCountQuery>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetRolloverWorkflowCandidatesCountQueryResponse>
+            {
+                Success = true,
+                Value = new GetRolloverWorkflowCandidatesCountQueryResponse
+                {
+                    TotalRecords = 0
+                }
+            });
+
+        await controller.Index(vm);
+
+        controller.ModelState.ErrorCount.ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task Index_Post_SaveSessionThrows_DoesNotBubbleException_Redirects()
     {
         var session = CreateThrowingSessionOnSet();
         var controller = CreateController(session);
 
         var vm = new RolloverStartViewModel { SelectedProcess = RolloverProcess.InitialSelection };
 
-        var result = controller.Index(vm);
+        MediatorMock.Setup(o => o.Send(It.IsAny<GetRolloverWorkflowCandidatesCountQuery>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetRolloverWorkflowCandidatesCountQueryResponse>
+            {
+                Success = true,
+                Value = new GetRolloverWorkflowCandidatesCountQueryResponse
+                {
+                    TotalRecords = 1
+                }
+            });
+
+        var result = await controller.Index(vm);
 
         var redirect = Assert.IsType<RedirectToActionResult>(result);
         Assert.Equal(nameof(RolloverController.CheckData), redirect.ActionName);

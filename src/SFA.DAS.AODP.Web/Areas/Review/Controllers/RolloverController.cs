@@ -80,7 +80,12 @@ public class RolloverController : ControllerBase
             return View("RolloverStart", model);
         }
 
-        return RedirectToAction(nameof(CheckData));
+        return model.SelectedProcess switch
+        {
+            RolloverProcess.InitialSelection => RedirectToAction(nameof(CheckData)),
+            RolloverProcess.FinalUpload => RedirectToAction(nameof(UploadQualificationsToRollover)),
+            _ => View("RolloverStart", model)
+        };
     }
 
     [HttpGet]
