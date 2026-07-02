@@ -1,239 +1,236 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Moq;
 using Newtonsoft.Json;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 
+namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers.Rollover;
 
-namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
+public class FundingStreamInclusionExclusionTests : RolloverControllerTestBase
 {
-    public class FundingStreamInclusionExclusionTests : RolloverControllerTestBase
+    // -------------------------------------------------------
+    // GET
+    // -------------------------------------------------------
+
+    [Fact]
+    public async Task FundingStreamInclusionExclusion_Get_WhenSessionHasFundingStream_PopulatesModel()
     {
-        // -------------------------------------------------------
-        // GET
-        // -------------------------------------------------------
+        var session = CreateEmptySession();
 
-        [Fact]
-        public async Task FundingStreamInclusionExclusion_Get_WhenSessionHasFundingStream_PopulatesModel()
+        var fs1 = new FundingStream { Id = Guid.NewGuid(), Name = "FS1" };
+
+        var saved = new Web.Areas.Review.Domain.Rollover.Rollover
         {
-            var session = CreateEmptySession();
-
-            var fs1 = new FundingStream { Id = Guid.NewGuid(), Name = "FS1" };
-
-            var saved = new Rollover
+            RolloverFundingStream = new RolloverFundingStream
             {
-                RolloverFundingStream = new RolloverFundingStream
-                {
-                    FundingStreams = new List<FundingStream> { fs1 },
-                    SelectedIds = new List<Guid> { fs1.Id }
-                }
-            };
+                FundingStreams = [fs1],
+                SelectedIds = [fs1.Id]
+            }
+        };
 
-            session.SetString("RolloverSession", JsonConvert.SerializeObject(saved));
+        session.SetString("RolloverSession", JsonConvert.SerializeObject(saved));
 
-            var controller = CreateController(session);
+        var controller = CreateController(session);
 
-            var result = await controller.FundingStreamInclusionExclusion();
+        var result = await controller.FundingStreamInclusionExclusion();
 
-            var view = Assert.IsType<ViewResult>(result);
-            var model = Assert.IsType<FundingStreamInclusionExclusionViewModel>(view.Model);
+        var view = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<FundingStreamInclusionExclusionViewModel>(view.Model);
 
-            Assert.Single(model.FundingStreams);
-            Assert.Single(model.SelectedIds);
-        }
+        Assert.Single(model.FundingStreams);
+        Assert.Single(model.SelectedIds);
+    }
 
-        [Fact]
-        public async Task FundingStreamInclusionExclusion_Get_WhenNoFundingStreamsFound_AddsModelError()
+    [Fact]
+    public async Task FundingStreamInclusionExclusion_Get_WhenNoFundingStreamsFound_AddsModelError()
+    {
+        var session = CreateEmptySession();
+
+        var saved = new Web.Areas.Review.Domain.Rollover.Rollover
         {
-            var session = CreateEmptySession();
+            RolloverCandidates = [] // no funding streams
+        };
 
-            var saved = new Rollover
-            {
-                RolloverCandidates = new List<QualificationCandidate>() // no funding streams
-            };
+        session.SetString("RolloverSession", JsonConvert.SerializeObject(saved));
 
-            session.SetString("RolloverSession", JsonConvert.SerializeObject(saved));
+        var controller = CreateController(session);
 
-            var controller = CreateController(session);
+        var result = await controller.FundingStreamInclusionExclusion();
 
-            var result = await controller.FundingStreamInclusionExclusion();
+        var view = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<FundingStreamInclusionExclusionViewModel>(view.Model);
 
-            var view = Assert.IsType<ViewResult>(result);
-            var model = Assert.IsType<FundingStreamInclusionExclusionViewModel>(view.Model);
+        Assert.True(controller.ModelState.ContainsKey(nameof(model.FundingStreams)));
+    }
 
-            Assert.True(controller.ModelState.ContainsKey(nameof(model.FundingStreams)));
-        }
+    // -------------------------------------------------------
+    // POST
+    // -------------------------------------------------------
 
-        // -------------------------------------------------------
-        // POST
-        // -------------------------------------------------------
+    [Fact]
+    public async Task FundingStreamInclusionExclusion_Post_SelectAll_ReturnsViewWithAllIdsSelected()
+    {
+        var session = CreateEmptySession();
 
-        [Fact]
-        public async Task FundingStreamInclusionExclusion_Post_SelectAll_ReturnsViewWithAllIdsSelected()
+        var fs1 = new FundingStream { Id = Guid.NewGuid(), Name = "FS1" };
+        var fs2 = new FundingStream { Id = Guid.NewGuid(), Name = "FS2" };
+
+        var saved = new Web.Areas.Review.Domain.Rollover.Rollover
         {
-            var session = CreateEmptySession();
-
-            var fs1 = new FundingStream { Id = Guid.NewGuid(), Name = "FS1" };
-            var fs2 = new FundingStream { Id = Guid.NewGuid(), Name = "FS2" };
-
-            var saved = new Rollover
+            RolloverFundingStream = new RolloverFundingStream
             {
-                RolloverFundingStream = new RolloverFundingStream
-                {
-                    FundingStreams = new List<FundingStream> { fs1, fs2 },
-                    SelectedIds = new List<Guid>()
-                }
-            };
+                FundingStreams = [fs1, fs2],
+                SelectedIds = []
+            }
+        };
 
-            session.SetString("RolloverSession", JsonConvert.SerializeObject(saved));
+        session.SetString("RolloverSession", JsonConvert.SerializeObject(saved));
 
-            var controller = CreateController(session);
+        var controller = CreateController(session);
 
-            var vm = new FundingStreamInclusionExclusionViewModel
-            {
-                FundingStreams = new List<FundingStream> { fs1, fs2 }
-            };
-
-            var result = await controller.FundingStreamInclusionExclusion(vm, "selectAll");
-
-            var view = Assert.IsType<ViewResult>(result);
-            var model = Assert.IsType<FundingStreamInclusionExclusionViewModel>(view.Model);
-
-            Assert.Equal(2, model.SelectedIds.Count);
-        }
-
-        [Fact]
-        public async Task FundingStreamInclusionExclusion_Post_NoSelection_ReturnsViewWithError()
+        var vm = new FundingStreamInclusionExclusionViewModel
         {
-            var session = CreateEmptySession();
+            FundingStreams = [fs1, fs2]
+        };
 
-            var fs = new FundingStream { Id = Guid.NewGuid(), Name = "FS1" };
+        var result = await controller.FundingStreamInclusionExclusion(vm, "selectAll");
 
-            var saved = new Rollover
-            {
-                RolloverFundingStream = new RolloverFundingStream
-                {
-                    FundingStreams = new List<FundingStream> { fs }
-                }
-            };
+        var view = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<FundingStreamInclusionExclusionViewModel>(view.Model);
 
-            session.SetString("RolloverSession", JsonConvert.SerializeObject(saved));
+        Assert.Equal(2, model.SelectedIds.Count);
+    }
 
-            var controller = CreateController(session);
+    [Fact]
+    public async Task FundingStreamInclusionExclusion_Post_NoSelection_ReturnsViewWithError()
+    {
+        var session = CreateEmptySession();
 
-            var vm = new FundingStreamInclusionExclusionViewModel
-            {
-                FundingStreams = new List<FundingStream> { fs },
-                SelectedIds = new()
-            };
+        var fs = new FundingStream { Id = Guid.NewGuid(), Name = "FS1" };
 
-            var result = await controller.FundingStreamInclusionExclusion(vm, action: "");
-
-            var view = Assert.IsType<ViewResult>(result);
-            Assert.True(controller.ModelState.ContainsKey(nameof(vm.SelectedIds)));
-        }
-
-        [Fact]
-        public async Task FundingStreamInclusionExclusion_Post_EmptySelection_ReturnsViewWithError()
+        var saved = new Web.Areas.Review.Domain.Rollover.Rollover
         {
-            var session = CreateEmptySession();
-
-            var fs = new FundingStream { Id = Guid.NewGuid(), Name = "FS1" };
-
-            var saved = new Rollover
+            RolloverFundingStream = new RolloverFundingStream
             {
-                RolloverFundingStream = new RolloverFundingStream
-                {
-                    FundingStreams = new List<FundingStream> { fs }
-                }
-            };
+                FundingStreams = [fs]
+            }
+        };
 
-            session.SetString("RolloverSession", JsonConvert.SerializeObject(saved));
+        session.SetString("RolloverSession", JsonConvert.SerializeObject(saved));
 
-            var controller = CreateController(session);
+        var controller = CreateController(session);
 
-            var vm = new FundingStreamInclusionExclusionViewModel
-            {
-                FundingStreams = new List<FundingStream> { fs },
-                SelectedIds = new List<Guid>() // empty
-            };
-
-            var result = await controller.FundingStreamInclusionExclusion(vm, action: "");
-
-            var view = Assert.IsType<ViewResult>(result);
-            Assert.True(controller.ModelState.ContainsKey(nameof(vm.SelectedIds)));
-        }
-
-        [Fact]
-        public async Task FundingStreamInclusionExclusion_Post_InvalidSelection_ReturnsViewWithError()
+        var vm = new FundingStreamInclusionExclusionViewModel
         {
-            var session = CreateEmptySession();
+            FundingStreams = [fs],
+            SelectedIds = []
+        };
 
-            var fs = new FundingStream { Id = Guid.NewGuid(), Name = "FS1" };
+        var result = await controller.FundingStreamInclusionExclusion(vm, action: "");
 
-            var saved = new Rollover
-            {
-                RolloverFundingStream = new RolloverFundingStream
-                {
-                    FundingStreams = new List<FundingStream> { fs }
-                }
-            };
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.True(controller.ModelState.ContainsKey(nameof(vm.SelectedIds)));
+    }
 
-            session.SetString("RolloverSession", JsonConvert.SerializeObject(saved));
+    [Fact]
+    public async Task FundingStreamInclusionExclusion_Post_EmptySelection_ReturnsViewWithError()
+    {
+        var session = CreateEmptySession();
 
-            var controller = CreateController(session);
+        var fs = new FundingStream { Id = Guid.NewGuid(), Name = "FS1" };
 
-            var vm = new FundingStreamInclusionExclusionViewModel
-            {
-                FundingStreams = new List<FundingStream> { fs },
-                SelectedIds = new List<Guid> { Guid.NewGuid() } // invalid ID
-            };
-
-            var result = await controller.FundingStreamInclusionExclusion(vm, action: "");
-
-            var view = Assert.IsType<ViewResult>(result);
-            Assert.True(controller.ModelState.ContainsKey(string.Empty));
-        }
-
-        [Fact]
-        public async Task FundingStreamInclusionExclusion_Post_ValidSelection_SavesSessionAndRedirects()
+        var saved = new Web.Areas.Review.Domain.Rollover.Rollover
         {
-            var session = CreateEmptySession();
-
-            var fs = new FundingStream { Id = Guid.NewGuid(), Name = "FS1" };
-
-            var saved = new Rollover
+            RolloverFundingStream = new RolloverFundingStream
             {
-                RolloverFundingStream = new RolloverFundingStream
-                {
-                    FundingStreams = new List<FundingStream> { fs }
-                }
-            };
+                FundingStreams = [fs]
+            }
+        };
 
-            session.SetString("RolloverSession", JsonConvert.SerializeObject(saved));
+        session.SetString("RolloverSession", JsonConvert.SerializeObject(saved));
 
-            var controller = CreateController(session);
+        var controller = CreateController(session);
 
-            var vm = new FundingStreamInclusionExclusionViewModel
+        var vm = new FundingStreamInclusionExclusionViewModel
+        {
+            FundingStreams = [fs],
+            SelectedIds = [] // empty
+        };
+
+        var result = await controller.FundingStreamInclusionExclusion(vm, action: "");
+
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.True(controller.ModelState.ContainsKey(nameof(vm.SelectedIds)));
+    }
+
+    [Fact]
+    public async Task FundingStreamInclusionExclusion_Post_InvalidSelection_ReturnsViewWithError()
+    {
+        var session = CreateEmptySession();
+
+        var fs = new FundingStream { Id = Guid.NewGuid(), Name = "FS1" };
+
+        var saved = new Web.Areas.Review.Domain.Rollover.Rollover
+        {
+            RolloverFundingStream = new RolloverFundingStream
             {
-                FundingStreams = new List<FundingStream> { fs },
-                SelectedIds = new List<Guid> { fs.Id }
-            };
+                FundingStreams = [fs]
+            }
+        };
 
-            var result = await controller.FundingStreamInclusionExclusion(vm, action: "");
+        session.SetString("RolloverSession", JsonConvert.SerializeObject(saved));
 
-            var redirect = Assert.IsType<RedirectToActionResult>(result);
-            Assert.Equal(nameof(RolloverController.EnterRolloverEligibilityDates), redirect.ActionName);
+        var controller = CreateController(session);
 
-            Assert.True(session.TryGetValue("RolloverSession", out var bytes));
-            var json = System.Text.Encoding.UTF8.GetString(bytes);
-            var updated = JsonConvert.DeserializeObject<Rollover>(json);
+        var vm = new FundingStreamInclusionExclusionViewModel
+        {
+            FundingStreams = [fs],
+            SelectedIds = [Guid.NewGuid()] // invalid ID
+        };
 
-            Assert.NotNull(updated);
-            Assert.NotNull(updated.RolloverFundingStream);
-            Assert.Single(updated.RolloverFundingStream.SelectedIds);
-        }
+        var result = await controller.FundingStreamInclusionExclusion(vm, action: "");
+
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.True(controller.ModelState.ContainsKey(string.Empty));
+    }
+
+    [Fact]
+    public async Task FundingStreamInclusionExclusion_Post_ValidSelection_SavesSessionAndRedirects()
+    {
+        var session = CreateEmptySession();
+
+        var fs = new FundingStream { Id = Guid.NewGuid(), Name = "FS1" };
+
+        var saved = new Web.Areas.Review.Domain.Rollover.Rollover
+        {
+            RolloverFundingStream = new RolloverFundingStream
+            {
+                FundingStreams = [fs]
+            }
+        };
+
+        session.SetString("RolloverSession", JsonConvert.SerializeObject(saved));
+
+        var controller = CreateController(session);
+
+        var vm = new FundingStreamInclusionExclusionViewModel
+        {
+            FundingStreams = [fs],
+            SelectedIds = [fs.Id]
+        };
+
+        var result = await controller.FundingStreamInclusionExclusion(vm, action: "");
+
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal(nameof(RolloverController.EnterRolloverEligibilityDates), redirect.ActionName);
+
+        Assert.True(session.TryGetValue("RolloverSession", out var bytes));
+        var json = System.Text.Encoding.UTF8.GetString(bytes);
+        var updated = JsonConvert.DeserializeObject<Web.Areas.Review.Domain.Rollover.Rollover>(json);
+
+        Assert.NotNull(updated);
+        Assert.NotNull(updated.RolloverFundingStream);
+        Assert.Single(updated.RolloverFundingStream.SelectedIds);
     }
 }

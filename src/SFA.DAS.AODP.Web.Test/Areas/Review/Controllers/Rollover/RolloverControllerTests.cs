@@ -13,11 +13,10 @@ using SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 using SFA.DAS.AODP.Web.Enums;
 
-namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers;
+namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers.Rollover;
 
 public class RolloverControllerTests : RolloverControllerTestBase
 {
-    
     [Fact]
     public void Index_Get_ReturnsRolloverStartView_WithEmptyModel_WhenNoSession()
     {
@@ -46,7 +45,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
     public void Index_Get_WhenSessionHasStart_PopulatesModel()
     {
         var session = CreateEmptySession();
-        var sessionModel = new Rollover { Start = new RolloverStart { SelectedProcess = RolloverProcess.FinalUpload } };
+        var sessionModel = new Web.Areas.Review.Domain.Rollover.Rollover { Start = new RolloverStart { SelectedProcess = RolloverProcess.FinalUpload } };
         session.SetString("RolloverSession", JsonConvert.SerializeObject(sessionModel));
 
         var controller = CreateController(session);
@@ -98,9 +97,9 @@ public class RolloverControllerTests : RolloverControllerTestBase
 
         var json = session.GetString("RolloverSession");
         Assert.NotNull(json);
-        var sessionModel = JsonConvert.DeserializeObject<Rollover>(json!);
+        var sessionModel = JsonConvert.DeserializeObject<Web.Areas.Review.Domain.Rollover.Rollover>(json);
         Assert.NotNull(sessionModel?.Start);
-        Assert.Equal(RolloverProcess.InitialSelection, sessionModel!.Start!.SelectedProcess);
+        Assert.Equal(RolloverProcess.InitialSelection, sessionModel.Start!.SelectedProcess);
     }
 
     [Fact]
@@ -128,9 +127,9 @@ public class RolloverControllerTests : RolloverControllerTestBase
 
         var json = session.GetString("RolloverSession");
         Assert.NotNull(json);
-        var sessionModel = JsonConvert.DeserializeObject<Rollover>(json!);
+        var sessionModel = JsonConvert.DeserializeObject<Web.Areas.Review.Domain.Rollover.Rollover>(json);
         Assert.NotNull(sessionModel?.Start);
-        Assert.Equal(RolloverProcess.FinalUpload, sessionModel!.Start!.SelectedProcess);
+        Assert.Equal(RolloverProcess.FinalUpload, sessionModel.Start!.SelectedProcess);
     }
 
     [Fact]
@@ -184,7 +183,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
     public async Task CheckData_Get_WhenSessionHasImportStatus_MapsFromSession_AndReturnsView()
     {
         var session = CreateEmptySession();
-        var sessionModel = new Rollover
+        var sessionModel = new Web.Areas.Review.Domain.Rollover.Rollover
         {
             ImportStatus = new RolloverImportStatus
             {
@@ -219,14 +218,14 @@ public class RolloverControllerTests : RolloverControllerTestBase
 
         MediatorMock
             .Setup(m => m.Send(It.IsAny<GetJobRunsQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((GetJobRunsQuery q, CancellationToken ct) =>
+            .ReturnsAsync((GetJobRunsQuery q, CancellationToken _) =>
             {
                 var resp = new BaseMediatrResponse<GetJobRunsQueryResponse>
                 {
                     Success = true,
                     Value = new GetJobRunsQueryResponse
                     {
-                        JobRuns = new List<JobRun>()
+                        JobRuns = []
                     }
                 };
 
@@ -237,10 +236,10 @@ public class RolloverControllerTests : RolloverControllerTestBase
                     StartTime = DateTime.MinValue,
                     EndTime = q.JobName switch
                     {
-                        var s when s == JobNames.RegulatedQualifications.ToString() => regulatedDate,
-                        var s when s == JobNames.FundedQualifications.ToString() => fundedDate,
-                        var s when s == JobNames.DefundingList.ToString() => defundingDate,
-                        var s when s == JobNames.Pldns.ToString() => pldnsDate,
+                        var s when s == nameof(JobNames.RegulatedQualifications) => regulatedDate,
+                        var s when s == nameof(JobNames.FundedQualifications) => fundedDate,
+                        var s when s == nameof(JobNames.DefundingList) => defundingDate,
+                        var s when s == nameof(JobNames.Pldns) => pldnsDate,
                         _ => null
                     },
                     User = "tester",
@@ -270,9 +269,9 @@ public class RolloverControllerTests : RolloverControllerTestBase
 
         var json = session.GetString("RolloverSession");
         Assert.NotNull(json);
-        var saved = JsonConvert.DeserializeObject<Rollover>(json!);
+        var saved = JsonConvert.DeserializeObject<Web.Areas.Review.Domain.Rollover.Rollover>(json);
         Assert.NotNull(saved?.ImportStatus);
-        Assert.Equal(regulatedDate, saved!.ImportStatus!.RegulatedQualificationsLastImported);
+        Assert.Equal(regulatedDate, saved.ImportStatus!.RegulatedQualificationsLastImported);
         Assert.Equal(fundedDate, saved.ImportStatus.FundedQualificationsLastImported);
         Assert.Equal(defundingDate, saved.ImportStatus.DefundingListLastImported);
         Assert.Equal(pldnsDate, saved.ImportStatus.PldnsListLastImported);
@@ -283,7 +282,9 @@ public class RolloverControllerTests : RolloverControllerTestBase
     {
         MediatorMock
             .Setup(m => m.Send(It.IsAny<GetJobRunsQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetJobRunsQueryResponse> { Success = true, Value = new GetJobRunsQueryResponse { JobRuns = new List<JobRun>() } });
+            .ReturnsAsync(new BaseMediatrResponse<GetJobRunsQueryResponse> { Success = true, Value = new GetJobRunsQueryResponse { JobRuns =
+                []
+            } });
 
         var controller = CreateController(CreateThrowingSessionOnSet());
 
@@ -298,7 +299,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
     public async Task CheckData_Post_InvalidModelState_ReturnsViewUsingSessionOrModel()
     {
         var session = CreateEmptySession();
-        var sessionModel = new Rollover
+        var sessionModel = new Web.Areas.Review.Domain.Rollover.Rollover
         {
             ImportStatus = new RolloverImportStatus
             {
@@ -328,7 +329,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
     public async Task CheckData_Post_ValidModel_WithSessionPreviousData_RedirectsToPreviousFile()
     {
         var session = CreateEmptySession();
-        session.SetString("RolloverSession", JsonConvert.SerializeObject(new Rollover { PreviousData = new RolloverPreviousData { CandidateCount = 7 } }));
+        session.SetString("RolloverSession", JsonConvert.SerializeObject(new Web.Areas.Review.Domain.Rollover.Rollover { PreviousData = new RolloverPreviousData { CandidateCount = 7 } }));
         var controller = CreateController(session);
 
         var posted = new RolloverImportStatusViewModel
@@ -368,16 +369,16 @@ public class RolloverControllerTests : RolloverControllerTestBase
 
         var json = session.GetString("RolloverSession");
         Assert.NotNull(json);
-        var saved = JsonConvert.DeserializeObject<Rollover>(json!);
+        var saved = JsonConvert.DeserializeObject<Web.Areas.Review.Domain.Rollover.Rollover>(json);
         Assert.NotNull(saved?.PreviousData);
-        Assert.Equal(5, saved!.PreviousData!.CandidateCount);
+        Assert.Equal(5, saved.PreviousData!.CandidateCount);
     }
 
     [Fact]
     public async Task PreviousFile_Get_WhenSessionHasPreviousData_ReturnsViewWithSessionData()
     {
         var session = CreateEmptySession();
-        var sessionModel = new Rollover
+        var sessionModel = new Web.Areas.Review.Domain.Rollover.Rollover
         {
             PreviousData = new RolloverPreviousData
             {
@@ -421,9 +422,9 @@ public class RolloverControllerTests : RolloverControllerTestBase
 
         var json = session.GetString("RolloverSession");
         Assert.NotNull(json);
-        var saved = JsonConvert.DeserializeObject<Rollover>(json!);
+        var saved = JsonConvert.DeserializeObject<Web.Areas.Review.Domain.Rollover.Rollover>(json);
         Assert.NotNull(saved?.PreviousData);
-        Assert.Equal(1, saved!.PreviousData!.CandidateCount);
+        Assert.Equal(1, saved.PreviousData!.CandidateCount);
     }
 
     [Fact]
@@ -445,7 +446,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
     public async Task PreviousFile_Post_ValidModel_ContinueProcessing_SavesSessionAndRedirectsToSelectFundingStreams()
     {
         var session = CreateEmptySession();
-        session.SetString("RolloverSession", JsonConvert.SerializeObject(new Rollover { PreviousData = new RolloverPreviousData() }));
+        session.SetString("RolloverSession", JsonConvert.SerializeObject(new Web.Areas.Review.Domain.Rollover.Rollover { PreviousData = new RolloverPreviousData() }));
         var controller = CreateController(session);
 
         var model = new RolloverPreviousDataViewModel
@@ -460,16 +461,16 @@ public class RolloverControllerTests : RolloverControllerTestBase
 
         var json = session.GetString("RolloverSession");
         Assert.NotNull(json);
-        var saved = JsonConvert.DeserializeObject<Rollover>(json!);
+        var saved = JsonConvert.DeserializeObject<Web.Areas.Review.Domain.Rollover.Rollover>(json);
         Assert.NotNull(saved?.PreviousData);
-        Assert.Equal(model.SelectedOption, saved!.PreviousData!.SelectedOption);
+        Assert.Equal(model.SelectedOption, saved.PreviousData.SelectedOption);
     }
 
     [Fact]
     public async Task PreviousFile_Post_ValidModel_RemovePrevious_RedirectsToSelectCandidatesWithReturnAction()
     {
         var session = CreateEmptySession();
-        session.SetString("RolloverSession", JsonConvert.SerializeObject(new Rollover { PreviousData = new RolloverPreviousData() }));
+        session.SetString("RolloverSession", JsonConvert.SerializeObject(new Web.Areas.Review.Domain.Rollover.Rollover { PreviousData = new RolloverPreviousData() }));
         var controller = CreateController(session);
 
         var model = new RolloverPreviousDataViewModel
@@ -502,7 +503,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
     {
         // arrange
         var session = new TestSession();
-        var saved = new Rollover
+        var saved = new Web.Areas.Review.Domain.Rollover.Rollover
         {
             SelectCandidates = new RolloverSelectCandidates
             {
@@ -570,7 +571,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
         // assert
         Assert.True(session.TryGetValue("RolloverSession", out var bytes));
         var json = System.Text.Encoding.UTF8.GetString(bytes);
-        var saved = JsonConvert.DeserializeObject<Rollover>(json);
+        var saved = JsonConvert.DeserializeObject<Web.Areas.Review.Domain.Rollover.Rollover>(json);
         Assert.NotNull(saved);
         Assert.NotNull(saved.SelectCandidates);
         Assert.Equal(SelectCandidatesForRollover.ImportAList, saved.SelectCandidates.SelectedOption);
@@ -599,7 +600,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
 
         Assert.True(session.TryGetValue("RolloverSession", out var bytes));
         var json = System.Text.Encoding.UTF8.GetString(bytes);
-        var saved = JsonConvert.DeserializeObject<Rollover>(json);
+        var saved = JsonConvert.DeserializeObject<Web.Areas.Review.Domain.Rollover.Rollover>(json);
         Assert.NotNull(saved);
         Assert.NotNull(saved.SelectCandidates);
         Assert.Equal(SelectCandidatesForRollover.GenerateAList, saved.SelectCandidates.SelectedOption);
@@ -679,7 +680,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
         var expectedFunding = new RolloverEligibilityDate { Day = 10, Month = 2, Year = 2027 };
         var expectedOperational = new RolloverEligibilityDate { Day = 20, Month = 4, Year = 2027 };
 
-        var sessionModel = new Rollover
+        var sessionModel = new Web.Areas.Review.Domain.Rollover.Rollover
         {
             RolloverEligibilityDates = new RolloverEligibilityDates
             {
@@ -727,11 +728,10 @@ public class RolloverControllerTests : RolloverControllerTestBase
 
         EligibilityDatesValidatorMock
             .Setup(v => v.ValidateAsync(model, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ValidationResult(new[]
-            {
-            new ValidationFailure(nameof(model.FundingEndDate), "Required"),
+            .ReturnsAsync(new ValidationResult([
+                new ValidationFailure(nameof(model.FundingEndDate), "Required"),
             new ValidationFailure(nameof(model.OperationalEndDate), "Required")
-            }));
+            ]));
 
         var session = CreateEmptySession();
         var controller = CreateController(session);
@@ -772,10 +772,9 @@ public class RolloverControllerTests : RolloverControllerTestBase
 
         ApprovalEndDateValidatorMock
             .Setup(v => v.ValidateAsync(model, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new ValidationResult(new[]
-            {
+            .ReturnsAsync(new ValidationResult([
                 new ValidationFailure("MaxApprovalEndDate", "Required")
-            }));
+            ]));
 
         var session = new TestSession();
         var controller = CreateController(session);
@@ -807,7 +806,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
         var candidateId = Guid.NewGuid();
         var fundingOfferId = Guid.NewGuid();
 
-        var sessionModel = new Rollover
+        var sessionModel = new Web.Areas.Review.Domain.Rollover.Rollover
         {
             RolloverFundingApprovalEndDate = new RolloverFundingApprovalEndDate
             {
@@ -815,15 +814,15 @@ public class RolloverControllerTests : RolloverControllerTestBase
                 Month = 08,
                 Year = 2027
             },
-            RolloverCandidates = new List<QualificationCandidate>
-            {
+            RolloverCandidates =
+            [
                 new QualificationCandidate
                 {
                     AcademicYear = "2024/25",
                     RolloverCandidateId = candidateId,
                     FundingOfferId = fundingOfferId,
                 }
-            },
+            ],
             RolloverEligibilityDates = new RolloverEligibilityDates
             {
                 FundingEndDate = new RolloverEligibilityDate { Day = date.Day, Month = date.Month, Year = date.Year },
@@ -831,7 +830,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
             },
             RolloverFundingStream = new RolloverFundingStream
             {
-                SelectedIds = new List<Guid> { fundingOfferId }
+                SelectedIds = [fundingOfferId]
             }
         };
 
@@ -858,12 +857,12 @@ public class RolloverControllerTests : RolloverControllerTestBase
             .Returns("Test User");
 
         // Act
-        var result = await controller.EnterRolloverFundingApprovalEndDate(model);
+        await controller.EnterRolloverFundingApprovalEndDate(model);
 
         // Assert session updated
         var json = session.GetString("RolloverSession");
         Assert.NotNull(json);
-        var updatedSession = JsonConvert.DeserializeObject<Rollover>(json!);
+        var updatedSession = JsonConvert.DeserializeObject<Web.Areas.Review.Domain.Rollover.Rollover>(json);
 
         Assert.NotNull(updatedSession!.RolloverFundingApprovalEndDate);
         Assert.Equal(15, updatedSession.RolloverFundingApprovalEndDate.Day);
@@ -878,7 +877,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
         Assert.Equal("Test User", sentCommand.CreatedByUserName);
         Assert.Equal(new DateTime(2028, 03, 15), sentCommand.MaximumApprovalFundingEndDate);
     }
-
+    
     [Fact]
     public async Task EnterRolloverFundingApprovalEndDate_InvalidModel_ReturnsViewWithModel()
     {
@@ -887,10 +886,9 @@ public class RolloverControllerTests : RolloverControllerTestBase
         var controller = CreateController(session);
 
         var model = new RolloverFundingApprovalEndDateViewModel();
-        var validationResult = new ValidationResult(new[]
-        {
-        new ValidationFailure("MaxApprovalEndDate", "Required")
-    });
+        var validationResult = new ValidationResult([
+            new ValidationFailure("MaxApprovalEndDate", "Required")
+        ]);
 
         ApprovalEndDateValidatorMock
             .Setup(v => v.ValidateAsync(model, It.IsAny<CancellationToken>()))
@@ -957,7 +955,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
         // Assert session saved
         var json = session.GetString("RolloverSession");
         Assert.NotNull(json);
-        var saved = JsonConvert.DeserializeObject<Rollover>(json!);
+        var saved = JsonConvert.DeserializeObject<Web.Areas.Review.Domain.Rollover.Rollover>(json);
         Assert.NotNull(saved!.RolloverFundingApprovalEndDate);
         Assert.Equal(15, saved.RolloverFundingApprovalEndDate.Day);
         Assert.Equal(1, saved.RolloverFundingApprovalEndDate.Month);
@@ -1014,8 +1012,4 @@ public class RolloverControllerTests : RolloverControllerTestBase
         var view = Assert.IsType<ViewResult>(result);
         Assert.Null(view.ViewName);
     }
-
-
-
-
 }

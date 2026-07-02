@@ -6,7 +6,6 @@ using SFA.DAS.AODP.Application.Commands.Rollover;
 using SFA.DAS.AODP.Application.Queries.Import;
 using SFA.DAS.AODP.Application.Queries.Review.Rollover;
 using SFA.DAS.AODP.Application.Queries.Rollover;
-using SFA.DAS.AODP.Infrastructure.Cache;
 using SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Extensions;
 using SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover;
@@ -15,6 +14,8 @@ using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Extensions;
 using SFA.DAS.AODP.Web.Helpers.User;
+using System.Text;
+using SFA.DAS.AODP.Infrastructure.Cache;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers;
@@ -762,7 +763,7 @@ public class RolloverController : ControllerBase
     }
 
     [HttpGet]
-    [Route("review/rollover/GetRolloverCandidatesForExport")]
+    [Route("api/rollover/GetRolloverCandidatesForExport")]
     public async Task<IActionResult> GetRolloverCandidatesForExport([FromQuery]Guid rolloverWorkflowRunId)
     {
         var response = await Send(new GetRolloverCandidatesForExportQuery { RolloverWorkflowRunId = rolloverWorkflowRunId });
