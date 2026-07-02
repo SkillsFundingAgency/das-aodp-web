@@ -445,6 +445,18 @@ public class RolloverController : ControllerBase
             LogException(ex);
         }
 
+        if (model.SelectedOption == RolloverPreviousFileOption.RemovePrevious)
+        {
+            try
+            {
+                await Send(new RemovePreviousWorkflowCandidatesQuery());
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+            }
+        }
+
         return model.SelectedOption switch
         {
             RolloverPreviousFileOption.ContinueProcessing => RedirectToAction(nameof(SelectFundingStreams)),

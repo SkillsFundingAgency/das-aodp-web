@@ -1012,4 +1012,93 @@ public class RolloverControllerTests : RolloverControllerTestBase
         var view = Assert.IsType<ViewResult>(result);
         Assert.Null(view.ViewName);
     }
-}
+
+    [Fact]
+    public async Task PreviousFile_Post_InvalidModelState_ReturnsPreviousFileView()
+    {
+        var session = CreateEmptySession();
+        var controller = CreateController(session);
+        controller.ModelState.AddModelError("SelectedOption", "required");
+
+        var model = new RolloverPreviousDataViewModel { CandidateCount = 5 };
+
+        var result = await controller.PreviousFile(model);
+
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.Equal("PreviousFile", viewResult.ViewName);
+        Assert.Same(model, viewResult.Model);
+    }
+
+    [Fact]
+    public async Task PreviousFile_Post_WithRemovePreviousOption_CallsRemovePreviousWorkflowCandidatesQuery()
+    {
+        var session = CreateEmptySession();
+        var controller = CreateController(session);
+
+        var model = new RolloverPreviousDataViewModel 
+        { 
+            CandidateCount = 5,
+            SelectedOption = RolloverPreviousFileOption.RemovePrevious
+        };
+
+        MediatorMock.Setup(m => m.Send(It.IsAny<RemovePreviousWorkflowCandidatesQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<RemovePreviousWorkflowCandidatesQueryResponse>
+            {
+                Success = true
+            });
+
+        var result = await controller.PreviousFile(model);
+
+        var redirectResult = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal(nameof(RolloverController.SelectCandidates), redirectResult.ActionName);
+
+        MediatorMock.Verify(
+            m => m.Send(It.IsAny<RemovePreviousWorkflowCandidatesQuery>(), It.IsAny<CancellationToken>()),
+            Times.Once,
+            "RemovePreviousWorkflowCandidatesQuery should be called when RemovePrevious is selected");
+    }
+
+    [Fact]
+    public async Task PreviousFile_Post_WithRemovePreviousOption_AndQueryThrowsException_StillRedirects()
+    {
+        var session = CreateEmptySession();
+        var controller = CreateController(session);
+
+        var model = new RolloverPreviousDataViewModel 
+        { 
+            CandidateCount = 5,
+            SelectedOption = RolloverPreviousFileOption.RemovePrevious
+        };
+
+        MediatorMock.Setup(m => m.Send(It.IsAny<RemovePreviousWorkflowCandidatesQuery>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("API error"));
+
+        var result = await controller.PreviousFile(model);
+
+        var redirectResult = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal(nameof(RolloverController.SelectCandidates), redirectResult.ActionName);
+    }
+
+         [Fact]
+        public async Task PreviousFile_Post_WithContinueProcessingOption_DoesNotCallRemovePreviousQuery()
+        {
+            var session = CreateEmptySession();
+            var controller = CreateController(session);
+
+            var model = new RolloverPreviousDataViewModel 
+            { 
+                CandidateCount = 5,
+                SelectedOption = RolloverPreviousFileOption.ContinueProcessing
+            };
+
+            var result = await controller.PreviousFile(model);
+
+            var redirectResult = Assert.IsType<RedirectToActionResult>(result);
+            Assert.Equal(nameof(RolloverController.SelectFundingStreams), redirectResult.ActionName);
+
+            MediatorMock.Verify(
+                m => m.Send(It.IsAny<RemovePreviousWorkflowCandidatesQuery>(), It.IsAny<CancellationToken>()),
+                Times.Never,
+                "RemovePreviousWorkflowCandidatesQuery should not be called for ContinueProcessing");
+        }
+    }
