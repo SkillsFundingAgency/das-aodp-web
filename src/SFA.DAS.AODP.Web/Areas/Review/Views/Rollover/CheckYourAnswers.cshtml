@@ -38,4 +38,23 @@
             }
         </dd>
     </div>
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+            Sector subject area(s)
+        </dt>
+        <dd class="govuk-summary-list__value">
+            @foreach (var sectorSubjectArea in @Model.SectorSubjectAreas)
+            {
+                @sectorSubjectArea.ToString()<br />
+            }
+        </dd>
+    </div>
+    <div class="govuk-summary-list__row">
+        <dt class="govuk-summary-list__key">
+            Qualification versions
+        </dt>
+        <dd class="govuk-summary-list__value">
+            @Model.QualificationVersionCount
+        </dd>
+    </div>
 </dl>

@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.ValueObjects;
 
@@ -63,7 +64,9 @@ public record QualificationType
 
     public static bool TryParse(string? value, out QualificationType? result)
     {
-        result = All.SingleOrDefault(x => string.Equals(x.Name, value, StringComparison.OrdinalIgnoreCase));
+        result = All.SingleOrDefault(x =>
+            string.Equals(x.Id.ToString(), value, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(x.Name, value, StringComparison.OrdinalIgnoreCase));
         return result is not null;
     }
 

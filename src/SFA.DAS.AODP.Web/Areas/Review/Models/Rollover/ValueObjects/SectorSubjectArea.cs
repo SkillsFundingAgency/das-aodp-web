@@ -97,7 +97,9 @@ public record SectorSubjectArea
 
     public static bool TryParse(string? value, out SectorSubjectArea? result)
     {
-        result = All.SingleOrDefault(x => string.Equals(x.Name, value, StringComparison.OrdinalIgnoreCase));
+        result = All.SingleOrDefault(x =>
+            string.Equals(x.Code, value, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(x.Name, value, StringComparison.OrdinalIgnoreCase));
         return result is not null;
     }
 

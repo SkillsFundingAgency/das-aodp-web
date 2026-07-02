@@ -28,46 +28,35 @@ public record Rollover
 
 public record QueryBuilderFilters
 {
-    public IList<QualificationLevel> Levels { get; set; } = [];
+    public IReadOnlyList<QualificationLevel> Levels { get; init; } = [];
 
-    public IList<QualificationType> Types { get; set; } = [];
+    public IReadOnlyList<QualificationType> Types { get; init; } = [];
 
-    public IList<SectorSubjectArea> SectorSubjectAreas { get; set; } = [];
+    public IReadOnlyList<SectorSubjectArea> SectorSubjectAreas { get; init; } = [];
 
     public SectorSubjectAreaSelectionType SectorSubjectAreasSelectionType { get; set; } = SectorSubjectAreaSelectionType.None;
 
-    public IList<AwardingOrganisation> AwardingOrganisations { get; set; } = [];
+    public IReadOnlyList<AwardingOrganisation> AwardingOrganisations { get; init; } = [];
 
-    public AwardingOrganisationSelectionType AwardingOrganisationSelectionType { get; set; } = AwardingOrganisationSelectionType.None;
+    public IReadOnlyList<string> AwardingOrganisationIds { get; init; } = [];
 
+    public AwardingOrganisationSelectionType AwardingOrganisationSelectionType { get; init; }
 
-    public QueryBuilderFilters SetLevels(IList<QualificationLevel> levels)
-    {
-        Levels = levels;
+    public QueryBuilderFilters SetLevels(IEnumerable<QualificationLevel> levels)
+        => this with { Levels = levels.ToList() };
 
-        return this;
-    }
+    public QueryBuilderFilters SetTypes(IEnumerable<QualificationType> types)
+        => this with { Types = types.ToList() };
 
-    public QueryBuilderFilters SetTypes(IList<QualificationType> types)
-    {
-        Types = types;
+    public QueryBuilderFilters SetSectorSubjectAreas(IEnumerable<SectorSubjectArea> sectorSubjectAreas)
+        => this with { SectorSubjectAreas = sectorSubjectAreas.ToList() };
 
-        return this;
-    }
-
-    public QueryBuilderFilters SetSectorSubjectAreas(IList<SectorSubjectArea> sectorSubjectAreas, SectorSubjectAreaSelectionType selectionType)
-    {
-        SectorSubjectAreas = sectorSubjectAreas;
-        SectorSubjectAreasSelectionType = selectionType;
-
-        return this;
-    }
-
-    public QueryBuilderFilters SetAwardingOrganisations(IList<AwardingOrganisation> awardingOrganisations, AwardingOrganisationSelectionType selectionType)
-    {
-        AwardingOrganisations = awardingOrganisations;
-        AwardingOrganisationSelectionType = selectionType;
-
-        return this;
-    }
+    public QueryBuilderFilters SetAwardingOrganisations(
+        IEnumerable<string> awardingOrganisationIds,
+        AwardingOrganisationSelectionType selectionType = AwardingOrganisationSelectionType.None)
+        => this with
+        {
+            AwardingOrganisationIds = awardingOrganisationIds.ToList(),
+            AwardingOrganisationSelectionType = selectionType
+        };
 }

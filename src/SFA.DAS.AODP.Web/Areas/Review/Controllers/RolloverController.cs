@@ -16,6 +16,7 @@ using SFA.DAS.AODP.Web.Extensions;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.ValueObjects;
 using SFA.DAS.AODP.Web.Helpers.User;
+using SFA.DAS.AODP.Models.Qualifications;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers;
 
@@ -625,7 +626,7 @@ public class RolloverController : ControllerBase
 
         var session = GetSessionModel();
 
-        session.QueryBuilderFilters.SetLevels(model.SelectedLevels);
+        session.QueryBuilderFilters = session.QueryBuilderFilters.SetLevels(model.SelectedLevels);
 
         SaveSessionModel(session);
 
@@ -680,7 +681,7 @@ public class RolloverController : ControllerBase
 
         var session = GetSessionModel();
 
-        session.QueryBuilderFilters.SetTypes(model.SelectedTypes);
+        session.QueryBuilderFilters = session.QueryBuilderFilters.SetTypes(model.SelectedTypes);
 
         SaveSessionModel(session);
 
@@ -711,8 +712,6 @@ public class RolloverController : ControllerBase
     {
         var session = GetSessionModel();
 
-        //ModelState.Clear();
-
         if (model.SelectionType is SectorSubjectAreaSelectionType.None)
         {
             ModelState.Remove(nameof(model.SelectedSectorSubjectAreas));
@@ -720,6 +719,11 @@ public class RolloverController : ControllerBase
             ModelState.AddModelError(nameof(model.SelectionType), "Select if you want to rollover all SSAs or only a selection");
 
             return View(model);
+        }
+
+        if (model.SelectionType is SectorSubjectAreaSelectionType.All)
+        {
+            model.SelectedSectorSubjectAreas = SectorSubjectArea.All.ToList();
         }
 
         if (model.SelectionType is SectorSubjectAreaSelectionType.SpecificSelection)
@@ -738,7 +742,7 @@ public class RolloverController : ControllerBase
             }
         }
 
-        session.QueryBuilderFilters.SetSectorSubjectAreas(model.SelectedSectorSubjectAreas, model.SelectionType);
+        session.QueryBuilderFilters = session.QueryBuilderFilters.SetSectorSubjectAreas(model.SelectedSectorSubjectAreas);
 
         SaveSessionModel(session);
 
@@ -747,7 +751,7 @@ public class RolloverController : ControllerBase
 
     [HttpGet]
     [Route("/Review/Rollover/SelectAwardingOrganisations")]
-    public IActionResult SelectAwardingOrganisations()
+    public async Task<IActionResult> SelectAwardingOrganisations()
     {
         var session = GetSessionModel();
         var model = new SelectAwardingOrganisationsViewModel();
@@ -756,7 +760,11 @@ public class RolloverController : ControllerBase
 
         if (session.QueryBuilderFilters.AwardingOrganisations.Count > 0)
         {
-            model.SelectedAwardingOrganisations = session.QueryBuilderFilters.AwardingOrganisations.ToList();
+            model.SelectedAwardingOrganisationIds = session.QueryBuilderFilters.AwardingOrganisations.Select(o => o.RecognitionNumber!).ToList();
+        }
+        else
+        {
+            model = await BuildSelectAwardingOrganisationsViewModel();
         }
 
         return View(model);
@@ -765,16 +773,20 @@ public class RolloverController : ControllerBase
     [HttpPost]
     [Route("/Review/Rollover/SelectAwardingOrganisations")]
     [ValidateAntiForgeryToken]
-    public IActionResult SelectAwardingOrganisations(SelectAwardingOrganisationsViewModel model, string action)
+    public async Task<IActionResult> SelectAwardingOrganisations(SelectAwardingOrganisationsViewModel model, string action)
     {
-        //ModelState.Clear();
+        var awardingOrganisations = await GetAwardingOrganisationsForSelectedRolloverFilters();
 
         if (model.SelectionType is AwardingOrganisationSelectionType.None)
         {
-            ModelState.Remove(nameof(model.SelectedAwardingOrganisations));
+            ModelState.Remove(nameof(model.SelectedAwardingOrganisationIds));
 
             ModelState.AddModelError(nameof(model.SelectionType), "Select if you want to rollover all awarding organisations or only a selection");
 
+            model.AwardingOrganisations = SelectAwardingOrganisationsViewModel.Create(
+                awardingOrganisations,
+                model.SelectedAwardingOrganisationIds,
+                model.SelectionType).AwardingOrganisations;
             return View(model);
         }
 
@@ -782,21 +794,27 @@ public class RolloverController : ControllerBase
         {
             if (action == "selectAll")
             {
-                //model.SelectedAwardingOrganisations = new List<AwardingOrganisation>;
                 ModelState.Clear();
                 return View(model);
             }
 
-            if (model.SelectedAwardingOrganisations.Count <= 0)
+            if (model.SelectedAwardingOrganisationIds.Count <= 0)
             {
-                ModelState.AddModelError($"{nameof(model.SelectedAwardingOrganisations)}", "You must select at least one awarding organisation");
+                ModelState.AddModelError($"{nameof(model.SelectedAwardingOrganisationIds)}", "You must select at least one awarding organisation");
+                model.AwardingOrganisations = SelectAwardingOrganisationsViewModel.Create(
+                    awardingOrganisations,
+                    model.SelectedAwardingOrganisationIds,
+                    model.SelectionType).AwardingOrganisations;
                 return View(model);
             }
         }
 
         var session = GetSessionModel();
+        var awardingOrganisationIds = model.SelectionType is AwardingOrganisationSelectionType.SpecificSelection
+            ? model.SelectedAwardingOrganisationIds
+            : new List<string>();
 
-        session.QueryBuilderFilters.SetAwardingOrganisations(model.SelectedAwardingOrganisations, model.SelectionType);
+        session.QueryBuilderFilters = session.QueryBuilderFilters.SetAwardingOrganisations(awardingOrganisationIds, model.SelectionType);
 
         SaveSessionModel(session);
 
@@ -805,15 +823,40 @@ public class RolloverController : ControllerBase
 
     [HttpGet]
     [Route("/Review/Rollover/CheckYourAnswers")]
-    public IActionResult CheckYourAnswers()
+    public async Task<IActionResult> CheckYourAnswers()
     {
         var session = GetSessionModel();
+        var qualificationVersions = await Send(
+            new GetQualificationVersionsForRolloverQueryBuilderQuery(RolloverQueryBuilderRequestMapper.Map(session.QueryBuilderFilters)));
+
         var model = new CheckYourAnswersViewModel
         {
             Levels = session.QueryBuilderFilters.Levels.ToList(),
-            Types = session.QueryBuilderFilters.Types.ToList()
+            Types = session.QueryBuilderFilters.Types.ToList(),
+            SectorSubjectAreas = session.QueryBuilderFilters.SectorSubjectAreas.ToList(),
+            QualificationVersionCount = qualificationVersions?.QualificationVersions.Count() ?? 0
         };
 
         return View(model);
+    }
+
+    private async Task<SelectAwardingOrganisationsViewModel> BuildSelectAwardingOrganisationsViewModel()
+    {
+        var session = GetSessionModel();
+        var awardingOrganisations = await GetAwardingOrganisationsForSelectedRolloverFilters();
+
+        return SelectAwardingOrganisationsViewModel.Create(
+            awardingOrganisations,
+            session.QueryBuilderFilters.AwardingOrganisationIds,
+            session.QueryBuilderFilters.AwardingOrganisationSelectionType);
+    }
+
+    private async Task<List<AwardingOrganisation>> GetAwardingOrganisationsForSelectedRolloverFilters()
+    {
+        var session = GetSessionModel();
+        var response = await Send(new GetAwardingOrganisationsForRolloverQueryBuilderQuery(
+            RolloverQueryBuilderRequestMapper.Map(session.QueryBuilderFilters)));
+
+        return response?.AwardingOrganisations.ToList() ?? [];
     }
 }
