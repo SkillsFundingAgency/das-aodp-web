@@ -4,15 +4,8 @@
     {
         public static QualificationCandidate Map(IReadOnlyDictionary<string, string> row)
         {
-            string Get(string key) => row.TryGetValue(key, out var v) ? v : string.Empty;
-
-            DateTime? ParseDate(string value)
-            {
-                if (DateTime.TryParse(value, out var date))
-                    return date;
-
-                return null;
-            }
+            string Get(string key) =>
+                row.TryGetValue(key, out var v) ? v ?? string.Empty : string.Empty;
 
             return new QualificationCandidate
             {

@@ -86,6 +86,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover
 
             foreach (var row in rows.Skip(1))
             {
+
                 var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
                 foreach (var h in headerMap)
@@ -119,8 +120,15 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover
             while (!reader.EndOfStream)
             {
                 var line = await reader.ReadLineAsync();
-                if (!string.IsNullOrWhiteSpace(line))
-                    rows.Add(ParseCsv(line));
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
+
+                var row = ParseCsv(line);
+
+                if (row.All(cell => string.IsNullOrWhiteSpace(cell)))
+                    continue;
+
+                rows.Add(row);
             }
 
             return rows;

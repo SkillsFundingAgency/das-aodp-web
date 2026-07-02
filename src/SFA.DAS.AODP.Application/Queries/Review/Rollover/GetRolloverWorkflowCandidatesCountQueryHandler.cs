@@ -20,8 +20,8 @@ public class GetRolloverWorkflowCandidatesCountQueryHandler : IRequestHandler<Ge
 
         try
         {
-            var result = await _apiClient.Get<BaseMediatrResponse<GetRolloverWorkflowCandidatesCountQueryResponse>>(new GetRolloverWorkflowCandidatesCountApiRequest());
-            response.Value.TotalRecords = result.Value.TotalRecords;
+            var result = await _apiClient.Get<GetRolloverWorkflowCandidatesCountQueryResponse>(new GetRolloverWorkflowCandidatesCountApiRequest());
+            response.Value.TotalRecords = result.TotalRecords;
             response.Success = true;
         }
         catch (Exception ex)
