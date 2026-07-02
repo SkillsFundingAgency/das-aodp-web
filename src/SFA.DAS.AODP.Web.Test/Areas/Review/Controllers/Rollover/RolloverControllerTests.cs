@@ -1042,7 +1042,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
         };
 
         MediatorMock.Setup(m => m.Send(It.IsAny<RemovePreviousWorkflowCandidatesQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<RemovePreviousWorkflowCandidatesQueryResponse>
+            .ReturnsAsync(new BaseMediatrResponse<EmptyResponse>
             {
                 Success = true
             });

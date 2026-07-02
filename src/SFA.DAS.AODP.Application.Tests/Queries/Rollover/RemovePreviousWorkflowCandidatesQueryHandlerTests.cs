@@ -19,10 +19,10 @@ public class RemovePreviousWorkflowCandidatesQueryHandlerTests
     public async Task Handle_WhenApiCallSucceeds_ShouldReturnSuccess()
     {
         // Arrange
-        var apiResponse = new RemovePreviousWorkflowCandidatesQueryResponse();
+        var apiResponse = new EmptyResponse();
 
         _mockApiClient
-            .Setup(c => c.Get<RemovePreviousWorkflowCandidatesQueryResponse>(It.IsAny<IGetApiRequest>()))
+            .Setup(c => c.Get<EmptyResponse>(It.IsAny<IGetApiRequest>()))
             .ReturnsAsync(apiResponse);
 
         var query = new RemovePreviousWorkflowCandidatesQuery();
@@ -34,7 +34,7 @@ public class RemovePreviousWorkflowCandidatesQueryHandlerTests
         Assert.NotNull(result);
         Assert.True(result.Success);
 
-        _mockApiClient.Verify(c => c.Get<RemovePreviousWorkflowCandidatesQueryResponse>(It.IsAny<IGetApiRequest>()), Times.Once);
+        _mockApiClient.Verify(c => c.PostWithResponseCode<EmptyResponse>(It.IsAny<IPostApiRequest>()), Times.Once);
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public class RemovePreviousWorkflowCandidatesQueryHandlerTests
         // Arrange
         var ex = new InvalidOperationException("api failure");
         _mockApiClient
-            .Setup(c => c.Get<RemovePreviousWorkflowCandidatesQueryResponse>(It.IsAny<IGetApiRequest>()))
+            .Setup(c => c.PostWithResponseCode<EmptyResponse>(It.IsAny<IPostApiRequest>()))
             .ThrowsAsync(ex);
 
         var query = new RemovePreviousWorkflowCandidatesQuery();
@@ -56,6 +56,6 @@ public class RemovePreviousWorkflowCandidatesQueryHandlerTests
         Assert.False(result.Success);
         Assert.Equal("api failure", result.ErrorMessage);
 
-        _mockApiClient.Verify(c => c.Get<RemovePreviousWorkflowCandidatesQueryResponse>(It.IsAny<IGetApiRequest>()), Times.Once);
+        _mockApiClient.Verify(c => c.PostWithResponseCode<EmptyResponse>(It.IsAny<IPostApiRequest>()), Times.Once);
     }
 }
