@@ -1,4 +1,5 @@
 ﻿@using SFA.DAS.AODP.Web.Areas.Review.Controllers
+@using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover
 @using SFA.DAS.AODP.Web.Extensions
 @using SFA.DAS.AODP.Web.Views.Shared
 @model SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.RolloverUploadQualificationCandidatesViewModel
@@ -47,9 +48,12 @@
 
     <h2 class="govuk-body govuk-!-margin-bottom-1">Import file</h2>
 
+    @{
+        var requiredColumns = QualificationImportColumns.ColumnNamesForView();
+    }
+
     <p class="govuk-hint">
-        This must be a correctly formatted CSV file which includes: QualificationName, AwardingOrganisation, QualificationNumber,
-        Level, QualificationType, Subcategory, SectorSubjectArea and Status. Data within the table cannot include any commas or special characters.
+        This must be a correctly formatted CSV file which includes: @requiredColumns. Data within the table cannot include any commas or special characters.
     </p>
 
     <p class="govuk-hint">

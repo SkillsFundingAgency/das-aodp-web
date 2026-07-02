@@ -13,14 +13,26 @@
 
         public static readonly IReadOnlyList<string> Required = new[]
         {
-            QualificationNumber,
             QualificationName,
             AwardingOrganisation,
+            QualificationNumber,
             Level,
             QualificationType,
             Subcategory,
             SectorSubjectArea,
             Status
         };
+
+        public static string ColumnNamesForView()
+        {
+            return Required.Count switch
+            {
+                0 => string.Empty,
+                1 => Required[0],
+                _ => string.Join(", ", Required.Take(Required.Count - 1))
+                     + " and "
+                     + Required[^1]
+            };
+        }
     }
 }
