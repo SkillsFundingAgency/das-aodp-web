@@ -36,10 +36,10 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
 
         private const string DefaultQANValidationMessage = "Invalid Qualification Number.";
 
-        public ApplicationsController(IMediator mediator, 
-            IApplicationAnswersValidator validator, 
-            ILogger<ApplicationsController> logger, 
-            IFileService fileService, 
+        public ApplicationsController(IMediator mediator,
+            IApplicationAnswersValidator validator,
+            ILogger<ApplicationsController> logger,
+            IFileService fileService,
             IUserHelperService userHelperService) : base(mediator, logger)
         {
             _validator = validator;
@@ -51,6 +51,11 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         [Route("apply/applications")]
         public async Task<IActionResult> Index()
         {
+            if (!Request.Cookies.ContainsKey(SFA.DAS.AODP.Web.Areas.Review.Controllers.ConsentController.ConsentCookieName))
+            {
+                return RedirectToAction("Index", "Consent", new { area = "Review" });
+            }
+
             var organisationId = Guid.Parse(_userHelperService.GetUserOrganisationId());
             var response = await Send(new GetApplicationsByOrganisationIdQuery(organisationId));
             ListApplicationsViewModel model = ListApplicationsViewModel.Map(response, organisationId);
@@ -512,5 +517,3 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         }
     }
 }
-
-
