@@ -1,0 +1,26 @@
+﻿@using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover
+@model RolloverUploadQualificationsViewModel
+
+@{
+    var fileHasError =
+        ViewData.ModelState.TryGetValue(nameof(Model.File), out var fileState)
+        && fileState.Errors.Count > 0;
+
+    var fileErrorMessage = fileHasError ? fileState?.Errors.First().ErrorMessage : null;
+}
+
+@if (fileHasError)
+{
+    <div class="govuk-error-summary" role="alert">
+        <h2 class="govuk-error-summary__title">There is a problem</h2>
+
+        <ul class="govuk-list govuk-error-summary__list">
+            @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <li>
+                    <a href="#fileUpload">@err.ErrorMessage</a>
+                </li>
+            }
+        </ul>
+    </div>
+}

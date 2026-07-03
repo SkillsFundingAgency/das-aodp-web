@@ -2,6 +2,7 @@
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover
 {
+    [ExcludeFromCodeCoverage]
     public class RolloverUploadQualificationCandidatesViewModel
     {
         [Required(ErrorMessage = "You must select a CSV file.")]

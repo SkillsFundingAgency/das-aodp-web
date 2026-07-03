@@ -2,7 +2,7 @@
 
 namespace SFA.DAS.AODP.Application.Commands.Rollover
 {
-    public class CreateRolloverWorkflowRunCommand : IRequest<BaseMediatrResponse<CreateRolloverWorkflowRunCommandResponse>>
+    public record CreateRolloverWorkflowRunCommand : IRequest<BaseMediatrResponse<CreateRolloverWorkflowRunCommandResponse>>
     {
         public string AcademicYear { get; set; } = null!;
         public SelectionMethod SelectionMethod { get; set; }

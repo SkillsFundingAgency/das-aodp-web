@@ -15,7 +15,7 @@ using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview;
-using SFA.DAS.AODP.Web.Models.Applications;
+using SFA.DAS.AODP.Web.Helpers.Export;
 using SFA.DAS.AODP.Web.Helpers.User;
 using System.IO.Compression;
 
@@ -28,6 +28,7 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
         private readonly Mock<IMediator> _mediatorMock = new();
         private readonly Mock<IUserHelperService> _userHelperServiceMock = new();
         private readonly Mock<IFileService> _fileServiceMock = new();
+        private readonly Mock<IApplicationExportService> _applicationExportServiceMock = new();
         private readonly ApplicationsReviewController _controller;
         private readonly IOptions<AodpConfiguration> _aodpOptions = Options.Create(new AodpConfiguration
         {
@@ -37,7 +38,7 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
         public ApplicationsReviewControllerTests()
         {
             _fixture.Register(() => DateOnly.FromDateTime(new DateTime(2020, 1, 1)));
-            _controller = new(_loggerMock.Object, _mediatorMock.Object, _userHelperServiceMock.Object, _fileServiceMock.Object, _aodpOptions);
+            _controller = new(_loggerMock.Object, _mediatorMock.Object, _userHelperServiceMock.Object, _fileServiceMock.Object, _aodpOptions, _applicationExportServiceMock.Object);
         }
 
         [Fact]
@@ -47,7 +48,7 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
             var expectedUserType = UserType.Ofqual;
             _userHelperServiceMock.Setup(x => x.GetUserType()).Returns(expectedUserType);
 
-            var expectedModel = new ApplicationsReviewQuery
+            var expectedModel = new Models.Applications.ApplicationsReviewQuery
             {
                 PageNumber = 2,
                 RecordsPerPage = 10,

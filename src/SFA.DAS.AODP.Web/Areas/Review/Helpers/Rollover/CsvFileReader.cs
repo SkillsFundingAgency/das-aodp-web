@@ -8,6 +8,12 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover
         private const string EmptyFileErrorMessage =
             "The selected file is empty. Upload a CSV file that contains data.";
 
+        private const string NoDataRowsErrorMessage =
+            "The selected file does not contain any data rows. Upload a CSV file that contains data.";
+
+        private const string TooManyRowsErrorMessage =
+            "The selected file contains more than 1000 rows. Upload a CSV file that contains less than 1000 rows.";
+
         private const string MissingFileErrorMessage =
             "You must select a CSV file.";
 
@@ -45,6 +51,18 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover
 
             var rows = await ReadRowsAsync(file);
 
+            if (rows.Count < 2) //Header + 1 row of data is the minimum
+            {
+                result.Errors.Add(NoDataRowsErrorMessage);
+                return result;
+            }
+
+            if (rows.Count > 1001) //1000 rows of data + header
+            {
+                result.Errors.Add(TooManyRowsErrorMessage);
+                return result;
+            }
+
             var headerRow = rows[0];
             var headers = headerRow.Select((h, i) => new
             {
@@ -68,6 +86,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover
 
             foreach (var row in rows.Skip(1))
             {
+
                 var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
                 foreach (var h in headerMap)
@@ -101,8 +120,15 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover
             while (!reader.EndOfStream)
             {
                 var line = await reader.ReadLineAsync();
-                if (!string.IsNullOrWhiteSpace(line))
-                    rows.Add(ParseCsv(line));
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
+
+                var row = ParseCsv(line);
+
+                if (row.All(cell => string.IsNullOrWhiteSpace(cell)))
+                    continue;
+
+                rows.Add(row);
             }
 
             return rows;
@@ -115,7 +141,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover
             var t = s.Trim();
             t = t.TrimStart('\uFEFF');
             t = t.Replace('\u00A0', ' ');
-            t = Regex.Replace(t, @"\s+", " ");
+            t = Regex.Replace(t, @"\s+", " ", RegexOptions.None, TimeSpan.FromMilliseconds(100));
             return t.ToLowerInvariant();
         }
 
