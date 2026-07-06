@@ -52,6 +52,22 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
             };
         }
 
+        private void SetConsentCookie(bool hasConsentCookie)
+        {
+            var httpContext = new DefaultHttpContext();
+
+            if (hasConsentCookie)
+            {
+                httpContext.Request.Headers.Cookie =
+                    $"{SFA.DAS.AODP.Web.Areas.Review.Controllers.ConsentController.ConsentCookieName}=true";
+            }
+
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = httpContext
+            };
+        }
+
         [Fact]
         public async Task Index_ReturnsView_WithListApplicationsViewModel()
         {
@@ -61,6 +77,8 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
                 Success = true,
                 Value = _fixture.Create<GetApplicationsByOrganisationIdQueryResponse>()
             };
+
+            SetConsentCookie(true);
 
             _mediatorMock
                 .Setup(m => m.Send(It.IsAny<GetApplicationsByOrganisationIdQuery>(), default))
@@ -75,6 +93,24 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
             {
                 Assert.NotNull(model);
                 Assert.Equal(organisationId, model.OrganisationId);
+            });
+        }
+
+        [Fact]
+        public async Task Index_RedirectsToConsent_WhenConsentCookieIsMissing()
+        {
+            SetConsentCookie(false);
+
+            var result = await _controller.Index();
+
+            var redirectResult = Assert.IsType<RedirectToActionResult>(result);
+
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("Index", redirectResult.ActionName);
+                Assert.Equal("Consent", redirectResult.ControllerName);
+                Assert.NotNull(redirectResult.RouteValues);
+                Assert.Equal("Review", redirectResult.RouteValues["area"]);
             });
         }
 
