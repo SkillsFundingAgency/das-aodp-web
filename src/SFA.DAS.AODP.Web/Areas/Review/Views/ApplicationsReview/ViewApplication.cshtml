@@ -53,12 +53,19 @@
     <div class="govuk-grid-column-two-thirds">
 
         <div class="govuk-grid-row">
-            <h1 class="govuk-heading-xl">
+            <span class="govuk-caption-xl">
+                @(Model.IsApplicationCompleted ? "Completed application" : "Request for funding")
+            </span>
+            <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">
                 Application details
-                <span class="govuk-caption-l">
-                    @(Model.IsApplicationCompleted ? "Completed application" : "Request for funding")
-                </span>
             </h1>
+            <p class="govuk-!-margin-bottom-6">
+                <a class="govuk-link"
+                   asp-route="Review_ApplicationMessages"
+                   asp-route-applicationReviewId="@Model.ApplicationReviewId">
+                    View messages
+                </a>
+            </p>
         </div>
 
         <div class="govuk-grid-row">
@@ -300,13 +307,13 @@
 
                         @if (currentUserReview.Status == ApplicationStatus.Approved.ToString() || currentUserReview.Status == ApplicationStatus.NotApproved.ToString())
                         {
-                            <a class="govuk-button" asp-action="QfauFundingReviewSummary" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId">
+                            <a class="govuk-button govuk-button--secondary" asp-action="QfauFundingReviewSummary" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId">
                                 DfE funding review
                             </a>
                         }
                         else
                         {
-                            <a class="govuk-button" asp-action="QfauFundingReviewOutcome" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId">
+                            <a class="govuk-button govuk-button--secondary" asp-action="QfauFundingReviewOutcome" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId">
                                 DfE funding review
                             </a>
                         }
@@ -401,7 +408,7 @@
 
     </div>
 
-    <div class="govuk-grid-column-one-third">
+    <div class="govuk-grid-column-one-third"> 
         @await Html.PartialAsync("_RelatedLinks", Model.RelatedLinks)
     </div>
 
