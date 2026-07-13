@@ -3,7 +3,7 @@
 /// <summary>
 /// Defines the model for a checkbox item to be sued with the <see cref="CheckboxesTagHelper"/>.
 /// </summary>
-public class CheckboxItem
+public record CheckboxItem
 {
     /// <summary>
     /// The text to set for the associated label.

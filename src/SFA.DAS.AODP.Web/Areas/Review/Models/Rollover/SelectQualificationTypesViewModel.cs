@@ -1,9 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.ValueObjects;
-using SFA.DAS.AODP.Web.TagHelpers;
-using SFA.DAS.AODP.Web.Validators.Attributes;
-
-namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
+﻿namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 
 [ExcludeFromCodeCoverage]
 public record SelectQualificationTypesViewModel
@@ -11,10 +6,23 @@ public record SelectQualificationTypesViewModel
     [MustNotBeEmpty(ErrorMessage = "Select the qualification types you want to rollover")]
     public List<QualificationType> SelectedTypes { get; set; } = [];
 
-    public List<CheckboxItem> Types => QualificationType.All.Select(o => new CheckboxItem
+    public List<CheckboxItem> Types { get; private set; } = [];
+
+    public SelectQualificationTypesViewModel Set(IEnumerable<QualificationType> rolloverTypes)
     {
-        LabelText = o.Name,
-        Value = o.Id.ToString(),
-        IsChecked = SelectedTypes.Contains(o)
-    }).ToList();
+        Types = rolloverTypes.Select(r => new CheckboxItem
+        {
+            LabelText = r.Name,
+            Value = r.Id.ToString(),
+            IsChecked = SelectedTypes.Contains(r)
+        }).ToList();
+
+        return this;
+    }
+
+    public SelectQualificationTypesViewModel MarkAllAsChecked()
+    {
+        Types.ForEach(o => o.SetChecked());
+        return this;
+    }
 }

@@ -1,6 +1,7 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using SFA.DAS.AODP.Domain.ValueObjects;
+using System.Diagnostics.CodeAnalysis;
 
-namespace SFA.DAS.AODP.Models.Qualifications;
+namespace SFA.DAS.AODP.Domain.Rollover;
 
 [ExcludeFromCodeCoverage]
 public record AwardingOrganisation

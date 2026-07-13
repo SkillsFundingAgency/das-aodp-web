@@ -1,5 +1,5 @@
 ﻿using Moq;
-using SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
+using SFA.DAS.AODP.Domain.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 
 namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Domain.Rollover;
@@ -16,7 +16,7 @@ public class RolloverPreviousDataTests
             SelectedOption = RolloverPreviousFileOption.RemovePrevious
         };
 
-        var sessionMock = new Mock<Web.Areas.Review.Domain.Rollover.Rollover>();
+        var sessionMock = new Mock<AODP.Domain.Rollover.Rollover>();
         sessionMock.SetupAllProperties();
         sessionMock.Object.PreviousData = new RolloverPreviousData
         {
@@ -27,7 +27,7 @@ public class RolloverPreviousDataTests
         var sut = new RolloverPreviousData();
 
         // act
-        var returned = sut.SetPreviousDataCandidate(sessionMock.Object, previousDataModel);
+        var returned = sut.SetPreviousDataCandidate(sessionMock.Object, previousDataModel.CandidateCount, previousDataModel.SelectedOption);
 
         // assert
         Assert.Same(sessionMock.Object, returned);
@@ -40,7 +40,7 @@ public class RolloverPreviousDataTests
     public void SetPreviousDataCandidate_WithNullPreviousDataOnSession_ThrowsNullReferenceException()
     {
         // arrange
-        var session = new Web.Areas.Review.Domain.Rollover.Rollover();
+        var session = new SFA.DAS.AODP.Domain.Rollover.Rollover();
         var previousDataModel = new RolloverPreviousDataViewModel
         {
             CandidateCount = 3,
@@ -50,7 +50,7 @@ public class RolloverPreviousDataTests
         var sut = new RolloverPreviousData();
 
         // act & assert
-        Assert.Throws<NullReferenceException>(() => sut.SetPreviousDataCandidate(session, previousDataModel));
+        Assert.Throws<NullReferenceException>(() => sut.SetPreviousDataCandidate(session, previousDataModel.CandidateCount, previousDataModel.SelectedOption));
     }
 
     [Fact]
@@ -66,21 +66,21 @@ public class RolloverPreviousDataTests
         var sut = new RolloverPreviousData();
 
         // act & assert
-        Assert.Throws<NullReferenceException>(() => sut.SetPreviousDataCandidate(null!, previousDataModel));
+        Assert.Throws<NullReferenceException>(() => sut.SetPreviousDataCandidate(null!, previousDataModel.CandidateCount, previousDataModel.SelectedOption));
     }
 
     [Fact]
     public void SetPreviousDataCandidate_NullPreviousDataModel_ThrowsNullReferenceException()
     {
         // arrange
-        var session = new Web.Areas.Review.Domain.Rollover.Rollover
+        var session = new SFA.DAS.AODP.Domain.Rollover.Rollover
         {
-            PreviousData = new RolloverPreviousData()
+            PreviousData = null
         };
 
         var sut = new RolloverPreviousData();
 
         // act & assert
-        Assert.Throws<NullReferenceException>(() => sut.SetPreviousDataCandidate(session, null!));
+        Assert.Throws<NullReferenceException>(() => sut.SetPreviousDataCandidate(session, 0, null!));
     }
 }

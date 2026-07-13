@@ -1,4 +1,6 @@
-﻿@using SFA.DAS.AODP.Web.Areas.Review.Controllers
+﻿@using SFA.DAS.AODP.Domain.Rollover
+@using SFA.DAS.AODP.Web.Areas.Review.Controllers
+@using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover
 @using SFA.DAS.AODP.Web.Views.Shared
 @model SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.CheckYourAnswersViewModel
 @{
@@ -11,50 +13,123 @@
     };
 
     ViewBag.BackLinkModel = backLinkModel;
+    var allAosSelected = @Model.AwardingOrganisations.Count == @Model.AllAwardingOrganisationsCount;
+    var aoCountText = allAosSelected ? "all" : @Model.AwardingOrganisations.Count.ToString();
+
+    var allSsasSelected = @Model.SectorSubjectAreas.Count == @Model.AllSectorSubjectAreasCount;
+    var ssaCountText = allSsasSelected ? "all" : @Model.SectorSubjectAreas.Count.ToString();
 }
 
 <h1 class="govuk-heading-l">@ViewData["Title"]</h1>
 
-<dl class="govuk-summary-list govuk-!-margin-bottom-9">
-    <div class="govuk-summary-list__row">
-        <dt class="govuk-summary-list__key">
-            Level(s)
-        </dt>
-        <dd class="govuk-summary-list__value">
+<govuk-summary-list>
+    <govuk-summary-list-row>
+        <govuk-summary-list-row-key>Level(s)</govuk-summary-list-row-key>
+        <govuk-summary-list-row-value>
             @foreach (var level in @Model.Levels)
             {
                 @level.ToString()<br />
             }
-        </dd>
-    </div>
-    <div class="govuk-summary-list__row">
-        <dt class="govuk-summary-list__key">
-            Type(s)
-        </dt>
-        <dd class="govuk-summary-list__value">
+        </govuk-summary-list-row-value>
+    </govuk-summary-list-row>
+    <govuk-summary-list-row>
+        <govuk-summary-list-row-key>Type(s)</govuk-summary-list-row-key>
+        <govuk-summary-list-row-value>
             @foreach (var type in @Model.Types)
             {
                 @type.ToString()<br />
             }
-        </dd>
-    </div>
-    <div class="govuk-summary-list__row">
-        <dt class="govuk-summary-list__key">
-            Sector subject area(s)
-        </dt>
-        <dd class="govuk-summary-list__value">
-            @foreach (var sectorSubjectArea in @Model.SectorSubjectAreas)
-            {
-                @sectorSubjectArea.ToString()<br />
-            }
-        </dd>
-    </div>
-    <div class="govuk-summary-list__row">
-        <dt class="govuk-summary-list__key">
-            Qualification versions
-        </dt>
-        <dd class="govuk-summary-list__value">
-            @Model.QualificationVersionCount
-        </dd>
-    </div>
-</dl>
+        </govuk-summary-list-row-value>
+    </govuk-summary-list-row>
+</govuk-summary-list>
+
+<h2 class="govuk-heading-m">Sector subject areas</h2>
+
+@if (Model.ShowAllSectorSubjectAreasSelected)
+{
+    <p>You have selected @Model.SectorSubjectAreas.Count SSAs</p>
+
+    <govuk-details>
+        <govuk-details-summary>
+            View AOs selected for rollover
+        </govuk-details-summary>
+        <govuk-details-text>
+            <p>
+                @foreach (var sectorSubjectArea in Model.SectorSubjectAreas)
+                {
+                    @sectorSubjectArea.Name
+                    <br />
+                }
+            </p>
+        </govuk-details-text>
+    </govuk-details>
+}
+else
+{
+    <p>You have selected @ssaCountText SSAs and excluded @Model.ExcludedSectorSubjectAreas.Count() SSAs.</p>
+
+    <govuk-details>
+        <govuk-details-summary>
+            View SSAs not being checked for rollover
+        </govuk-details-summary>
+        <govuk-details-text>
+            <p>
+                @foreach (var sectorSubjectArea in Model.ExcludedSectorSubjectAreas)
+                {
+                    @sectorSubjectArea.Name
+                    <br />
+                }
+            </p>
+        </govuk-details-text>
+    </govuk-details>
+}
+
+<h2 class="govuk-heading-m">Awarding organisations</h2>
+
+@if (Model.ShowAllAwardingOrganisationsSelected)
+{
+    <p>You have selected @Model.AwardingOrganisations.Count AOs</p>
+
+    <govuk-details>
+        <govuk-details-summary>
+            View AOs selected for rollover
+        </govuk-details-summary>
+        <govuk-details-text>
+            <p>
+                @foreach(var awardingOrganisation in Model.AwardingOrganisations)
+                {
+                    @awardingOrganisation.NameOfqual<br />
+                }
+            </p>
+        </govuk-details-text>
+    </govuk-details>
+}
+else
+{
+    <p>You have selected @aoCountText AOs and excluded @Model.ExcludedAwardingOrganisations.Count() AOs.</p>
+
+    <govuk-details>
+        <govuk-details-summary>
+            View AOs not being checked for rollover
+        </govuk-details-summary>
+        <govuk-details-text>
+            <p>
+                @foreach (var awardingOrganisation in Model.ExcludedAwardingOrganisations)
+                {
+                    @awardingOrganisation.NameOfqual
+                    <br />
+                }
+            </p>
+        </govuk-details-text>
+    </govuk-details>
+}
+
+<p><strong>This selection will result in @Model.CandidateCount candidates to be checked for rollover.</strong></p>
+
+<govuk-inset-text>
+    <a class="govuk-link" asp-action="SelectLevels">Change your answers</a>
+</govuk-inset-text>
+
+<form asp-action="CheckYourAnswers" asp-controller="Rollover">
+    <govuk-button>Continue</govuk-button>
+</form>

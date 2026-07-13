@@ -1,6 +1,6 @@
-﻿using SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
-using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
-using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.ValueObjects;
+﻿using SFA.DAS.AODP.Domain.Rollover;
+using SFA.DAS.AODP.Domain.ValueObjects;
+using RolloverQueryBuilderRequestMapper = SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.RolloverQueryBuilderRequestMapper;
 
 namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Models.Rollover;
 
@@ -25,20 +25,25 @@ public class RolloverQueryBuilderRequestMapperTests
     public void Map_ShouldConvertSelectedFiltersToLeanRequestIds()
     {
         // Arrange
-        var awardingOrganisationId = string.Empty;
+        var awardingOrganisation = "RN1234";
+        var originalAwardingOrganisation = new AwardingOrganisation
+        {
+            RecognitionNumber = "RN1234"
+        };
+
         var filters = new QueryBuilderFilters()
             .SetLevels([QualificationLevel.Level3])
             .SetTypes([QualificationType.FunctionalSkills])
-            .SetSectorSubjectAreas([SectorSubjectArea.Engineering])
-            .SetAwardingOrganisations([awardingOrganisationId], AwardingOrganisationSelectionType.SpecificSelection);
+            .SetSectorSubjectAreas([SectorSubjectArea.Engineering], [SectorSubjectArea.Engineering], SectorSubjectAreaSelectionType.None)
+            .SetAwardingOrganisations([awardingOrganisation], [originalAwardingOrganisation], AwardingOrganisationSelectionType.SpecificSelection);
 
         // Act
-        var result = RolloverQueryBuilderRequestMapper.Map(filters);
+        var result = RolloverQueryBuilderRequestMapper.ForAll(filters);
 
         // Assert
         result.LevelIds.ShouldBe([QualificationLevel.Level3.Id]);
         result.TypeIds.ShouldBe([QualificationType.FunctionalSkills.Id]);
         result.SectorSubjectAreaIds.ShouldBe([SectorSubjectArea.Engineering.Code]);
-        result.AwardingOrganisationIds.ShouldBe([]);
+        result.AwardingOrganisationIds.ShouldBe(["RN1234"]);
     }
 }

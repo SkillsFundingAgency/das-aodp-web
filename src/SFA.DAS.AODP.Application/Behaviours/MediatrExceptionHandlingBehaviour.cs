@@ -1,5 +1,4 @@
-﻿using MediatR;
-using SFA.DAS.AODP.Application.Exceptions;
+﻿using SFA.DAS.AODP.Application.Exceptions;
 
 namespace SFA.DAS.AODP.Application.Behaviours;
 

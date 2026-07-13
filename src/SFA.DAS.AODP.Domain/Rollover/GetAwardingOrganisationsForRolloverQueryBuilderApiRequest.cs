@@ -2,7 +2,7 @@
 
 namespace SFA.DAS.AODP.Domain.Rollover;
 
-public class GetAwardingOrganisationsForRolloverQueryBuilderApiRequest(RolloverQueryBuilderRequest data) : IPostApiRequest
+public record GetAwardingOrganisationsForRolloverQueryBuilderApiRequest(RolloverQueryBuilderAwardingOrganisationsRequest data) : IPostApiRequest
 {
     public object Data { get; set; } = data;
 

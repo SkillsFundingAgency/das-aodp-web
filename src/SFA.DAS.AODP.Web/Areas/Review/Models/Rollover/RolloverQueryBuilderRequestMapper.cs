@@ -1,15 +1,33 @@
-﻿using SFA.DAS.AODP.Domain.Rollover;
-using SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
-
-namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
+﻿namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 
 public static class RolloverQueryBuilderRequestMapper
 {
-    public static RolloverQueryBuilderRequest Map(QueryBuilderFilters filters)
-        => RolloverQueryBuilderRequest.Builder()
-            .WithLevels(filters.Levels.Select(x => x.Id))
-            .WithTypes(filters.Types.Select(x => x.Id))
-            .WithSectorSubjectAreas(filters.SectorSubjectAreas.Select(x => x.Code))
-            .WithAwardingOrganisations(filters.AwardingOrganisationIds)
-            .Build();
+    public static RolloverQueryBuilderRequest ForAll(QueryBuilderFilters filters)
+        => RolloverQueryBuilderRequestBuilder.All(
+            filters.Levels.Select(x => x.Id),
+            filters.Types.Select(x => x.Id),
+            filters.SectorSubjectAreas.Select(x => x.Code),
+            filters.SelectedAwardingOrganisationIds
+        );
+
+    public static RolloverQueryBuilderAwardingOrganisationsRequest ForAwardingOrganisationFilter(QueryBuilderFilters filters)
+    {
+        return RolloverQueryBuilderRequestBuilder.ForAwardingOrganisations(
+            filters.Levels.Select(x => x.Id),
+            filters.Types.Select(x => x.Id),
+            filters.SectorSubjectAreas.Select(x => x.Code)
+        );
+    }
+
+    public static RolloverQueryBuilderTypesRequest ForTypesFilter(QueryBuilderFilters filters)
+    {
+        return RolloverQueryBuilderRequestBuilder.ForTypes(filters.Levels.Select(x => x.Id));
+    }
+
+    public static RolloverQueryBuilderSectorSubjectAreaRequest ForSectorSubjectAreaFilter(QueryBuilderFilters filters)
+    {
+        return RolloverQueryBuilderRequestBuilder.ForSectorSubjectArea(
+            filters.Levels.Select(x => x.Id), 
+            filters.Types.Select(x => x.Id));
+    }
 }

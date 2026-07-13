@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.ValueObjects;
+namespace SFA.DAS.AODP.Domain.ValueObjects;
 
 public sealed class QualificationTypeJsonConverter : JsonConverter<QualificationType>
 {

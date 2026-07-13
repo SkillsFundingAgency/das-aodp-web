@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Behaviours;
 using SFA.DAS.AODP.Application.Exceptions;
 using SFA.DAS.AODP.Application.Queries.Review.Rollover;
@@ -14,7 +13,7 @@ public class MediatrExceptionHandlingBehaviourTests
     public async Task Handle_WhenRequestThrowsException_ShouldWrapExceptionWithRequestName()
     {
         // Arrange
-        var request = new GetAwardingOrganisationsForRolloverQueryBuilderQuery(RolloverQueryBuilderRequest.Builder().Build());
+        var request = new GetAwardingOrganisationsForRolloverQueryBuilderQuery(RolloverQueryBuilderRequestMapper.ForAwardingOrganisationFilter(new QueryBuilderFilters()));
         var exception = new InvalidOperationException("API failed");
         var behaviour = new MediatrExceptionHandlingBehaviour<GetAwardingOrganisationsForRolloverQueryBuilderQuery, BaseMediatrResponse<GetAwardingOrganisationsForRolloverQueryBuilderQueryResponse>>();
         RequestHandlerDelegate<BaseMediatrResponse<GetAwardingOrganisationsForRolloverQueryBuilderQueryResponse>> next = _ => Task.FromException<BaseMediatrResponse<GetAwardingOrganisationsForRolloverQueryBuilderQueryResponse>>(exception);

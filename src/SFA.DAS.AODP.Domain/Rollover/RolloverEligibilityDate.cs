@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
+namespace SFA.DAS.AODP.Domain.Rollover;
 
 public class RolloverEligibilityDate
 {

@@ -21,12 +21,7 @@ public class WhenHandlingGetQualificationVersionsForRolloverQueryBuilderQuery
     {
         // Arrange
         var awardingOrganisationId = string.Empty;
-        var filters = RolloverQueryBuilderRequest.Builder()
-            .WithLevels([3])
-            .WithTypes([7])
-            .WithSectorSubjectAreas(["4.1"])
-            .WithAwardingOrganisations([awardingOrganisationId])
-            .Build();
+        var filters = RolloverQueryBuilderRequestMapper.ForAll(new QueryBuilderFilters());
 
         var expectedResponse = new GetQualificationVersionsForRolloverQueryBuilderQueryResponse
         {
@@ -64,7 +59,7 @@ public class WhenHandlingGetQualificationVersionsForRolloverQueryBuilderQuery
     {
         // Arrange
         const string exceptionMessage = "API failed";
-        var filters = RolloverQueryBuilderRequest.Builder().Build();
+        var filters = RolloverQueryBuilderRequestMapper.ForAll(new QueryBuilderFilters());
         var exception = new Exception(exceptionMessage);
 
         _apiClientMock

@@ -8,8 +8,8 @@ using SFA.DAS.AODP.Application.Commands.Rollover;
 using SFA.DAS.AODP.Application.Queries.Import;
 using SFA.DAS.AODP.Application.Queries.Review.Rollover;
 using SFA.DAS.AODP.Application.Queries.Rollover;
+using SFA.DAS.AODP.Domain.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
-using SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 using SFA.DAS.AODP.Web.Enums;
 
@@ -45,7 +45,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
     public void Index_Get_WhenSessionHasStart_PopulatesModel()
     {
         var session = CreateEmptySession();
-        var sessionModel = new Web.Areas.Review.Domain.Rollover.Rollover { Start = new RolloverStart { SelectedProcess = RolloverProcess.FinalUpload } };
+        var sessionModel = new SFA.DAS.AODP.Domain.Rollover.Rollover { Start = new RolloverStart { SelectedProcess = RolloverProcess.FinalUpload } };
         session.SetString("RolloverSession", JsonConvert.SerializeObject(sessionModel));
 
         var controller = CreateController(session);
@@ -97,7 +97,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
 
         var json = session.GetString("RolloverSession");
         Assert.NotNull(json);
-        var sessionModel = JsonConvert.DeserializeObject<Web.Areas.Review.Domain.Rollover.Rollover>(json);
+        var sessionModel = JsonConvert.DeserializeObject<AODP.Domain.Rollover.Rollover>(json);
         Assert.NotNull(sessionModel?.Start);
         Assert.Equal(RolloverProcess.InitialSelection, sessionModel.Start!.SelectedProcess);
     }
@@ -127,7 +127,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
 
         var json = session.GetString("RolloverSession");
         Assert.NotNull(json);
-        var sessionModel = JsonConvert.DeserializeObject<Web.Areas.Review.Domain.Rollover.Rollover>(json);
+        var sessionModel = JsonConvert.DeserializeObject<AODP.Domain.Rollover.Rollover>(json);
         Assert.NotNull(sessionModel?.Start);
         Assert.Equal(RolloverProcess.FinalUpload, sessionModel.Start!.SelectedProcess);
     }
@@ -183,7 +183,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
     public async Task CheckData_Get_WhenSessionHasImportStatus_MapsFromSession_AndReturnsView()
     {
         var session = CreateEmptySession();
-        var sessionModel = new Web.Areas.Review.Domain.Rollover.Rollover
+        var sessionModel = new SFA.DAS.AODP.Domain.Rollover.Rollover
         {
             ImportStatus = new RolloverImportStatus
             {
@@ -269,7 +269,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
 
         var json = session.GetString("RolloverSession");
         Assert.NotNull(json);
-        var saved = JsonConvert.DeserializeObject<Web.Areas.Review.Domain.Rollover.Rollover>(json);
+        var saved = JsonConvert.DeserializeObject<AODP.Domain.Rollover.Rollover>(json);
         Assert.NotNull(saved?.ImportStatus);
         Assert.Equal(regulatedDate, saved.ImportStatus!.RegulatedQualificationsLastImported);
         Assert.Equal(fundedDate, saved.ImportStatus.FundedQualificationsLastImported);
@@ -299,7 +299,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
     public async Task CheckData_Post_InvalidModelState_ReturnsViewUsingSessionOrModel()
     {
         var session = CreateEmptySession();
-        var sessionModel = new Web.Areas.Review.Domain.Rollover.Rollover
+        var sessionModel = new SFA.DAS.AODP.Domain.Rollover.Rollover
         {
             ImportStatus = new RolloverImportStatus
             {
@@ -329,7 +329,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
     public async Task CheckData_Post_ValidModel_WithSessionPreviousData_RedirectsToPreviousFile()
     {
         var session = CreateEmptySession();
-        session.SetString("RolloverSession", JsonConvert.SerializeObject(new Web.Areas.Review.Domain.Rollover.Rollover { PreviousData = new RolloverPreviousData { CandidateCount = 7 } }));
+        session.SetString("RolloverSession", JsonConvert.SerializeObject(new AODP.Domain.Rollover.Rollover { PreviousData = new RolloverPreviousData { CandidateCount = 7 } }));
         var controller = CreateController(session);
 
         var posted = new RolloverImportStatusViewModel
@@ -369,7 +369,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
 
         var json = session.GetString("RolloverSession");
         Assert.NotNull(json);
-        var saved = JsonConvert.DeserializeObject<Web.Areas.Review.Domain.Rollover.Rollover>(json);
+        var saved = JsonConvert.DeserializeObject<AODP.Domain.Rollover.Rollover>(json);
         Assert.NotNull(saved?.PreviousData);
         Assert.Equal(5, saved.PreviousData!.CandidateCount);
     }
@@ -378,7 +378,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
     public async Task PreviousFile_Get_WhenSessionHasPreviousData_ReturnsViewWithSessionData()
     {
         var session = CreateEmptySession();
-        var sessionModel = new Web.Areas.Review.Domain.Rollover.Rollover
+        var sessionModel = new SFA.DAS.AODP.Domain.Rollover.Rollover
         {
             PreviousData = new RolloverPreviousData
             {
@@ -422,7 +422,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
 
         var json = session.GetString("RolloverSession");
         Assert.NotNull(json);
-        var saved = JsonConvert.DeserializeObject<Web.Areas.Review.Domain.Rollover.Rollover>(json);
+        var saved = JsonConvert.DeserializeObject<AODP.Domain.Rollover.Rollover>(json);
         Assert.NotNull(saved?.PreviousData);
         Assert.Equal(1, saved.PreviousData!.CandidateCount);
     }
@@ -446,7 +446,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
     public async Task PreviousFile_Post_ValidModel_ContinueProcessing_SavesSessionAndRedirectsToSelectFundingStreams()
     {
         var session = CreateEmptySession();
-        session.SetString("RolloverSession", JsonConvert.SerializeObject(new Web.Areas.Review.Domain.Rollover.Rollover { PreviousData = new RolloverPreviousData() }));
+        session.SetString("RolloverSession", JsonConvert.SerializeObject(new SFA.DAS.AODP.Domain.Rollover.Rollover { PreviousData = new RolloverPreviousData() }));
         var controller = CreateController(session);
 
         var model = new RolloverPreviousDataViewModel
@@ -461,7 +461,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
 
         var json = session.GetString("RolloverSession");
         Assert.NotNull(json);
-        var saved = JsonConvert.DeserializeObject<Web.Areas.Review.Domain.Rollover.Rollover>(json);
+        var saved = JsonConvert.DeserializeObject<AODP.Domain.Rollover.Rollover>(json);
         Assert.NotNull(saved?.PreviousData);
         Assert.Equal(model.SelectedOption, saved.PreviousData.SelectedOption);
     }
@@ -470,7 +470,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
     public async Task PreviousFile_Post_ValidModel_RemovePrevious_RedirectsToSelectCandidatesWithReturnAction()
     {
         var session = CreateEmptySession();
-        session.SetString("RolloverSession", JsonConvert.SerializeObject(new Web.Areas.Review.Domain.Rollover.Rollover { PreviousData = new RolloverPreviousData() }));
+        session.SetString("RolloverSession", JsonConvert.SerializeObject(new AODP.Domain.Rollover.Rollover { PreviousData = new RolloverPreviousData() }));
         var controller = CreateController(session);
 
         var model = new RolloverPreviousDataViewModel
@@ -503,7 +503,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
     {
         // arrange
         var session = new TestSession();
-        var saved = new Web.Areas.Review.Domain.Rollover.Rollover
+        var saved = new SFA.DAS.AODP.Domain.Rollover.Rollover
         {
             SelectCandidates = new RolloverSelectCandidates
             {
@@ -571,7 +571,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
         // assert
         Assert.True(session.TryGetValue("RolloverSession", out var bytes));
         var json = System.Text.Encoding.UTF8.GetString(bytes);
-        var saved = JsonConvert.DeserializeObject<Web.Areas.Review.Domain.Rollover.Rollover>(json);
+        var saved = JsonConvert.DeserializeObject<AODP.Domain.Rollover.Rollover>(json);
         Assert.NotNull(saved);
         Assert.NotNull(saved.SelectCandidates);
         Assert.Equal(SelectCandidatesForRollover.ImportAList, saved.SelectCandidates.SelectedOption);
@@ -600,7 +600,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
 
         Assert.True(session.TryGetValue("RolloverSession", out var bytes));
         var json = System.Text.Encoding.UTF8.GetString(bytes);
-        var saved = JsonConvert.DeserializeObject<Web.Areas.Review.Domain.Rollover.Rollover>(json);
+        var saved = JsonConvert.DeserializeObject<AODP.Domain.Rollover.Rollover>(json);
         Assert.NotNull(saved);
         Assert.NotNull(saved.SelectCandidates);
         Assert.Equal(SelectCandidatesForRollover.GenerateAList, saved.SelectCandidates.SelectedOption);
@@ -667,7 +667,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
         var expectedFunding = new RolloverEligibilityDate { Day = 10, Month = 2, Year = 2027 };
         var expectedOperational = new RolloverEligibilityDate { Day = 20, Month = 4, Year = 2027 };
 
-        var sessionModel = new Web.Areas.Review.Domain.Rollover.Rollover
+        var sessionModel = new AODP.Domain.Rollover.Rollover
         {
             RolloverEligibilityDates = new RolloverEligibilityDates
             {
@@ -793,7 +793,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
         var candidateId = Guid.NewGuid();
         var fundingOfferId = Guid.NewGuid();
 
-        var sessionModel = new Web.Areas.Review.Domain.Rollover.Rollover
+        var sessionModel = new AODP.Domain.Rollover.Rollover
         {
             RolloverFundingApprovalEndDate = new RolloverFundingApprovalEndDate
             {
@@ -849,7 +849,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
         // Assert session updated
         var json = session.GetString("RolloverSession");
         Assert.NotNull(json);
-        var updatedSession = JsonConvert.DeserializeObject<Web.Areas.Review.Domain.Rollover.Rollover>(json);
+        var updatedSession = JsonConvert.DeserializeObject<AODP.Domain.Rollover.Rollover>(json);
 
         Assert.NotNull(updatedSession!.RolloverFundingApprovalEndDate);
         Assert.Equal(15, updatedSession.RolloverFundingApprovalEndDate.Day);
@@ -942,7 +942,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
         // Assert session saved
         var json = session.GetString("RolloverSession");
         Assert.NotNull(json);
-        var saved = JsonConvert.DeserializeObject<Web.Areas.Review.Domain.Rollover.Rollover>(json);
+        var saved = JsonConvert.DeserializeObject<AODP.Domain.Rollover.Rollover>(json);
         Assert.NotNull(saved!.RolloverFundingApprovalEndDate);
         Assert.Equal(15, saved.RolloverFundingApprovalEndDate.Day);
         Assert.Equal(1, saved.RolloverFundingApprovalEndDate.Month);

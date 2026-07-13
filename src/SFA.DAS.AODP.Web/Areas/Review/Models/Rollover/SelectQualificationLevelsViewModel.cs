@@ -1,10 +1,4 @@
-﻿using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.ValueObjects;
-using SFA.DAS.AODP.Web.TagHelpers;
-using SFA.DAS.AODP.Web.Validators.Attributes;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Mvc;
-
-namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
+﻿namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 
 [ExcludeFromCodeCoverage]
 public record SelectQualificationLevelsViewModel
@@ -13,26 +7,22 @@ public record SelectQualificationLevelsViewModel
     [MustNotBeEmpty(ErrorMessage = "Select the qualification levels you want to rollover")]
     public List<QualificationLevel> SelectedLevels { get; set; } = [];
 
-    public List<CheckboxItem> Levels => QualificationLevel.All.Select(o => new CheckboxItem
+    public List<CheckboxItem> Levels { get; private set; } = [];
+
+    public SelectQualificationLevelsViewModel SetLevels(IEnumerable<QualificationLevel> rolloverLevels)
     {
-        LabelText = o.Name,
-        Value = o.Id.ToString(),
-        IsChecked = SelectedLevels.Contains(o)
-    }).ToList();
-}
+        Levels = rolloverLevels.Select(r => new CheckboxItem
+        {
+            LabelText = r.Name,
+            Value = r.Id.ToString(),
+            IsChecked = SelectedLevels.Contains(r)
+        }).ToList();
+        return this;
+    }
 
-public enum SectorSubjectAreaSelectionType
-{
-    None = 0,
-    All = 1,
-    SpecificSelection = 2,
-    Unknown = 99
-}
-
-public enum AwardingOrganisationSelectionType
-{
-    None = 0,
-    All = 1,
-    SpecificSelection = 2,
-    Unknown = 99
+    public SelectQualificationLevelsViewModel MarkAllAsChecked()
+    {
+        Levels.ForEach(o => o.SetChecked());
+        return this;
+    }
 }

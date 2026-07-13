@@ -2,12 +2,6 @@
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 
-public enum SelectCandidatesForRollover
-{
-    ImportAList,
-    GenerateAList
-}
-
 public class RolloverSelectCandidatesViewModel
 {
     [Required(ErrorMessage = "You must select an option")]

@@ -1,4 +1,6 @@
-﻿namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover
+﻿using SFA.DAS.AODP.Domain.Rollover;
+
+namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover
 {
     public static class QualificationCandidateMapper
     {

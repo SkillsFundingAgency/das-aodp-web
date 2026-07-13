@@ -21,11 +21,7 @@ public class WhenHandlingGetAwardingOrganisationsForRolloverQueryBuilderQuery
     public async Task Handle_ShouldPostLeanFilterRequestAndReturnAwardingOrganisations()
     {
         // Arrange
-        var filters = RolloverQueryBuilderRequest.Builder()
-            .WithLevels([3])
-            .WithTypes([7])
-            .WithSectorSubjectAreas(["4.1"])
-            .Build();
+        var filters = RolloverQueryBuilderRequestMapper.ForAwardingOrganisationFilter(new QueryBuilderFilters());
 
         var expectedResponse = new GetAwardingOrganisationsForRolloverQueryBuilderQueryResponse
         {
@@ -50,27 +46,5 @@ public class WhenHandlingGetAwardingOrganisationsForRolloverQueryBuilderQuery
         result.Value.AwardingOrganisations.ShouldBe(expectedResponse.AwardingOrganisations);
         _apiClientMock.Verify(a => a.PostWithResponseCode<GetAwardingOrganisationsForRolloverQueryBuilderQueryResponse>(
             It.Is<GetAwardingOrganisationsForRolloverQueryBuilderApiRequest>(r => r.Data == filters)), Times.Once);
-    }
-
-    [Fact]
-    public async Task Handle_WhenApiThrowsException_ShouldThrowException()
-    {
-        // Arrange
-        const string exceptionMessage = "API failed";
-        var filters = RolloverQueryBuilderRequest.Builder().Build();
-        var exception = new Exception(exceptionMessage);
-
-        _apiClientMock
-            .Setup(a => a.PostWithResponseCode<GetAwardingOrganisationsForRolloverQueryBuilderQueryResponse>(
-                It.IsAny<GetAwardingOrganisationsForRolloverQueryBuilderApiRequest>()))
-            .ThrowsAsync(exception);
-
-        // Act
-        var result = await Should.ThrowAsync<Exception>(() => _handler.Handle(
-            new GetAwardingOrganisationsForRolloverQueryBuilderQuery(filters),
-            CancellationToken.None));
-
-        // Assert
-        result.ShouldBe(exception);
     }
 }

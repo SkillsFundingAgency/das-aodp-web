@@ -1,11 +1,11 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.ValueObjects;
+namespace SFA.DAS.AODP.Domain.ValueObjects;
 
-public sealed class SectorSubjectAreaJsonConverter : JsonConverter<SectorSubjectArea>
+public sealed class QualificationLevelJsonConverter : JsonConverter<QualificationLevel>
 {
-    public override SectorSubjectArea? Read(
+    public override QualificationLevel? Read(
         ref Utf8JsonReader reader,
         Type typeToConvert,
         JsonSerializerOptions options)
@@ -18,27 +18,27 @@ public sealed class SectorSubjectAreaJsonConverter : JsonConverter<SectorSubject
         if (reader.TokenType != JsonTokenType.String)
         {
             throw new JsonException(
-                $"Expected string when deserialising {nameof(QualificationType)}.");
+                $"Expected string when deserialising {nameof(QualificationLevel)}.");
         }
 
         var value = reader.GetString();
 
         if (string.IsNullOrWhiteSpace(value))
         {
-            return SectorSubjectArea.NotSpecified;
+            return QualificationLevel.Unspecified;
         }
 
-        if (SectorSubjectArea.TryParse(value, out var result))
+        if (QualificationLevel.TryParse(value, out var result))
         {
             return result;
         }
 
-        return SectorSubjectArea.NotSpecified;
+        return QualificationLevel.Unspecified;
     }
 
     public override void Write(
         Utf8JsonWriter writer,
-        SectorSubjectArea value,
+        QualificationLevel value,
         JsonSerializerOptions options)
     {
         writer.WriteStringValue(value.Name);

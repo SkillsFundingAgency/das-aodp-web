@@ -1,7 +1,13 @@
-﻿namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.ValueObjects;
+﻿using System.Text.Json.Serialization;
 
+namespace SFA.DAS.AODP.Domain.ValueObjects;
+
+[JsonConverter(typeof(QualificationLevelJsonConverter))]
 public record QualificationLevel
 {
+    // You MUST make sure the IDs match between the layers and similarly the Name also has to match exactly, as we use these to lookup values.
+    // It's not the most ideal of approaches, the data structure isn't designed well in regard to lookup data so this is a happy medium for the time being.
+    // This could also live in a nuget package which all three layers share but again, time is the constraint. 
     public static readonly QualificationLevel EntryLevel = new(0, "Entry level");
     public static readonly QualificationLevel Level1 = new(1, "Level 1");
     public static readonly QualificationLevel Level1Or2 = new(12, "Level 1/Level 2");
@@ -26,6 +32,8 @@ public record QualificationLevel
     {
         EntryLevel, Level1, Level1Or2, Level2, Level3, Level4, Level5, Level6, Level7
     }.OrderBy(o => o.Name).ToList();
+
+    public static QualificationLevel FromId(int id) => All.FirstOrDefault(o => o.Id == id) ?? Unspecified;
 
     public static bool TryParse(string? value, out QualificationLevel? result)
     {

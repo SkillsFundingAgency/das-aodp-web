@@ -1,4 +1,4 @@
-﻿namespace SFA.DAS.AODP.Models.Rollover
+﻿namespace SFA.DAS.AODP.Domain.Rollover
 {
 
     public class FundingExtensionCandidate

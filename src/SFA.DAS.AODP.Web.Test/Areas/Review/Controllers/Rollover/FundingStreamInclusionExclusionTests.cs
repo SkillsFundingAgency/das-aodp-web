@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using SFA.DAS.AODP.Domain.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
-using SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 
 namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers.Rollover;
@@ -18,9 +18,9 @@ public class FundingStreamInclusionExclusionTests : RolloverControllerTestBase
     {
         var session = CreateEmptySession();
 
-        var fs1 = new FundingStream { Id = Guid.NewGuid(), Name = "FS1" };
+        var fs1 = new FundingStreamDto { Id = Guid.NewGuid(), Name = "FS1" };
 
-        var saved = new Web.Areas.Review.Domain.Rollover.Rollover
+        var saved = new AODP.Domain.Rollover.Rollover
         {
             RolloverFundingStream = new RolloverFundingStream
             {
@@ -47,7 +47,7 @@ public class FundingStreamInclusionExclusionTests : RolloverControllerTestBase
     {
         var session = CreateEmptySession();
 
-        var saved = new Web.Areas.Review.Domain.Rollover.Rollover
+        var saved = new AODP.Domain.Rollover.Rollover
         {
             RolloverCandidates = [] // no funding streams
         };
@@ -73,10 +73,10 @@ public class FundingStreamInclusionExclusionTests : RolloverControllerTestBase
     {
         var session = CreateEmptySession();
 
-        var fs1 = new FundingStream { Id = Guid.NewGuid(), Name = "FS1" };
-        var fs2 = new FundingStream { Id = Guid.NewGuid(), Name = "FS2" };
+        var fs1 = new FundingStreamDto { Id = Guid.NewGuid(), Name = "FS1" };
+        var fs2 = new FundingStreamDto { Id = Guid.NewGuid(), Name = "FS2" };
 
-        var saved = new Web.Areas.Review.Domain.Rollover.Rollover
+        var saved = new AODP.Domain.Rollover.Rollover
         {
             RolloverFundingStream = new RolloverFundingStream
             {
@@ -107,9 +107,9 @@ public class FundingStreamInclusionExclusionTests : RolloverControllerTestBase
     {
         var session = CreateEmptySession();
 
-        var fs = new FundingStream { Id = Guid.NewGuid(), Name = "FS1" };
+        var fs = new FundingStreamDto { Id = Guid.NewGuid(), Name = "FS1" };
 
-        var saved = new Web.Areas.Review.Domain.Rollover.Rollover
+        var saved = new AODP.Domain.Rollover.Rollover
         {
             RolloverFundingStream = new RolloverFundingStream
             {
@@ -138,9 +138,9 @@ public class FundingStreamInclusionExclusionTests : RolloverControllerTestBase
     {
         var session = CreateEmptySession();
 
-        var fs = new FundingStream { Id = Guid.NewGuid(), Name = "FS1" };
+        var fs = new FundingStreamDto { Id = Guid.NewGuid(), Name = "FS1" };
 
-        var saved = new Web.Areas.Review.Domain.Rollover.Rollover
+        var saved = new AODP.Domain.Rollover.Rollover
         {
             RolloverFundingStream = new RolloverFundingStream
             {
@@ -169,9 +169,9 @@ public class FundingStreamInclusionExclusionTests : RolloverControllerTestBase
     {
         var session = CreateEmptySession();
 
-        var fs = new FundingStream { Id = Guid.NewGuid(), Name = "FS1" };
+        var fs = new FundingStreamDto { Id = Guid.NewGuid(), Name = "FS1" };
 
-        var saved = new Web.Areas.Review.Domain.Rollover.Rollover
+        var saved = new AODP.Domain.Rollover.Rollover
         {
             RolloverFundingStream = new RolloverFundingStream
             {
@@ -200,9 +200,9 @@ public class FundingStreamInclusionExclusionTests : RolloverControllerTestBase
     {
         var session = CreateEmptySession();
 
-        var fs = new FundingStream { Id = Guid.NewGuid(), Name = "FS1" };
+        var fs = new FundingStreamDto { Id = Guid.NewGuid(), Name = "FS1" };
 
-        var saved = new Web.Areas.Review.Domain.Rollover.Rollover
+        var saved = new AODP.Domain.Rollover.Rollover
         {
             RolloverFundingStream = new RolloverFundingStream
             {
@@ -227,7 +227,7 @@ public class FundingStreamInclusionExclusionTests : RolloverControllerTestBase
 
         Assert.True(session.TryGetValue("RolloverSession", out var bytes));
         var json = System.Text.Encoding.UTF8.GetString(bytes);
-        var updated = JsonConvert.DeserializeObject<Web.Areas.Review.Domain.Rollover.Rollover>(json);
+        var updated = JsonConvert.DeserializeObject<AODP.Domain.Rollover.Rollover>(json);
 
         Assert.NotNull(updated);
         Assert.NotNull(updated.RolloverFundingStream);

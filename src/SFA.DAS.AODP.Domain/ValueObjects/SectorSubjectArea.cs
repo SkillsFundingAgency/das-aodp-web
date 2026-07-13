@@ -1,10 +1,13 @@
-﻿using System.Text.Json.Serialization;
+﻿using Newtonsoft.Json;
 
-namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.ValueObjects;
+namespace SFA.DAS.AODP.Domain.ValueObjects;
 
-[JsonConverter(typeof(SectorSubjectAreaJsonConverter))]
+[System.Text.Json.Serialization.JsonConverter(typeof(SectorSubjectAreaJsonConverter))]
 public record SectorSubjectArea
 {
+    // You MUST make sure the IDs match between the layers and similarly the Name also has to match exactly, as we use these to lookup values.
+    // It's not the most ideal of approaches, the data structure isn't designed well in regard to lookup data so this is a happy medium for the time being.
+    // This could also live in a nuget package which all three layers share but again, time is the constraint. 
     public static readonly SectorSubjectArea MedicineAndDentistry = new("1.1", "Medicine and Dentistry");
     public static readonly SectorSubjectArea NursingAndAllied = new("1.2", "Nursing and subjects and vocations allied to medicine");
     public static readonly SectorSubjectArea HealthAndSocialCare = new("1.3", "Health and social care");
@@ -57,11 +60,12 @@ public record SectorSubjectArea
     public static readonly SectorSubjectArea LawAndLegalServices = new("15.5", "Law and legal services");
     public static readonly SectorSubjectArea NotSpecified = new("99.9", "Not Specified");
 
-    public string Code { get; private set; }
+    [JsonProperty("id")]
+    public string Code { get; } = null!;
 
-    public string Name { get; private set; }
+    public string Name { get; } = null!;
 
-    private SectorSubjectArea(string code, string name)
+    public SectorSubjectArea(string code, string name)
     {
         Code = code;
         Name = name;
@@ -91,6 +95,11 @@ public record SectorSubjectArea
     {
         var lookupCode = $"{tier1}.{tier2}";
         return CodeLookup.GetValueOrDefault(lookupCode, NotSpecified);
+    }
+
+    public static SectorSubjectArea FromFullCode(string fullCode)
+    {
+        return CodeLookup.GetValueOrDefault(fullCode, NotSpecified);
     }
 
     public static SectorSubjectArea FromName(string name) => NameLookup.GetValueOrDefault(name, NotSpecified);

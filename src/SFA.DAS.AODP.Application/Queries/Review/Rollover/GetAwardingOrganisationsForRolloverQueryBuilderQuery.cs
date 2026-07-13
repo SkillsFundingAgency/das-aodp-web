@@ -1,10 +1,7 @@
-﻿using MediatR;
-using SFA.DAS.AODP.Domain.Rollover;
+﻿namespace SFA.DAS.AODP.Application.Queries.Review.Rollover;
 
-namespace SFA.DAS.AODP.Application.Queries.Review.Rollover;
-
-public class GetAwardingOrganisationsForRolloverQueryBuilderQuery(RolloverQueryBuilderRequest filters)
+public class GetAwardingOrganisationsForRolloverQueryBuilderQuery(RolloverQueryBuilderAwardingOrganisationsRequest filters)
     : IRequest<BaseMediatrResponse<GetAwardingOrganisationsForRolloverQueryBuilderQueryResponse>>
 {
-    public RolloverQueryBuilderRequest Filters { get; } = filters;
+    public RolloverQueryBuilderAwardingOrganisationsRequest Filters { get; } = filters;
 }

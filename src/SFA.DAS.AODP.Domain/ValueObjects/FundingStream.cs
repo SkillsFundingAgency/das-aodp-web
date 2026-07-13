@@ -1,4 +1,4 @@
-﻿namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.ValueObjects;
+﻿namespace SFA.DAS.AODP.Domain.ValueObjects;
 
 public record FundingStream
 {

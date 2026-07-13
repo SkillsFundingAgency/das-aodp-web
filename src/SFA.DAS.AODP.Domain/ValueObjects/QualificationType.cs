@@ -1,11 +1,13 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
-namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.ValueObjects;
+namespace SFA.DAS.AODP.Domain.ValueObjects;
 
 [JsonConverter(typeof(QualificationTypeJsonConverter))]
 public record QualificationType
 {
+    // You MUST make sure the IDs match between the layers and similarly the Name also has to match exactly, as we use these to lookup values.
+    // It's not the most ideal of approaches, the data structure isn't designed well in regard to lookup data so this is a happy medium for the time being.
+    // This could also live in a nuget package which all three layers share but again, time is the constraint. 
     public static readonly QualificationType None = new(0, "None");
     public static readonly QualificationType AccessToHigherEducation = new(1, "Access to Higher Education");
     public static readonly QualificationType AdvancedExtensionAward = new(2, "Advanced Extension Award");
@@ -30,9 +32,9 @@ public record QualificationType
     public static readonly QualificationType Unknown = new(99, "Unknown");
 
     public int Id { get; }
-    public string Name { get; }
+    public string Name { get; set; } = null!;
 
-    private QualificationType(int id, string name)
+    public QualificationType(int id, string name)
     {
         Id = id;
         Name = name;
@@ -61,6 +63,8 @@ public record QualificationType
         TechnicalQualification,
         VocationallyRelatedQualification
     }.OrderBy(o => o.Name).ToList();
+
+    public static QualificationType FromId(int id) => All.FirstOrDefault(o => o.Id == id) ?? Unknown;
 
     public static bool TryParse(string? value, out QualificationType? result)
     {

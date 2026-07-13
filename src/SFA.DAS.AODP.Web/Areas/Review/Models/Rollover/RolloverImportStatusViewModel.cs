@@ -1,6 +1,4 @@
-﻿using SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
-
-namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
+﻿namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 
 public class RolloverImportStatusViewModel
 {
