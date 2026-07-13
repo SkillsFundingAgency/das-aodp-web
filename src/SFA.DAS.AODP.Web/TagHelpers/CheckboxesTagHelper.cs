@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Razor.TagHelpers;
-
 namespace SFA.DAS.AODP.Web.TagHelpers;
 
 [HtmlTargetElement(TagName, Attributes = AspForAttributeName, TagStructure = TagStructure.NormalOrSelfClosing)]
@@ -10,6 +8,7 @@ public class CheckboxesTagHelper : TagHelper
 {
     private readonly IHtmlGenerator _htmlGenerator;
     private const string AspForAttributeName = "asp-for";
+    private const string SortingStrategyAttributeName = "sorting-strategy";
 
     /// <summary>
     /// Default constructor.
@@ -38,6 +37,12 @@ public class CheckboxesTagHelper : TagHelper
     public required ModelExpression For { get; set; }
 
     /// <summary>
+    /// The sorting strategy to use to sort the checkbox items by.
+    /// </summary>
+    [HtmlAttributeName(SortingStrategyAttributeName)]
+    public CheckboxSortingStrategy SortingStrategy { get; set; } = CheckboxSortingStrategy.Alphabetical;
+
+    /// <summary>
     /// Collection of checkbox items to be created.
     /// </summary>
     public List<CheckboxItem> Items { get; set; } = new();
@@ -53,6 +58,8 @@ public class CheckboxesTagHelper : TagHelper
         output.Attributes.SetAttribute("data-module", "govuk-checkboxes");
 
         var contentBuilder = new HtmlContentBuilder();
+
+        Items = ApplySortingStrategy();
 
         if (Items.Count > 0)
         {
@@ -98,4 +105,11 @@ public class CheckboxesTagHelper : TagHelper
 
         output.Content.AppendHtml(contentBuilder);
     }
+
+    private List<CheckboxItem> ApplySortingStrategy() =>
+        SortingStrategy switch
+        {
+            CheckboxSortingStrategy.Alphabetical => Items.OrderBy(i => i.LabelText).ToList(),
+            _ => Items
+        };
 }

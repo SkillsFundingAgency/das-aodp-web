@@ -51,7 +51,7 @@
 
     <govuk-details>
         <govuk-details-summary>
-            View AOs selected for rollover
+            View SSAs selected for rollover
         </govuk-details-summary>
         <govuk-details-text>
             <p>
@@ -68,20 +68,23 @@ else
 {
     <p>You have selected @ssaCountText SSAs and excluded @Model.ExcludedSectorSubjectAreas.Count() SSAs.</p>
 
-    <govuk-details>
-        <govuk-details-summary>
-            View SSAs not being checked for rollover
-        </govuk-details-summary>
-        <govuk-details-text>
-            <p>
-                @foreach (var sectorSubjectArea in Model.ExcludedSectorSubjectAreas)
-                {
-                    @sectorSubjectArea.Name
-                    <br />
-                }
-            </p>
-        </govuk-details-text>
-    </govuk-details>
+    @if (ssaCountText != "all")
+    {
+        <govuk-details>
+            <govuk-details-summary>
+                View SSAs not being checked for rollover
+            </govuk-details-summary>
+            <govuk-details-text>
+                <p>
+                    @foreach (var sectorSubjectArea in Model.ExcludedSectorSubjectAreas)
+                    {
+                        @sectorSubjectArea.Name
+                        <br />
+                    }
+                </p>
+            </govuk-details-text>
+        </govuk-details>
+    }
 }
 
 <h2 class="govuk-heading-m">Awarding organisations</h2>
@@ -99,7 +102,7 @@ else
                 @foreach(var awardingOrganisation in Model.AwardingOrganisations)
                 {
                     @awardingOrganisation.NameOfqual<br />
-                }
+                }   
             </p>
         </govuk-details-text>
     </govuk-details>
@@ -108,20 +111,23 @@ else
 {
     <p>You have selected @aoCountText AOs and excluded @Model.ExcludedAwardingOrganisations.Count() AOs.</p>
 
-    <govuk-details>
-        <govuk-details-summary>
-            View AOs not being checked for rollover
-        </govuk-details-summary>
-        <govuk-details-text>
-            <p>
-                @foreach (var awardingOrganisation in Model.ExcludedAwardingOrganisations)
-                {
-                    @awardingOrganisation.NameOfqual
-                    <br />
-                }
-            </p>
-        </govuk-details-text>
-    </govuk-details>
+    @if (aoCountText != "all")
+    {
+        <govuk-details>
+            <govuk-details-summary>
+                View AOs not being checked for rollover
+            </govuk-details-summary>
+            <govuk-details-text>
+                <p>
+                    @foreach (var awardingOrganisation in Model.ExcludedAwardingOrganisations)
+                    {
+                        @awardingOrganisation.NameOfqual
+                        <br />
+                    }
+                </p>
+            </govuk-details-text>
+        </govuk-details>
+    }
 }
 
 <p><strong>This selection will result in @Model.CandidateCount candidates to be checked for rollover.</strong></p>
