@@ -29,6 +29,7 @@ public record QualificationType
     public static readonly QualificationType TechnicalOccupationQualification = new(18, "Technical Occupation Qualification");
     public static readonly QualificationType TechnicalQualification = new(19, "Technical Qualification");
     public static readonly QualificationType VocationallyRelatedQualification = new(20, "Vocationally-Related Qualification");
+    public static readonly QualificationType QCF = new(21, "QCF");
     public static readonly QualificationType Unknown = new(99, "Unknown");
 
     public int Id { get; }
