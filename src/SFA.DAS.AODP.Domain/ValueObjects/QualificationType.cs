@@ -62,7 +62,8 @@ public record QualificationType
         Project,
         TechnicalOccupationQualification,
         TechnicalQualification,
-        VocationallyRelatedQualification
+        VocationallyRelatedQualification,
+        QCF
     }.OrderBy(o => o.Name).ToList();
 
     public static QualificationType FromId(int id) => All.FirstOrDefault(o => o.Id == id) ?? Unknown;
