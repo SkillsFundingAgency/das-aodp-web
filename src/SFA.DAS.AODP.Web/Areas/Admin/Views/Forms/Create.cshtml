@@ -14,14 +14,14 @@
 
 <form asp-controller="Forms" asp-action="Create" method="post">
     <div class="govuk-form-group">
-        <govuk-input asp-for="@Model.Name" inputmode="text" pattern="[0-9]*" spellcheck="false">
+        <govuk-input for="@Model.Name" inputmode="text" pattern="[0-9]*" spellcheck="false">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Name</govuk-input-label>
         </govuk-input>
     </div>
 
     <div class="govuk-form-group">
 
-        <govuk-textarea asp-for="@Model.Description">
+        <govuk-textarea for="@Model.Description">
             <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Description</govuk-textarea-label>
             <govuk-textarea-hint>This field supports Markdown. </govuk-textarea-hint>
         </govuk-textarea>

@@ -27,12 +27,22 @@
 <div class="govuk-tabs" data-module="govuk-tabs">
     <ul class="govuk-tabs__list">
         <li class="govuk-tabs__list-item govuk-tabs__list-item--selected">
-            <a class="govuk-link" href="/Review/New/QualificationDetails?qualificationReference=@Model.Qual.Qan">
+            <a class="govuk-link"
+                   asp-area="Review"
+                   asp-controller="New"
+                   asp-action="QualificationDetails"
+                   asp-route-qualificationReference="@Model.Qual.Qan"
+                   asp-route-returnTo="@Model.ReturnTo">
                 Overview
             </a>
         </li>
         <li class="govuk-tabs__list-item govuk-tabs__list-item">
-            <a class="govuk-link" href="/Review/New/QualificationDetails/Timeline?qualificationReference=@Model.Qual.Qan">
+            <a class="govuk-link"
+                   asp-area="Review"
+                   asp-controller="New"
+                   asp-action="QualificationDetailsTimeline"
+                   asp-route-qualificationReference="@Model.Qual.Qan"
+                   asp-route-returnTo="@Model.ReturnTo">
                 History
             </a>
         </li>
@@ -107,17 +117,17 @@
             </govuk-summary-list-row>
             <govuk-summary-list-row>
                 <govuk-summary-list-row-key>Regulation start date</govuk-summary-list-row-key>
-                <govuk-summary-list-row-value>@Model.RegulationStartDate.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)</govuk-summary-list-row-value>
+                <govuk-summary-list-row-value>@Model.RegulationStartDate.ToDateDisplayFormat()</govuk-summary-list-row-value>
             </govuk-summary-list-row>
             <govuk-summary-list-row>
                 <govuk-summary-list-row-key>Operational start date</govuk-summary-list-row-key>
-                <govuk-summary-list-row-value>@Model.OperationalStartDate.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)</govuk-summary-list-row-value>
+                <govuk-summary-list-row-value>@Model.OperationalStartDate.ToDateDisplayFormat()</govuk-summary-list-row-value>
             </govuk-summary-list-row>
             <govuk-summary-list-row>
                     <govuk-summary-list-row-key>Operational end date</govuk-summary-list-row-key>
                     @if (Model.OperationalEndDate.HasValue)
                     {
-                        <govuk-summary-list-row-value>@Model.OperationalEndDate.Value.ToString("dd MMM yyyy", CultureInfo.InvariantCulture)</govuk-summary-list-row-value>
+                        <govuk-summary-list-row-value>@Model.OperationalEndDate.Value.ToDateDisplayFormat()</govuk-summary-list-row-value>
                     }
                     else
                     {
@@ -153,13 +163,13 @@
                 @Html.HiddenFor(m => m.Qual.Qan)
 
                 <div class="govuk-form-group">
-                    <govuk-textarea asp-for="@Model.AdditionalActions.Note" autocomplete="false">
+                    <govuk-textarea for="@Model.AdditionalActions.Note" autocomplete="false">
                         <govuk-textarea-label is-page-heading="false" class="govuk-label--s">Comments</govuk-textarea-label>
                         <govuk-textarea-hint>Leave comments and recommendations. Give as much detail as you can. </govuk-textarea-hint>
                     </govuk-textarea>
                 </div>
                 <div class="govuk-form-group">
-                    <govuk-select asp-for="@Model.AdditionalActions.ProcessStatusId">
+                    <govuk-select for="@Model.AdditionalActions.ProcessStatusId">
                         <govuk-select-label is-page-heading="false" class="govuk-label--s">Status</govuk-select-label>
                         <govuk-select-item value="@null">Choose status</govuk-select-item>
                         @foreach (var item in Model.ProcessStatuses)

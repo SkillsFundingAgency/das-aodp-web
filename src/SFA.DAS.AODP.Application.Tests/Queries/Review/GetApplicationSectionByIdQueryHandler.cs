@@ -1,10 +1,8 @@
 ﻿using AutoFixture;
 using AutoFixture.AutoMoq;
-using AutoFixture.Kernel;
-using Azure;
+using SFA.DAS.AODP.UnitTests.Helper;
 using Moq;
 using SFA.DAS.AODP.Domain.Interfaces;
-using SFA.DAS.AODP.Infrastructure.Cache;
 
 namespace SFA.DAS.Aodp.UnitTests.Application.Queries.Application.Section
 {
@@ -61,19 +59,6 @@ namespace SFA.DAS.Aodp.UnitTests.Application.Queries.Application.Section
             // Assert
             Assert.False(result.Success);
             Assert.Equal(exception.Message, result.ErrorMessage);
-        }
-
-        public class DateOnlySpecimenBuilder : ISpecimenBuilder
-        {
-            public object Create(object request, ISpecimenContext context)
-            {
-                if (request is Type type && type == typeof(DateOnly))
-                {
-                    return DateOnly.FromDateTime(DateTime.Now);
-                }
-
-                return new NoSpecimen();
-            }
         }
     }
 }

@@ -130,7 +130,7 @@
 
                                 <div class="govuk-form-group govuk-!-margin-bottom-0">
                                     <div class="select-picker qan-input">
-                                        <govuk-input asp-for="Qan" value="@Html.Encode(Model.Qan)" autocomplete="off">
+                                        <govuk-input for="Qan" value="@Html.Encode(Model.Qan)" autocomplete="off">
                                             <govuk-input-label class="govuk-visually-hidden">Update QAN</govuk-input-label>
                                         </govuk-input>
                                         <govuk-button class="govuk-button govuk-button--secondary" type="submit">Change</govuk-button>
@@ -162,7 +162,7 @@
 
                                     <div class="govuk-form-group govuk-!-margin-bottom-0">
                                         <div class="select-picker">
-                                            <govuk-input asp-for="@currentUserReview.Owner" value="@Html.Encode(currentUserReview.Owner)" name="Owner" autocomplete="off">
+                                            <govuk-input for="@currentUserReview.Owner" value="@Html.Encode(currentUserReview.Owner)" name="Owner" autocomplete="off">
                                                 <govuk-input-label class="govuk-visually-hidden">Update owner</govuk-input-label>
                                             </govuk-input>
                                             <govuk-button class="govuk-button  govuk-button--secondary" type="submit">Update</govuk-button>
@@ -276,6 +276,19 @@
                     </govuk-summary-list-row>
                 }
             </govuk-summary-list>
+
+            @if (Model.UserType == SFA.DAS.AODP.Models.Users.UserType.Qfau)
+            {
+                <div class="govuk-grid-row">
+                    <h2 class="govuk-heading-m">Download application</h2>
+                    <p class="govuk-body">This will download a ZIP file containing a summary file and any attachments associated with the application to your device.</p>
+
+
+                    <a class="govuk-button govuk-button--secondary" asp-action="DownloadApplicationFormAndFiles" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId">
+                        Download application
+                    </a>
+                </div>
+            }
 
             @if (!IsReadOnly)
             {

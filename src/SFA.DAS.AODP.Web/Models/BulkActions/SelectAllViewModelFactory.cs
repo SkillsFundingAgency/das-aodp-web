@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using SFA.DAS.AODP.Domain.Qualifications.Requests;
 using SFA.DAS.AODP.Models.Application;
 
 namespace SFA.DAS.AODP.Web.Models.BulkActions
@@ -13,7 +14,8 @@ namespace SFA.DAS.AODP.Web.Models.BulkActions
             string? name,
             string? organisation,
             string? qan,
-            IEnumerable<Guid>? processStatusIds)
+            IEnumerable<Guid>? processStatusIds,
+            IEnumerable<AgeGroup>? ageGroups)
             {
                 var routeValues = new Dictionary<string, object?>();
 
@@ -26,10 +28,13 @@ namespace SFA.DAS.AODP.Web.Models.BulkActions
                 if (!string.IsNullOrWhiteSpace(qan))
                     routeValues["qan"] = qan;
 
-                if (processStatusIds != null && processStatusIds.Any())
+                if (processStatusIds != null && processStatusIds.Count() > 0)
                     routeValues["processStatusIds"] = processStatusIds;
 
-                return new SelectAllCheckboxesViewModel
+                if (ageGroups != null && ageGroups.Count() > 0)
+                    routeValues["ageGroups"] = ageGroups;
+
+            return new SelectAllCheckboxesViewModel
                 {
                     CurrentPage = currentPage,
                     RecordsPerPage = recordsPerPage,

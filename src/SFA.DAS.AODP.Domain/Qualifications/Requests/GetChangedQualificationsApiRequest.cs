@@ -15,6 +15,7 @@ namespace SFA.DAS.AODP.Domain.Qualifications.Requests
         public string? Organisation { get; set; }
         public string? QAN { get; set; }
         public ProcessStatusFilter? ProcessStatusFilter { get; set; }
+        public List<AgeGroup> AgeGroups { get; set; } = new();
 
         public string BaseUrl = "api/qualifications";
 
@@ -54,13 +55,22 @@ namespace SFA.DAS.AODP.Domain.Qualifications.Requests
 
                 if (ProcessStatusFilter?.ProcessStatusIds?.Count > 0)
                 {
-                    var ids = string.Join(",", ProcessStatusFilter.ProcessStatusIds);
-                    ids = Uri.EscapeDataString(ids);
-                    queryParams.Add("ProcessStatusFilter", ids);
+                    foreach (var id in ProcessStatusFilter.ProcessStatusIds)
+                    {
+                        queryParams.Add("ProcessStatusFilter", id.ToString());
+                    }
                 }
 
-                var uri = BaseUrl.AttachParameters(queryParams);
-                
+                if (AgeGroups?.Count > 0)
+                {
+                    foreach (var age in AgeGroups)
+                    {
+                        queryParams.Add("AgeGroups", ((int)age).ToString());
+                    }
+                }
+
+                var uri = BaseUrl.AttachMultiValueParameters(queryParams);
+
                 return uri.ToString();
             }
         }

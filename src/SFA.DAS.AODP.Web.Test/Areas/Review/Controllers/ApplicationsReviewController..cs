@@ -21,6 +21,7 @@ using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview;
+using SFA.DAS.AODP.Web.Helpers.Export;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Applications;
 using System.IO.Compression;
@@ -35,16 +36,18 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
 
         private readonly Mock<IMediator> _mediatorMock = new();
         private readonly Mock<ILogger<ApplicationsReviewController>> _loggerMock = new();
-        private readonly Mock<IUserHelperService> _userHelperMock = new();
+        private readonly Mock<IUserHelperService> _userHelperServiceMock = new();
         private readonly Mock<IFileService> _fileServiceMock = new();
-
+        private readonly Mock<IApplicationExportService> _applicationExportServiceMock = new();
         private readonly ApplicationsReviewController _controller;
 
         public ApplicationsReviewControllerTests()
         {
-            _userHelperMock.Setup(u => u.GetUserType()).Returns(UserType.Ofqual);
-            _userHelperMock.Setup(u => u.GetUserEmail()).Returns("user@test.com");
-            _userHelperMock.Setup(u => u.GetUserDisplayName()).Returns("Test User");
+            _userHelperServiceMock.Setup(u => u.GetUserType()).Returns(UserType.Ofqual);
+            _userHelperServiceMock.Setup(u => u.GetUserEmail()).Returns("user@test.com");
+            _userHelperServiceMock.Setup(u => u.GetUserDisplayName()).Returns("Test User");
+
+            _fixture.Register(() => DateOnly.FromDateTime(new DateTime(2020, 1, 1)));
 
             var options = Options.Create(new AodpConfiguration
             {
@@ -52,12 +55,7 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
                     "https://find-a-qualification.services.ofqual.gov.uk/qualifications/"
             });
 
-            _controller = new ApplicationsReviewController(
-                _loggerMock.Object,
-                _mediatorMock.Object,
-                _userHelperMock.Object,
-                _fileServiceMock.Object,
-                options);
+            _controller = new(_loggerMock.Object, _mediatorMock.Object, _userHelperServiceMock.Object, _fileServiceMock.Object, options, _applicationExportServiceMock.Object);
 
             _controller.ControllerContext = new ControllerContext
             {

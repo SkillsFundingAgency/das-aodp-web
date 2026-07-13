@@ -98,4 +98,37 @@ public class WhenGetQualificationsQueryHandlerQuery
 
         apiClientMock.VerifyNoOtherCalls();
     }
+
+    [Fact]
+    public async Task Handle_Passes_Query_Values_To_ApiRequest()
+    {
+        // Arrange
+        var handler = new GetQualificationsQueryHandler(_apiClientMock.Object);
+
+        var request = new GetQualificationsQuery
+        {
+            Skip = 15,
+            Take = 50,
+            SearchTerm = "plumbing"
+        };
+
+        GetQualificationsApiRequest? captured = null;
+
+        _apiClientMock
+            .Setup(a => a.Get<GetQualificationsQueryResponse>(It.IsAny<GetQualificationsApiRequest>()))
+            .Callback<object>(req => captured = (GetQualificationsApiRequest)req)
+            .ReturnsAsync(new GetQualificationsQueryResponse
+            {
+                Qualifications = new List<GetMatchingQualificationsQueryItem>()
+            });
+
+        // Act
+        await handler.Handle(request, CancellationToken.None);
+
+        // Assert
+        Assert.NotNull(captured);
+        Assert.Equal(request.Skip, captured!.Skip);
+        Assert.Equal(request.Take, captured.Take);
+        Assert.Equal(request.SearchTerm, captured.SearchTerm);
+    }
 }

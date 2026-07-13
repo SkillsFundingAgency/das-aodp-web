@@ -32,6 +32,11 @@ namespace SFA.DAS.AODP.Web.Extensions
                 };
             }
 
+            if (q.AgeGroups?.Count > 0)
+            {
+                query.AgeGroups = q.AgeGroups;
+            }
+
             return query;
         }
 
@@ -42,7 +47,8 @@ namespace SFA.DAS.AODP.Web.Extensions
                 Organisation = q.Organisation ?? string.Empty,
                 QualificationName = q.Name ?? string.Empty,
                 QAN = q.Qan ?? string.Empty,
-                ProcessStatusIds = q.ProcessStatusIds
+                ProcessStatusIds = q.ProcessStatusIds ?? new(),
+                AgeGroups = q.AgeGroups ?? new()
             };
         }
 
@@ -67,9 +73,9 @@ namespace SFA.DAS.AODP.Web.Extensions
                     ? null
                     : q.Qan,
 
-                ProcessStatusIds = (q.ProcessStatusIds?.Count > 0)
-                    ? q.ProcessStatusIds
-                    : null
+                ProcessStatusIds = q.ProcessStatusIds ?? new(),
+
+                AgeGroups = q.AgeGroups ?? new()
             };
         }
 
@@ -81,7 +87,8 @@ namespace SFA.DAS.AODP.Web.Extensions
                 name = q.Name,
                 organisation = q.Organisation,
                 qan = q.Qan,
-                processStatusIds = q.ProcessStatusIds
+                processStatusIds = q.ProcessStatusIds,
+                ageGroups = q.AgeGroups,
             };
     }
 }

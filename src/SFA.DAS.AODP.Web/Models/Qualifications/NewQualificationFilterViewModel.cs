@@ -1,4 +1,5 @@
-﻿using SFA.DAS.AODP.Web.Validators.Attributes;
+﻿using SFA.DAS.AODP.Domain.Qualifications.Requests;
+using SFA.DAS.AODP.Web.Validators.Attributes;
 using SFA.DAS.AODP.Web.Validators.Patterns;
 
 namespace SFA.DAS.AODP.Web.Models.Qualifications
@@ -21,6 +22,8 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
         [AllowedCharacters(TextCharacterProfile.Title)]
         public string QAN { get; set; }
 
-        public List<Guid>? ProcessStatusIds { get; set; } = new List<Guid>();
+        public List<Guid> ProcessStatusIds { get; set; } = new();
+
+        public List<AgeGroup> AgeGroups { get; set; } = new();
     }
 }

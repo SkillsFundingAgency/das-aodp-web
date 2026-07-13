@@ -7,6 +7,7 @@ using SFA.DAS.AODP.Application.Commands.Application.Review;
 using SFA.DAS.AODP.Application.Commands.Review;
 using SFA.DAS.AODP.Application.Queries.Application.Form;
 using SFA.DAS.AODP.Application.Queries.Files.Get;
+using SFA.DAS.AODP.Application.Queries.Application.Review;
 using SFA.DAS.AODP.Application.Queries.Review;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Application;
@@ -16,6 +17,8 @@ using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApproval;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Enums;
+using SFA.DAS.AODP.Web.Extensions;
+using SFA.DAS.AODP.Web.Helpers.Export;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Applications;
 using SFA.DAS.AODP.Web.Models.BulkActions;
@@ -42,13 +45,15 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         private readonly IFileService _blobService;
         private readonly IOptions<AodpConfiguration> _aodpConfiguration;
         private const string DefaultQANValidationMessage = "Invalid Qualification Number.";
+        private readonly IApplicationExportService _exportService;
 
-        public ApplicationsReviewController(ILogger<ApplicationsReviewController> logger, IMediator mediator, IUserHelperService userHelperService, IFileService fileService, IOptions<AodpConfiguration> aodpConfiguration) : base(mediator, logger)
+        public ApplicationsReviewController(ILogger<ApplicationsReviewController> logger, IMediator mediator, IUserHelperService userHelperService, IFileService fileService, IOptions<AodpConfiguration> aodpConfiguration, IApplicationExportService exportService) : base(mediator, logger)
         {
             _userHelperService = userHelperService;
             UserType = userHelperService.GetUserType();
             _blobService = fileService;
             _aodpConfiguration = aodpConfiguration;
+            _exportService = exportService;
         }
 
         [Route("review/application-reviews")]
@@ -706,22 +711,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         [Route("review/application-reviews/{applicationReviewId}/details", Name = RouteNames.Review_ViewApplicationReadOnlyDetails)]
         public async Task<IActionResult> ViewApplicationReadOnlyDetails(Guid applicationReviewId)
         {
-            var applicationId = await GetApplicationIdWithAccessValidation(applicationReviewId);
-            var form = await Send(new GetFormPreviewByIdQuery(applicationId));
-            var applicationDetails = await Send(new GetApplicationFormByReviewIdQuery(applicationReviewId));
-            
-            var filesResponse = await Send(new GetFileMetadataQuery
-            {
-                FileCategory = FileCategory.QuestionUpload,
-                ApplicationId = applicationId
-            });
-
-            var files = filesResponse.Files;
-
-            var vm = ApplicationReadOnlyDetailsViewModel.Map(form, applicationDetails, files);
-            vm.ApplicationReviewId = applicationReviewId;
-
-            return View(vm);
+            var viewModel = await BuildReadOnlyApplicationDetailsViewModel(applicationReviewId);
+            return View(viewModel);
         }
 
         //[Authorize(Policy = PolicyConstants.IsReviewUser)]
@@ -758,8 +749,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
             return File(stream, contentType, file.FileName);
         }
-
-        //[Authorize(Policy = PolicyConstants.IsReviewUser)]
+        [Authorize(Policy = PolicyConstants.IsReviewUser)]
         [HttpPost]
         [Route("review/application-reviews/{applicationReviewId}/files")]
         public async Task<IActionResult> DownloadAllApplicationFiles(Guid applicationReviewId)
@@ -820,6 +810,29 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
                 return File(memoryStream.ToArray(), "application/zip", zipFileName);
             }
+        }
+
+        [Authorize(Policy = PolicyConstants.IsReviewUser)]
+        [HttpGet]
+        [Route("review/application-reviews/{applicationReviewId}/export")]
+        public async Task<IActionResult> DownloadApplicationFormAndFiles(Guid applicationReviewId)
+        {
+            var applicationId = await GetApplicationIdWithAccessValidation(applicationReviewId);
+
+            var exportData = await Send(new GetApplicationExportDataQuery(applicationReviewId));
+
+            //TODO: fix getting cvlean files for application
+
+            //var questionFiles = _fileService.ListBlobs(applicationId.ToString());
+            //var messageFiles = _fileService.ListBlobs($"{ApplicationExportConstants.MessageFolderName}/{applicationId}");
+
+            //var files = questionFiles.Concat(messageFiles).ToList();
+
+            //var zipBytes = await _exportService.GenerateExportZipAsync(exportData, files);
+
+            //return File(zipBytes, "application/zip", ApplicationExportPathBuilder.GetZipFileName(exportData.ApplicationMetadata));
+
+            return File(new byte[0], "application/zip", ApplicationExportPathBuilder.GetZipFileName(exportData.ApplicationMetadata));
         }
 
         private async Task<Guid> GetApplicationIdWithAccessValidation(Guid applicationReviewId)
@@ -942,6 +955,20 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             return viewModel;
         }
 
-       
+        private async Task<ApplicationReadOnlyDetailsViewModel> BuildReadOnlyApplicationDetailsViewModel(Guid applicationReviewId)
+        {
+            //var applicationId = await GetApplicationIdWithAccessValidation(applicationReviewId);
+
+            //var form = await Send(new GetFormPreviewByIdQuery(applicationId));
+            //var applicationFormDetails = await Send(new GetApplicationFormByReviewIdQuery(applicationReviewId));
+
+            //var files = _fileService.ListBlobs(applicationId.ToString());
+
+            //var vm = ApplicationReadOnlyDetailsViewModel.Map(form, applicationFormDetails, files);
+            //vm.ApplicationReviewId = applicationReviewId;
+
+            //return vm;
+            return new ApplicationReadOnlyDetailsViewModel();
+        }
     }
 }
