@@ -782,8 +782,7 @@ public class RolloverController : ControllerBase
     [Route("review/rollover/InitialChecksExport")]
     public IActionResult InitialChecksExport()
     {
-        var session = GetSessionModel();
-        session.QueryBuilderFilters = new QueryBuilderFilters();
+        var session = new Rollover();
 
         SaveSessionModel(session);
 
@@ -854,6 +853,11 @@ public class RolloverController : ControllerBase
         var model = new SelectQualificationLevelsViewModel();
         var session = GetSessionModel();
 
+        if (session.SelectCandidates?.SelectedOption is not SelectCandidatesForRollover.GenerateAList)
+        {
+            return RedirectToAction(nameof(SelectCandidates));
+        }
+
         if (session.QueryBuilderFilters.Levels.Count > 0)
         {
             model.SelectedLevels = session.QueryBuilderFilters.Levels.ToList();
@@ -871,6 +875,11 @@ public class RolloverController : ControllerBase
     {
         var model = new SelectQualificationTypesViewModel();
         var session = GetSessionModel();
+
+        if (!session.QueryBuilderFilters.Levels.Any())
+        {
+            return RedirectToAction(nameof(SelectLevels));
+        }
 
         if (session.QueryBuilderFilters.Types.Count > 0)
         {
@@ -918,6 +927,11 @@ public class RolloverController : ControllerBase
     {
         var session = GetSessionModel();
         var model = new SelectSectorSubjectAreasModel();
+
+        if (!session.QueryBuilderFilters.Types.Any())
+        {
+            return RedirectToAction(nameof(SelectTypes));
+        }
 
         if (session.QueryBuilderFilters.SectorSubjectAreas.Count > 0)
         {
@@ -988,6 +1002,11 @@ public class RolloverController : ControllerBase
         var model = new SelectAwardingOrganisationsViewModel();
 
         model.SelectionType = session.QueryBuilderFilters.AwardingOrganisationSelectionType;
+
+        if (!session.QueryBuilderFilters.SectorSubjectAreas.Any())
+        {
+            return RedirectToAction(nameof(SelectSectorSubjectArea));
+        }
 
         if (session.QueryBuilderFilters.SelectedAwardingOrganisationIds.Count > 0)
         {
