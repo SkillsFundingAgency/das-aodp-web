@@ -1,8 +1,10 @@
 using AutoFixture;
 using AutoFixture.AutoMoq;
 using Moq;
+using SFA.DAS.Aodp.Domain.Files;
 using SFA.DAS.AODP.Application.Queries.Application.Form;
 using SFA.DAS.AODP.Application.Queries.Application.Review;
+using SFA.DAS.AODP.Application.Queries.Files;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Web.Helpers.Export;
 
@@ -26,108 +28,110 @@ namespace SFA.DAS.AODP.Web.UnitTests.Helpers.Export
 				_htmlRendererMock.Object);
 		}
 
-		//[Fact]
-		//public async Task GenerateExportZipAsync_ReturnsZip_And_CallsDependencies()
-		//{
-		//	var exportData = new GetApplicationExportDataQueryResponse
-		//	{
-		//		ApplicationMetadata = new ApplicationExportMetadataResponse
-		//		{
-		//			OrganisationName = "Org1",
-		//			Qan = "123",
-		//			SubmissionId = 3,
-		//			FormName = "Form A"
-		//		},
-		//		ApplicationFormStructure = new GetFormPreviewByIdQueryResponse
-		//		{
-		//			SectionsWithPagesAndQuestions = new()
-		//		},
-		//		ApplicationFormResponse = new()
-		//	};
+		[Fact]
+		public async Task GenerateExportZipAsync_ReturnsZip_And_CallsDependencies()
+		{
+			var exportData = new GetApplicationExportDataQueryResponse
+			{
+				ApplicationMetadata = new ApplicationExportMetadataResponse
+				{
+					OrganisationName = "Org1",
+					Qan = "123",
+					SubmissionId = 3,
+					FormName = "Form A"
+				},
+				ApplicationFormStructure = new GetFormPreviewByIdQueryResponse
+				{
+					SectionsWithPagesAndQuestions = new()
+				},
+				ApplicationFormResponse = new()
+			};
 
-		//	var files = new List<UploadedBlob>
-		//	{
-		//		new UploadedBlob
-		//		{
-		//			FullPath = "files/appId/questionId/fileId",
-		//			FileNamePrefix = "file.txt"
-		//		}
-		//	};
+			var files = new List<FileMetadataDto>
+			{
+				new FileMetadataDto
+                {
+					BlobPath = "files/appId/questionId/fileId",
+					BlobContainer = "aqany",
+					FileCategory = FileCategory.QuestionUpload,
+					FileName = "file.txt",
+                }
+			};
 
-		//	_fileServiceMock!
-		//		.Setup(x => x.OpenReadStreamAsync(It.IsAny<string>()))
-		//		.ReturnsAsync(new MemoryStream(new byte[] { 1, 2, 3 }));
+			_fileServiceMock!
+				.Setup(x => x.OpenReadStreamAsync(It.IsAny<string>(), It.IsAny<string>()))
+				.ReturnsAsync(new MemoryStream(new byte[] { 1, 2, 3 }));
 
-		//	_htmlRendererMock!
-		//		.Setup(x => x.RenderAsync(It.IsAny<string>(), It.IsAny<object>()))
-		//		.ReturnsAsync("<html></html>");
+			_htmlRendererMock!
+				.Setup(x => x.RenderAsync(It.IsAny<string>(), It.IsAny<object>()))
+				.ReturnsAsync("<html></html>");
 
-		//	var result = await _service.GenerateExportZipAsync(exportData, files);
+			var result = await _service.GenerateExportZipAsync(exportData, files);
 
-		//	Assert.True(result.Length > 0);
+			Assert.True(result.Length > 0);
 
-		//	_fileServiceMock.Verify(x => x.OpenReadStreamAsync(It.IsAny<string>()), Times.Once);
-		//	_htmlRendererMock.Verify(x => x.RenderAsync("ExportSummary", It.IsAny<object>()), Times.Once);
-		//}
+			_fileServiceMock.Verify(x => x.OpenReadStreamAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+			_htmlRendererMock.Verify(x => x.RenderAsync("ExportSummary", It.IsAny<object>()), Times.Once);
+		}
 
-		//[Fact]
-		//public async Task GenerateExportZipAsync_WhenQanMissing_UsesNoQAN()
-		//{
-		//	var exportData = new GetApplicationExportDataQueryResponse
-		//	{
-		//		ApplicationMetadata = new ApplicationExportMetadataResponse
-		//		{
-		//			OrganisationName = "Org1",
-		//			Qan = "",
-		//			SubmissionId = 2,
-		//			FormName = "Form A"
-		//		},
-		//		ApplicationFormStructure = new GetFormPreviewByIdQueryResponse(),
-		//		ApplicationFormResponse = new()
-		//	};
+		[Fact]
+		public async Task GenerateExportZipAsync_WhenQanMissing_UsesNoQAN()
+		{
+			var exportData = new GetApplicationExportDataQueryResponse
+			{
+				ApplicationMetadata = new ApplicationExportMetadataResponse
+				{
+					OrganisationName = "Org1",
+					Qan = "",
+					SubmissionId = 2,
+					FormName = "Form A"
+				},
+				ApplicationFormStructure = new GetFormPreviewByIdQueryResponse(),
+				ApplicationFormResponse = new()
+			};
 
-		//	var files = new List<UploadedBlob>();
+			var files = new List<FileMetadataDto>();
 
-		//	_htmlRendererMock!
-		//		.Setup(x => x.RenderAsync(It.IsAny<string>(), It.IsAny<object>()))
-		//		.ReturnsAsync("<html></html>");
+			_htmlRendererMock!
+				.Setup(x => x.RenderAsync(It.IsAny<string>(), It.IsAny<object>()))
+				.ReturnsAsync("<html></html>");
 
-		//	var result = await _service.GenerateExportZipAsync(exportData, files);
+			var result = await _service.GenerateExportZipAsync(exportData, files);
 
-		//	Assert.True(result.Length > 0);
-		//}
+			Assert.True(result.Length > 0);
+		}
 
-		//[Fact]
-		//public void GenerateExportZipAsync_WhenStreamNull_ThrowsIOException()
-		//{
-		//	var exportData = new GetApplicationExportDataQueryResponse
-		//	{
-		//		ApplicationMetadata = new ApplicationExportMetadataResponse
-		//		{
-		//			OrganisationName = "Org",
-		//			Qan = "123",
-		//			SubmissionId = 4,
-		//			FormName = "Form"
-		//		},
-		//		ApplicationFormStructure = new GetFormPreviewByIdQueryResponse(),
-		//		ApplicationFormResponse = new()
-		//	};
+		[Fact]
+		public void GenerateExportZipAsync_WhenStreamNull_ThrowsIOException()
+		{
+			var exportData = new GetApplicationExportDataQueryResponse
+			{
+				ApplicationMetadata = new ApplicationExportMetadataResponse
+				{
+					OrganisationName = "Org",
+					Qan = "123",
+					SubmissionId = 4,
+					FormName = "Form"
+				},
+				ApplicationFormStructure = new GetFormPreviewByIdQueryResponse(),
+				ApplicationFormResponse = new()
+			};
 
-		//	var files = new List<UploadedBlob>
-		//	{
-		//		new UploadedBlob
-		//		{
-		//			FullPath = "files/app/question/file",
-		//			FileName = "file.txt"
-		//		}
-		//	};
+			var files = new List<FileMetadataDto>
+			{
+				new FileMetadataDto
+                {
+					BlobContainer = "any",
+					BlobPath = "files/app/question/file"
+                }
+			};
 
-		//	_fileServiceMock!
-		//		.Setup(x => x.OpenReadStreamAsync(It.IsAny<string>()))
-		//		.ReturnsAsync((Stream)null);
+			_fileServiceMock!
+				.Setup(x => x.OpenReadStreamAsync(It.IsAny<string>(), It.IsAny<string>()))
+				.ReturnsAsync((Stream)null);
 
-		//	//Assert.ThrowsAsync<IOException>(() =>
-		//	//	_service.GenerateExportZipAsync(exportData, files));
-		//}
+			//Assert.ThrowsAsync<IOException>(() =>
+			//	_service.GenerateExportZipAsync(exportData, files));
+		}
 	}
 }

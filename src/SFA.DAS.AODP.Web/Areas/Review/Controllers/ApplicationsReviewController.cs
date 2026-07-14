@@ -758,7 +758,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
             var fileMetadataResponse = await Send(new GetFileMetadataQuery
             {
-                FileCategory = FileCategory.QuestionUpload,
+                FileCategories = [FileCategory.QuestionUpload],
                 ApplicationId = applicationId
             });
 
@@ -821,18 +821,18 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
             var exportData = await Send(new GetApplicationExportDataQuery(applicationReviewId));
 
-            //TODO: fix getting cvlean files for application
+            var fileResponse = await Send(new GetFileMetadataQuery
+            {
+                FileCategories = [FileCategory.QuestionUpload, FileCategory.MessageAttachment],
+                ApplicationId = applicationId
+            });
 
-            //var questionFiles = _fileService.ListBlobs(applicationId.ToString());
-            //var messageFiles = _fileService.ListBlobs($"{ApplicationExportConstants.MessageFolderName}/{applicationId}");
+            var files = fileResponse.Files.Where(f => f.IsDownloadable).ToList();
 
-            //var files = questionFiles.Concat(messageFiles).ToList();
+            var zipBytes = await _exportService.GenerateExportZipAsync(exportData, files);
 
-            //var zipBytes = await _exportService.GenerateExportZipAsync(exportData, files);
+            return File(zipBytes, "application/zip", ApplicationExportPathBuilder.GetZipFileName(exportData.ApplicationMetadata));
 
-            //return File(zipBytes, "application/zip", ApplicationExportPathBuilder.GetZipFileName(exportData.ApplicationMetadata));
-
-            return File(new byte[0], "application/zip", ApplicationExportPathBuilder.GetZipFileName(exportData.ApplicationMetadata));
         }
 
         private async Task<Guid> GetApplicationIdWithAccessValidation(Guid applicationReviewId)
@@ -957,18 +957,21 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
         private async Task<ApplicationReadOnlyDetailsViewModel> BuildReadOnlyApplicationDetailsViewModel(Guid applicationReviewId)
         {
-            //var applicationId = await GetApplicationIdWithAccessValidation(applicationReviewId);
+            var applicationId = await GetApplicationIdWithAccessValidation(applicationReviewId);
 
-            //var form = await Send(new GetFormPreviewByIdQuery(applicationId));
-            //var applicationFormDetails = await Send(new GetApplicationFormByReviewIdQuery(applicationReviewId));
+            var form = await Send(new GetFormPreviewByIdQuery(applicationId));
+            var applicationFormDetails = await Send(new GetApplicationFormByReviewIdQuery(applicationReviewId));
 
-            //var files = _fileService.ListBlobs(applicationId.ToString());
+            var applicationFiles = await Send(new GetFileMetadataQuery
+            {
+                FileCategories = [FileCategory.QuestionUpload],
+                ApplicationId = applicationId
+            });
 
-            //var vm = ApplicationReadOnlyDetailsViewModel.Map(form, applicationFormDetails, files);
-            //vm.ApplicationReviewId = applicationReviewId;
+            var vm = ApplicationReadOnlyDetailsViewModel.Map(form, applicationFormDetails, applicationFiles.Files);
+            vm.ApplicationReviewId = applicationReviewId;
 
-            //return vm;
-            return new ApplicationReadOnlyDetailsViewModel();
+            return vm;
         }
     }
 }

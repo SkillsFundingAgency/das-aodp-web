@@ -1,4 +1,5 @@
-﻿using SFA.DAS.AODP.Application.Queries.Application.Form;
+﻿using SFA.DAS.Aodp.Domain.Files;
+using SFA.DAS.AODP.Application.Queries.Application.Form;
 using SFA.DAS.AODP.Application.Queries.Application.Review;
 using SFA.DAS.AODP.Application.Queries.Files;
 using SFA.DAS.AODP.Infrastructure.File;
@@ -46,44 +47,43 @@ namespace SFA.DAS.AODP.Web.Helpers.Export
                     await writer.WriteAsync(summaryHtml);
                 }
 
-                //TODO: Re-enable file export once we have a solution for list clean files
-                //{
-                //    bool isMessageFile = file.FullPath.StartsWith($"{ApplicationExportConstants.MessageFolderName}/", StringComparison.OrdinalIgnoreCase);
+                foreach (var file in files)
+                {
+                    bool isMessageFile = file.FileCategory == FileCategory.MessageAttachment;
 
-                //    string filePath;
+                    string filePath;
 
-                //    if (!isMessageFile)
-                //    {
-                //        var questionId = ExtractQuestionIdFromBlobPath(file.FullPath);
+                    if (!isMessageFile)
+                    {
 
-                //        if (questionId != null && questionMap.TryGetValue(questionId.Value, out var questionReference))
-                //        {
-                //            filePath =
-                //                $"{questionReference}/" +
-                //                $"{file.FileNameWithPrefix.SanitiseFileName()}";
-                //        }
-                //        else
-                //        {
-                //            filePath = $"{file.FileNameWithPrefix.SanitiseFileName()}";
-                //        }
-                //    }
-                //    else
-                //    {
-                //        filePath =
-                //            $"{ApplicationExportConstants.MessageFolderName}/" +
-                //            $"{file.FileNameWithPrefix.SanitiseFileName()}";
-                //    }
+                        if (file.QuestionId.HasValue  && questionMap.TryGetValue(file.QuestionId.Value, out var questionReference))
+                        {
+                            filePath =
+                                $"{questionReference}/" +
+                                $"{file.FileName.SanitiseFileName()}";
+                        }
+                        else
+                        {
+                            filePath = $"{file.FileName.SanitiseFileName()}";
+                        }
+                    }
+                    else
+                    {
+                        filePath =
+                            $"{ApplicationExportConstants.MessageFolderName}/" +
+                            $"{file.FileName.SanitiseFileName()}";
+                    }
 
-                //    await using var fileStream =
-                //        await _fileService.OpenReadStreamAsync(file.FullPath)
-                //        ?? throw new IOException($"Could not open stream for {file.FullPath}");
+                    await using var fileStream =
+                        await _fileService.OpenReadStreamAsync(file.BlobContainer, file.BlobPath)
+                        ?? throw new IOException($"Could not open stream for {file.BlobContainer}/{file.BlobPath}");
 
-                //    var entry = archive.CreateEntry(filePath);
+                    var entry = archive.CreateEntry(filePath);
 
-                //    await using var entryStream = entry.Open();
+                    await using var entryStream = entry.Open();
 
-                //    await fileStream.CopyToAsync(entryStream);
-                //}
+                    await fileStream.CopyToAsync(entryStream);
+                }
             }
 
             return zipStream.ToArray();
@@ -109,33 +109,6 @@ namespace SFA.DAS.AODP.Web.Helpers.Export
             return await _htmlExportRenderer.RenderAsync(ApplicationExportConstants.SummaryViewName, exportSummaryModel);
         }
 
-        private Guid? ExtractQuestionIdFromBlobPath(string fullPath)
-        {
-            if (string.IsNullOrWhiteSpace(fullPath))
-                return null;
-
-            if (fullPath.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-            {
-                var uri = new Uri(fullPath);
-                fullPath = uri.AbsolutePath.TrimStart('/');
-            }
-
-            var parts = fullPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
-
-            // expected:
-            // 0 = container ("files")
-            // 1 = applicationId
-            // 2 = questionId
-            // 3 = fileId
-
-            if (parts.Length < 2)
-                return null;
-
-            return Guid.TryParse(parts[1], out var questionId)
-                ? questionId
-                : null;
-        }
-
         private Dictionary<Guid, string> BuildQuestionMap(GetFormPreviewByIdQueryResponse form)
         {
             var map = new Dictionary<Guid, string>();
@@ -154,13 +127,4 @@ namespace SFA.DAS.AODP.Web.Helpers.Export
             return map;
         }
     }
-
-    //public class UploadedBlob
-    //{
-    //    public string FullPath { get; set; }
-    //    public string FileName { get; set; }
-    //    public string Extension { get; set; }
-    //    public string FileNamePrefix { get; set; }
-    //    public string FileNameWithPrefix => string.IsNullOrWhiteSpace(FileNamePrefix) ? FileName : $"{FileNamePrefix} {FileName}";
-    //}
 }

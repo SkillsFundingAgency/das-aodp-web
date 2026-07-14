@@ -250,7 +250,7 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         {
             var fileResponse = await Send(new GetFileMetadataQuery
             {
-                FileCategory = FileCategory.QuestionUpload,
+                FileCategories = [FileCategory.QuestionUpload],
                 ApplicationId = applicationId
             });
 
@@ -288,7 +288,7 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
 
             var fileResponse = await Send(new GetFileMetadataQuery
             {
-                FileCategory = FileCategory.QuestionUpload,
+                FileCategories = [FileCategory.QuestionUpload],
                 ApplicationId = applicationId
             });
 

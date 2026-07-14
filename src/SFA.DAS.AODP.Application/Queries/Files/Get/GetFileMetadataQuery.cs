@@ -6,7 +6,7 @@ namespace SFA.DAS.AODP.Application.Queries.Files.Get
     [ExcludeFromCodeCoverage]
     public class GetFileMetadataQuery : IRequest<BaseMediatrResponse<GetFileMetadataQueryResponse>>
     {
-        public FileCategory FileCategory { get; init; }
+        public IEnumerable<FileCategory>? FileCategories { get; init; }
         public Guid? FileId { get; init; }
         public Guid? ApplicationId { get; init; }
         public Guid? MessageId { get; init; }

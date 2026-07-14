@@ -53,7 +53,7 @@ public class ApplicationMessagesController : ControllerBase
 
         var timelineFilesResponse = await Send(new GetFileMetadataQuery
         {
-            FileCategory = FileCategory.MessageAttachment,
+            FileCategories = [FileCategory.MessageAttachment],
             ApplicationId = applicationId
         });
         var timelineFiles = timelineFilesResponse.Files;

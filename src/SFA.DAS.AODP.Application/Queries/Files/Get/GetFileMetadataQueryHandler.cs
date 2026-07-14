@@ -25,13 +25,6 @@ namespace SFA.DAS.AODP.Application.Queries.Files.Get
                     .PostWithResponseCode<GetFileMetadataQueryResponse>(
                         new GetFileMetadataApiRequest { Data = request });
 
-                if (result == null)
-                {
-                    response.Success = false;
-                    response.ErrorMessage = "File metadata service returned no data.";
-                    return response;
-                }
-
                 response.Value = result;
                 response.Success = true;
             }
