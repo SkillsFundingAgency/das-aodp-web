@@ -582,6 +582,7 @@ public class RolloverController : ControllerBase
         {
             model.FundingStreams = session.RolloverFundingStream.FundingStreams;
             model.SelectedIds = session.RolloverFundingStream.SelectedIds;
+            model.SelectionMethod = session.SelectCandidates?.SelectedOption;
         }
         else
         {
@@ -727,7 +728,7 @@ public class RolloverController : ControllerBase
         var fundingOfferIds = stream?
             .SelectedIds
             .Distinct()
-            .ToList() ?? new ();
+            .ToList() ?? [];
 
         var academicYear = candidates
             .Select(c => c.AcademicYear)
@@ -743,7 +744,7 @@ public class RolloverController : ControllerBase
         var command = new CreateRolloverWorkflowRunCommand()
         {
             AcademicYear = academicYear!,
-            SelectionMethod = SelectionMethod.FileUpload,
+            SelectionMethod = session.SelectCandidates?.SelectedOption is SelectCandidatesForRollover.GenerateAList ? SelectionMethod.QueryBuilder : SelectionMethod.FileUpload,
             FundingEndDateEligibilityThreshold = session.RolloverEligibilityDates?.FundingEndDate?.ToDateTime(),
             OperationalEndDateEligibilityThreshold = session.RolloverEligibilityDates?.OperationalEndDate?.ToDateTime(),
             MaximumApprovalFundingEndDate = model.MaxApprovalEndDate?.ToDateTime(),
@@ -781,6 +782,11 @@ public class RolloverController : ControllerBase
     [Route("review/rollover/InitialChecksExport")]
     public IActionResult InitialChecksExport()
     {
+        var session = GetSessionModel();
+        session.QueryBuilderFilters = new QueryBuilderFilters();
+
+        SaveSessionModel(session);
+
         return View();
     }
 
@@ -1049,6 +1055,22 @@ public class RolloverController : ControllerBase
     public async Task<IActionResult> CheckYourAnswers()
     {
         var session = GetSessionModel();
+
+        if (!session.QueryBuilderFilters.CanProgress(out var missingFilter))
+        {
+            if (!string.IsNullOrEmpty(missingFilter))
+            {
+                return missingFilter switch
+                {
+                    nameof(QueryBuilderFilters.Levels) => RedirectToAction(nameof(SelectLevels)),
+                    nameof(QueryBuilderFilters.Types) => RedirectToAction(nameof(SelectTypes)),
+                    nameof(QueryBuilderFilters.SectorSubjectAreas) => RedirectToAction(nameof(SelectSectorSubjectArea)),
+                    nameof(QueryBuilderFilters.AwardingOrganisationSelectionType) => RedirectToAction(nameof(SelectAwardingOrganisations)),
+                    _ => RedirectToAction(nameof(SelectCandidates))
+                };
+            }
+        }
+
         var qualificationVersions = await Send(
             new GetQualificationVersionsForRolloverQueryBuilderQuery(RolloverQueryBuilderRequestMapper.ForAll(session.QueryBuilderFilters)));
         

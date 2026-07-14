@@ -91,4 +91,34 @@ public record QueryBuilderFilters
                 organisation => organisation.RecognitionNumber)
         };
     }
+
+    public bool CanProgress(out string? missing)
+    {
+        if (!Levels.Any())
+        {
+            missing = nameof(Levels);
+            return false;
+        }
+
+        if (!Types.Any())
+        {
+            missing = nameof(Types);
+            return false;
+        }
+
+        if (!SectorSubjectAreas.Any())
+        {
+            missing = nameof(SectorSubjectAreas);
+            return false;
+        }
+
+        if (!SelectedAwardingOrganisationIds.Any())
+        {
+            missing = nameof(SelectedAwardingOrganisationIds);
+            return false;
+        }
+
+        missing = null;
+        return true;
+    }
 }

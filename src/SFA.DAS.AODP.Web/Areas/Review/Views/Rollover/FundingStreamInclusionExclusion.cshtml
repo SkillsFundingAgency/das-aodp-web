@@ -6,9 +6,13 @@
 @{
     ViewData["Title"] = "Select funding stream(s)";
 
+    var backLinkAction = @Model.SelectionMethod is SelectCandidatesForRollover.GenerateAList ? 
+        nameof(RolloverController.CheckYourAnswers) : 
+        nameof(RolloverController.UploadQualificationCandidates);
+
     var backLinkModel = new BackLinkModel
     {
-        Action = nameof(RolloverController.UploadQualificationCandidates),
+        Action = backLinkAction,
         Controller = "Rollover",
         Area = "Review"
     };
