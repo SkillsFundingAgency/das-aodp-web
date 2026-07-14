@@ -457,7 +457,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
         var result = await controller.PreviousFile(model);
 
         var redirect = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal(nameof(RolloverController.SelectFundingStreams), redirect.ActionName);
+        Assert.Equal(nameof(RolloverController.FundingStreamInclusionExclusion), redirect.ActionName);
 
         var json = session.GetString("RolloverSession");
         Assert.NotNull(json);
@@ -1081,7 +1081,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
             var result = await controller.PreviousFile(model);
 
             var redirectResult = Assert.IsType<RedirectToActionResult>(result);
-            Assert.Equal(nameof(RolloverController.SelectFundingStreams), redirectResult.ActionName);
+            Assert.Equal(nameof(RolloverController.FundingStreamInclusionExclusion), redirectResult.ActionName);
 
             MediatorMock.Verify(
                 m => m.Send(It.IsAny<RemovePreviousWorkflowCandidatesQuery>(), It.IsAny<CancellationToken>()),

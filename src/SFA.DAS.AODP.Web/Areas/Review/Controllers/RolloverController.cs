@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using SFA.DAS.AODP.Application.Commands.Rollover;
 using SFA.DAS.AODP.Application.Queries.Import;
 using SFA.DAS.AODP.Application.Queries.Review.Rollover;
@@ -463,7 +464,7 @@ public class RolloverController : ControllerBase
 
         return model.SelectedOption switch
         {
-            RolloverPreviousFileOption.ContinueProcessing => RedirectToAction(nameof(SelectFundingStreams)),
+            RolloverPreviousFileOption.ContinueProcessing => RedirectToAction(nameof(FundingStreamInclusionExclusion)),
             RolloverPreviousFileOption.RemovePrevious => RedirectToAction(nameof(SelectCandidates), new { returnAction = nameof(PreviousFile) }),
             _ => View("RolloverStart", model)
         };
@@ -509,14 +510,6 @@ public class RolloverController : ControllerBase
             SelectCandidatesForRollover.GenerateAList  => RedirectToAction(nameof(SelectLevels)),
             _ => View()
         };
-    }
-
-    [HttpGet]
-    [Route("/Review/Rollover/SelectFundingStreams")]
-    public IActionResult SelectFundingStreams()
-    {
-        ViewData["Title"] = "Select funding stream(s)";
-        return View();
     }
 
     [HttpGet]
@@ -681,6 +674,11 @@ public class RolloverController : ControllerBase
 
         if (!ModelState.IsValid)
         {
+            // Should not have to do this as its horrible but its a quick fix for now. Need to rework the underlying Dates object to handle this more elegantly.
+            ModelState.Where(o => o.Key.EndsWith(".Day")).Select(o => o.Value).ToList().ForEach(o => o.ValidationState = ModelValidationState.Skipped);
+            ModelState.Where(o => o.Key.EndsWith(".Year")).Select(o => o.Value).ToList().ForEach(o => o.ValidationState = ModelValidationState.Skipped);
+            ModelState.Where(o => o.Key.EndsWith(".Month")).Select(o => o.Value).ToList().ForEach(o => o.ValidationState = ModelValidationState.Skipped);
+
             return View("EnterRolloverEligibilityDates", model);
         }
 
@@ -1073,10 +1071,35 @@ public class RolloverController : ControllerBase
     
     [HttpPost]
     [Route("/Review/Rollover/CheckYourAnswers")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> CheckYourAnswers(CheckYourAnswersViewModel model)
     {
-       
-        return View(model);
+        var session = GetSessionModel();
+        var response = await Send(
+            new GetQualificationVersionsForRolloverQueryBuilderQuery(RolloverQueryBuilderRequestMapper.ForAll(session.QueryBuilderFilters)));
+
+        if (!response.QualificationVersions.Any())
+        {
+            _logger.LogWarning("No candidates found, redirect back to beginning of query builder journey.");
+            
+            return RedirectToAction(nameof(SelectLevels));
+        }
+
+        session.RolloverCandidates = response.QualificationVersions.Select(o => new QualificationCandidate
+        {
+            RolloverCandidateId = o.Id,
+            AcademicYear = o.AcademicYear,
+            QualificationVersionId = o.QualificationVersionId,
+            QualificationNumber = o.QualificationNumber,
+            FundingOfferId = o.FundingOfferId,
+            FundingOfferName = o.FundingOfferName,
+            FundingApprovalEndDate = o.PreviousFundingEndDate,
+            QualificationName = o.QualificationName
+        }).ToList();
+
+        SaveSessionModel(session);
+
+        return RedirectToAction(nameof(FundingStreamInclusionExclusion));
     }
 
     private async Task<SelectAwardingOrganisationsViewModel> BuildSelectAwardingOrganisationsViewModel()

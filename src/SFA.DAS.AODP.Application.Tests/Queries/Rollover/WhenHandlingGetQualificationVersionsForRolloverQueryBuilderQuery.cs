@@ -20,19 +20,17 @@ public class WhenHandlingGetQualificationVersionsForRolloverQueryBuilderQuery
     public async Task Handle_ShouldPostAllSelectedFilterIdsAndReturnQualificationVersions()
     {
         // Arrange
-        var awardingOrganisationId = string.Empty;
         var filters = RolloverQueryBuilderRequestMapper.ForAll(new QueryBuilderFilters());
 
         var expectedResponse = new GetQualificationVersionsForRolloverQueryBuilderQueryResponse
         {
             QualificationVersions =
             [
-                new RolloverQualificationVersion
+                new RolloverQueryBuilderCandidatesDto
                 {
                     Id = Guid.NewGuid(),
-                    QualificationReference = "123/4567/8",
+                    QualificationNumber = "123/4567/8",
                     QualificationName = "Qualification",
-                    AwardingOrganisationId = awardingOrganisationId
                 }
             ]
         };

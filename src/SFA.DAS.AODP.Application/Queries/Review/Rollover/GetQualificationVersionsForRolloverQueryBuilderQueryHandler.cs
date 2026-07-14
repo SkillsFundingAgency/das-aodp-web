@@ -1,8 +1,4 @@
-﻿using MediatR;
-using SFA.DAS.AODP.Domain.Interfaces;
-using SFA.DAS.AODP.Domain.Rollover;
-
-namespace SFA.DAS.AODP.Application.Queries.Review.Rollover;
+﻿namespace SFA.DAS.AODP.Application.Queries.Review.Rollover;
 
 public class GetQualificationVersionsForRolloverQueryBuilderQueryHandler(IApiClient apiClient)
     : IRequestHandler<GetQualificationVersionsForRolloverQueryBuilderQuery, BaseMediatrResponse<GetQualificationVersionsForRolloverQueryBuilderQueryResponse>>

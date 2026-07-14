@@ -41,7 +41,8 @@ public record QueryBuilderFilters
 
     public IEnumerable<AwardingOrganisation> ExcludedAwardingOrganisations { get; init; } = [];
 
-    public SectorSubjectAreaSelectionType SectorSubjectAreasSelectionType { get; set; } = SectorSubjectAreaSelectionType.None;
+    public SectorSubjectAreaSelectionType SectorSubjectAreasSelectionType { get; set; } =
+        SectorSubjectAreaSelectionType.None;
 
     public IReadOnlyList<string> SelectedAwardingOrganisationIds { get; init; } = [];
 
@@ -60,7 +61,8 @@ public record QueryBuilderFilters
             Types = types.ToList()
         };
 
-    public QueryBuilderFilters SetSectorSubjectAreas(IEnumerable<SectorSubjectArea> sectorSubjectAreas, IEnumerable<SectorSubjectArea> original, SectorSubjectAreaSelectionType selectionType)
+    public QueryBuilderFilters SetSectorSubjectAreas(IEnumerable<SectorSubjectArea> sectorSubjectAreas,
+        IEnumerable<SectorSubjectArea> original, SectorSubjectAreaSelectionType selectionType)
     {
         var subjectAreas = sectorSubjectAreas.ToList();
         return this with
@@ -82,9 +84,11 @@ public record QueryBuilderFilters
         {
             AllAwardingOrganisations = allAwardingOrganisations,
             SelectedAwardingOrganisationIds = awardingOrganisations.ToList(),
-            SelectedAwardingOrganisations = allAwardingOrganisations.Where(o => awardingOrganisations.Contains(o.RecognitionNumber!)).ToList(),
+            SelectedAwardingOrganisations = allAwardingOrganisations
+                .Where(o => awardingOrganisations.Contains(o.RecognitionNumber!)).ToList(),
             AwardingOrganisationSelectionType = selectionType,
-            ExcludedAwardingOrganisations = allAwardingOrganisations.ExceptBy(awardingOrganisations, organisation => organisation.RecognitionNumber)
+            ExcludedAwardingOrganisations = allAwardingOrganisations.ExceptBy(awardingOrganisations,
+                organisation => organisation.RecognitionNumber)
         };
     }
 }

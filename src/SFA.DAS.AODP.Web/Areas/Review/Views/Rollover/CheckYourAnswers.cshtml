@@ -137,5 +137,7 @@ else
 </govuk-inset-text>
 
 <form asp-action="CheckYourAnswers" asp-controller="Rollover">
+    @Html.AntiForgeryToken()
+
     <govuk-button>Continue</govuk-button>
 </form>

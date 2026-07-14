@@ -2,13 +2,19 @@
 
 public class GetQualificationVersionsForRolloverQueryBuilderQueryResponse
 {
-    public IEnumerable<RolloverQualificationVersion> QualificationVersions { get; set; } = [];
+    public IEnumerable<RolloverQueryBuilderCandidatesDto> QualificationVersions { get; set; } = [];
 }
 
-public class RolloverQualificationVersion
+public record RolloverQueryBuilderCandidatesDto
 {
     public Guid Id { get; set; }
-    public string? QualificationReference { get; set; }
-    public string? QualificationName { get; set; }
-    public string AwardingOrganisationId { get; set; } = null!;
+    public Guid QualificationVersionId { get; set; }
+    public string? QualificationNumber { get; init; }
+    public string? QualificationName { get; init; }
+    public Guid FundingOfferId { get; set; }
+    public string? FundingOfferName { get; init; }
+    public string? AcademicYear { get; set; }
+    public int? RolloverRound { get; set; }
+    public DateTime? PreviousFundingEndDate { get; set; }
+    public DateTime? NewFundingEndDate { get; set; }
 }
