@@ -133,5 +133,157 @@ namespace SFA.DAS.AODP.Web.UnitTests.Helpers.Export
 			//Assert.ThrowsAsync<IOException>(() =>
 			//	_service.GenerateExportZipAsync(exportData, files));
 		}
-	}
+
+        [Fact]
+        public async Task GenerateExportZipAsync_MessageAttachment_FilePlacedInMessageFolder()
+        {
+            var exportData = new GetApplicationExportDataQueryResponse
+            {
+                ApplicationMetadata = new ApplicationExportMetadataResponse
+                {
+                    OrganisationName = "Org",
+                    Qan = "123",
+                    SubmissionId = 1,
+                    FormName = "Form"
+                },
+                ApplicationFormStructure = new GetFormPreviewByIdQueryResponse(),
+                ApplicationFormResponse = new()
+            };
+
+            var files = new List<FileMetadataDto>
+			{
+				new FileMetadataDto
+				{
+					FileCategory = FileCategory.MessageAttachment,
+					FileName = "msg.txt",
+					BlobContainer = "files",
+					BlobPath = "messages/msg.txt"
+				}
+			};
+
+            _fileServiceMock!
+                .Setup(x => x.OpenReadStreamAsync("files", "messages/msg.txt"))
+                .ReturnsAsync(new MemoryStream(new byte[] { 1 }));
+
+            _htmlRendererMock!
+                .Setup(x => x.RenderAsync(It.IsAny<string>(), It.IsAny<object>()))
+                .ReturnsAsync("<html></html>");
+
+            var result = await _service.GenerateExportZipAsync(exportData, files);
+
+            Assert.True(result.Length > 0);
+        }
+
+        [Fact]
+        public async Task GenerateExportZipAsync_QuestionUpload_WithQuestionMap_UsesMappedPath()
+        {
+            var questionId = Guid.NewGuid();
+
+            var exportData = new GetApplicationExportDataQueryResponse
+            {
+                ApplicationMetadata = new ApplicationExportMetadataResponse
+                {
+                    OrganisationName = "Org",
+                    Qan = "123",
+                    SubmissionId = 1,
+                    FormName = "Form"
+                },
+                ApplicationFormStructure = new GetFormPreviewByIdQueryResponse
+                {
+                    SectionsWithPagesAndQuestions =
+					{
+						new()
+						{
+							Order = 1,
+							Pages =
+							{
+								new()
+								{
+									Order = 2,
+									Questions =
+									{
+										new()
+										{
+											Id = questionId,
+											Order = 3
+										}
+									}
+								}
+							}
+						}
+					}
+                },
+                ApplicationFormResponse = new()
+            };
+
+            var files = new List<FileMetadataDto>
+			{
+				new FileMetadataDto
+				{
+					FileCategory = FileCategory.QuestionUpload,
+					FileName = "answer.txt",
+					BlobContainer = "files",
+					BlobPath = "path/blob",
+					QuestionId = questionId
+				}
+			};
+
+            _fileServiceMock!
+                .Setup(x => x.OpenReadStreamAsync("files", "path/blob"))
+                .ReturnsAsync(new MemoryStream(new byte[] { 1 }));
+
+            _htmlRendererMock!
+                .Setup(x => x.RenderAsync(It.IsAny<string>(), It.IsAny<object>()))
+                .ReturnsAsync("<html></html>");
+
+            var result = await _service.GenerateExportZipAsync(exportData, files);
+
+            Assert.True(result.Length > 0);
+        }
+
+        [Fact]
+        public async Task GenerateExportZipAsync_QuestionUpload_WithMissingQuestionMap_UsesFallbackPath()
+        {
+            var exportData = new GetApplicationExportDataQueryResponse
+            {
+                ApplicationMetadata = new ApplicationExportMetadataResponse
+                {
+                    OrganisationName = "Org",
+                    Qan = "123",
+                    SubmissionId = 1,
+                    FormName = "Form"
+                },
+                ApplicationFormStructure = new GetFormPreviewByIdQueryResponse
+                {
+                    SectionsWithPagesAndQuestions = new()
+                },
+                ApplicationFormResponse = new()
+            };
+
+            var files = new List<FileMetadataDto>
+			{
+				new FileMetadataDto
+				{
+					FileCategory = FileCategory.QuestionUpload,
+					FileName = "fallback.txt",
+					BlobContainer = "files",
+					BlobPath = "path/blob",
+					QuestionId = Guid.NewGuid() // no matching question
+				}
+			};
+
+            _fileServiceMock!
+                .Setup(x => x.OpenReadStreamAsync("files", "path/blob"))
+                .ReturnsAsync(new MemoryStream(new byte[] { 1 }));
+
+            _htmlRendererMock!
+                .Setup(x => x.RenderAsync(It.IsAny<string>(), It.IsAny<object>()))
+                .ReturnsAsync("<html></html>");
+
+            var result = await _service.GenerateExportZipAsync(exportData, files);
+
+            Assert.True(result.Length > 0);
+        }
+
+    }
 }

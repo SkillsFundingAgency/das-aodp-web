@@ -1,7 +1,4 @@
-﻿using Microsoft.Extensions.Options;
-using SFA.DAS.AODP.Models.Settings;
-
-namespace SFA.DAS.AODP.Web.Extensions.Startup;
+﻿namespace SFA.DAS.AODP.Web.Extensions.Startup;
 
 public static class AddConfigurationOptionsExtension
 {

@@ -1,8 +1,8 @@
-﻿using SFA.DAS.AODP.Application.Queries.Import;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace SFA.DAS.AODP.Web.Models.Import
 {
+    [ExcludeFromCodeCoverage]
     public class ConfirmImportRequestViewModel
     {
         [Required]

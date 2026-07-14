@@ -33,7 +33,7 @@ namespace SFA.DAS.AODP.Application.Tests.Queries.Files
                 .ReturnsAsync(expectedResponse);
 
             // Act
-            var response = await _handler.Handle(request, default);
+            var response = await _handler.Handle(request, TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Multiple(() =>
@@ -63,7 +63,7 @@ namespace SFA.DAS.AODP.Application.Tests.Queries.Files
                 .ThrowsAsync(expectedException);
 
             // Act
-            var response = await _handler.Handle(request, default);
+            var response = await _handler.Handle(request, TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Multiple(() =>

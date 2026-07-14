@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
 using Moq;
 using SFA.DAS.Aodp.Domain.Files;
 using SFA.DAS.AODP.Application;
@@ -308,6 +309,179 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Apply.Controllers
         }
 
         [Fact]
+        public async Task ApplicationMessageFileDownload_FileNotFound_ReturnsNotFound()
+        {
+            var applicationId = Guid.NewGuid();
+            var messageId = Guid.NewGuid();
+            var fileId = Guid.NewGuid();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationMessageByIdQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationMessageByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = new GetApplicationMessageByIdQueryResponse
+                    {
+                        SharedWithAwardingOrganisation = true
+                    }
+                });
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetFileMetadataQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetFileMetadataQueryResponse>
+                {
+                    Success = true,
+                    Value = new GetFileMetadataQueryResponse
+                    {
+                        Files = new List<FileMetadataDto>() // empty list → file == null
+                    }
+                });
+
+            var result = await _controller.ApplicationMessageFileDownload(applicationId, messageId, fileId);
+
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task ApplicationMessageFileDownload_FileDoesNotBelongToMessage_ReturnsForbid()
+        {
+            var applicationId = Guid.NewGuid();
+            var messageId = Guid.NewGuid();
+            var fileId = Guid.NewGuid();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationMessageByIdQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationMessageByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = new GetApplicationMessageByIdQueryResponse
+                    {
+                        SharedWithAwardingOrganisation = true
+                    }
+                });
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetFileMetadataQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetFileMetadataQueryResponse>
+                {
+                    Success = true,
+                    Value = new GetFileMetadataQueryResponse
+                    {
+                        Files = new()
+                        {
+                    new FileMetadataDto
+                    {
+                        FileId = fileId,
+                        ApplicationId = Guid.NewGuid(), // wrong app ID
+                        MessageId = Guid.NewGuid(),      // wrong message ID
+                        IsDownloadable = true
+                    }
+                        }
+                    }
+                });
+
+            var result = await _controller.ApplicationMessageFileDownload(applicationId, messageId, fileId);
+
+            Assert.IsType<ForbidResult>(result);
+        }
+
+        [Fact]
+        public async Task ApplicationMessageFileDownload_FileNotDownloadable_ReturnsForbid()
+        {
+            var applicationId = Guid.NewGuid();
+            var messageId = Guid.NewGuid();
+            var fileId = Guid.NewGuid();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationMessageByIdQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationMessageByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = new GetApplicationMessageByIdQueryResponse
+                    {
+                        SharedWithAwardingOrganisation = true
+                    }
+                });
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetFileMetadataQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetFileMetadataQueryResponse>
+                {
+                    Success = true,
+                    Value = new GetFileMetadataQueryResponse
+                    {
+                        Files = new()
+                        {
+                    new FileMetadataDto
+                    {
+                        FileId = fileId,
+                        ApplicationId = applicationId,
+                        MessageId = messageId,
+                        IsDownloadable = false // <—
+                    }
+                        }
+                    }
+                });
+
+            var result = await _controller.ApplicationMessageFileDownload(applicationId, messageId, fileId);
+
+            Assert.IsType<ForbidResult>(result);
+        }
+
+        [Fact]
+        public async Task ApplicationMessageFileDownload_EmptyContentType_UsesOctetStream()
+        {
+            var applicationId = Guid.NewGuid();
+            var messageId = Guid.NewGuid();
+            var fileId = Guid.NewGuid();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationMessageByIdQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationMessageByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = new GetApplicationMessageByIdQueryResponse
+                    {
+                        SharedWithAwardingOrganisation = true
+                    }
+                });
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetFileMetadataQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetFileMetadataQueryResponse>
+                {
+                    Success = true,
+                    Value = new GetFileMetadataQueryResponse
+                    {
+                        Files = new()
+                        {
+                    new FileMetadataDto
+                    {
+                        FileId = fileId,
+                        ApplicationId = applicationId,
+                        MessageId = messageId,
+                        FileName = "test.docx",
+                        BlobContainer = "files",
+                        BlobPath = "messages/test.docx",
+                        ContentType = "", // <—
+                        IsDownloadable = true
+                    }
+                        }
+                    }
+                });
+
+            _fileService
+                .Setup(f => f.OpenReadStreamAsync("files", "messages/test.docx"))
+                .ReturnsAsync(new MemoryStream(Encoding.UTF8.GetBytes("content")));
+
+            var result = await _controller.ApplicationMessageFileDownload(applicationId, messageId, fileId);
+
+            var fileResult = Assert.IsType<FileStreamResult>(result);
+            Assert.Equal("application/octet-stream", fileResult.ContentType);
+        }
+
+
+        [Fact]
         public async Task ApplicationMessages_EmailSentTrue_SetsMessageSentBanner()
         {
             // Arrange
@@ -391,6 +565,7 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Apply.Controllers
             var organisationId = Guid.NewGuid();
             var applicationId = Guid.NewGuid();
             var formVersionId = Guid.NewGuid();
+            var messageId = Guid.NewGuid();
 
             _mediatorMock
                 .Setup(m => m.Send(
@@ -402,7 +577,19 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Apply.Controllers
                         Success = true,
                         Value = new GetApplicationMessagesByApplicationIdQueryResponse
                         {
-                            Messages = new List<GetApplicationMessagesByApplicationIdQueryResponse.ApplicationMessage>()
+                            Messages = new()
+                            {
+                                new()
+                                {
+                                    MessageId = messageId,
+                                    MessageText = "Hello",
+                                    MessageHeader = "Header",
+                                    SentAt = DateTime.UtcNow,
+                                    SentByName = "Karen",
+                                    SentByEmail = "karen@example.com",
+                                    MessageType = "Info"
+                                }
+                            }
                         }
                     }));
 
@@ -410,15 +597,24 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Apply.Controllers
                 .Setup(m => m.Send(
                     It.IsAny<GetFileMetadataQuery>(),
                     It.IsAny<CancellationToken>()))
-                .Returns(Task.FromResult(
-                    new BaseMediatrResponse<GetFileMetadataQueryResponse>
+                .ReturnsAsync(new BaseMediatrResponse<GetFileMetadataQueryResponse>
+                {
+                    Success = true,
+                    Value = new GetFileMetadataQueryResponse
                     {
-                        Success = true,
-                        Value = new GetFileMetadataQueryResponse
+                        Files = new()
                         {
-                            Files = new List<FileMetadataDto>()
+                            new FileMetadataDto
+                            {
+                                FileId = Guid.NewGuid(),
+                                FileName = "test.docx",
+                                MessageId = messageId,
+                                IsDownloadable = true
+                            }
                         }
-                }));
+                    }
+                });
+
 
             _controller.TempData =
                 new TempDataDictionary(
