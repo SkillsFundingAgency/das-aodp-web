@@ -23,10 +23,6 @@ internal class Program
     private static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-        builder.WebHost.ConfigureKestrel(o =>
-        {
-            o.Limits.MaxRequestBodySize = 131072;
-        });
 
         SetCulture();
 

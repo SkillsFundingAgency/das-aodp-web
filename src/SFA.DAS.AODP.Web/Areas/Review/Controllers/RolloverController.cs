@@ -262,8 +262,6 @@ public class RolloverController : ControllerBase
 
         await Send(command);
 
-        ClearSessionModel();
-
         return RedirectToAction(nameof(RolloverSubmitted));
     }
 
@@ -271,6 +269,8 @@ public class RolloverController : ControllerBase
     [Route("Review/Rollover/RolloverSubmitted")]
     public async Task<IActionResult> RolloverSubmitted()
     {
+        ClearSessionModel();
+
         return View();
     }
 
