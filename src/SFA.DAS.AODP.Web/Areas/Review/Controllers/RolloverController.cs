@@ -274,7 +274,6 @@ public class RolloverController : ControllerBase
         return View();
     }
 
-
     [HttpGet]
     [Route("review/rollover/rollovervalidationerrors")]
     public async Task<IActionResult> RolloverValidationErrors(RolloverUploadQualificationsViewModel model)
@@ -596,7 +595,8 @@ public class RolloverController : ControllerBase
                 return RedirectToAction(nameof(CheckYourAnswers));
             }
         }
-        else if (session.SelectCandidates?.SelectedOption is SelectCandidatesForRollover.ImportAList)
+        else if (session.SelectCandidates?.SelectedOption is SelectCandidatesForRollover.ImportAList && 
+                 session.PreviousData?.SelectedOption is not RolloverPreviousFileOption.ContinueProcessing)
         {
             if (session.RolloverCandidates.Count is 0)
             {
@@ -613,7 +613,29 @@ public class RolloverController : ControllerBase
         }
         else
         {
-            model.FundingStreams = RolloverCandidateExtensions.ToFundingStreams(session.RolloverCandidates);
+            var candidates = new List<QualificationCandidate>();
+            if (session.PreviousData?.SelectedOption == RolloverPreviousFileOption.ContinueProcessing)
+            {
+                var workflowCandidates = await Send(new GetRolloverWorkflowCandidatesQuery());
+                var rolloverCandidates = await Send(new GetRolloverCandidatesQuery());
+                var candidateIds = workflowCandidates.RolloverWorkflowCandidates.Select(o => o.RolloverCandidatesId).ToList();
+
+                candidates.AddRange(rolloverCandidates.RolloverCandidates.Where(o => candidateIds.Contains(o.Id)).Select(RolloverCandidateExtensions.MapFromRolloverCandidateResponse).ToList());
+
+                if (!candidates.Any())
+                {
+                    _logger.LogWarning("No candidates found");
+                    return RedirectToAction(nameof(SelectCandidates));
+                }
+
+                session.RolloverCandidates = candidates;
+            }
+            else
+            {
+                candidates = session.RolloverCandidates;
+            }
+
+            model.FundingStreams = RolloverCandidateExtensions.ToFundingStreams(candidates);
 
             if (model.FundingStreams.Count == 0)
             {

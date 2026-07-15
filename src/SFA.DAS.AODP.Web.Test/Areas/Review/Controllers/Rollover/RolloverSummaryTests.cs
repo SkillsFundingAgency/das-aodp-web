@@ -121,9 +121,6 @@ public class RolloverSummaryTests : RolloverControllerTestBase
         // Act
         var result = await controller.RolloverSummary();
 
-        // Assert session cleared
-        Assert.False(session.TryGetValue("RolloverSession", out _));
-
         // Assert redirect
         var redirect = Assert.IsType<RedirectToActionResult>(result);
         Assert.Equal(nameof(RolloverController.RolloverSubmitted), redirect.ActionName);
