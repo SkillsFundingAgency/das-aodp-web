@@ -45,5 +45,16 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Extensions
 
             return list;
         }
+
+        public static QualificationCandidate MapFromRolloverCandidateResponse(RolloverCandidate candidate) =>
+            new()
+            {
+                QualificationNumber = candidate.QualificationNumber,
+                FundingOfferId = candidate.FundingOfferId,
+                FundingOfferName = candidate.FundingOfferName,
+                AcademicYear = candidate.AcademicYear,
+                RolloverCandidateId = candidate.Id,
+                QualificationVersionId = candidate.QualificationVersionId
+            };
     }
 }

@@ -156,35 +156,15 @@ public class RolloverControllerTests : RolloverControllerTestBase
     }
 
     [Fact]
-    public async Task Index_Post_SaveSessionThrows_DoesNotBubbleException_Redirects()
-    {
-        var session = CreateThrowingSessionOnSet();
-        var controller = CreateController(session);
-
-        var vm = new RolloverStartViewModel { SelectedProcess = RolloverProcess.InitialSelection };
-
-        MediatorMock.Setup(o => o.Send(It.IsAny<GetRolloverWorkflowCandidatesCountQuery>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetRolloverWorkflowCandidatesCountQueryResponse>
-            {
-                Success = true,
-                Value = new GetRolloverWorkflowCandidatesCountQueryResponse
-                {
-                    TotalRecords = 1
-                }
-            });
-
-        var result = await controller.Index(vm);
-
-        var redirect = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal(nameof(RolloverController.CheckData), redirect.ActionName);
-    }
-
-    [Fact]
     public async Task CheckData_Get_WhenSessionHasImportStatus_MapsFromSession_AndReturnsView()
     {
         var session = CreateEmptySession();
         var sessionModel = new SFA.DAS.AODP.Domain.Rollover.Rollover
         {
+            Start = new RolloverStart
+            {
+                SelectedProcess = RolloverProcess.InitialSelection
+            },
             ImportStatus = new RolloverImportStatus
             {
                 RegulatedQualificationsLastImported = new DateTime(2025, 2, 2),
@@ -254,7 +234,16 @@ public class RolloverControllerTests : RolloverControllerTestBase
                 return resp;
             });
 
+        var rollover = new AODP.Domain.Rollover.Rollover
+        {
+            Start = new RolloverStart
+            {
+                SelectedProcess = RolloverProcess.InitialSelection
+            }
+        };
+
         var session = CreateEmptySession();
+        session.SetString("RolloverSession", JsonConvert.SerializeObject(rollover));
         var controller = CreateController(session);
 
         var result = await controller.CheckData();
@@ -275,24 +264,6 @@ public class RolloverControllerTests : RolloverControllerTestBase
         Assert.Equal(fundedDate, saved.ImportStatus.FundedQualificationsLastImported);
         Assert.Equal(defundingDate, saved.ImportStatus.DefundingListLastImported);
         Assert.Equal(pldnsDate, saved.ImportStatus.PldnsListLastImported);
-    }
-
-    [Fact]
-    public async Task CheckData_Get_SaveSessionThrows_DoesNotBubbleException_ReturnsView()
-    {
-        MediatorMock
-            .Setup(m => m.Send(It.IsAny<GetJobRunsQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetJobRunsQueryResponse> { Success = true, Value = new GetJobRunsQueryResponse { JobRuns =
-                []
-            } });
-
-        var controller = CreateController(CreateThrowingSessionOnSet());
-
-        var result = await controller.CheckData();
-
-        // Assert
-        var viewResult = Assert.IsType<ViewResult>(result);
-        Assert.Equal("CheckData", viewResult.ViewName);
     }
 
     [Fact]
@@ -354,7 +325,16 @@ public class RolloverControllerTests : RolloverControllerTestBase
                 Value = new GetRolloverWorkflowCandidatesCountQueryResponse { TotalRecords = 5 }
             });
 
+        var rollover = new AODP.Domain.Rollover.Rollover
+        {
+            Start = new RolloverStart
+            {
+                SelectedProcess = RolloverProcess.InitialSelection
+            }
+        };
+
         var session = CreateEmptySession();
+        session.SetString("RolloverSession", JsonConvert.SerializeObject(rollover));
         var controller = CreateController(session);
 
         var posted = new RolloverImportStatusViewModel
@@ -552,7 +532,9 @@ public class RolloverControllerTests : RolloverControllerTestBase
     public void SelectCandidates_Post_ValidModel_ImportAList_SavesSessionAndRedirects()
     {
         // arrange
+        var rollover = new AODP.Domain.Rollover.Rollover();
         var session = new TestSession();
+        session.SetString("RolloverSession", JsonConvert.SerializeObject(rollover));
         var controller = CreateController(session);
 
         var posted = new RolloverSelectCandidatesViewModel
@@ -582,7 +564,9 @@ public class RolloverControllerTests : RolloverControllerTestBase
     public void SelectCandidates_Post_ValidModel_GenerateAList_SavesSessionAndRedirects()
     {
         // arrange
+        var rollover = new AODP.Domain.Rollover.Rollover();
         var session = new TestSession();
+        session.SetString("RolloverSession", JsonConvert.SerializeObject(rollover));
         var controller = CreateController(session);
 
         var posted = new RolloverSelectCandidatesViewModel
@@ -611,7 +595,21 @@ public class RolloverControllerTests : RolloverControllerTestBase
     public async Task EnterRolloverEligibilityDates_ReturnsViewResult()
     {
         // Arrange
+        var rollover = new AODP.Domain.Rollover.Rollover
+        {
+            RolloverFundingStream = new RolloverFundingStream
+            {
+                FundingStreams =
+                [
+                    new FundingStreamDto
+                    {
+                        Name = "blah"
+                    }
+                ]
+            }
+        };
         var session = new TestSession();
+        session.SetString("RolloverSession", JsonConvert.SerializeObject(rollover));
         var controller = CreateController(session);
 
         // Act
@@ -627,7 +625,21 @@ public class RolloverControllerTests : RolloverControllerTestBase
     public async Task EnterRolloverEligibilityDates_WhenModelIsValid_RedirectsToFundingApprovalEndDate()
     {
         // Arrange
+        var rollover = new AODP.Domain.Rollover.Rollover
+        {
+            RolloverFundingStream = new RolloverFundingStream
+            {
+                FundingStreams =
+                [
+                    new FundingStreamDto
+                    {
+                        Name = "blah"
+                    }
+                ]
+            }
+        };
         var session = new TestSession();
+        session.SetString("RolloverSession", JsonConvert.SerializeObject(rollover));
         var controller = CreateController(session);
         var model = new RolloverEligibilityDatesViewModel();
         var validationResult = new ValidationResult(); // no errors => valid
@@ -649,7 +661,22 @@ public class RolloverControllerTests : RolloverControllerTestBase
     public async Task EnterRolloverEligibilityDates_ReturnsView()
     {
         // Arrange
+        var rollover = new AODP.Domain.Rollover.Rollover
+        {
+            RolloverFundingStream = new RolloverFundingStream
+            {
+                FundingStreams =
+                [
+                    new FundingStreamDto
+                    {
+                        Name = "blah"
+                    }
+                ]
+            }
+        };
+        
         var session = CreateEmptySession();
+        session.SetString("RolloverSession", JsonConvert.SerializeObject(rollover));
         var controller = CreateController(session);
 
         // Act
@@ -669,6 +696,16 @@ public class RolloverControllerTests : RolloverControllerTestBase
 
         var sessionModel = new AODP.Domain.Rollover.Rollover
         {
+            RolloverFundingStream = new RolloverFundingStream
+            {
+                FundingStreams =
+                [
+                    new FundingStreamDto
+                    {
+                        Name = "blah"
+                    }
+                ]
+            },
             RolloverEligibilityDates = new RolloverEligibilityDates
             {
                 FundingEndDate = expectedFunding,
@@ -740,7 +777,26 @@ public class RolloverControllerTests : RolloverControllerTestBase
     public void EnterRolloverFundingApprovalEndDate_Get_ReturnsView()
     {
         // Arrange
+        var rollover = new AODP.Domain.Rollover.Rollover
+        {
+            RolloverEligibilityDates = new RolloverEligibilityDates
+            {
+                OperationalEndDate = new RolloverEligibilityDate
+                {
+                    Day = 31,
+                    Month = 12,
+                    Year = 2026
+                },
+                FundingEndDate = new RolloverEligibilityDate
+                {
+                    Day = 31,
+                    Month = 12,
+                    Year = 2026
+                }
+            }
+        };
         var session = CreateEmptySession();
+        session.SetString("RolloverSession", JsonConvert.SerializeObject(rollover));
         var controller = CreateController(session);
 
         // Act

@@ -25,6 +25,7 @@ using SectorSubjectAreaSelectionType = SFA.DAS.AODP.Domain.Rollover.SectorSubjec
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers;
 
+[TypeFilter(typeof(RolloverSessionCheckActionFilter))]
 [Area("Review")]
 [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
 public class RolloverController : ControllerBase
@@ -57,8 +58,8 @@ public class RolloverController : ControllerBase
     [Route("review/rollover")]
     public IActionResult Index()
     {
-        var session = GetSessionModel();
-        var model = session.Start != null
+        var session = GetSessionModel(createIfNull: true);
+        var model = session!.Start != null
             ? new RolloverStartViewModel { SelectedProcess = session.Start.SelectedProcess }
             : new RolloverStartViewModel();
 
@@ -287,6 +288,12 @@ public class RolloverController : ControllerBase
     public async Task<IActionResult> CheckData()
     {
         var session = GetSessionModel();
+        
+        if (session.Start?.SelectedProcess is null)
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
         if (session.ImportStatus != null)
         {
             var vm = RolloverImportStatusViewModel.MapFromSession(session.ImportStatus);
@@ -477,6 +484,11 @@ public class RolloverController : ControllerBase
         var session = GetSessionModel();
         var model = new RolloverSelectCandidatesViewModel();
 
+        if (session.Start?.SelectedProcess is null)
+        {
+            RedirectToAction(nameof(Index));
+        }
+
         if (session.SelectCandidates != null)
         {
             model.SelectedOption = session.SelectCandidates.SelectedOption;
@@ -577,8 +589,23 @@ public class RolloverController : ControllerBase
     {
         var session = GetSessionModel();
         var model = new FundingStreamInclusionExclusionViewModel();
-
-        if (session.RolloverFundingStream != null)
+        if (session.SelectCandidates?.SelectedOption is SelectCandidatesForRollover.GenerateAList)
+        {
+            if (!session.QueryBuilderFilters.IsValid(out _))
+            {
+                return RedirectToAction(nameof(CheckYourAnswers));
+            }
+        }
+        else if (session.SelectCandidates?.SelectedOption is SelectCandidatesForRollover.ImportAList)
+        {
+            if (session.RolloverCandidates.Count is 0)
+            {
+                return RedirectToAction(nameof(UploadQualificationCandidates));
+            }
+        }
+        
+        // add fix to get from db
+        if (session.RolloverFundingStream?.FundingStreams.Count > 0)
         {
             model.FundingStreams = session.RolloverFundingStream.FundingStreams;
             model.SelectedIds = session.RolloverFundingStream.SelectedIds;
@@ -656,6 +683,11 @@ public class RolloverController : ControllerBase
         var session = GetSessionModel();
         var model = new RolloverEligibilityDatesViewModel();
 
+        if (session.RolloverFundingStream?.FundingStreams.Count is not > 0)
+        {
+            return RedirectToAction(nameof(FundingStreamInclusionExclusion));
+        }
+
         model.FundingEndDate = session.RolloverEligibilityDates?.FundingEndDate
                                ?? model.FundingEndDate;
 
@@ -700,6 +732,11 @@ public class RolloverController : ControllerBase
     {
         var session = GetSessionModel();
         var model = new RolloverFundingApprovalEndDateViewModel();
+
+        if (session.RolloverEligibilityDates?.OperationalEndDate is null)
+        {
+            return RedirectToAction(nameof(EnterRolloverEligibilityDates));
+        }
 
         model.MaxApprovalEndDate = session.RolloverFundingApprovalEndDate
                                ?? model.MaxApprovalEndDate;
@@ -775,6 +812,11 @@ public class RolloverController : ControllerBase
     {
         var response = await Send(new GetRolloverCandidatesForExportQuery { RolloverWorkflowRunId = rolloverWorkflowRunId });
 
+        _logger.LogTrace("Rollover C1 process completed, clearing session.");
+
+        HttpContext.Session.Clear();
+        await HttpContext.Session.CommitAsync();
+
         return File(response.FileContent, response.ContentType, response.FileName);
     }
 
@@ -782,19 +824,19 @@ public class RolloverController : ControllerBase
     [Route("review/rollover/InitialChecksExport")]
     public IActionResult InitialChecksExport()
     {
-        var session = new Rollover();
-
-        SaveSessionModel(session);
-
         return View();
     }
 
-    private Rollover GetSessionModel()
+    private Rollover GetSessionModel(bool createIfNull = false)
     {
         try
         {
             var model = HttpContext.Session.GetObject<Rollover>(SessionKey);
-            if (model == null) model = new Rollover();
+            if (model is null && createIfNull)
+            {
+                model = new Rollover();
+                SaveSessionModel(model);
+            }
             return model;
         }
         catch (Exception ex)
@@ -1075,7 +1117,7 @@ public class RolloverController : ControllerBase
     {
         var session = GetSessionModel();
 
-        if (!session.QueryBuilderFilters.CanProgress(out var missingFilter))
+        if (!session.QueryBuilderFilters.IsValid(out var missingFilter))
         {
             if (!string.IsNullOrEmpty(missingFilter))
             {

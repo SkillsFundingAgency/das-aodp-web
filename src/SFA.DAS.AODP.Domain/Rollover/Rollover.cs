@@ -92,7 +92,7 @@ public record QueryBuilderFilters
         };
     }
 
-    public bool CanProgress(out string? missing)
+    public bool IsValid(out string? missing)
     {
         if (!Levels.Any())
         {
