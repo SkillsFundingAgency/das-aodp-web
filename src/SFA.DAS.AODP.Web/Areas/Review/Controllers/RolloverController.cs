@@ -1148,7 +1148,7 @@ public class RolloverController : ControllerBase
                     nameof(QueryBuilderFilters.Levels) => RedirectToAction(nameof(SelectLevels)),
                     nameof(QueryBuilderFilters.Types) => RedirectToAction(nameof(SelectTypes)),
                     nameof(QueryBuilderFilters.SectorSubjectAreas) => RedirectToAction(nameof(SelectSectorSubjectArea)),
-                    nameof(QueryBuilderFilters.AwardingOrganisationSelectionType) => RedirectToAction(nameof(SelectAwardingOrganisations)),
+                    nameof(QueryBuilderFilters.SelectedAwardingOrganisationIds) => RedirectToAction(nameof(SelectAwardingOrganisations)),
                     _ => RedirectToAction(nameof(SelectCandidates))
                 };
             }
