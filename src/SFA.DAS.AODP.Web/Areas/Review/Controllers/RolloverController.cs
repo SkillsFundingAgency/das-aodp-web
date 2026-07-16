@@ -604,7 +604,6 @@ public class RolloverController : ControllerBase
             }
         }
         
-        // add fix to get from db
         if (session.RolloverFundingStream?.FundingStreams.Count > 0)
         {
             model.FundingStreams = session.RolloverFundingStream.FundingStreams;

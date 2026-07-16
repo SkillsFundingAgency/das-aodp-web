@@ -2,6 +2,11 @@
 
 namespace SFA.DAS.AODP.Web.Middleware;
 
+/// <summary>
+/// Provides a better mechanism for logging issues as proper exceptions and not burying them within traces.
+/// </summary>
+/// <param name="next">The next delegate in the pipeline.</param>
+/// <param name="logger">The logger to use for logging exceptions.</param>
 public sealed class MediatrExceptionLoggingMiddleware(RequestDelegate next, ILogger<MediatrExceptionLoggingMiddleware> logger)
 {
     public async Task InvokeAsync(HttpContext context)
@@ -13,7 +18,7 @@ public sealed class MediatrExceptionLoggingMiddleware(RequestDelegate next, ILog
         catch (MediatrRequestException ex)
         {
             logger.LogError(
-                ex.InnerException ?? ex,
+                ex,
                 "Unhandled exception from MediatR request {MediatrRequestName} while handling {HttpMethod} {Path}.",
                 ex.RequestName,
                 context.Request.Method,

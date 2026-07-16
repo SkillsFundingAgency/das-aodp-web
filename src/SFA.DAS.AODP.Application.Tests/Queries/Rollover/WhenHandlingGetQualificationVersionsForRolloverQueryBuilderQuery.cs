@@ -1,12 +1,6 @@
-﻿using Moq;
-using SFA.DAS.AODP.Application.Queries.Review.Rollover;
-using SFA.DAS.AODP.Domain.Interfaces;
-using SFA.DAS.AODP.Domain.Rollover;
-using Shouldly;
+﻿namespace SFA.DAS.AODP.Application.UnitTests.Queries.Rollover;
 
-namespace SFA.DAS.AODP.Application.UnitTests.Queries.Rollover;
-
-public class WhenHandlingGetQualificationVersionsForRolloverQueryBuilderQuery
+public class WhenHandlingGetQualificationVersionsForRolloverQueryBuilderQuery : UnitTest
 {
     private readonly Mock<IApiClient> _apiClientMock = new();
     private readonly GetQualificationVersionsForRolloverQueryBuilderQueryHandler _handler;
@@ -43,7 +37,7 @@ public class WhenHandlingGetQualificationVersionsForRolloverQueryBuilderQuery
         // Act
         var result = await _handler.Handle(
             new GetQualificationVersionsForRolloverQueryBuilderQuery(filters),
-            CancellationToken.None);
+            CancellationToken);
 
         // Assert
         result.Success.ShouldBeTrue();
@@ -68,7 +62,7 @@ public class WhenHandlingGetQualificationVersionsForRolloverQueryBuilderQuery
         // Act
         var result = await Should.ThrowAsync<Exception>(() => _handler.Handle(
             new GetQualificationVersionsForRolloverQueryBuilderQuery(filters),
-            CancellationToken.None));
+            CancellationToken));
 
         // Assert
         result.ShouldBe(exception);

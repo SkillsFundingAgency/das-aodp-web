@@ -1,13 +1,6 @@
-﻿using Moq;
-using SFA.DAS.AODP.Application.Queries.Review.Rollover;
-using SFA.DAS.AODP.Domain.Interfaces;
-using SFA.DAS.AODP.Domain.Rollover;
-using SFA.DAS.AODP.Models.Qualifications;
-using Shouldly;
+﻿namespace SFA.DAS.AODP.Application.UnitTests.Queries.Rollover;
 
-namespace SFA.DAS.AODP.Application.UnitTests.Queries.Rollover;
-
-public class WhenHandlingGetAwardingOrganisationsForRolloverQueryBuilderQuery
+public class WhenHandlingGetAwardingOrganisationsForRolloverQueryBuilderQuery : UnitTest
 {
     private readonly Mock<IApiClient> _apiClientMock = new();
     private readonly GetAwardingOrganisationsForRolloverQueryBuilderQueryHandler _handler;
@@ -39,7 +32,7 @@ public class WhenHandlingGetAwardingOrganisationsForRolloverQueryBuilderQuery
         // Act
         var result = await _handler.Handle(
             new GetAwardingOrganisationsForRolloverQueryBuilderQuery(filters),
-            CancellationToken.None);
+            CancellationToken);
 
         // Assert
         result.Success.ShouldBeTrue();
@@ -61,7 +54,7 @@ public class WhenHandlingGetAwardingOrganisationsForRolloverQueryBuilderQuery
 
         // Act
         var result = await _handler.Handle(
-            new GetAwardingOrganisationsForRolloverQueryBuilderQuery(filters), CancellationToken.None);
+            new GetAwardingOrganisationsForRolloverQueryBuilderQuery(filters), CancellationToken);
 
         // Assert
         result.Success.ShouldBeTrue();
@@ -80,7 +73,7 @@ public class WhenHandlingGetAwardingOrganisationsForRolloverQueryBuilderQuery
 
         // Act
         var result = await _handler.Handle(
-            new GetAwardingOrganisationsForRolloverQueryBuilderQuery(filters), CancellationToken.None);
+            new GetAwardingOrganisationsForRolloverQueryBuilderQuery(filters), CancellationToken);
 
         // Assert
         result.Success.ShouldBeFalse();

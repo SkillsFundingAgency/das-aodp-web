@@ -1,21 +1,19 @@
-﻿using SFA.DAS.AODP.Domain.Rollover;
-
-namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
+﻿namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 
 [ExcludeFromCodeCoverage]
 public record CheckYourAnswersViewModel
 {
-    public List<QualificationLevel> Levels { get; set; } = [];
+    public IReadOnlyCollection<QualificationLevel> Levels { get; set; } = [];
 
-    public List<QualificationType> Types { get; set; } = [];
+    public IReadOnlyCollection<QualificationType> Types { get; set; } = [];
 
-    public List<SectorSubjectArea> SectorSubjectAreas
+    public IReadOnlyCollection<SectorSubjectArea> SectorSubjectAreas
     {
         get => field.OrderBy(o => o.Name).ToList();
         set;
     } = [];
 
-    public List<AwardingOrganisation> AwardingOrganisations
+    public IReadOnlyCollection<AwardingOrganisation> AwardingOrganisations
     {
         get => field.OrderBy(o => o.NameOfqual).ToList();
         set;

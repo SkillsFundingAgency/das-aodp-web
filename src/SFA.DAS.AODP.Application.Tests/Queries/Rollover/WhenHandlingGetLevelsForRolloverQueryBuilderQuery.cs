@@ -1,13 +1,6 @@
-using Moq;
-using SFA.DAS.AODP.Application.Queries.Review.Rollover;
-using SFA.DAS.AODP.Domain.Interfaces;
-using SFA.DAS.AODP.Domain.Rollover;
-using SFA.DAS.AODP.Domain.ValueObjects;
-using Shouldly;
-
 namespace SFA.DAS.AODP.Application.UnitTests.Queries.Rollover;
 
-public class WhenHandlingGetLevelsForRolloverQueryBuilderQuery
+public class WhenHandlingGetLevelsForRolloverQueryBuilderQuery : UnitTest
 {
     private readonly Mock<IApiClient> _apiClientMock = new();
     private readonly GetLevelsForRolloverQueryBuilderQueryHandler _handler;
@@ -30,7 +23,7 @@ public class WhenHandlingGetLevelsForRolloverQueryBuilderQuery
             });
 
         // Act
-        var result = await _handler.Handle(new GetLevelsForRolloverQueryBuilderQuery(), CancellationToken.None);
+        var result = await _handler.Handle(new GetLevelsForRolloverQueryBuilderQuery(), CancellationToken);
 
         // Assert
         result.Success.ShouldBeTrue();
@@ -47,7 +40,7 @@ public class WhenHandlingGetLevelsForRolloverQueryBuilderQuery
             .ThrowsAsync(new InvalidOperationException("API failed"));
 
         // Act
-        var result = await _handler.Handle(new GetLevelsForRolloverQueryBuilderQuery(), CancellationToken.None);
+        var result = await _handler.Handle(new GetLevelsForRolloverQueryBuilderQuery(), CancellationToken);
 
         // Assert
         result.Success.ShouldBeFalse();
