@@ -66,6 +66,8 @@ public class NewQualificationDetailsViewModel
 
     public bool? EligibleForFunding { get; set; }
     public EligibleForFundingStatus? EligibleForFundingStatus { get; set; }
+
+    public string? FundingEligibilityConflictType { get; set; }
     public virtual LifecycleStage Stage { get; set; } = null!;
     public virtual AwardingOrganisation Organisation { get; set; } = null!;
     public virtual Qualification Qual { get; set; } = null!;
@@ -204,6 +206,7 @@ public class NewQualificationDetailsViewModel
             EligibleForFundingStatus = new EligibleForFundingStatus(
                 entity.EligibleForFunding, 
                 entity.FundingEligibilityFailedFields),
+            FundingEligibilityConflictType = entity.FundingEligibilityConflictType,
             Stage = new LifecycleStage
             {
                 Id = entity.Stage.Id,
