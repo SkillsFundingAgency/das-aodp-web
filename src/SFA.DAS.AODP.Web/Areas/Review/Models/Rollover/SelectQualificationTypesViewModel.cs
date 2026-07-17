@@ -1,6 +1,5 @@
 ﻿namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 
-[ExcludeFromCodeCoverage]
 public record SelectQualificationTypesViewModel
 {
     [MustNotBeEmpty(ErrorMessage = "Select the qualification types you want to rollover")]

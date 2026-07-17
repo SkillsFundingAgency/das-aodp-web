@@ -1,6 +1,5 @@
 ﻿namespace SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 
-[ExcludeFromCodeCoverage]
 public record SelectAwardingOrganisationsViewModel
 {
     public List<string> SelectedAwardingOrganisations { get; set; } = [];

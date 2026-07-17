@@ -33,7 +33,7 @@ public class MediatrExceptionLoggingMiddlewareTests
                     state.ToString()!.Contains("SensitiveQuery") &&
                     state.ToString()!.Contains("POST") &&
                     state.ToString()!.Contains("/Review/Rollover/CheckYourAnswers")),
-                exception,
+                mediatrException,
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);
         logger.Verify(
