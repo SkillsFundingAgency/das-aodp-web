@@ -258,7 +258,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 var errorModel = new QualificationBulkActionErrorModel
                 {
                     Failed = failed,
-                    BackLinkText = "Go back to Changed qualifications",
+                    BackLinkText = "Go back to changed qualifications",
                     BackLinkUrl = Url.Action(nameof(Index), qualificationQuery.ToRouteValues())!
                 };
 

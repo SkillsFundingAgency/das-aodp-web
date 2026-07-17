@@ -3,14 +3,14 @@
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
 @{
-    ViewData["Title"] = "Create Section";
+    ViewData["Title"] = "Create section";
 }
 
 <a class="govuk-back-link" asp-action="Edit" asp-controller="Forms" asp-route-formVersionId="@Model.FormVersionId">
-    Back to Form
+    Back to form
 </a>
 
-<h1 class="govuk-heading-l">Create Section</h1>
+<h1 class="govuk-heading-l">Create section</h1>
 
 <form asp-action="Create" method="post">
     <input type="hidden" name="FormVersionId" value="@Model.FormVersionId" />

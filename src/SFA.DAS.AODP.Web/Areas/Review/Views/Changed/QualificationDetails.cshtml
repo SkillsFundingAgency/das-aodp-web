@@ -3,7 +3,7 @@
 @model SFA.DAS.AODP.Web.Models.Qualifications.ChangedQualificationDetailsViewModel
 
 @{
-    ViewData["Title"] = "Qualification Details";
+    ViewData["Title"] = "Qualification details";
 
     var backLinkModel = new BackLinkModel
     {
@@ -19,7 +19,7 @@
 <span class="govuk-caption-xl">
     @(Model.IsQualificationCompleted ? "Completed qualification" : "Qualification with changes")
 </span>
-<h1 class="govuk-heading-xl">Qualification Details</h1>
+<h1 class="govuk-heading-xl">Qualification details</h1>
 
 <div class="govuk-tabs" data-module="govuk-tabs">
     <ul class="govuk-tabs__list">
@@ -132,11 +132,11 @@
                 <govuk-summary-list-row-value>@Model.TotalCredits</govuk-summary-list-row-value>
             </govuk-summary-list-row>
             <govuk-summary-list-row>
-                <govuk-summary-list-row-key> Operational Start Date</govuk-summary-list-row-key>
+                <govuk-summary-list-row-key> Operational start date</govuk-summary-list-row-key>
                 <govuk-summary-list-row-value>@Model.OperationalStartDate.ToStandard12HourDateTimeFormat()</govuk-summary-list-row-value>
             </govuk-summary-list-row>
             <govuk-summary-list-row>
-                <govuk-summary-list-row-key> Operational End Date</govuk-summary-list-row-key>
+                <govuk-summary-list-row-key> Operational end date</govuk-summary-list-row-key>
                 <govuk-summary-list-row-value>@Model.OperationalEndDate?.ToStandard12HourDateTimeFormat()</govuk-summary-list-row-value>
             </govuk-summary-list-row>
 

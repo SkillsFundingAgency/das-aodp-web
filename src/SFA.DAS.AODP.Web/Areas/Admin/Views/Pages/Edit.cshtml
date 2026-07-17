@@ -2,16 +2,16 @@
 @model EditPageViewModel
 
 @{
-    ViewData["Title"] = "Edit Page";
+    ViewData["Title"] = "Edit page";
 }
 
 <a class="govuk-back-link" asp-action="Edit" asp-controller="Sections" asp-route-formVersionId="@Model.FormVersionId" asp-route-sectionId="@Model.SectionId">
-    Back to Section
+    Back to section
 </a>
 
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
-<h1 class="govuk-heading-l">Edit Page</h1>
+<h1 class="govuk-heading-l">Edit page</h1>
 
 <form asp-action="Edit" method="post">
 
@@ -38,7 +38,7 @@
 
     @if (Model.Editable)
     {
-        <a class="govuk-button" asp-action="Create" asp-controller="Questions" asp-route-pageId="@Model.PageId" asp-route-sectionId="@Model.SectionId" asp-route-formVersionId="@Model.FormVersionId">Create New Question</a>
+        <a class="govuk-button" asp-action="Create" asp-controller="Questions" asp-route-pageId="@Model.PageId" asp-route-sectionId="@Model.SectionId" asp-route-formVersionId="@Model.FormVersionId">Create new question</a>
     }
     <a class="govuk-button" asp-action="Preview" asp-controller="Pages" asp-route-pageId="@Model.PageId" asp-route-sectionId="@Model.SectionId" asp-route-formVersionId="@Model.FormVersionId">Preview page</a>
 
@@ -75,14 +75,14 @@
                             {
                                 <button @(OrderButtonHelper.ShouldAutoFocus(TempData, OrderButtonHelper.OrderDirection.Up, item.Id, i, Model.Questions.Count) ? "autofocus" : "")
                                         class="govuk-button govuk-button--secondary" type="submit" value="@item.Id" name="AdditionalFormActions[MoveUp]" data-module="govuk-button" data-prevent-double-click="true">
-                                    Move Up
+                                    Move up
                                 </button>
                             }
                             @if (i != Model.Questions.Count() - 1 && Model.Editable)
                             {
                                 <button @(OrderButtonHelper.ShouldAutoFocus(TempData, OrderButtonHelper.OrderDirection.Down, item.Id, i, Model.Questions.Count) ? "autofocus" : "")
                                         class="govuk-button govuk-button--secondary" type="submit" value="@item.Id" name="AdditionalFormActions[MoveDown]">
-                                    Move Down
+                                    Move down
                                 </button>
                             }
                             &nbsp;

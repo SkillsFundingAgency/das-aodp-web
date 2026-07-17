@@ -5,7 +5,7 @@
 @using SFA.DAS.AODP.Web.Models.Qualifications
 @model SFA.DAS.AODP.Web.Models.Qualifications.ChangedQualificationsViewModel
 @{
-    ViewData["Title"] = "Changed Qualifications";
+    ViewData["Title"] = "Changed qualifications";
     var backLinkModel = BackLinkModelFactory.Dashboard();
 }
 @await Html.PartialAsync("_BackLinkPartial", backLinkModel)
@@ -47,7 +47,7 @@
                             <div class="govuk-grid-column-one-half">
                                 <div class="govuk-form-group">
                                     <govuk-input for="@Model.Filter.QualificationName" inputmode="text" spellcheck="false" autocomplete="off">
-                                        <govuk-input-label is-page-heading="false" class="govuk-label--s">Qualification Title</govuk-input-label>
+                                        <govuk-input-label is-page-heading="false" class="govuk-label--s">Qualification title</govuk-input-label>
                                     </govuk-input>
                                 </div>
                                 <div class="govuk-form-group">
@@ -57,7 +57,7 @@
                                 </div>
                                 <div class="govuk-form-group">
                                     <govuk-input for="@Model.Filter.Organisation" inputmode="text" spellcheck="false" autocomplete="off">
-                                        <govuk-input-label is-page-heading="false" class="govuk-label--s">Awarding Organisation</govuk-input-label>
+                                        <govuk-input-label is-page-heading="false" class="govuk-label--s">Awarding organisation</govuk-input-label>
                                     </govuk-input>
                                 </div>
                             </div>
@@ -96,7 +96,7 @@
                                             <govuk-checkboxes-fieldset>
 
                                                 <govuk-checkboxes-fieldset-legend is-page-heading="false" class="govuk-label--s">
-                                                    <div class="govuk-label govuk-label--s">Age Groups</div>
+                                                    <div class="govuk-label govuk-label--s">Age groups</div>
                                                 </govuk-checkboxes-fieldset-legend>
 
                                                 @Html.RenderPartialAsync("Validation/_CheckboxValidationPartial", nameof(Model.Filter.AgeGroups))
@@ -119,7 +119,7 @@
                         <div class="govuk-grid-row">
                             <div class="govuk-grid-column-full">
                                 <govuk-select for="@Model.PaginationViewModel.RecordsPerPage">
-                                    <govuk-select-label>Qualifications Per Page</govuk-select-label>
+                                    <govuk-select-label>Qualifications per page</govuk-select-label>
                                     <govuk-select-item value="10" selected="true">10</govuk-select-item>
                                     <govuk-select-item value="20">20</govuk-select-item>
                                     <govuk-select-item value="50">50</govuk-select-item>
@@ -183,7 +183,7 @@
                         <div class="govuk-grid-row" id="New_Qual_Pagination_Header_Section">
                             <div class="govuk-grid-column-full">
                                 <h3 class="govuk-heading-m">Qualifications</h3>
-                                <p>Viewing @(Model.PaginationViewModel.StartRecord) - @(Model.PaginationViewModel.EndRecord) of @(Model.PaginationViewModel.TotalRecords) Qualifications</p>
+                                <p>Viewing @(Model.PaginationViewModel.StartRecord) - @(Model.PaginationViewModel.EndRecord) of @(Model.PaginationViewModel.TotalRecords) qualifications</p>
                             </div>
                         </div>
 
@@ -213,10 +213,10 @@
                                             <tr class="govuk-table__row">
                                                 <partial name="~/Views/Shared/_SelectColumnHeader.cshtml" />
                                                 <th class="govuk-table__header">QAN</th>
-                                                <th class="govuk-table__header">Qualification Title</th>
+                                                <th class="govuk-table__header">Qualification title</th>
                                                 <th class="govuk-table__header">Changes</th>
-                                                <th class="govuk-table__header">Priority / Status</th>
-                                                <th class="govuk-table__header">Age Group(s)</th>
+                                                <th class="govuk-table__header">Priority / status</th>
+                                                <th class="govuk-table__header">Age group(s)</th>
                                             </tr>
                                         </thead>
                                         <tbody class="govuk-table__body">
@@ -415,13 +415,13 @@
                                 <thead class="govuk-table__head">
                                     <tr class="govuk-table__row">
                                         <th class="govuk-table__header">QAN</th>
-                                        <th class="govuk-table__header">Qualification Title</th>
-                                        <th class="govuk-table__header">Age Group(s)</th>
+                                        <th class="govuk-table__header">Qualification title</th>
+                                        <th class="govuk-table__header">Age group(s)</th>
                                     </tr>
                                 </thead>
                                 <tbody class="govuk-table__body">
                                     <tr class="govuk-table__row">
-                                        <td class="govuk-table__cell">No Results</td>
+                                        <td class="govuk-table__cell">No results</td>
                                         <td class="govuk-table__cell"></td>
                                         <td class="govuk-table__cell"></td>
                                     </tr>

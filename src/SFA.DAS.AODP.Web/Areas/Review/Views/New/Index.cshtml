@@ -5,7 +5,7 @@
 @using SFA.DAS.AODP.Web.Models.Qualifications
 @model SFA.DAS.AODP.Web.Models.Qualifications.NewQualificationsViewModel
 @{
-    ViewData["Title"] = "New Qualifications";
+    ViewData["Title"] = "New qualifications";
     var backLinkModel = BackLinkModelFactory.Dashboard();
 }
 @await Html.PartialAsync("_BackLinkPartial", backLinkModel)
@@ -17,7 +17,7 @@
     <div class="govuk-grid-column-full" id="guide-contents">
         <div class="govuk-grid-row">
             <div class="govuk-grid-column-full">
-                <h2 class="govuk-heading-l">New Qualifications</h2>
+                <h2 class="govuk-heading-l">New qualifications</h2>
                 <p class="govuk-body">Review and manage qualifications that have been newly regulated by Ofqual.</p>
                 <p class="govuk-body">You can filter results to view only what you need, and comment and assign actions in bulk, or individually.</p>
             </div>
@@ -40,7 +40,7 @@
                         <div class="govuk-grid-column-one-half">
                             <div class="govuk-form-group">
                                 <govuk-input for="@Model.Filter.QualificationName" value="@Html.Encode(Model.Filter.QualificationName)" inputmode="text" spellcheck="false" autocomplete="off">
-                                    <govuk-input-label is-page-heading="false" class="govuk-label--s">Qualification Title</govuk-input-label>
+                                    <govuk-input-label is-page-heading="false" class="govuk-label--s">Qualification title</govuk-input-label>
                                 </govuk-input>
                             </div>
                             <div class="govuk-form-group">
@@ -50,7 +50,7 @@
                             </div>
                             <div class="govuk-form-group">
                                 <govuk-input for="@Model.Filter.Organisation" value="@Html.Encode(Model.Filter.Organisation)" inputmode="text" spellcheck="false" autocomplete="off">
-                                    <govuk-input-label is-page-heading="false" class="govuk-label--s">Awarding Organisation</govuk-input-label>
+                                    <govuk-input-label is-page-heading="false" class="govuk-label--s">Awarding organisation</govuk-input-label>
                                 </govuk-input>
                             </div>
                         </div>
@@ -89,7 +89,7 @@
                                         <govuk-checkboxes-fieldset>
 
                                             <govuk-checkboxes-fieldset-legend is-page-heading="false" class="govuk-label--s">
-                                                <div class="govuk-label govuk-label--s">Age Groups</div>
+                                                <div class="govuk-label govuk-label--s">Age groups</div>
                                             </govuk-checkboxes-fieldset-legend>
 
                                             @Html.RenderPartialAsync("Validation/_CheckboxValidationPartial", nameof(Model.Filter.AgeGroups))
@@ -112,7 +112,7 @@
                     <div class="govuk-grid-row">
                         <div class="govuk-grid-column-full">
                             <govuk-select for="@Model.PaginationViewModel.RecordsPerPage">
-                                <govuk-select-label>Qualifications Per Page</govuk-select-label>
+                                <govuk-select-label>Qualifications per page</govuk-select-label>
                                 <govuk-select-item value="10" selected="true">10</govuk-select-item>
                                 <govuk-select-item value="20">20</govuk-select-item>
                                 <govuk-select-item value="50">50</govuk-select-item>
@@ -173,7 +173,7 @@
 
                         <div class="govuk-grid-row" id="New_Qual_Pagination_Header_Section">
                             <div class="govuk-grid-column-full">
-                                <p>Viewing @(Model.PaginationViewModel.StartRecord) - @(Model.PaginationViewModel.EndRecord) of @(Model.PaginationViewModel.TotalRecords) Qualifications</p>
+                                <p>Viewing @(Model.PaginationViewModel.StartRecord) - @(Model.PaginationViewModel.EndRecord) of @(Model.PaginationViewModel.TotalRecords) qualifications</p>
                             </div>
                         </div>
 
@@ -200,8 +200,8 @@
                                         <tr class="govuk-table__row">
                                             <partial name="~/Views/Shared/_SelectColumnHeader.cshtml" />
                                             <th class="govuk-table__header">QAN</th>
-                                            <th class="govuk-table__header">Qualification Title</th>
-                                            <th class="govuk-table__header">Age Group(s)</th>
+                                            <th class="govuk-table__header">Qualification title</th>
+                                            <th class="govuk-table__header">Age group(s)</th>
                                         </tr>
                                     </thead>
                                     <tbody class="govuk-table__body">
@@ -389,8 +389,8 @@
                             <thead class="govuk-table__head">
                                 <tr class="govuk-table__row">
                                     <th class="govuk-table__header">QAN</th>
-                                    <th class="govuk-table__header">Qualification Title</th>
-                                    <th class="govuk-table__header">Age Group</th>
+                                    <th class="govuk-table__header">Qualification title</th>
+                                    <th class="govuk-table__header">Age group</th>
                                 </tr>
                             </thead>
                             <tbody class="govuk-table__body">

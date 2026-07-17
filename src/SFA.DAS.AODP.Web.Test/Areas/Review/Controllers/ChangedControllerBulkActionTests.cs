@@ -427,7 +427,7 @@ public class ChangedControllerBulkActionTests
         Assert.Equal("Test qualification", failed.Title);
         Assert.Equal("Qualification not found.", failed.FailureReason);
 
-        Assert.Equal("Go back to Changed qualifications", errorModel.BackLinkText);
+        Assert.Equal("Go back to changed qualifications", errorModel.BackLinkText);
         Assert.Equal("/Review/Changed/Index?pageNumber=1&recordsPerPage=10", errorModel.BackLinkUrl);
     }
 
@@ -628,7 +628,7 @@ public class ChangedControllerBulkActionTests
                 FailureReason = "Qualification not found."
             }
         },
-            BackLinkText = "Go back to Changed qualifications",
+            BackLinkText = "Go back to changed qualifications",
             BackLinkUrl = "/Review/Changed/Index?pageNumber=1&recordsPerPage=10"
         };
 
@@ -643,7 +643,7 @@ public class ChangedControllerBulkActionTests
         Assert.Equal("12345678", model.Failed.Single().Qan);
         Assert.Equal("Test qualification", model.Failed.Single().Title);
         Assert.Equal("Qualification not found.", model.Failed.Single().FailureReason);
-        Assert.Equal("Go back to Changed qualifications", model.BackLinkText);
+        Assert.Equal("Go back to changed qualifications", model.BackLinkText);
         Assert.Equal("/Review/Changed/Index?pageNumber=1&recordsPerPage=10", model.BackLinkUrl);
     }
 

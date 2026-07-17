@@ -2,16 +2,16 @@
 @model CreateQuestionViewModel
 
 @{
-    ViewData["Title"] = "Create Question";
+    ViewData["Title"] = "Create question";
 }
 
 <a class="govuk-back-link" asp-action="Edit" asp-controller="Pages" asp-route-formVersionId="@Model.FormVersionId" asp-route-sectionId="@Model.SectionId" asp-route-pageId="@Model.PageId">
-    Back to Page
+    Back to page
 </a>
 
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
-<h1 class="govuk-heading-l">Create Question</h1>
+<h1 class="govuk-heading-l">Create question</h1>
 
 <form asp-controller="Questions" asp-action="Create" method="post">
 
