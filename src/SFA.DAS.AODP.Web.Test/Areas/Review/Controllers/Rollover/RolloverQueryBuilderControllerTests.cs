@@ -599,7 +599,7 @@ public class RolloverQueryBuilderControllerTests : RolloverControllerTestBase
             QueryBuilderFilters = filters ?? new QueryBuilderFilters()
         });
 
-    private static ISession CreateSession(AODP.Domain.Rollover.Rollover rollover)
+    private static TestSession CreateSession(AODP.Domain.Rollover.Rollover rollover)
     {
         var session = new TestSession();
         session.SetString("RolloverSession", System.Text.Json.JsonSerializer.Serialize(rollover));

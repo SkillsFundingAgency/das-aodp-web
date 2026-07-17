@@ -621,7 +621,7 @@ public class RolloverController : ControllerBase
 
                 candidates.AddRange(rolloverCandidates.RolloverCandidates.Where(o => candidateIds.Contains(o.Id)).Select(RolloverCandidateExtensions.MapFromRolloverCandidateResponse).ToList());
 
-                if (!candidates.Any())
+                if (candidates.Count is 0)
                 {
                     _logger.LogWarning("No candidates found");
                     return RedirectToAction(nameof(SelectCandidates));
