@@ -34,7 +34,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SFA.DAS.AODP.Application\SFA.DAS.AODP.Application.csproj" />
-    <ProjectReference Include="..\SFA.DAS.AODP.Web.Test\SFA.DAS.AODP.Web.UnitTests.csproj" />
   </ItemGroup>
 
   <ItemGroup>
