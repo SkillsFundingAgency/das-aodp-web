@@ -2,15 +2,27 @@
 
 public record CheckYourAnswersViewModel
 {
-    public IReadOnlyCollection<QualificationLevel> Levels { get; set; } = [];
+    private IReadOnlyCollection<SectorSubjectArea> _sectorSubjectAreas = new List<SectorSubjectArea>();
+    private IReadOnlyCollection<QualificationLevel> _levels = new List<QualificationLevel>();
+    private IReadOnlyCollection<QualificationType> _types = new List<QualificationType>();
 
-    public IReadOnlyCollection<QualificationType> Types { get; set; } = [];
+    public IReadOnlyCollection<QualificationLevel> Levels
+    {
+        get => GetQualificationLevels();
+        set => _levels = value;
+    }
+
+    public IReadOnlyCollection<QualificationType> Types
+    {
+        get => GetQualificationTypes();
+        set => _types = value;
+    }
 
     public IReadOnlyCollection<SectorSubjectArea> SectorSubjectAreas
     {
-        get => field.OrderBy(o => o.Name).ToList();
-        set;
-    } = [];
+        get => GetSectorSubjectAreas();
+        set => _sectorSubjectAreas = value;
+    }
 
     public IReadOnlyCollection<AwardingOrganisation> AwardingOrganisations
     {
@@ -52,4 +64,10 @@ public record CheckYourAnswersViewModel
 
         return operandA / operandB <= 0.5;
     }
+
+    private List<SectorSubjectArea> GetSectorSubjectAreas() => _sectorSubjectAreas.OrderBy(o => o.Name).ToList();
+
+    private List<QualificationLevel> GetQualificationLevels() => _levels.OrderBy(o => o.Name).ToList();
+
+    private List<QualificationType> GetQualificationTypes() => _types.OrderBy(o => o.Name).ToList();
 }
