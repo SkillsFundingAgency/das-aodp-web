@@ -1,6 +1,4 @@
-﻿using SFA.DAS.AODP.Web.Extensions;
-
-namespace SFA.DAS.AODP.Web.UnitTests.Extensions;
+﻿namespace SFA.DAS.AODP.Web.UnitTests.Extensions;
 
 public class DateTimeExtensionUnitTests : UnitTest
 {
