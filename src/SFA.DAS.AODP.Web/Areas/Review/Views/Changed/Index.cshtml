@@ -210,8 +210,9 @@
                                                 <th class="govuk-table__header">QAN</th>
                                                 <th class="govuk-table__header">Qualification title</th>
                                                 <th class="govuk-table__header">Changes</th>
+                                                <th class="govuk-table__header">Age group</th>
                                                 <th class="govuk-table__header">Eligibility status</th>
-                                                <th class="govuk-table__header">Priority / Status</th>
+                                                <th class="govuk-table__header">Priority / status</th>
                                             </tr>
                                         </thead>
                                         <tbody class="govuk-table__body">
@@ -246,6 +247,7 @@
                                                         </a>
                                                     </td>
                                                     <td class="govuk-table__cell">@qualification.KeyFieldsForDisplay</td>
+                                                    <td class="govuk-table__cell">@qualification.AgeGroup</td>
                                                     <td class="govuk-table__cell">@qualification.EligibilityStatus</td>
                                                     <td class="govuk-table__cell">@qualification.Priority/@qualification.CurrentProcessStatus.Name</td>
                                                 </tr>
@@ -411,12 +413,18 @@
                                     <tr class="govuk-table__row">
                                         <th class="govuk-table__header">QAN</th>
                                         <th class="govuk-table__header">Qualification title</th>
-                                        <th class="govuk-table__header">Age group(s)</th>
+                                        <th class="govuk-table__header">Changes</th>
+                                        <th class="govuk-table__header">Age group</th>
+                                        <th class="govuk-table__header">Eligibility status</th>
+                                        <th class="govuk-table__header">Priority / status</th>
                                     </tr>
                                 </thead>
                                 <tbody class="govuk-table__body">
                                     <tr class="govuk-table__row">
                                         <td class="govuk-table__cell">No results</td>
+                                        <td class="govuk-table__cell"></td>
+                                        <td class="govuk-table__cell"></td>
+                                        <td class="govuk-table__cell"></td>
                                         <td class="govuk-table__cell"></td>
                                         <td class="govuk-table__cell"></td>
                                     </tr>

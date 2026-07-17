@@ -200,9 +200,10 @@
                                         <tr class="govuk-table__row">
                                             <partial name="~/Views/Shared/_SelectColumnHeader.cshtml" />
                                             <th class="govuk-table__header">QAN</th>
-                                            <th class="govuk-table__header">Qualification Title</th>
+                                            <th class="govuk-table__header">Qualification title</th>
+                                            <th class="govuk-table__header">Age group</th>
                                             <th class="govuk-table__header">Eligibility status</th>
-                                            <th class="govuk-table__header">Age Group(s)</th>
+                                            <th class="govuk-table__header">Priority / status</th>
                                         </tr>
                                     </thead>
                                     <tbody class="govuk-table__body">
@@ -232,8 +233,9 @@
                                                         @qualification.Title
                                                     </a>
                                                 </td>
-                                                <td class="govuk-table__cell">@qualification.EligibilityStatus</td>
                                                 <td class="govuk-table__cell">@qualification.AgeGroup</td>
+                                                <td class="govuk-table__cell">@qualification.EligibilityStatus</td>
+                                                <td class="govuk-table__cell">@qualification.Status</td>
                                             </tr>
                                         }
                                     </tbody>
@@ -393,11 +395,15 @@
                                     <th class="govuk-table__header">QAN</th>
                                     <th class="govuk-table__header">Qualification title</th>
                                     <th class="govuk-table__header">Age group</th>
+                                    <th class="govuk-table__header">Eligibility status</th>
+                                    <th class="govuk-table__header">Priority / status</th>
                                 </tr>
                             </thead>
                             <tbody class="govuk-table__body">
                                 <tr class="govuk-table__row">
                                     <td class="govuk-table__cell">No qualifications match your search criteria</td>
+                                    <td class="govuk-table__cell"></td>
+                                    <td class="govuk-table__cell"></td>
                                     <td class="govuk-table__cell"></td>
                                     <td class="govuk-table__cell"></td>
                                 </tr>
