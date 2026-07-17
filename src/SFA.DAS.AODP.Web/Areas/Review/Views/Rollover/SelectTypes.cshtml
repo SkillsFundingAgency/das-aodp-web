@@ -1,0 +1,53 @@
+﻿@using SFA.DAS.AODP.Web.Areas.Review.Controllers
+@using SFA.DAS.AODP.Web.Views.Shared
+@model SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.SelectQualificationTypesViewModel
+@{
+    ViewData["Title"] = "Select type(s)";
+    var backLinkModel = new BackLinkModel
+    {
+        Action = "SelectLevels",
+        Controller = nameof(RolloverController),
+        Area = "Review"
+    };
+
+    var hasGroupError = ViewData.ModelState.ContainsKey("Types");
+}
+
+@await Html.PartialAsync("_BackLinkPartial", backLinkModel)
+
+<form asp-controller="Rollover" asp-action="SelectTypes" method="post">
+    
+    @await Html.PartialAsync("_ValidationSummaryPartial")
+
+    <form-group asp-for="@Model.SelectedTypes">
+
+        <fieldset class="govuk-fieldset" aria-describedby="types-hint @(hasGroupError ? "types-error" : "")">
+            
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+                <h1 class="govuk-fieldset__heading">
+                    @ViewData["Title"]
+                </h1>
+            </legend>
+            
+            @if (ViewData.ModelState.ContainsKey(nameof(Model.SelectedTypes)))
+            {
+                <p id="types-error" class="govuk-error-message">
+                    <span class="govuk-visually-hidden">Error:</span>@ViewData.ModelState[nameof(Model.SelectedTypes)]?.Errors.First().ErrorMessage
+                </p>
+            }
+
+            <div id="types-hint" class="govuk-hint">
+                Select all that apply
+            </div>
+
+            <button type="submit" name="action" value="selectAll" class="govuk-button govuk-button--secondary">
+                Select all
+            </button>
+            
+            <checkboxes asp-for="@Model.SelectedTypes" items="@Model.Types"></checkboxes>
+
+        </fieldset>
+    </form-group>
+
+    <govuk-button>Continue</govuk-button>
+</form>

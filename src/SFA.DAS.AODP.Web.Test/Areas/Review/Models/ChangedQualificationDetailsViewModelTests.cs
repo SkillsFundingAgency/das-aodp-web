@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Models.Qualifications;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 
@@ -79,7 +80,7 @@ public class ChangedQualificationDetailsViewModelTests
                 Id = entity.Stage.Id,
                 Name = entity.Stage.Name
             },
-            Organisation = new ChangedQualificationDetailsViewModel.AwardingOrganisation
+            Organisation = new AwardingOrganisation
             {
                 Id = entity.Organisation.Id,
                 Ukprn = entity.Organisation.Ukprn,
@@ -161,7 +162,7 @@ public class ChangedQualificationDetailsViewModelTests
                         Id = i.Stage.Id,
                         Name = i.Stage.Name
                     },
-                    Organisation = new ChangedQualificationDetailsViewModel.AwardingOrganisation
+                    Organisation = new AwardingOrganisation
                     {
                         Id = i.Organisation.Id,
                         Ukprn = i.Organisation.Ukprn,
@@ -581,7 +582,7 @@ public class ChangedQualificationDetailsViewModelTests
                 Id = lifecycleStageId,
                 Name = "Completed"
             },
-            Organisation = new GetQualificationDetailsQueryResponse.AwardingOrganisation
+            Organisation = new AwardingOrganisation
             {
                 Id = awardingOrganisationId,
                 Ukprn = 12345678,
@@ -683,7 +684,7 @@ public class ChangedQualificationDetailsViewModelTests
                 Id = lifecycleStageId,
                 Name = "In progress"
             },
-            Organisation = new GetQualificationDetailsQueryResponse.AwardingOrganisation
+            Organisation = new AwardingOrganisation
             {
                 Id = awardingOrganisationId,
                 Ukprn = 87654321,

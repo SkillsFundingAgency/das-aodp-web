@@ -1,4 +1,6 @@
-﻿using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
+﻿using MediatR;
+using SFA.DAS.AODP.Application.Behaviours;
+using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Domain.Interfaces;
 using SFA.DAS.AODP.Infrastructure.ApiClient;
 using SFA.DAS.AODP.Infrastructure.Extensions;
@@ -19,6 +21,7 @@ public static class AddServiceRegistrationsExtension
         services.AddSingleton(configuration);
 
         services.AddMediatR(configuration => configuration.RegisterServicesFromAssembly(typeof(GetFormVersionByIdQuery).Assembly));
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(MediatrExceptionHandlingBehaviour<,>));
 
         services.AddHttpClient<IApiClient, ApiClient>();
 

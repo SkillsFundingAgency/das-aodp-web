@@ -5,11 +5,11 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Extensions
 {
     public static class RolloverCandidateExtensions
     {
-        public static List<FundingStream> ToFundingStreams(List<QualificationCandidate> candidates)
+        public static List<FundingStreamDto> ToFundingStreams(List<QualificationCandidate> candidates)
         {
             return candidates
                 .GroupBy(c => c.FundingOfferId)
-                .Select(g => new FundingStream
+                .Select(g => new FundingStreamDto
                 {
                     Id = g.First().FundingOfferId!,
                     Name = g.First().FundingOfferName!
@@ -45,5 +45,16 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Extensions
 
             return list;
         }
+
+        public static QualificationCandidate MapFromRolloverCandidateResponse(RolloverCandidate candidate) =>
+            new()
+            {
+                QualificationNumber = candidate.QualificationNumber,
+                FundingOfferId = candidate.FundingOfferId,
+                FundingOfferName = candidate.FundingOfferName,
+                AcademicYear = candidate.AcademicYear,
+                RolloverCandidateId = candidate.Id,
+                QualificationVersionId = candidate.QualificationVersionId
+            };
     }
 }

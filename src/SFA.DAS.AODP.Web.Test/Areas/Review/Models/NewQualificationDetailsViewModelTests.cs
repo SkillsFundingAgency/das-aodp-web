@@ -1,5 +1,6 @@
 ﻿using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Web.Models.Qualifications;
+using SFA.DAS.AODP.Models.Qualifications;
 
 namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Models;
 
@@ -74,7 +75,7 @@ public class NewQualificationDetailsViewModelTests
                 Id = Guid.NewGuid(),
                 Name = "Completed"
             },
-            Organisation = new GetQualificationDetailsQueryResponse.AwardingOrganisation
+            Organisation = new AwardingOrganisation
             {
                 Id = Guid.NewGuid(),
                 Ukprn = 61054789,

@@ -1,5 +1,5 @@
 ﻿using Moq;
-using SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
+using SFA.DAS.AODP.Domain.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 
 namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Domain.Rollover;
@@ -15,7 +15,7 @@ public class RolloverStartTests
             SelectedProcess = RolloverProcess.FinalUpload
         };
 
-        var session = new Web.Areas.Review.Domain.Rollover.Rollover
+        var session = new AODP.Domain.Rollover.Rollover
         {
             Start = new RolloverStart()
         };
@@ -23,7 +23,7 @@ public class RolloverStartTests
         var sut = new RolloverStart();
 
         // act
-        var returned = sut.SetStart(session, model);
+        var returned = sut.SetStart(session, model.SelectedProcess);
 
         // assert
         Assert.Same(session, returned);
@@ -39,7 +39,7 @@ public class RolloverStartTests
             SelectedProcess = null
         };
 
-        var session = new Web.Areas.Review.Domain.Rollover.Rollover
+        var session = new AODP.Domain.Rollover.Rollover
         {
             Start = new RolloverStart { SelectedProcess = RolloverProcess.InitialSelection }
         };
@@ -47,7 +47,7 @@ public class RolloverStartTests
         var sut = new RolloverStart();
 
         // act
-        var returned = sut.SetStart(session, model);
+        var returned = sut.SetStart(session, model.SelectedProcess);
 
         // assert
         Assert.Same(session, returned);
@@ -66,7 +66,7 @@ public class RolloverStartTests
         var sut = new RolloverStart();
 
         // act & assert
-        Assert.Throws<NullReferenceException>(() => sut.SetStart(null!, model));
+        Assert.Throws<NullReferenceException>(() => sut.SetStart(null!, model.SelectedProcess));
     }
 
     [Fact]
@@ -78,7 +78,7 @@ public class RolloverStartTests
             SelectedProcess = RolloverProcess.InitialSelection
         };
 
-        var session = new Web.Areas.Review.Domain.Rollover.Rollover
+        var session = new AODP.Domain.Rollover.Rollover
         {
             Start = null
         };
@@ -86,16 +86,16 @@ public class RolloverStartTests
         var sut = new RolloverStart();
 
         // act & assert
-        Assert.Throws<NullReferenceException>(() => sut.SetStart(session, model));
+        Assert.Throws<NullReferenceException>(() => sut.SetStart(session, model.SelectedProcess));
     }
 
     [Fact]
     public void SetStart_NullModel_ThrowsNullReferenceException()
     {
         // demonstrate Moq usage while keeping test deterministic
-        var sessionMock = new Mock<Web.Areas.Review.Domain.Rollover.Rollover>();
+        var sessionMock = new Mock<AODP.Domain.Rollover.Rollover>();
         sessionMock.SetupAllProperties();
-        sessionMock.Object.Start = new RolloverStart();
+        sessionMock.Object.Start = null;
 
         var sut = new RolloverStart();
 

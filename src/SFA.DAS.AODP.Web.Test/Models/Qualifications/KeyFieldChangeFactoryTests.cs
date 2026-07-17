@@ -1,5 +1,7 @@
+using SFA.DAS.AODP.Models.Qualifications;
 using SFA.DAS.AODP.Web.Extensions;
 using SFA.DAS.AODP.Web.Models.Qualifications;
+using UnitTest = SFA.DAS.AODP.UnitTests.Helper.Testing.UnitTest;
 
 namespace SFA.DAS.AODP.Web.UnitTests.Models.Qualifications;
 
@@ -30,12 +32,12 @@ public class KeyFieldChangeFactoryTests : UnitTest
         // Arrange
         var previous = new ChangedQualificationDetailsViewModel
         {
-            Organisation = new ChangedQualificationDetailsViewModel.AwardingOrganisation { NameOfqual = "PrevOrg" }
+            Organisation = new AwardingOrganisation { NameOfqual = "PrevOrg" }
         };
 
         var latest = new ChangedQualificationDetailsViewModel
         {
-            Organisation = new ChangedQualificationDetailsViewModel.AwardingOrganisation { NameOfqual = "NewOrg" }
+            Organisation = new AwardingOrganisation { NameOfqual = "NewOrg" }
         };
 
         // Act
@@ -91,12 +93,12 @@ public class KeyFieldChangeFactoryTests : UnitTest
         // Arrange
         var previous = new ChangedQualificationDetailsViewModel
         {
-            Organisation = new ChangedQualificationDetailsViewModel.AwardingOrganisation { NameOfqual = "PrevOrg" }
+            Organisation = new AwardingOrganisation { NameOfqual = "PrevOrg" }
         };
 
         var latest = new ChangedQualificationDetailsViewModel
         {
-            Organisation = new ChangedQualificationDetailsViewModel.AwardingOrganisation { NameOfqual = "NewOrg" }
+            Organisation = new AwardingOrganisation { NameOfqual = "NewOrg" }
         };
 
         // Act & Assert

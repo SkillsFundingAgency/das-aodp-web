@@ -10,6 +10,8 @@ using SFA.DAS.AODP.Application.Commands.Qualification;
 using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Domain.Qualifications.Requests;
+using SFA.DAS.AODP.Domain.Rollover;
+using SFA.DAS.AODP.Models.Qualifications;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Helpers.User;
@@ -457,7 +459,7 @@ public class NewControllerTests
                 Id = Guid.NewGuid(),
                 Name = DraftStage
             },
-            Organisation = new GetQualificationDetailsQueryResponse.AwardingOrganisation
+            Organisation = new AwardingOrganisation
             {
                 Id = Guid.NewGuid(),
                 NameOfqual = AwardingOrganisation
@@ -581,7 +583,7 @@ public class NewControllerTests
                 Id = Guid.NewGuid(),
                 Name = DraftStage
             },
-            Organisation = new GetQualificationDetailsQueryResponse.AwardingOrganisation
+            Organisation = new AwardingOrganisation
             {
                 Id = Guid.NewGuid(),
                 NameOfqual = AwardingOrganisation
@@ -754,7 +756,7 @@ public class NewControllerTests
                 Notes = "A note",
                 UserDisplayName = "Test User",
                 Timestamp = DateTime.UtcNow,
-                ActionType = new ActionType
+                ActionType = new GetDiscussionHistoriesForQualificationQueryResponse.ActionType
                 {
                     Id = Guid.NewGuid(),
                     Description = "Changed"

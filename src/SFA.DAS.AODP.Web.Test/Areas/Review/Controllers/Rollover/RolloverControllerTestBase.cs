@@ -1,4 +1,6 @@
-﻿using FluentValidation;
+﻿using System.Text;
+using System.Text.Json;
+using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -36,7 +38,6 @@ public abstract class RolloverControllerTestBase
 
         var httpContext = new DefaultHttpContext();
         httpContext.Session = session;
-
         controller.ControllerContext = new ControllerContext
         {
             HttpContext = httpContext
@@ -49,7 +50,15 @@ public abstract class RolloverControllerTestBase
         return controller;
     }
 
-    protected static ISession CreateEmptySession() => new TestSession();
+    protected static ISession CreateEmptySession()
+    {
+        var session = new TestSession();
+        session.Set("RolloverSession",
+            Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new AODP.Domain.Rollover.Rollover())));
+
+        return session;
+    }
+
     protected static ISession CreateThrowingSessionOnGet() => new ThrowingSession(throwOnGet: true, throwOnSet: false);
     protected static ISession CreateThrowingSessionOnSet() => new ThrowingSession(throwOnGet: false, throwOnSet: true);
 }

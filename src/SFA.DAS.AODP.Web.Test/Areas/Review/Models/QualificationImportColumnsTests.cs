@@ -1,4 +1,5 @@
-﻿using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
+﻿using SFA.DAS.AODP.Domain.Rollover;
+using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 
 namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Models
 {

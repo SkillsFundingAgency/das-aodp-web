@@ -25,14 +25,14 @@
 
 @await Html.PartialAsync("_BackLinkPartial", backLinkModel)
 
-<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+<partial name="~/Views/Shared/_ValidationSummaryPartial.cshtml"/>
 
 <h1 class="govuk-heading-l">@ViewData["Title"]</h1>
 
 <form asp-area="Review" asp-controller="Rollover" asp-action="EnterRolloverEligibilityDates" method="post" novalidate="novalidate">
 
     <!-- Funding End Date -->
-    <div class="govuk-form-group" @(fundingEndDateGroupError || operationalEndDateGroupError ? "govuk-form-group--error" : "")">
+    <div class="govuk-form-group @(fundingEndDateGroupError ? "govuk-form-group--error" : "")">
         <fieldset class="govuk-fieldset" role="group" aria-describedby="funding-end-date-hint">
             <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
                 <h2 class="govuk-fieldset__heading">Funding end date eligibility threshold</h2>
@@ -92,7 +92,7 @@
     </div>
 
     <!-- Operational End Date -->
-    <div class="govuk-form-group">
+    <div class="govuk-form-group @(operationalEndDateGroupError ? "govuk-form-group--error" : "")">
         <fieldset class="govuk-fieldset" role="group" aria-describedby="operational-end-date-hint">
             <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
                 <h2 class="govuk-fieldset__heading">Operational end date eligibility threshold</h2>

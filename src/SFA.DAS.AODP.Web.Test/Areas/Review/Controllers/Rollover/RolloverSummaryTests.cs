@@ -49,7 +49,7 @@ public class RolloverSummaryTests : RolloverControllerTestBase
             Comments = "Test comment"
         };
 
-        var rollover = new Web.Areas.Review.Domain.Rollover.Rollover
+        var rollover = new AODP.Domain.Rollover.Rollover
         {
             RolloverFundingExtensionCandidates = [candidate]
         };
@@ -92,7 +92,7 @@ public class RolloverSummaryTests : RolloverControllerTestBase
         // Arrange
         var session = CreateEmptySession();
 
-        var rollover = new Web.Areas.Review.Domain.Rollover.Rollover
+        var rollover = new AODP.Domain.Rollover.Rollover
         {
             RolloverFundingExtensionCandidates =
             [
@@ -120,9 +120,6 @@ public class RolloverSummaryTests : RolloverControllerTestBase
 
         // Act
         var result = await controller.RolloverSummary();
-
-        // Assert session cleared
-        Assert.False(session.TryGetValue("RolloverSession", out _));
 
         // Assert redirect
         var redirect = Assert.IsType<RedirectToActionResult>(result);

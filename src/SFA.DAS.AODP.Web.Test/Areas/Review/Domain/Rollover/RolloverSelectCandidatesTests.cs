@@ -1,5 +1,5 @@
 ﻿using Moq;
-using SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
+using SFA.DAS.AODP.Domain.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 
 namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Domain.Rollover;
@@ -16,7 +16,7 @@ public class RolloverSelectCandidatesTests
             ReturnUrl = "/return"
         };
 
-        var sessionMock = new Mock<Web.Areas.Review.Domain.Rollover.Rollover>();
+        var sessionMock = new Mock<AODP.Domain.Rollover.Rollover>();
         sessionMock.SetupAllProperties();
         sessionMock.Object.SelectCandidates = new RolloverSelectCandidates
         {
@@ -27,7 +27,7 @@ public class RolloverSelectCandidatesTests
         var sut = new RolloverSelectCandidates();
 
         // act
-        var returned = sut.SetSelectCandidates(sessionMock.Object, model);
+        var returned = sut.SetSelectCandidates(sessionMock.Object, model.SelectedOption, model.ReturnUrl);
 
         // assert
         Assert.Same(sessionMock.Object, returned);
@@ -46,7 +46,7 @@ public class RolloverSelectCandidatesTests
             ReturnUrl = null
         };
 
-        var sessionMock = new Mock<Web.Areas.Review.Domain.Rollover.Rollover>();
+        var sessionMock = new Mock<AODP.Domain.Rollover.Rollover>();
         sessionMock.SetupAllProperties();
         sessionMock.Object.SelectCandidates = new RolloverSelectCandidates
         {
@@ -57,7 +57,7 @@ public class RolloverSelectCandidatesTests
         var sut = new RolloverSelectCandidates();
 
         // act
-        var returned = sut.SetSelectCandidates(sessionMock.Object, model);
+        var returned = sut.SetSelectCandidates(sessionMock.Object, model.SelectedOption, model.ReturnUrl);
 
         // assert
         Assert.Same(sessionMock.Object, returned);
@@ -78,7 +78,7 @@ public class RolloverSelectCandidatesTests
         var sut = new RolloverSelectCandidates();
 
         // act & assert
-        Assert.Throws<NullReferenceException>(() => sut.SetSelectCandidates(null!, model));
+        Assert.Throws<NullReferenceException>(() => sut.SetSelectCandidates(null!, model.SelectedOption, model.ReturnUrl));
     }
 
     [Fact]
@@ -91,24 +91,24 @@ public class RolloverSelectCandidatesTests
             ReturnUrl = "/return"
         };
 
-        var session = new Web.Areas.Review.Domain.Rollover.Rollover();
+        var session = new AODP.Domain.Rollover.Rollover();
         var sut = new RolloverSelectCandidates();
 
         // act & assert
-        Assert.Throws<NullReferenceException>(() => sut.SetSelectCandidates(session, model));
+        Assert.Throws<NullReferenceException>(() => sut.SetSelectCandidates(session, model.SelectedOption, model.ReturnUrl));
     }
 
     [Fact]
     public void SetSelectCandidates_NullModel_ThrowsNullReferenceException()
     {
         // arrange
-        var sessionMock = new Mock<Web.Areas.Review.Domain.Rollover.Rollover>();
+        var sessionMock = new Mock<AODP.Domain.Rollover.Rollover>();
         sessionMock.SetupAllProperties();
-        sessionMock.Object.SelectCandidates = new RolloverSelectCandidates();
+        sessionMock.Object.SelectCandidates = null;
 
         var sut = new RolloverSelectCandidates();
 
         // act & assert
-        Assert.Throws<NullReferenceException>(() => sut.SetSelectCandidates(sessionMock.Object, null!));
+        Assert.Throws<NullReferenceException>(() => sut.SetSelectCandidates(sessionMock.Object, null!, null!));
     }
 }

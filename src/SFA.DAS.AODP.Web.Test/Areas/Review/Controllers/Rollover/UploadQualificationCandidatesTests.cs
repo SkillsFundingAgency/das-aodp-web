@@ -4,7 +4,7 @@ using Moq;
 using Newtonsoft.Json;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Queries.Review.Rollover;
-using SFA.DAS.AODP.Web.Areas.Review.Domain.Rollover;
+using SFA.DAS.AODP.Domain.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 using SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers.Rollover;
@@ -180,7 +180,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
 
             Assert.True(session.TryGetValue("RolloverSession", out var bytes));
             var json = System.Text.Encoding.UTF8.GetString(bytes);
-            var saved = JsonConvert.DeserializeObject<Web.Areas.Review.Domain.Rollover.Rollover>(json);
+            var saved = JsonConvert.DeserializeObject<AODP.Domain.Rollover.Rollover>(json);
 
             Assert.NotNull(saved);
             Assert.NotEmpty(saved.RolloverCandidates);
