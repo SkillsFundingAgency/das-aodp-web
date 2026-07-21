@@ -2,13 +2,11 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using SFA.DAS.AODP.Application.Commands.Qualification;
 using SFA.DAS.AODP.Application.Commands.Qualifications;
 using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Models.Qualifications;
-using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Extensions;
@@ -16,6 +14,7 @@ using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Mappers;
 using SFA.DAS.AODP.Web.Models.BulkActions;
 using SFA.DAS.AODP.Web.Models.Qualifications;
+using SFA.DAS.AODP.Web.Models.Session;
 using System.Globalization;
 using System.Text.Json;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
@@ -46,16 +45,27 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
         [Route("/Review/New/Index")]
         public async Task<IActionResult> Index(
-            [FromQuery]QualificationQuery qualificationQuery,
+            int? pageNumber,
             bool selectAll = false)
         {
             try
             {
-                CheckInvalidParameters(qualificationQuery);
+                var sessionModel = HttpContext.Session.GetObject<QualificationFilterSessionModel>("NewQualificationFilters") ?? new QualificationFilterSessionModel();
+
+                if (pageNumber.HasValue)
+                {
+                    sessionModel.PageNumber = pageNumber.Value;
+                }
+
+                HttpContext.Session.SetObject("NewQualificationFilters", sessionModel);
+
+                var qualificationQuery = BuildQualificationQuery(sessionModel);
 
                 var viewModel = await BuildIndexViewModelAsync(
                     qualificationQuery,
                     selectAll);
+
+                CheckInvalidParameters(qualificationQuery, viewModel.PaginationViewModel.TotalPages);
 
                 ShowNotificationIfKeyExists(
                     BulkActionQualifications.SuccessKey,
@@ -77,16 +87,20 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         {
             try
             {
-                return RedirectToAction(nameof(Index), new
+                var sessionModel = new QualificationFilterSessionModel
                 {
-                    pageNumber = 1,
-                    recordsPerPage = viewModel.PaginationViewModel.RecordsPerPage,
-                    name = viewModel.Filter.QualificationName,
-                    organisation = viewModel.Filter.Organisation,
-                    qan = viewModel.Filter.QAN,
-                    processStatusIds = viewModel.Filter.ProcessStatusIds,
-                    ageGroups = viewModel.Filter.AgeGroups,
-                });
+                    QualificationName = viewModel.Filter.QualificationName,
+                    Organisation = viewModel.Filter.Organisation,
+                    QAN = viewModel.Filter.QAN,
+                    ProcessStatusIds = viewModel.Filter.ProcessStatusIds,
+                    AgeGroups = viewModel.Filter.AgeGroups,
+                    PageNumber = 1, // reset page number on new search
+                    RecordsPerPage = viewModel.PaginationViewModel.RecordsPerPage
+                };
+
+                HttpContext.Session.SetObject("NewQualificationFilters", sessionModel);
+
+                return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
             {
@@ -101,6 +115,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         {
             try
             {
+                HttpContext.Session.Remove("NewQualificationFilters");
+
                 if (ModelState.IsValid)
                 {
                     return RedirectToAction(nameof(Index), new
@@ -121,29 +137,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
         }
 
-        [HttpGet]
-        [Route("/Review/New/ChangePage")]
-        public async Task<IActionResult> ChangePage([FromQuery]QualificationQuery qualificationQuery, int newPage = 1)
-        {
-            try
-            {
-                if (ModelState.IsValid)
-                {
-                    return RedirectToAction(
-                        nameof(Index), 
-                        qualificationQuery.ToRouteValues(pageNumberOverride: newPage));
-                }
-                else
-                {
-                    return View("Index");
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-                return View("Index");
-            }
-        }
 
         [Route("/Review/New/QualificationDetails")]
         public async Task<IActionResult> QualificationDetails([FromQuery] string qualificationReference, [FromQuery] string? returnTo = null)
@@ -291,12 +284,12 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
             if (!ModelState.IsValid)
             {
-                CheckInvalidParameters(qualificationQuery);
-
                 var viewModel = await BuildIndexViewModelAsync(
                     qualificationQuery,
                     selectAll: false,
                     postedModel: model);
+
+                CheckInvalidParameters(qualificationQuery, viewModel.PaginationViewModel.TotalPages);
 
                 return View("Index", viewModel);
             }
@@ -361,15 +354,20 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             return View(model);
         }
 
-        private void CheckInvalidParameters(QualificationQuery qualificationQuery)
+        private void CheckInvalidParameters(QualificationQuery qualificationQuery, int maxPageNumber)
         {
-            if ((qualificationQuery.RecordsPerPage != 10 && qualificationQuery.RecordsPerPage != 20 && qualificationQuery.RecordsPerPage != 50) || qualificationQuery.PageNumber < 0)
+            bool invalidPageSize = qualificationQuery.RecordsPerPage is not (10 or 20 or 50);
+            bool invalidPageNumber = qualificationQuery.PageNumber < 1 || qualificationQuery.PageNumber > maxPageNumber;
+
+            if (invalidPageSize || invalidPageNumber)
             {
-                ShowNotificationIfKeyExists(NewQualDataKeys.InvalidPageParams.ToString(),
+                ShowNotificationIfKeyExists(
+                    NewQualDataKeys.InvalidPageParams.ToString(),
                     ViewNotificationMessageType.Error,
                     "Invalid parameters.");
             }
         }
+
 
         private bool CheckUserIsAbleToSetStatus(NewQualificationDetailsViewModel model, Guid procStatusId)
         {
@@ -420,16 +418,18 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
             if (qualificationQuery.PageNumber > 0)
             {
-                var query = qualificationQuery.ToGetNewQualificationsQuery();   
+                var query = qualificationQuery.ToGetNewQualificationsQuery();
                 var response = await Send(query);
                 vm = NewQualificationsViewModel.Map(
-                    response, 
-                    statuses, 
+                    response,
+                    statuses,
                     qualificationQuery);
 
                 if (selectAll)
                 {
-                    vm.SelectedQualificationIds = vm.NewQualifications.Select(q => q.QualificationId).ToList();
+                    vm.SelectedQualificationIds = vm.NewQualifications
+                        .Select(q => q.QualificationId)
+                        .ToList();
                 }
             }
             else
@@ -437,10 +437,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 vm = new NewQualificationsViewModel();
             }
 
-            vm.Filter = qualificationQuery.ToQualificationFilterViewModel();
-
             vm.ProcessStatuses = [.. statuses];
-
             vm.SetBulkActionStatusOptions(statuses.Select(s => (s.Id, s.Name ?? "")));
 
             if (postedModel != null)
@@ -450,6 +447,25 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             }
 
             return vm;
+        }
+
+        private QualificationQuery BuildQualificationQuery(QualificationFilterSessionModel sessionModel)
+        {
+            if (sessionModel == null)
+            {
+                return new QualificationQuery();
+            }
+
+            return new QualificationQuery
+            {
+                Name = sessionModel.QualificationName,
+                Organisation = sessionModel.Organisation,
+                Qan = sessionModel.QAN,
+                ProcessStatusIds = sessionModel.ProcessStatusIds,
+                AgeGroups = sessionModel.AgeGroups,
+                PageNumber = sessionModel.PageNumber,
+                RecordsPerPage = sessionModel.RecordsPerPage
+            };
         }
 
         private class CsvExportResult

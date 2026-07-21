@@ -1,8 +1,8 @@
 ﻿using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Domain.Qualifications.Requests;
-using SFA.DAS.AODP.Models.Qualifications;
 using SFA.DAS.AODP.Web.Extensions;
 using SFA.DAS.AODP.Web.Models.BulkActions;
+using SFA.DAS.AODP.Web.Models.GdsComponents;
 
 namespace SFA.DAS.AODP.Web.Models.Qualifications
 {
@@ -20,7 +20,13 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
 
         public List<NewQualificationViewModel> NewQualifications { get; set; }
 
+        // Business‑logic pagination:
+        // Calculates current page, total pages, start/end record numbers.
         public PaginationViewModel PaginationViewModel { get; set; }
+
+        // UI pagination model for the GOV.UK component:
+        // Builds pagination URLs for the GOV.UK component.
+        public PaginationModel GdsPagination { get; set; } = new PaginationModel();
 
         public JobStatusViewModel JobStatusViewModel { get; set; }
         public List<ProcessStatus> ProcessStatuses { get; set; } = new List<ProcessStatus>();
@@ -52,19 +58,21 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
         }
 
         public static NewQualificationsViewModel Map(
-            GetNewQualificationsQueryResponse response, 
+            GetNewQualificationsQueryResponse response,
             List<GetProcessStatusesQueryResponse.ProcessStatus> processStatuses,
             QualificationQuery qualificationQuery)
         {
             var viewModel = new NewQualificationsViewModel();
+
             viewModel.PaginationViewModel = new PaginationViewModel(response.TotalRecords, response.Skip, response.Take);
+
             viewModel.NewQualifications = response.Data.Select(s => new NewQualificationViewModel()
             {
                 QualificationId = s.QualificationId,
                 AwardingOrganisation = s.AwardingOrganisation,
                 Reference = s.Reference,
                 Status = s.Status,
-                Title = s.Title,                
+                Title = s.Title,
                 AgeGroup = s.AgeGroup
             }).ToList();
             viewModel.Filter = qualificationQuery.ToQualificationFilterViewModel();
@@ -80,6 +88,16 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
                 Name = v.Name,
                 IsOutcomeDecision = v.IsOutcomeDecision,
             }).ToList();
+
+            viewModel.GdsPagination = new PaginationModel()
+            {
+                CurrentPage = viewModel.PaginationViewModel.CurrentPage,
+                MaxPageNumber = viewModel.PaginationViewModel.TotalPages,
+                ActionName = "Index",
+                ControllerName = "New",
+                Area = "Review"
+
+            };
 
             return viewModel;
         }
