@@ -8,6 +8,7 @@
         Pldns,
         DefundingList,
         ApprovedFunding,
-        ArchivedFunding
+        ArchivedFunding,
+        FundingOutput
     }
 }
