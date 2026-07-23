@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Routing;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Filters;
+using System.Security.Claims;
 
 namespace SFA.DAS.AODP.Web.UnitTests.Filters
 {
@@ -15,13 +16,23 @@ namespace SFA.DAS.AODP.Web.UnitTests.Filters
         private static ActionExecutingContext CreateActionExecutingContext(
             string? area,
             string? controller,
-            bool hasConsentCookie = false)
+            bool hasConsentCookie = false,
+            bool isAoUser = false)
         {
             var httpContext = new DefaultHttpContext();
 
+            if (isAoUser)
+            {
+                httpContext.User = new ClaimsPrincipal(new ClaimsIdentity(new[]
+                {
+                    new Claim("rolecode", "ao_user"),
+                    new Claim("email", "ao.user@test.com")
+                }, "test"));
+            }
+
             if (hasConsentCookie)
             {
-                httpContext.Request.Headers.Cookie = $"{ConsentController.ConsentCookieName}=true";
+                httpContext.Request.Headers.Cookie = $"{ConsentController.GetConsentCookieName(httpContext)}=true";
             }
 
             var routeData = new RouteData();
@@ -49,9 +60,9 @@ namespace SFA.DAS.AODP.Web.UnitTests.Filters
         }
 
         [Fact]
-        public void OnActionExecuting_DoesNothing_WhenAreaIsNotReview()
+        public void OnActionExecuting_DoesNothing_WhenAreaIsNotReviewOrApply()
         {
-            var context = CreateActionExecutingContext("Apply", "Applications");
+            var context = CreateActionExecutingContext("Admin", "Import");
 
             _filter.OnActionExecuting(context);
 
@@ -61,7 +72,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Filters
         [Fact]
         public void OnActionExecuting_DoesNothing_WhenControllerIsConsent()
         {
-            var context = CreateActionExecutingContext("Review", "Consent");
+            var context = CreateActionExecutingContext("Review", "Consent", isAoUser: true);
 
             _filter.OnActionExecuting(context);
 
@@ -71,7 +82,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Filters
         [Fact]
         public void OnActionExecuting_DoesNothing_WhenConsentCookieExists()
         {
-            var context = CreateActionExecutingContext("Review", "Home", hasConsentCookie: true);
+            var context = CreateActionExecutingContext("Review", "Home", hasConsentCookie: true, isAoUser: true);
 
             _filter.OnActionExecuting(context);
 
@@ -79,9 +90,19 @@ namespace SFA.DAS.AODP.Web.UnitTests.Filters
         }
 
         [Fact]
-        public void OnActionExecuting_RedirectsToConsent_WhenReviewAreaAndConsentCookieIsMissing()
+        public void OnActionExecuting_DoesNothing_WhenReviewAreaAndUserIsNotAo()
         {
             var context = CreateActionExecutingContext("Review", "Home");
+
+            _filter.OnActionExecuting(context);
+
+            Assert.Null(context.Result);
+        }
+
+        [Fact]
+        public void OnActionExecuting_RedirectsToConsent_WhenReviewAreaAoUserAndConsentCookieIsMissing()
+        {
+            var context = CreateActionExecutingContext("Review", "Home", isAoUser: true);
 
             _filter.OnActionExecuting(context);
 
@@ -96,6 +117,23 @@ namespace SFA.DAS.AODP.Web.UnitTests.Filters
             });
         }
 
+        [Fact]
+        public void OnActionExecuting_RedirectsToConsent_WhenApplyAreaAoUserAndConsentCookieIsMissing()
+        {
+            var context = CreateActionExecutingContext("Apply", "Applications", isAoUser: true);
+
+            _filter.OnActionExecuting(context);
+
+            var redirectResult = Assert.IsType<RedirectToActionResult>(context.Result);
+
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("Index", redirectResult.ActionName);
+                Assert.Equal("Consent", redirectResult.ControllerName);
+                Assert.NotNull(redirectResult.RouteValues);
+                Assert.Equal("Review", redirectResult.RouteValues["area"]);
+            });
+        }
         [Fact]
         public void OnActionExecuted_DoesNotThrow()
         {

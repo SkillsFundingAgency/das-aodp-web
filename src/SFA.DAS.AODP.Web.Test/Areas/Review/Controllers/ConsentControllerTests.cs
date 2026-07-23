@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Areas.Review.Models.Consent;
+using System.Security.Claims;
 
 namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
 {
@@ -10,10 +11,15 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
         private static ConsentController CreateController(bool hasConsentCookie = false)
         {
             var httpContext = new DefaultHttpContext();
+            httpContext.User = new ClaimsPrincipal(new ClaimsIdentity(new[]
+            {
+                new Claim("rolecode", "ao_user"),
+                new Claim("email", "ao.user@test.com")
+            }, "test"));
 
             if (hasConsentCookie)
             {
-                httpContext.Request.Headers.Cookie = $"{ConsentController.ConsentCookieName}=true";
+                httpContext.Request.Headers.Cookie = $"{ConsentController.GetConsentCookieName(httpContext)}=true";
             }
 
             return new ConsentController
@@ -37,7 +43,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
         }
 
         [Fact]
-        public void Index_Get_RedirectsToReviewHome_WhenConsentCookieExists()
+        public void Index_Get_RedirectsToApplyApplications_WhenUserConsentCookieExists()
         {
             var controller = CreateController(hasConsentCookie: true);
 
@@ -48,9 +54,9 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
             Assert.Multiple(() =>
             {
                 Assert.Equal("Index", redirectResult.ActionName);
-                Assert.Equal("Home", redirectResult.ControllerName);
+                Assert.Equal("Applications", redirectResult.ControllerName);
                 Assert.NotNull(redirectResult.RouteValues);
-                Assert.Equal("Review", redirectResult.RouteValues["area"]);
+                Assert.Equal("Apply", redirectResult.RouteValues["area"]);
             });
         }
 
@@ -88,7 +94,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
                 Assert.Equal("Applications", redirectResult.ControllerName);
                 Assert.NotNull(redirectResult.RouteValues);
                 Assert.Equal("Apply", redirectResult.RouteValues["area"]);
-                Assert.Contains(ConsentController.ConsentCookieName, setCookieHeader);
+                Assert.Contains(ConsentController.GetConsentCookieName(controller.HttpContext), setCookieHeader);
                 Assert.Contains("true", setCookieHeader);
             });
         }

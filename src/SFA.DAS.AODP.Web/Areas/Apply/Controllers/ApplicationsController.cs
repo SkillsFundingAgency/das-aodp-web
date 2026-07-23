@@ -1,10 +1,11 @@
-﻿using FluentValidation;
+using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Application.Form;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
+using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Web.Authentication;
@@ -51,7 +52,7 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         [Route("apply/applications")]
         public async Task<IActionResult> Index()
         {
-            if (!Request.Cookies.ContainsKey(SFA.DAS.AODP.Web.Areas.Review.Controllers.ConsentController.ConsentCookieName))
+            if (!Request.Cookies.ContainsKey(ConsentController.GetConsentCookieName(HttpContext)))
             {
                 return RedirectToAction("Index", "Consent", new { area = "Review" });
             }

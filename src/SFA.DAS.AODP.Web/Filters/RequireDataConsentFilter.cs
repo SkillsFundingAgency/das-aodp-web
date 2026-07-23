@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
+using SFA.DAS.AODP.Web.Authentication;
 
 namespace SFA.DAS.AODP.Web.Filters
 {
@@ -12,7 +13,13 @@ namespace SFA.DAS.AODP.Web.Filters
             var area = routeValues["area"]?.ToString();
             var controller = routeValues["controller"]?.ToString();
 
-            if (!string.Equals(area, "Review", StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(area, "Review", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(area, "Apply", StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            if (!context.HttpContext.User.Claims.Any(c => c.Type == "rolecode" && c.Value == RoleConstants.AOApply))
             {
                 return;
             }
@@ -22,7 +29,7 @@ namespace SFA.DAS.AODP.Web.Filters
                 return;
             }
 
-            if (context.HttpContext.Request.Cookies.ContainsKey(ConsentController.ConsentCookieName))
+            if (context.HttpContext.Request.Cookies.ContainsKey(ConsentController.GetConsentCookieName(context.HttpContext)))
             {
                 return;
             }
