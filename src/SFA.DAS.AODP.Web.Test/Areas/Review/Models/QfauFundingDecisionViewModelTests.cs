@@ -101,7 +101,7 @@ public class QfauFundingDecisionViewModelTests
             ],
             RelatedQualification = new GetQfauFeedbackForApplicationReviewConfirmationQueryResponse.Qualification
             {
-                Status = ProcessStatus.DecisionRequired
+                Status = ProcessStatusLookup.DecisionRequired.Name
             }
         };
 
