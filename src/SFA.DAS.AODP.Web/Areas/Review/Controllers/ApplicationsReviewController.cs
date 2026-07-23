@@ -1,4 +1,6 @@
-﻿using MediatR;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.Wordprocessing;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -22,6 +24,7 @@ using SFA.DAS.AODP.Web.Models.Applications;
 using SFA.DAS.AODP.Web.Models.BulkActions;
 using SFA.DAS.AODP.Web.Models.BulkActions.Options;
 using SFA.DAS.AODP.Web.Models.RelatedLinks;
+using SFA.DAS.AODP.Web.Models.Session;
 using SFA.DAS.AODP.Web.Validators.Messages;
 using System.ComponentModel.DataAnnotations;
 using System.IO.Compression;
@@ -56,10 +59,25 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
         [Route("review/application-reviews")]
         public async Task<IActionResult> Index(
-            ApplicationsReviewQuery query, 
+            int? pageNumber, 
             bool selectAll = false)
         {
-            var viewModel = await BuildIndexViewModelAsync(query, selectAll);
+            var sessionModel =
+                HttpContext.Session.GetObject<ApplicationsReviewFilterSessionModel>("ApplicationsReviewFilters")
+                ?? new ApplicationsReviewFilterSessionModel();
+
+            if (pageNumber.HasValue)
+            {
+                sessionModel.PageNumber = pageNumber.Value;
+            }
+
+            HttpContext.Session.SetObject("ApplicationsReviewFilters", sessionModel);
+
+            var query = BuildApplicationsReviewQuery(sessionModel);
+
+            var viewModel = await BuildIndexViewModelAsync(
+                query,
+                selectAll);
 
             ShowNotificationIfKeyExists(
                 BulkActionApplications.BulkActionSuccessKey,
@@ -77,9 +95,15 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         [HttpPost]
         [Route("/review/application-reviews/bulk-action")]
         public async Task<IActionResult> ApplyBulkAction(
-            ApplicationsBulkActionPostModel model,
-            ApplicationsReviewQuery applicationQuery)
+            ApplicationsBulkActionPostModel model)
         {
+            var sessionModel =
+                HttpContext.Session.GetObject<ApplicationsReviewFilterSessionModel>("ApplicationsReviewFilters")
+                ?? new ApplicationsReviewFilterSessionModel();
+
+            var applicationQuery = BuildApplicationsReviewQuery(sessionModel);
+
+
             if (model.SelectedApplicationReviewIds.Count == 0)
             {
                 var message = model.BulkActionInputViewModel?.SubmitAction switch
@@ -146,7 +170,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                             if (result.ErrorCount == 0)
                             {
                                 TempData[BulkActionApplications.SaveReviewersSuccessKey] = true;
-                                return RedirectToAction(nameof(Index), applicationQuery.ToRouteValues());
+                                return RedirectToAction(nameof(Index));
                             }
 
                             var failed = result.Errors.Select(e => new ApplicationBulkActionErrorItemViewModel
@@ -186,7 +210,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                             if(result.ErrorCount == 0)
                             {
                                 TempData[BulkActionApplications.BulkActionSuccessKey] = true;
-                                return RedirectToAction(nameof(Index), applicationQuery.ToRouteValues());
+                                return RedirectToAction(nameof(Index));
                             }
 
                             var failed = result.Errors.Select(e => new ApplicationBulkActionErrorItemViewModel
@@ -225,7 +249,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             {
                 Failed = failed,
                 BackLinkText = "Go back to Applications",
-                BackLinkUrl = Url.Action(nameof(Index), query.ToRouteValues())!
+                BackLinkUrl = Url.Action(nameof(Index))!
             };
 
             TempData[BulkActionApplications.Errors] = JsonSerializer.Serialize(errorModel);
@@ -249,13 +273,32 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         }
 
         [HttpPost]
-        [Route("review/application-reviews")]
-        public async Task<IActionResult> Search(ApplicationsReviewQuery query)
+        [Route("review/application-reviews/search")]
+        public IActionResult Search(ApplicationsReviewQuery query)
         {
-            query.PageNumber = 1;
-            return RedirectToAction(nameof(Index), query);
+            var sessionModel = new ApplicationsReviewFilterSessionModel
+            {
+                ApplicationSearch = query.ApplicationSearch,
+                AwardingOrganisationSearch = query.AwardingOrganisationSearch,
+                ReviewerSelection = query.ReviewerSelection,
+                Status = query.Status,
+
+                RecordsPerPage = query.RecordsPerPage,
+                PageNumber = 1 // reset page number on new search
+            };
+
+            HttpContext.Session.SetObject("ApplicationsReviewFilters", sessionModel);
+
+            return RedirectToAction(nameof(Index));
         }
 
+        [HttpGet]
+        [Route("review/application-reviews/clear")]
+        public IActionResult Clear()
+        {
+            HttpContext.Session.Remove("ApplicationsReviewFilters");
+            return RedirectToAction(nameof(Index));
+        }
 
         [Route("review/application-reviews/{applicationReviewId}", Name = RouteNames.Review_ViewApplication)]
         public async Task<IActionResult> ViewApplication(Guid applicationReviewId, [FromQuery] string? returnUrl = null)
@@ -863,54 +906,23 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             
             var response = await Send(applicationQuery.ToGetApplicationsForReviewQuery(userType));
 
-            var viewModel = new ApplicationsReviewListViewModel
+            var viewModel = ApplicationsReviewListViewModel.Map(response, applicationQuery);
+
+            if (selectAll)
             {
-                PageNumber = applicationQuery.PageNumber,
-                RecordsPerPage = applicationQuery.RecordsPerPage,
-                ApplicationSearch = applicationQuery.ApplicationSearch,
-                AwardingOrganisationSearch = applicationQuery.AwardingOrganisationSearch,
-                ReviewerSelection = applicationQuery.ReviewerSelection,
-                Status = applicationQuery.Status ?? new List<ApplicationStatus>(),
-                UserType = userType,
-                FindRegulatedQualificationUrl = _aodpConfiguration.Value.FindRegulatedQualificationUrl
-            };
-
-            var validationResults = new List<ValidationResult>();
-            Validator.TryValidateObject(viewModel, new ValidationContext(viewModel), validationResults,
-                validateAllProperties: true);
-
-            if (validationResults.Any())
-            {
-                response = new GetApplicationsForReviewQueryResponse();
-
-                response.AvailableReviewers =
-                    string.IsNullOrWhiteSpace(viewModel.AvailableReviewersJson)
-                        ? new List<UserOption>()
-                        : JsonConvert.DeserializeObject<List<UserOption>>(viewModel.AvailableReviewersJson)
-                          ?? new List<UserOption>();
-
-                foreach (var validationResult in validationResults)
-                {
-                    ModelState.AddModelError(validationResult.ErrorMessage!.Split(' ').First(), validationResult.ErrorMessage!);
-                }
+                viewModel.SelectedApplicationReviewIds = viewModel.Applications.Select(a => a.ApplicationReviewId).Distinct().ToList();
             }
-            else
+
+            viewModel.BulkActionOptions = BulkMessageActionOptions.Build();
+
+            if (postedModel is not null)
             {
-                viewModel.MapApplications(response);
-
-                if (selectAll)
-                {
-                    viewModel.SelectedApplicationReviewIds = viewModel.Applications.Select(a => a.ApplicationReviewId).Distinct().ToList();
-                }
-
-                viewModel.BulkActionOptions = BulkMessageActionOptions.Build();
-
-                if (postedModel is not null)
-                {
-                    viewModel.SelectedApplicationReviewIds = postedModel.SelectedApplicationReviewIds ?? new();
-                    viewModel.BulkActionInputViewModel = postedModel.BulkActionInputViewModel ?? new();
-                }
+                viewModel.SelectedApplicationReviewIds = postedModel.SelectedApplicationReviewIds ?? new();
+                viewModel.BulkActionInputViewModel = postedModel.BulkActionInputViewModel ?? new();
             }
+
+            viewModel.UserType = userType;
+            viewModel.FindRegulatedQualificationUrl = _aodpConfiguration.Value.FindRegulatedQualificationUrl;
 
             return viewModel;
         }
@@ -929,5 +941,20 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
             return vm;
         }
+
+        private ApplicationsReviewQuery BuildApplicationsReviewQuery(ApplicationsReviewFilterSessionModel session)
+        {
+            return new ApplicationsReviewQuery
+            {
+                PageNumber = session.PageNumber,
+                RecordsPerPage = session.RecordsPerPage,
+
+                ApplicationSearch = session.ApplicationSearch,
+                AwardingOrganisationSearch = session.AwardingOrganisationSearch,
+                ReviewerSelection = session.ReviewerSelection,
+                Status = session.Status
+            };
+        }
+
     }
 }

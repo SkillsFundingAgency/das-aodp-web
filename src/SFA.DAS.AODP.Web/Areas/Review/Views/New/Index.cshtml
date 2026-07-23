@@ -146,20 +146,6 @@
             @if (Model.NewQualifications.Any())
             {
                 <form asp-controller="New" asp-action="ApplyBulkAction" asp-area="Review" method="post">
-
-                    <input type="hidden" name="pageNumber" value="@Model.PaginationViewModel.CurrentPage" />
-                    <input type="hidden" name="recordsPerPage" value="@Model.PaginationViewModel.RecordsPerPage" />
-                    <input type="hidden" name="name" value="@Model.Filter.QualificationName" />
-                    <input type="hidden" name="organisation" value="@Model.Filter.Organisation" />
-                    <input type="hidden" name="qan" value="@Model.Filter.QAN" />
-                    @if (Model.Filter.ProcessStatusIds != null)
-                    {
-                        foreach (var id in Model.Filter.ProcessStatusIds)
-                        {
-                            <input type="hidden" name="processStatusIds" value="@id" />
-                        }
-                    }
-
                     @{
                         var selectionHasError =
                         ViewData.ModelState.TryGetValue(nameof(NewQualificationsViewModel.SelectedQualificationIds), out var selState) &&
@@ -180,14 +166,7 @@
                         @{
                             var selectAllCheckboxesViewModel = SelectAllViewModelFactory.ForQualifications
                             (
-                                Model.PaginationViewModel.CurrentPage,
-                                Model.PaginationViewModel.RecordsPerPage,
-                                nameof(NewController).Replace("Controller", ""),
-                                Model.Filter.QualificationName,
-                                Model.Filter.Organisation,
-                                Model.Filter.QAN,
-                                Model.Filter.ProcessStatusIds,
-                                Model.Filter.AgeGroups
+                                nameof(NewController).Replace("Controller", "")
                             );
                         }
 

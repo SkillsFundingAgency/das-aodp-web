@@ -26,7 +26,7 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
 
         // UI pagination model for the GOV.UK component:
         // Builds pagination URLs for the GOV.UK component.
-        public PaginationModel GdsPagination { get; set; } = new PaginationModel();
+        public PaginationModel GdsPagination { get; set; }
 
         public JobStatusViewModel JobStatusViewModel { get; set; }
         public List<ProcessStatus> ProcessStatuses { get; set; } = new List<ProcessStatus>();
@@ -88,16 +88,6 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
                 Name = v.Name,
                 IsOutcomeDecision = v.IsOutcomeDecision,
             }).ToList();
-
-            viewModel.GdsPagination = new PaginationModel()
-            {
-                CurrentPage = viewModel.PaginationViewModel.CurrentPage,
-                MaxPageNumber = viewModel.PaginationViewModel.TotalPages,
-                ActionName = "Index",
-                ControllerName = "New",
-                Area = "Review"
-
-            };
 
             return viewModel;
         }

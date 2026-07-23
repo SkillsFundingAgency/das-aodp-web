@@ -13,6 +13,7 @@ using SFA.DAS.AODP.Web.Extensions;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Mappers;
 using SFA.DAS.AODP.Web.Models.BulkActions;
+using SFA.DAS.AODP.Web.Models.GdsComponents;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 using SFA.DAS.AODP.Web.Models.Session;
 using System.Globalization;
@@ -27,7 +28,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
     public class NewController : ControllerBase
     {
         private readonly ILogger<NewController> _logger;
-        private readonly IMediator _mediator;
         private readonly IUserHelperService _userHelperService;
         private List<string> ReviewerAllowedStatuses { get; set; } = new List<string>()
         {
@@ -39,7 +39,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         public NewController(ILogger<NewController> logger, IMediator mediator, IUserHelperService userHelperService) : base(mediator, logger)
         {
             _logger = logger;
-            _mediator = mediator;
             _userHelperService = userHelperService;
         }
 
@@ -278,18 +277,22 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         [HttpPost]
         [Route("/Review/New/ApplyBulkAction")]
         public async Task<IActionResult> ApplyBulkAction(
-            NewQualificationsViewModel model,
-            QualificationQuery qualificationQuery)
+            QualificationBulkActionPostModel model)
         {
+
+            var sessionModel = HttpContext.Session.GetObject<QualificationFilterSessionModel>("NewQualificationFilters")
+                       ?? new QualificationFilterSessionModel();
+
+            var qualificationQuery = BuildQualificationQuery(sessionModel);
 
             if (!ModelState.IsValid)
             {
                 var viewModel = await BuildIndexViewModelAsync(
                     qualificationQuery,
-                    selectAll: false,
-                    postedModel: model);
+                    selectAll: false);
 
-                CheckInvalidParameters(qualificationQuery, viewModel.PaginationViewModel.TotalPages);
+                viewModel.SelectedQualificationIds = model.SelectedQualificationIds;
+                viewModel.BulkAction = model.BulkAction;
 
                 return View("Index", viewModel);
             }
@@ -307,7 +310,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 {
                     TempData[BulkActionQualifications.SuccessKey] = true;
 
-                    return RedirectToAction(nameof(Index), qualificationQuery.ToRouteValues());
+                    return RedirectToAction(nameof(Index));
                 }
 
                 var failed = result.Errors.Select(e => new QualificationBulkActionErrorItemViewModel
@@ -328,7 +331,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 {
                     Failed = failed,
                     BackLinkText = "Go back to New qualifications",
-                    BackLinkUrl = Url.Action(nameof(Index), qualificationQuery.ToRouteValues())!
+                    BackLinkUrl = Url.Action(nameof(Index))!
                 };
 
                 TempData[BulkActionQualifications.Errors] = JsonSerializer.Serialize(errorModel);
@@ -445,6 +448,16 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 vm.SelectedQualificationIds = postedModel.SelectedQualificationIds ?? new List<Guid>();
                 vm.BulkAction = postedModel.BulkAction;
             }
+
+            vm.GdsPagination = new PaginationModel()
+            {
+                CurrentPage = vm.PaginationViewModel.CurrentPage,
+                MaxPageNumber = vm.PaginationViewModel.TotalPages,
+                ActionName = "Index",
+                ControllerName = "New",
+                Area = "Review"
+
+            };
 
             return vm;
         }

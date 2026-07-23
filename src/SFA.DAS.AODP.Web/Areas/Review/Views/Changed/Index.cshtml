@@ -178,14 +178,7 @@
 
                             @{
                                 var selectAllViewModel = SelectAllViewModelFactory.ForQualifications(
-                                    Model.PaginationViewModel.CurrentPage,
-                                    Model.PaginationViewModel.RecordsPerPage,
-                                    nameof(ChangedController).Replace("Controller", ""),
-                                    Model.Filter.QualificationName,
-                                    Model.Filter.Organisation,
-                                    Model.Filter.QAN,
-                                    Model.Filter.ProcessStatusIds,
-                                    Model.Filter.AgeGroups
+                                    nameof(ChangedController).Replace("Controller", "")
                                 );
                             }
 

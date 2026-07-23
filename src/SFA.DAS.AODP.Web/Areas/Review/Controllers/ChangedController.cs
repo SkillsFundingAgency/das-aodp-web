@@ -22,7 +22,6 @@ using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 {
     [Area("Review")]
-    [Route("{controller}/{action}")]
     [Authorize(Policy = PolicyConstants.IsReviewUser)]
     public class ChangedController : ControllerBase
     {
@@ -198,16 +197,22 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         [HttpPost]
         [Route("/Review/Changed/ApplyBulkAction")]
         public async Task<IActionResult> ApplyBulkAction(
-            ChangedQualificationsViewModel model,
-            QualificationQuery qualificationQuery)
+            QualificationBulkActionPostModel model)
         {
+            var sessionModel = HttpContext.Session.GetObject<QualificationFilterSessionModel>("ChangedQualificationFilters")
+                ?? new QualificationFilterSessionModel();
+
+            var qualificationQuery = BuildQualificationQuery(sessionModel);
+
             if (!ModelState.IsValid)
             {
                 ValidatePagingAndNotify(qualificationQuery);
 
                 var viewModel = await BuildIndexViewModelAsync(
                     qualificationQuery,
-                    postedModel: model);
+                    selectAll: false);
+                viewModel.SelectedQualificationIds = model.SelectedQualificationIds;
+                viewModel.BulkAction = model.BulkAction;
 
                 return View("Index", viewModel);
             }
@@ -226,7 +231,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 {
                     TempData[BulkActionQualifications.SuccessKey] = true;
 
-                    return RedirectToAction(nameof(Index), qualificationQuery.ToRouteValues());
+                    return RedirectToAction(nameof(Index));
                 }
 
                 var failed = result.Errors.Select(e => new QualificationBulkActionErrorItemViewModel
