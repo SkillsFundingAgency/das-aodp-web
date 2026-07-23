@@ -192,7 +192,7 @@
                 <div class="govuk-form-group">
                     @if (Model.FundingsOffersOutcomeStatus.HasValue)
                     {
-                        <a class="govuk-button" asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersSummary"
+                        <a class="govuk-button govuk-button--secondary" asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersSummary"
                            asp-route-qualificationReference="@Model.Qual.Qan"
                            asp-route-qualificationVersionId="@Model.Id"
                            asp-route-qualificationId="@Model.QualificationId"
@@ -203,7 +203,7 @@
                     }
                     else
                     {
-                        <a class="govuk-button" asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersOutcome"
+                    <a class="govuk-button govuk-button--secondary" asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersOutcome"
                            asp-route-qualificationReference="@Model.Qual.Qan"
                            asp-route-mode="New">
                             DfE funding review
