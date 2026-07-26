@@ -14,7 +14,11 @@ public class WhenHandlingGetQualificationVersionsForRolloverQueryBuilderQuery : 
     public async Task Handle_ShouldPostAllSelectedFilterIdsAndReturnQualificationVersions()
     {
         // Arrange
-        var filters = RolloverQueryBuilderRequestMapper.ForAll(new QueryBuilderFilters());
+        var filters = new RolloverQueryBuilderRequest(
+            LevelIds: [1, 2],
+            TypeIds: [3, 4],
+            SectorSubjectAreaIds: ["01", "02"],
+            AwardingOrganisationIds: ["AO1", "AO2"]);
 
         var expectedResponse = new GetQualificationVersionsForRolloverQueryBuilderQueryResponse
         {
@@ -30,7 +34,7 @@ public class WhenHandlingGetQualificationVersionsForRolloverQueryBuilderQuery : 
         };
 
         _apiClientMock
-            .Setup(a => a.PostWithResponseCode<GetQualificationVersionsForRolloverQueryBuilderQueryResponse>(
+            .Setup(a => a.PostWithResponseCodeAsMultipart<GetQualificationVersionsForRolloverQueryBuilderQueryResponse>(
                 It.IsAny<GetQualificationVersionsForRolloverQueryBuilderApiRequest>()))
             .ReturnsAsync(expectedResponse);
 
@@ -42,8 +46,37 @@ public class WhenHandlingGetQualificationVersionsForRolloverQueryBuilderQuery : 
         // Assert
         result.Success.ShouldBeTrue();
         result.Value.QualificationVersions.ShouldBe(expectedResponse.QualificationVersions);
-        _apiClientMock.Verify(a => a.PostWithResponseCode<GetQualificationVersionsForRolloverQueryBuilderQueryResponse>(
+        _apiClientMock.Verify(a => a.PostWithResponseCodeAsMultipart<GetQualificationVersionsForRolloverQueryBuilderQueryResponse>(
             It.Is<GetQualificationVersionsForRolloverQueryBuilderApiRequest>(r => r.Data == filters)), Times.Once);
+    }
+
+    [Fact]
+    public void ApiRequest_WhenFiltersAreProvided_MapsEveryValueToMultipartFormData()
+    {
+        // Arrange
+        var filters = new RolloverQueryBuilderRequest(
+            LevelIds: [1, 2],
+            TypeIds: [3, 4],
+            SectorSubjectAreaIds: ["01", "02"],
+            AwardingOrganisationIds: ["AO1", "AO2"]);
+        var request = new GetQualificationVersionsForRolloverQueryBuilderApiRequest(filters);
+        KeyValuePair<string, string>[] expected =
+        [
+            new("LevelIds", "1"),
+            new("LevelIds", "2"),
+            new("TypeIds", "3"),
+            new("TypeIds", "4"),
+            new("SectorSubjectAreaIds", "01"),
+            new("SectorSubjectAreaIds", "02"),
+            new("AwardingOrganisationIds", "AO1"),
+            new("AwardingOrganisationIds", "AO2")
+        ];
+
+        // Act
+        var result = request.FormData.ToArray();
+
+        // Assert
+        result.ShouldBe(expected);
     }
 
     [Fact]
@@ -55,7 +88,7 @@ public class WhenHandlingGetQualificationVersionsForRolloverQueryBuilderQuery : 
         var exception = new Exception(exceptionMessage);
 
         _apiClientMock
-            .Setup(a => a.PostWithResponseCode<GetQualificationVersionsForRolloverQueryBuilderQueryResponse>(
+            .Setup(a => a.PostWithResponseCodeAsMultipart<GetQualificationVersionsForRolloverQueryBuilderQueryResponse>(
                 It.IsAny<GetQualificationVersionsForRolloverQueryBuilderApiRequest>()))
             .ThrowsAsync(exception);
 

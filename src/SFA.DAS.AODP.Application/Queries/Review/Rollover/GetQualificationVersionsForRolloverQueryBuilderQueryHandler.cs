@@ -7,7 +7,7 @@ public class GetQualificationVersionsForRolloverQueryBuilderQueryHandler(IApiCli
         GetQualificationVersionsForRolloverQueryBuilderQuery request,
         CancellationToken cancellationToken)
     {
-        var result = await apiClient.PostWithResponseCode<GetQualificationVersionsForRolloverQueryBuilderQueryResponse>(
+        var result = await apiClient.PostWithResponseCodeAsMultipart<GetQualificationVersionsForRolloverQueryBuilderQueryResponse>(
             new GetQualificationVersionsForRolloverQueryBuilderApiRequest(request.Filters));
 
         return new BaseMediatrResponse<GetQualificationVersionsForRolloverQueryBuilderQueryResponse>
