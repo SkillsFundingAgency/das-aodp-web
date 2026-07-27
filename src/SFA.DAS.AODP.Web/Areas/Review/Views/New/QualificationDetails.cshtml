@@ -67,7 +67,7 @@
                     <partial name="_EligibilityStatus" model="Model.EligibleForFundingStatus" />
                 </govuk-summary-list-row-value>
             </govuk-summary-list-row>
-            @if (!Model.EligibleForFundingStatus.IsEligible
+            @if (!(Model.EligibleForFundingStatus?.IsEligible ?? false)
                 && !string.IsNullOrWhiteSpace(Model.FundingEligibilityConflictType))
             {
                 <govuk-summary-list-row>
