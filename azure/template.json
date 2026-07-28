@@ -224,7 +224,7 @@
             "apiVersion": "2021-04-01",
             "name": "[concat('role-assignment-', variables('appServiceName'), '-', parameters('utcValue'))]",
             "type": "Microsoft.Resources/deployments",
-            "resourceGroup": "[variables('resourceGroupName')]",
+            "resourceGroup": "[replace(variables('resourceGroupName'), 'ui', 'api')]",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
