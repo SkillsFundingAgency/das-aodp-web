@@ -10,3 +10,4 @@ global using SFA.DAS.AODP.Web.TagHelpers;
 global using SFA.DAS.AODP.Web.Validators.Attributes;
 
 global using System.Diagnostics.CodeAnalysis;
+global using SFA.DAS.AODP.Application.Extensions;

@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using SFA.DAS.AODP.Application.Behaviours;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
+using SFA.DAS.AODP.Application.Services;
 using SFA.DAS.AODP.Domain.Interfaces;
 using SFA.DAS.AODP.Infrastructure.ApiClient;
 using SFA.DAS.AODP.Infrastructure.Extensions;
@@ -37,6 +38,8 @@ public static class AddServiceRegistrationsExtension
         services.AddScoped<IHtmlExportRenderer, HtmlExportRenderer>();
         services.AddScoped<IApplicationExportService, ApplicationExportService>();
 
+
+        services.AddTransient<IQualificationTimelineHistoryBuilder, QualificationTimelineHistoryBuilder>();
 
         services.AddScoped<ICsvFileReader, CsvFileReader>();
 

@@ -1,6 +1,7 @@
 ﻿using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 using SFA.DAS.AODP.Models.Qualifications;
+using AwardingOrganisation = SFA.DAS.AODP.Domain.Rollover.AwardingOrganisation;
 
 namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Models;
 
@@ -92,7 +93,7 @@ public class NewQualificationDetailsViewModelTests
                 Qan = "000013",
                 QualificationName = "Qualification Title"
             },
-            ProcStatus = new GetQualificationDetailsQueryResponse.ProcessStatus
+            ProcStatus = new ProcessStatus
             {
                 Id = Guid.NewGuid(),
                 Name = "ProcStatusName",
@@ -165,7 +166,7 @@ public class NewQualificationDetailsViewModelTests
     public void ProcessStatus_ImplicitOperator_ConvertsFromQueryResponseProcessStatus()
     {
         // Arrange
-        var source = new GetProcessStatusesQueryResponse.ProcessStatus
+        var source = new ProcessStatus
         {
             Id = Guid.NewGuid(),
             Name = "Decision Required",
@@ -173,7 +174,7 @@ public class NewQualificationDetailsViewModelTests
         };
 
         // Act
-        NewQualificationDetailsViewModel.ProcessStatus target = source; // implicit operator
+        var target = source; // implicit operator
 
         // Assert
         Assert.Equal(source.Id, target.Id);
