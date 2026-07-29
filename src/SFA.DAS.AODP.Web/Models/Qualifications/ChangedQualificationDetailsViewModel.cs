@@ -87,6 +87,8 @@ public class ChangedQualificationDetailsViewModel
 
     private List<KeyFieldChange>? _keyFieldChanges;
 
+    public string? FundingEligibilityConflictType { get; set; }
+
     public List<KeyFieldChange> GetKeyFieldChanges()
     {
         if (_keyFieldChanges is not null)
@@ -224,6 +226,7 @@ public class ChangedQualificationDetailsViewModel
             EligibleForFunding = entity.EligibleForFunding,
             FundingEligibilityFailedFields = entity.FundingEligibilityFailedFields,
             EligibleForFundingStatus = new EligibleForFundingStatus(entity.EligibleForFunding ?? false, entity.FundingEligibilityFailedFields),
+            FundingEligibilityConflictType = entity.FundingEligibilityConflictType,
             LifecycleStage = new LifecycleStage
             {
                 Id = entity.Stage.Id,
@@ -302,6 +305,7 @@ public class ChangedQualificationDetailsViewModel
                     EligibleForFunding = i.EligibleForFunding,
                     EligibleForFundingStatus = new EligibleForFundingStatus(i.EligibleForFunding ?? false, i.FundingEligibilityFailedFields),
                     FundingEligibilityFailedFields = i.FundingEligibilityFailedFields,
+                    FundingEligibilityConflictType = i.FundingEligibilityConflictType,
                     LifecycleStage = new LifecycleStage
                     {
                         Id = i.Stage.Id,
