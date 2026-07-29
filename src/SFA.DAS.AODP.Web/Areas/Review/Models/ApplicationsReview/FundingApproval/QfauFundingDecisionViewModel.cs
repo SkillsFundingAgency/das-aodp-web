@@ -88,7 +88,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
             {
                 messages.Add(FundingDecisionMessages.MissingQualification);
             }
-            else if (qualificationStatus is ProcessStatus.Rejected or ProcessStatus.NoActionRequired)
+            else if (qualificationStatus == ProcessStatusLookup.Rejected.Name || qualificationStatus == ProcessStatusLookup.NoActionRequired.Name)
             {
                 messages.Add(FundingDecisionMessages.InvalidQualificationStatus(qualificationStatus));
             }
