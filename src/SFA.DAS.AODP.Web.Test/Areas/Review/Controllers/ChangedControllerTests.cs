@@ -1,159 +1,768 @@
-﻿using AutoFixture;
-using AutoFixture.AutoMoq;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.Qualification;
 using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Application.Services;
 using SFA.DAS.AODP.Domain.Qualifications.Requests;
-using SFA.DAS.AODP.UnitTests.Helper;
+using SFA.DAS.AODP.Models.Qualifications;
+using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Extensions;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 using SFA.DAS.AODP.Web.Models.Session;
-using System.Diagnostics.CodeAnalysis;
+using System.Security.Claims;
 
 namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers;
 
-public class ChangedControllerTests:UnitTest
+public class ChangedControllerTests
 {
-    private readonly IFixture _fixture;
-    private readonly Mock<ILogger<ChangedController>> _loggerMock;
-    private readonly Mock<IUserHelperService> _userHelper;
-    private readonly Mock<IMediator> _mediatorMock;
-    private readonly ChangedController _controller;
+    private const string DefaultUserName = "TestUser";
+    private const string DefaultQan = "61054902";
+    private const string DefaultQualificationName = "Test Qualification";
+    private const string DefaultOrganisationName = "Test Org";
+    private const string DefaultComment = "This is a note";
+    private const string DefaultFindQualificationUrl = "https://find-a-qualification.services.ofqual.gov.uk/qualifications/";
+
+    private const string DecisionRequiredStatus = "Decision Required";
+    private const string NoActionRequiredStatus = "No Action Required";
+    private const string OnHoldStatus = "On Hold";
+    private const string DisallowedStatus = "NotAllowed";
+
+    private const string SearchName = "Qual";
+    private const string SearchOrganisation = "Org";
+    private const string SearchQan = "12345678";
+
+    private const int DefaultPageNumber = 2;
+    private const int DefaultRecordsPerPage = 20;
+    private const int ResetPageNumber = 1;
+    private const int ClearedPageNumber = 0;
+    private const int ChangedPageNumber = 3;
+    private const int VersionOne = 1;
+    private const int VersionTwo = 2;
+
+    private readonly Mock<IMediator> _mediator = new();
+    private readonly Mock<IUserHelperService> _userHelper = new();
+    private readonly Mock<ILogger<ChangedController>> _logger = new();
+    private readonly Mock<IQualificationTimelineHistoryBuilder> _timelineBuilder = new();
+
+    private readonly IOptions<AodpConfiguration> _options =
+        Options.Create(new AodpConfiguration
+        {
+            FindRegulatedQualificationUrl = DefaultFindQualificationUrl
+        });
 
     public ChangedControllerTests()
     {
-        _fixture = new Fixture().Customize(new AutoMoqCustomization());
-
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-        _fixture.Customizations.Add(new DateOnlySpecimenBuilder());
-
-        _loggerMock = _fixture.Freeze<Mock<ILogger<ChangedController>>>();
-        _userHelper = _fixture.Freeze<Mock<IUserHelperService>>();
-        _mediatorMock = _fixture.Freeze<Mock<IMediator>>();
-
-        _controller = new ChangedController(_loggerMock.Object, _mediatorMock.Object, _userHelper.Object);
-
-        var context = new DefaultHttpContext();
-        context.Session = new TestSession();
-        _controller.ControllerContext = new ControllerContext
-        {
-            HttpContext = context
-        };
-
-        _controller.TempData = new TempDataDictionary(_controller.HttpContext, Mock.Of<ITempDataProvider>());
-
         _userHelper
             .Setup(u => u.GetUserRoles())
             .Returns(new List<string>());
 
-        var processResponse = new BaseMediatrResponse<GetProcessStatusesQueryResponse>
+        _mediator
+            .Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetProcessStatusesQueryResponse>
+            {
+                Success = true,
+                Value = new GetProcessStatusesQueryResponse
+                {
+                    ProcessStatuses =
+                    {
+                    new() { Id = Guid.NewGuid(), Name = "Decision Required" },
+                    new() { Id = Guid.NewGuid(), Name = "No Action Required" }
+                    }
+                }
+            });
+    }
+
+    #region Helper methods
+
+    private ChangedController CreateController()
+    {
+        var controller = new ChangedController(
+            _logger.Object,
+            _mediator.Object,
+            _userHelper.Object,
+            _timelineBuilder.Object);
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Session = new TestSession();
+
+        httpContext.User = new ClaimsPrincipal(
+            new ClaimsIdentity(
+                new[] { new Claim(ClaimTypes.Name, DefaultUserName) },
+                "TestAuth"));
+
+        controller.ControllerContext = new ControllerContext
         {
-            Success = true,
-            Value = new GetProcessStatusesQueryResponse
+            HttpContext = httpContext
+        };
+
+        controller.TempData = new TempDataDictionary(
+            httpContext,
+            Mock.Of<ITempDataProvider>());
+
+        return controller;
+    }
+
+    private static GetQualificationDetailsQueryResponse CreateQualificationDetailsResponse(
+        string qan,
+        int version = VersionOne,
+        string qualificationName = DefaultQualificationName,
+        string organisationName = DefaultOrganisationName,
+        string? changedFieldNames = null)
+    {
+        return new GetQualificationDetailsQueryResponse
+        {
+            Id = Guid.NewGuid(),
+            QualificationId = Guid.NewGuid(),
+            VersionFieldChangesId = Guid.NewGuid(),
+            Qual = new GetQualificationDetailsQueryResponse.Qualification
             {
-                ProcessStatuses = new List<GetProcessStatusesQueryResponse.ProcessStatus>
+                Id = Guid.NewGuid(),
+                Qan = qan,
+                QualificationName = qualificationName,
+                Versions = new List<GetQualificationDetailsQueryResponse>()
+            },
+            ProcStatus = new ProcessStatus
             {
-                new() { Id = Guid.NewGuid(), Name = "Decision Required" },
-                new() { Id = Guid.NewGuid(), Name = "No Action Required" }
-            }
+                Id = Guid.NewGuid(),
+                Name = DecisionRequiredStatus
+            },
+            Version = version,
+            Stage = new GetQualificationDetailsQueryResponse.LifecycleStage
+            {
+                Id = Guid.NewGuid(),
+                Name = "Draft"
+            },
+            Organisation = new GetQualificationDetailsQueryResponse.AwardingOrganisation
+            {
+                Id = Guid.NewGuid(),
+                NameOfqual = organisationName
+            },
+            VersionFieldChanges = changedFieldNames,
+            LastUpdatedDate = DateTime.UtcNow,
+            UiLastUpdatedDate = DateTime.UtcNow,
+            InsertedDate = DateTime.UtcNow
+        };
+    }
+
+    private static GetProcessStatusesQueryResponse CreateProcessStatusesResponse(params (Guid Id, string Name)[] statuses)
+    {
+        var response = new GetProcessStatusesQueryResponse();
+
+        foreach (var status in statuses)
+        {
+            response.ProcessStatuses.Add(new ProcessStatus
+            {
+                Id = status.Id,
+                Name = status.Name
+            });
+        }
+
+        return response;
+    }
+
+    private void SetupQualificationDetailsDependencies(
+        GetQualificationDetailsQueryResponse qualificationResponse,
+        GetProcessStatusesQueryResponse processStatusesResponse)
+    {
+        var feedbackResponse = new GetFeedbackForQualificationFundingByIdQueryResponse
+        {
+            QualificationFundedOffers = new List<GetFeedbackForQualificationFundingByIdQueryResponse.QualificationFunding>()
+        };
+
+        var applicationsResponse = new GetApplicationsByQanQueryResponse
+        {
+            Applications = new List<GetApplicationsByQanQueryResponse.Application>()
+        };
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetQualificationDetailsQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetQualificationDetailsQueryResponse>
+            {
+                Success = true,
+                Value = qualificationResponse
+            });
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetProcessStatusesQueryResponse>
+            {
+                Success = true,
+                Value = processStatusesResponse
+            });
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetFeedbackForQualificationFundingByIdQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetFeedbackForQualificationFundingByIdQueryResponse>
+            {
+                Success = true,
+                Value = feedbackResponse
+            });
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetApplicationsByQanQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetApplicationsByQanQueryResponse>
+            {
+                Success = true,
+                Value = applicationsResponse
+            });
+    }
+    #endregion
+
+    [Fact]
+    public async Task QualificationDetails_Get_ReturnsRedirect_WhenQualificationReferenceNull()
+    {
+        var controller = CreateController();
+
+        var result = await controller.QualificationDetails(qualificationReference: null!);
+
+        var redirect = Assert.IsType<RedirectResult>(result);
+
+        Assert.Multiple(() =>
+        {
+            Assert.Equal("/Home/Error", redirect.Url);
+        });
+    }
+
+    [Fact]
+    public async Task QualificationDetails_Get_ReturnsView_WithModel()
+    {
+        var controller = CreateController();
+        var qualificationResponse = CreateQualificationDetailsResponse(DefaultQan);
+        var processStatusesResponse = CreateProcessStatusesResponse((Guid.NewGuid(), DecisionRequiredStatus));
+
+        _userHelper.Setup(u => u.GetUserRoles()).Returns(new List<string>());
+        SetupQualificationDetailsDependencies(qualificationResponse, processStatusesResponse);
+
+        var result = await controller.QualificationDetails(DefaultQan);
+
+        var view = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<ChangedQualificationDetailsViewModel>(view.Model);
+
+        Assert.Multiple(() =>
+        {
+            Assert.Equal(DefaultQan, model.Qual.Qan);
+            Assert.NotNull(model.ProcessStatuses);
+            Assert.NotNull(model.Applications);
+            Assert.Equal(DefaultQualificationName, model.Qual.QualificationName);
+        });
+    }
+
+    [Fact]
+    public async Task QualificationDetails_Post_AddsComment_WhenNoProcStatusAndNote()
+    {
+        var controller = CreateController();
+
+        var model = new ChangedQualificationDetailsViewModel
+        {
+            Qual = new Qualification { Qan = DefaultQan },
+            AdditionalActions = new AdditionalFormActions
+            {
+                Note = DefaultComment,
+                ProcessStatusId = null
             }
         };
 
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(processResponse);
+        _mediator.Setup(m => m.Send(It.IsAny<AddQualificationDiscussionHistoryCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<EmptyResponse>
+            {
+                Success = true,
+                Value = new EmptyResponse()
+            });
 
+        var result = await controller.QualificationDetails(model);
+
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+
+        Assert.Multiple(() =>
+        {
+            Assert.Equal(nameof(ChangedController.QualificationDetails), redirect.ActionName);
+            Assert.Equal(DefaultQan, redirect.RouteValues!["qualificationReference"]?.ToString());
+            Assert.True((bool)controller.TempData[ChangedController.NewQualDataKeys.CommentSaved.ToString()]!);
+        });
+
+        _mediator.Verify(m => m.Send(
+            It.Is<AddQualificationDiscussionHistoryCommand>(cmd =>
+                cmd.QualificationReference == DefaultQan &&
+                cmd.Notes == DefaultComment &&
+                cmd.UserDisplayName == DefaultUserName),
+            It.IsAny<CancellationToken>()),
+            Times.Once);
     }
+
+    [Fact]
+    public async Task QualificationDetails_Post_Redirects_WhenNoProcStatusAndNoNote()
+    {
+        var controller = CreateController();
+
+        var model = new ChangedQualificationDetailsViewModel
+        {
+            Qual = new Qualification { Qan = DefaultQan },
+            AdditionalActions = new AdditionalFormActions
+            {
+                Note = string.Empty,
+                ProcessStatusId = null
+            }
+        };
+
+        var result = await controller.QualificationDetails(model);
+
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+
+        Assert.Multiple(() =>
+        {
+            Assert.Equal(nameof(ChangedController.QualificationDetails), redirect.ActionName);
+            Assert.Equal(DefaultQan, redirect.RouteValues!["qualificationReference"]?.ToString());
+        });
+
+        _mediator.Verify(m => m.Send(It.IsAny<AddQualificationDiscussionHistoryCommand>(), It.IsAny<CancellationToken>()), Times.Never);
+        _mediator.Verify(m => m.Send(It.IsAny<UpdateQualificationStatusCommand>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task QualificationDetails_Post_WithProcessStatus_NotAllowedUser_RedirectsToQualificationDetails()
+    {
+        var controller = CreateController();
+        var processStatusId = Guid.NewGuid();
+
+        _userHelper.Setup(u => u.GetUserRoles()).Returns(new List<string> { "some_other_role" });
+
+        var processStatusesResponse = CreateProcessStatusesResponse((processStatusId, DisallowedStatus));
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetProcessStatusesQueryResponse>
+            {
+                Success = true,
+                Value = processStatusesResponse
+            });
+
+        var model = new ChangedQualificationDetailsViewModel
+        {
+            Qual = new Qualification { Qan = DefaultQan },
+            AdditionalActions = new AdditionalFormActions
+            {
+                Note = string.Empty,
+                ProcessStatusId = processStatusId
+            }
+        };
+
+        var result = await controller.QualificationDetails(model);
+
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+
+        Assert.Multiple(() =>
+        {
+            Assert.Equal(nameof(ChangedController.QualificationDetails), redirect.ActionName);
+            Assert.Equal(DefaultQan, redirect.RouteValues!["qualificationReference"]?.ToString());
+        });
+
+        _mediator.Verify(m => m.Send(It.IsAny<UpdateQualificationStatusCommand>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task QualificationDetails_Post_WithProcessStatus_AllowedUser_SendsUpdateCommand()
+    {
+        var controller = CreateController();
+        var processStatusId = Guid.NewGuid();
+
+        _userHelper.Setup(u => u.GetUserRoles()).Returns(new List<string> { "qfau_user_approver" });
+
+        var processStatusesResponse = CreateProcessStatusesResponse((processStatusId, DecisionRequiredStatus));
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetProcessStatusesQueryResponse>
+            {
+                Success = true,
+                Value = processStatusesResponse
+            });
+
+        _mediator.Setup(m => m.Send(It.IsAny<UpdateQualificationStatusCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<EmptyResponse>
+            {
+                Success = true,
+                Value = new EmptyResponse()
+            });
+
+        var model = new ChangedQualificationDetailsViewModel
+        {
+            Qual = new Qualification { Qan = DefaultQan },
+            Version = VersionOne,
+            AdditionalActions = new AdditionalFormActions
+            {
+                Note = DefaultComment,
+                ProcessStatusId = processStatusId
+            }
+        };
+
+        var result = await controller.QualificationDetails(model);
+
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+
+        Assert.Multiple(() =>
+        {
+            Assert.Equal(nameof(ChangedController.QualificationDetails), redirect.ActionName);
+            Assert.Equal(DefaultQan, redirect.RouteValues!["qualificationReference"]);
+        });
+
+        _mediator.Verify(m => m.Send(
+            It.Is<UpdateQualificationStatusCommand>(cmd =>
+                cmd.QualificationReference == DefaultQan &&
+                cmd.ProcessStatusId == processStatusId &&
+                cmd.Notes == DefaultComment &&
+                cmd.Version == VersionOne &&
+                cmd.UserDisplayName == DefaultUserName),
+            It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task QualificationDetails_Post_WhenExceptionThrown_RedirectsToQualificationDetails()
+    {
+        var controller = CreateController();
+        var processStatusId = Guid.NewGuid();
+
+        _userHelper.Setup(u => u.GetUserRoles()).Returns(new List<string> { "qfau_user_approver" });
+
+        var processStatusesResponse = CreateProcessStatusesResponse((processStatusId, DecisionRequiredStatus));
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetProcessStatusesQueryResponse>
+            {
+                Success = true,
+                Value = processStatusesResponse
+            });
+
+        _mediator.Setup(m => m.Send(It.IsAny<UpdateQualificationStatusCommand>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new Exception("boom"));
+
+        var model = new ChangedQualificationDetailsViewModel
+        {
+            Qual = new Qualification { Qan = DefaultQan },
+            Version = VersionOne,
+            AdditionalActions = new AdditionalFormActions
+            {
+                Note = DefaultComment,
+                ProcessStatusId = processStatusId
+            }
+        };
+
+        var result = await controller.QualificationDetails(model);
+
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+
+        Assert.Multiple(() =>
+        {
+            Assert.Equal(nameof(ChangedController.QualificationDetails), redirect.ActionName);
+            Assert.Equal(DefaultQan, redirect.RouteValues!["qualificationReference"]?.ToString());
+        });
+    }
+
+    [Fact]
+    public async Task GetProcessStatuses_ReturnsOnlyReviewerAllowedStatuses_WhenUserIsNotApprover()
+    {
+        var controller = CreateController();
+
+        var allowedStatusId = Guid.NewGuid();
+        var secondAllowedStatusId = Guid.NewGuid();
+        var disallowedStatusId = Guid.NewGuid();
+
+        _userHelper.Setup(u => u.GetUserRoles()).Returns(new List<string>());
+
+        var processStatusesResponse = CreateProcessStatusesResponse(
+            (allowedStatusId, DecisionRequiredStatus),
+            (secondAllowedStatusId, NoActionRequiredStatus),
+            (disallowedStatusId, OnHoldStatus));
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetProcessStatusesQueryResponse>
+            {
+                Success = true,
+                Value = processStatusesResponse
+            });
+
+        var result = await controller.GetProcessStatuses();
+
+        Assert.Multiple(() =>
+        {
+            Assert.Equal(2, result.Count);
+            Assert.Contains(result, s => s.Id == allowedStatusId && s.Name == DecisionRequiredStatus);
+            Assert.Contains(result, s => s.Id == secondAllowedStatusId && s.Name == NoActionRequiredStatus);
+            Assert.DoesNotContain(result, s => s.Id == disallowedStatusId && s.Name == OnHoldStatus);
+        });
+    }
+
+    [Fact]
+    public async Task GetProcessStatuses_ReturnsAllStatuses_WhenUserIsApprover()
+    {
+        var controller = CreateController();
+
+        var allowedStatusId = Guid.NewGuid();
+        var onHoldStatusId = Guid.NewGuid();
+
+        _userHelper.Setup(u => u.GetUserRoles()).Returns(new List<string> { "qfau_user_approver" });
+
+        var processStatusesResponse = CreateProcessStatusesResponse(
+            (allowedStatusId, DecisionRequiredStatus),
+            (onHoldStatusId, OnHoldStatus));
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetProcessStatusesQueryResponse>
+            {
+                Success = true,
+                Value = processStatusesResponse
+            });
+
+        var result = await controller.GetProcessStatuses();
+
+        Assert.Multiple(() =>
+        {
+            Assert.Equal(2, result.Count);
+            Assert.Contains(result, s => s.Id == allowedStatusId && s.Name == DecisionRequiredStatus);
+            Assert.Contains(result, s => s.Id == onHoldStatusId && s.Name == OnHoldStatus);
+        });
+    }
+
+    [Fact]
+    public async Task ExportData_ReturnsFileContentResult_WhenExportExists()
+    {
+        var controller = CreateController();
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetChangedQualificationsCsvExportQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetQualificationsExportResponse>
+            {
+                Success = true,
+                Value = new GetQualificationsExportResponse
+                {
+                    QualificationExports = new List<QualificationExport>
+                    {
+                        new QualificationExport()
+                    }
+                }
+            });
+
+        var result = await controller.ExportData();
+
+        var file = Assert.IsType<FileContentResult>(result);
+
+        Assert.Multiple(() =>
+        {
+            Assert.Equal("text/csv", file.ContentType);
+            Assert.NotNull(file.FileContents);
+            Assert.NotEmpty(file.FileContents);
+            Assert.EndsWith("-ChangedQualificationsExport.csv", file.FileDownloadName);
+        });
+    }
+
+    [Fact]
+    public async Task ExportData_RedirectsToHomeError_WhenExportMissing()
+    {
+        var controller = CreateController();
+
+        _mediator
+            .Setup(m => m.Send(It.IsAny<GetChangedQualificationsCsvExportQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((BaseMediatrResponse<GetQualificationsExportResponse>?)null!);
+
+        var result = await controller.ExportData();
+
+        var redirect = Assert.IsType<RedirectResult>(result);
+
+        Assert.Multiple(() =>
+        {
+            Assert.Equal("/Home/Error", redirect.Url);
+        });
+    }
+
+    [Fact]
+    public async Task ExportData_RedirectsToHomeError_WhenExceptionThrown()
+    {
+        var controller = CreateController();
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetChangedQualificationsCsvExportQuery>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new Exception("boom"));
+
+        var result = await controller.ExportData();
+
+        var redirect = Assert.IsType<RedirectResult>(result);
+
+        Assert.Multiple(() =>
+        {
+            Assert.Equal("/Home/Error", redirect.Url);
+        });
+    }
+
+    [Fact]
+    public async Task QualificationDetailsTimeline_ReturnsRedirect_WhenQualificationReferenceMissing()
+    {
+        var controller = CreateController();
+
+        var result = await controller.QualificationDetailsTimeline(qualificationReference: null!);
+
+        var redirect = Assert.IsType<RedirectResult>(result);
+
+        Assert.Multiple(() =>
+        {
+            Assert.Equal("/Home/Error", redirect.Url);
+        });
+    }
+
+    [Fact]
+    public async Task QualificationDetailsTimeline_ReturnsView_WithTimelineModel()
+    {
+        var controller = CreateController();
+
+        var timelineResponse = new QualificationDiscussionHistoriesResponse
+        {
+            QualificationDiscussionHistories = new List<QualificationDiscussionHistory>()
+        };
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetQualificationTimelineQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<QualificationDiscussionHistoriesResponse>
+            {
+                Success = true,
+                Value = timelineResponse
+            });
+
+        var result = await controller.QualificationDetailsTimeline(DefaultQan);
+
+        var view = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<QualificationDetailsTimelineViewModel>(view.Model);
+
+        _mediator.Verify(m => m.Send(
+            It.Is<GetQualificationTimelineQuery>(q => q.QualificationReference == DefaultQan),
+            It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task QualificationDetailsTimeline_ReturnsRedirect_WhenExceptionThrown()
+    {
+        var controller = CreateController();
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetQualificationTimelineQuery>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new Exception("boom"));
+
+        var result = await controller.QualificationDetailsTimeline(DefaultQan);
+
+        var redirect = Assert.IsType<RedirectResult>(result);
+        Assert.Equal("/Home/Error", redirect.Url);
+    }
+
+    #region Index
 
     [Fact]
     public async Task Index_ReturnsViewResult_Empty()
     {
-        // Arrange: Changed qualifications response
-        var changedResponse = new BaseMediatrResponse<GetChangedQualificationsQueryResponse>
+        var controller = CreateController();
+
+        controller.HttpContext.Session.SetObject("ChangedQualificationFilters",
+            new QualificationFilterSessionModel
+            {
+                PageNumber = 1,
+                RecordsPerPage = 10
+            });
+
+        var response = new BaseMediatrResponse<GetChangedQualificationsQueryResponse>
         {
             Success = true,
             Value = new GetChangedQualificationsQueryResponse
             {
-                Data = _fixture.CreateMany<ChangedQualification>(2).ToList(),
-                TotalRecords = 2,
+                Data = new List<ChangedQualification>(),
+                TotalRecords = 0,
                 Skip = 0,
                 Take = 10
             }
         };
 
-        _mediatorMock
+        _mediator
             .Setup(m => m.Send(It.IsAny<GetChangedQualificationsQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(changedResponse);
+            .ReturnsAsync(response);
 
-        var statusesResponse = new BaseMediatrResponse<GetProcessStatusesQueryResponse>
-        {
-            Success = true,
-            Value = new GetProcessStatusesQueryResponse
-            {
-                ProcessStatuses =
-                {
-                    new GetProcessStatusesQueryResponse.ProcessStatus
-                    {
-                        Id = Guid.NewGuid(),
-                        Name = "Decision Required"
-                    }
-                }
-            }
-        };
+        var result = await controller.Index(pageNumber: 1);
 
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(statusesResponse);
-
-        var sessionModel = new QualificationFilterSessionModel
-        {
-            PageNumber = 1,
-            RecordsPerPage = 10
-        };
-
-        var json = System.Text.Json.JsonSerializer.Serialize(sessionModel);
-        _controller.HttpContext.Session.SetString("ChangedQualificationFilters", json);
-
-        // Act
-        var result = await _controller.Index(pageNumber: 1);
-
-        // Assert
-        var viewResult = Assert.IsType<ViewResult>(result);
-        var model = Assert.IsAssignableFrom<ChangedQualificationsViewModel>(viewResult.ViewData.Model);
+        Assert.IsType<ViewResult>(result);
     }
 
 
     [Fact]
     public async Task Index_ReturnsViewResult_WithListOfNewQualifications()
     {
-        // Arrange
-        var queryResponse = _fixture.Create<BaseMediatrResponse<GetChangedQualificationsQueryResponse>>();
-        queryResponse.Success = true;
-        queryResponse.Value.Data = _fixture.CreateMany<ChangedQualification>(2).ToList();
-        queryResponse.Value.TotalRecords = 2;
-        queryResponse.Value.Take = 10;
-        queryResponse.Value.Skip = 0;
+        var controller = CreateController();
 
-        _mediatorMock.Setup(m => m.Send(It.IsAny<GetChangedQualificationsQuery>(), It.IsAny<CancellationToken>()))
-                     .ReturnsAsync(queryResponse);
+        controller.HttpContext.Session.SetObject("ChangedQualificationFilters",
+            new QualificationFilterSessionModel
+            {
+                PageNumber = 1,
+                RecordsPerPage = 10
+            });
 
-        _mediatorMock.Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), It.IsAny<CancellationToken>()))
-                     .ReturnsAsync(new BaseMediatrResponse<GetProcessStatusesQueryResponse>
-                     {
-                         Success = true,
-                         Value = new GetProcessStatusesQueryResponse()
-                     });
+        var items = new List<ChangedQualification>
+    {
+        new ChangedQualification
+        {
+            QualificationId = Guid.NewGuid(),
+            Subject = "Math",
+            AwardingOrganisation = "OrgA",
+            Status = ProcessStatusLookup.DecisionRequired.Name
+        },
+        new ChangedQualification
+        {
+            QualificationId = Guid.NewGuid(),
+            Subject = "English",
+            AwardingOrganisation = "OrgB",
+            Status = ProcessStatusLookup.DecisionRequired.Name
+        }
+    };
+
+        var response = new BaseMediatrResponse<GetChangedQualificationsQueryResponse>
+        {
+            Success = true,
+            Value = new GetChangedQualificationsQueryResponse
+            {
+                Data = items,
+                TotalRecords = 2,
+                Skip = 0,
+                Take = 10
+            }
+        };
+
+        _mediator
+            .Setup(m => m.Send(It.IsAny<GetChangedQualificationsQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(response);
+
+        var result = await controller.Index(pageNumber: 1);
+
+        var view = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<ChangedQualificationsViewModel>(view.Model);
+
+        Assert.Equal(2, model.ChangedQualifications.Count);
+        Assert.Equal("Math", model.ChangedQualifications[0].Subject);
+        Assert.Equal("OrgA", model.ChangedQualifications[0].AwardingOrganisationName);
+        Assert.Equal(ProcessStatusLookup.DecisionRequired.Name, model.ChangedQualifications[0].CurrentProcessStatus.Name);
+    }
+
+    [Fact]
+    public async Task Index_ReturnsNotFound_WhenQueryFails()
+    {
+        var controller = CreateController();
+
+        var queryResponse = new BaseMediatrResponse<GetChangedQualificationsQueryResponse>
+        {
+            Success = false
+        };
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetChangedQualificationsQuery>(), It.IsAny<CancellationToken>()))
+                 .ReturnsAsync(queryResponse);
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), It.IsAny<CancellationToken>()))
+                 .ReturnsAsync(new BaseMediatrResponse<GetProcessStatusesQueryResponse>
+                 {
+                     Success = true,
+                     Value = new GetProcessStatusesQueryResponse()
+                 });
 
         var sessionModel = new QualificationFilterSessionModel
         {
@@ -161,59 +770,10 @@ public class ChangedControllerTests:UnitTest
             RecordsPerPage = 10
         };
 
-        var json = System.Text.Json.JsonSerializer.Serialize(sessionModel);
-        _controller.HttpContext.Session.SetString("ChangedQualificationFilters", json);
+        controller.HttpContext.Session.SetObject("ChangedQualificationFilters", sessionModel);
 
-        // Act
-        var result = await _controller.Index(pageNumber: 1);
+        var result = await controller.Index(pageNumber: 1);
 
-        // Assert
-        var viewResult = Assert.IsType<ViewResult>(result);
-        var model = Assert.IsAssignableFrom<ChangedQualificationsViewModel>(viewResult.ViewData.Model);
-
-        Assert.Equal(2, model.ChangedQualifications.Count);
-        Assert.Equal(queryResponse.Value.Data[0].Subject, model.ChangedQualifications[0].Subject);
-        Assert.Equal(queryResponse.Value.Data[0].Status, model.ChangedQualifications[0].Status);
-        Assert.Equal(queryResponse.Value.Data[0].AwardingOrganisation, model.ChangedQualifications[0].AwardingOrganisationName);
-        Assert.Equal(queryResponse.Value.Data[0].Status, model.ChangedQualifications[0].Status);
-    }
-
-
-    [Fact]
-    public async Task Index_ReturnsNotFound_WhenQueryFails()
-    {
-        // Arrange
-        var queryResponse = _fixture.Create<BaseMediatrResponse<GetChangedQualificationsQueryResponse>>();
-        queryResponse.Success = false;
-
-        _mediatorMock.Setup(m => m.Send(It.IsAny<GetChangedQualificationsQuery>(), It.IsAny<CancellationToken>()))
-                     .ReturnsAsync(queryResponse);
-
-        _mediatorMock.Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), It.IsAny<CancellationToken>()))
-                     .ReturnsAsync(new BaseMediatrResponse<GetProcessStatusesQueryResponse>
-                     {
-                         Success = true,
-                         Value = new GetProcessStatusesQueryResponse()
-                     });
-
-        var sessionModel = new QualificationFilterSessionModel
-        {
-            PageNumber = 1,
-            RecordsPerPage = 10,
-            Organisation = null,
-            QualificationName = null,
-            QAN = null,
-            ProcessStatusIds = new List<Guid>(),
-            AgeGroups = new List<AgeGroup>()
-        };
-
-        var json = System.Text.Json.JsonSerializer.Serialize(sessionModel);
-        _controller.HttpContext.Session.SetString("ChangedQualificationFilters", json);
-
-        // Act
-        var result = await _controller.Index(pageNumber: 1);
-
-        // Assert
         var redirect = Assert.IsType<RedirectResult>(result);
         Assert.Equal("/Home/Error", redirect.Url);
     }
@@ -221,11 +781,17 @@ public class ChangedControllerTests:UnitTest
     [Fact]
     public async Task Index_StoresUpdatedSessionModel()
     {
-        // Arrange
-        var sessionModel = new QualificationFilterSessionModel { PageNumber = 1, RecordsPerPage = 10 };
-        _controller.HttpContext.Session.SetObject("ChangedQualificationFilters", sessionModel);
+        var controller = CreateController();
 
-        _mediatorMock
+        var sessionModel = new QualificationFilterSessionModel
+        {
+            PageNumber = 1,
+            RecordsPerPage = 10
+        };
+
+        controller.HttpContext.Session.SetObject("ChangedQualificationFilters", sessionModel);
+
+        _mediator
             .Setup(m => m.Send(It.IsAny<GetChangedQualificationsQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new BaseMediatrResponse<GetChangedQualificationsQueryResponse>
             {
@@ -233,24 +799,28 @@ public class ChangedControllerTests:UnitTest
                 Value = new GetChangedQualificationsQueryResponse { Data = new(), TotalRecords = 0 }
             });
 
-        // Act
-        await _controller.Index(pageNumber: 5);
+        await controller.Index(pageNumber: 5);
 
-        // Assert
-        var updated = _controller.HttpContext.Session.GetObject<QualificationFilterSessionModel>("ChangedQualificationFilters");
+        var updated = controller.HttpContext.Session.GetObject<QualificationFilterSessionModel>("ChangedQualificationFilters");
         Assert.Equal(5, updated.PageNumber);
     }
 
     [Fact]
     public async Task Index_InvalidPaging_ShowsNotification()
     {
-        // Arrange
-        var sessionModel = new QualificationFilterSessionModel { PageNumber = -1, RecordsPerPage = 999 };
-        _controller.HttpContext.Session.SetObject("ChangedQualificationFilters", sessionModel);
+        var controller = CreateController();
 
-        _controller.TempData[ChangedController.NewQualDataKeys.InvalidPageParams.ToString()] = true;
+        var sessionModel = new QualificationFilterSessionModel
+        {
+            PageNumber = -1,
+            RecordsPerPage = 999
+        };
 
-        _mediatorMock
+        controller.HttpContext.Session.SetObject("ChangedQualificationFilters", sessionModel);
+
+        controller.TempData[ChangedController.NewQualDataKeys.InvalidPageParams.ToString()] = true;
+
+        _mediator
             .Setup(m => m.Send(It.IsAny<GetChangedQualificationsQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new BaseMediatrResponse<GetChangedQualificationsQueryResponse>
             {
@@ -258,992 +828,182 @@ public class ChangedControllerTests:UnitTest
                 Value = new GetChangedQualificationsQueryResponse { Data = new(), TotalRecords = 0 }
             });
 
-        // Act
-        var result = await _controller.Index(pageNumber: -1);
+        var result = await controller.Index(pageNumber: -1);
 
-        // Assert
         var view = Assert.IsType<ViewResult>(result);
-        Assert.NotNull(_controller.TempData[ChangedController.NewQualDataKeys.InvalidPageParams.ToString()]);
+        Assert.NotNull(controller.TempData[ChangedController.NewQualDataKeys.InvalidPageParams.ToString()]);
     }
-
 
     [Fact]
     public async Task Index_Exception_RedirectsToError()
     {
-        // Arrange
-        _mediatorMock
+        var controller = CreateController();
+
+        _mediator
             .Setup(m => m.Send(It.IsAny<GetChangedQualificationsQuery>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception());
 
-        // Act
-        var result = await _controller.Index(pageNumber:1);
+        var result = await controller.Index(pageNumber: 1);
 
-        // Assert
         var redirect = Assert.IsType<RedirectResult>(result);
         Assert.Equal("/Home/Error", redirect.Url);
     }
 
-
-    [Fact]
-    public async Task QualificationDetails_Get_ReturnsViewWithModel()
-    {
-        // Arrange
-        var details = new GetQualificationDetailsQueryResponse
-        {
-            Id = Guid.NewGuid(),
-            QualificationId = Guid.NewGuid(),
-            Version = 1,
-            Qual = new GetQualificationDetailsQueryResponse.Qualification
-            {
-                Id = Guid.NewGuid(),
-                Qan = "ABC123",
-                QualificationName = "Test Qualification",
-                Versions = new List<GetQualificationDetailsQueryResponse>()
-            },
-            Organisation = new GetQualificationDetailsQueryResponse.AwardingOrganisation
-            {
-                Id = Guid.NewGuid(),
-                NameOfqual = "Test Org"
-            },
-            Stage = new GetQualificationDetailsQueryResponse.LifecycleStage
-            {
-                Id = Guid.NewGuid(),
-                Name = "Draft"
-            },
-            ProcStatus = new GetQualificationDetailsQueryResponse.ProcessStatus
-            {
-                Id = Guid.NewGuid(),
-                Name = "Decision Required"
-            }
-        };
-
-        var wrappedDetails = new BaseMediatrResponse<GetQualificationDetailsQueryResponse>
-        {
-            Success = true,
-            Value = details
-        };
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetQualificationDetailsQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(wrappedDetails);
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetProcessStatusesQueryResponse>
-            {
-                Success = true,
-                Value = new GetProcessStatusesQueryResponse
-                {
-                    ProcessStatuses =
-                    {
-                    new() { Id = Guid.NewGuid(), Name = "Decision Required" }
-                    }
-                }
-            });
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetFeedbackForQualificationFundingByIdQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetFeedbackForQualificationFundingByIdQueryResponse>
-            {
-                Success = true,
-                Value = new GetFeedbackForQualificationFundingByIdQueryResponse
-                {
-                    QualificationFundedOffers = new()
-                }
-            });
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetApplicationsByQanQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetApplicationsByQanQueryResponse>
-            {
-                Success = true,
-                Value = new GetApplicationsByQanQueryResponse
-                {
-                    Applications = new()
-                }
-            });
-
-        // Act
-        var result = await _controller.QualificationDetails("ABC123");
-
-        // Assert
-        var view = Assert.IsType<ViewResult>(result);
-        Assert.IsType<ChangedQualificationDetailsViewModel>(view.Model);
-    }
-
-    [Fact]
-    public async Task QualificationDetails_Get_LoadsPreviousVersion_AndPopulatesKeyFieldChanges()
-    {
-        // Arrange latest version
-        var latest = _fixture.Create<GetQualificationDetailsQueryResponse>();
-        latest.Version = 2;
-        latest.VersionFieldChanges = "Title,OrganisationName";
-
-        var latestWrapped = new BaseMediatrResponse<GetQualificationDetailsQueryResponse>
-        {
-            Success = true,
-            Value = latest
-        };
-
-        // Arrange previous version
-        var previous = _fixture.Create<GetQualificationDetailsQueryResponse>();
-        previous.Version = 1;
-
-        var previousWrapped = new BaseMediatrResponse<GetQualificationDetailsQueryResponse>
-        {
-            Success = true,
-            Value = previous
-        };
-
-        // Mock required mediator calls
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetQualificationDetailsQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(latestWrapped);
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetQualificationVersionQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(previousWrapped);
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetProcessStatusesQueryResponse>
-            {
-                Success = true,
-                Value = new GetProcessStatusesQueryResponse
-                {
-                    ProcessStatuses =
-                    {
-                    new() { Id = Guid.NewGuid(), Name = "Decision Required" }
-                    }
-                }
-            });
-
-        // REQUIRED: feedback call
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetFeedbackForQualificationFundingByIdQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetFeedbackForQualificationFundingByIdQueryResponse>
-            {
-                Success = true,
-                Value = new GetFeedbackForQualificationFundingByIdQueryResponse
-                {
-                    QualificationFundedOffers = new()
-                }
-            });
-
-        // REQUIRED: applications call
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetApplicationsByQanQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetApplicationsByQanQueryResponse>
-            {
-                Success = true,
-                Value = new GetApplicationsByQanQueryResponse
-                {
-                    Applications = new()
-                }
-            });
-
-        // Act
-        var result = await _controller.QualificationDetails("ABC123");
-
-        // Assert
-        var view = Assert.IsType<ViewResult>(result);
-        var model = Assert.IsType<ChangedQualificationDetailsViewModel>(view.Model);
-
-        Assert.Equal(2, model.Version);
-        Assert.NotEmpty(model.KeyFieldChanges);
-
-        Assert.Contains(model.KeyFieldChanges, k => k.Name.Contains("Title", StringComparison.OrdinalIgnoreCase));
-        Assert.Contains(model.KeyFieldChanges, k => k.Name.Contains("Organisation", StringComparison.OrdinalIgnoreCase));
-    }
-
-
-    [Fact(Skip = "This test is being ignored for now.")]
-    public async Task QualificationDetails_ReturnsViewResult_WithQualificationDetails()
-    {
-        // Arrange
-        var queryResponse = _fixture.Create<BaseMediatrResponse<GetQualificationDetailsQueryResponse>>();
-        queryResponse.Success = true;
-
-        _mediatorMock.Setup(m => m.Send(It.IsAny<GetQualificationDetailsQuery>(), default))
-                     .ReturnsAsync(queryResponse);
-
-        // Act
-        var result = await _controller.QualificationDetails("Ref123");
-
-        // Assert
-        var viewResult = Assert.IsType<ViewResult>(result);
-        var model = Assert.IsAssignableFrom<ChangedQualificationDetailsViewModel>(viewResult.ViewData.Model);
-    }
-
-    [Fact(Skip = "This test is being ignored for now.")]
-    [ExcludeFromCodeCoverage]
-    public async Task QualificationDetails_ReturnsNotFound_WhenQueryFails()
-    {
-        // Arrange
-        var queryResponse = _fixture.Create<BaseMediatrResponse<GetQualificationDetailsQueryResponse>>();
-        queryResponse.Success = false;
-        queryResponse.ErrorMessage = "No details found for qualification reference: Ref123";
-
-        _mediatorMock.Setup(m => m.Send(It.IsAny<GetQualificationDetailsQuery>(), default))
-                     .ReturnsAsync(queryResponse);
-
-        // Act
-        try
-        {
-            var result = await _controller.QualificationDetails("Ref123");
-            Assert.Fail();
-        }
-        catch (Exception ex)
-        {
-            Assert.Equal(queryResponse.ErrorMessage, ex.Message);
-        }
-    }
-
-    [Fact]
-    public async Task QualificationDetails_ReturnsBadRequest_WhenQualificationReferenceIsEmpty()
-    {
-        // Act
-        var result = await _controller.QualificationDetails(string.Empty);
-
-        // Assert
-        var badRequestResult = Assert.IsType<RedirectResult>(result);
-    }
-
-    [Fact]
-    public async Task QualificationDetails_Get_WhenVersionGreaterThanOne_LoadsPreviousVersion_AndPopulatesKeyFieldChanges()
-    {
-        // Arrange
-        var latest = new GetQualificationDetailsQueryResponse
-        {
-            Id = Guid.NewGuid(),
-            QualificationId = Guid.NewGuid(),
-            Version = 2,
-            VersionFieldChanges = "Title,OrganisationName",
-            Qual = new GetQualificationDetailsQueryResponse.Qualification
-            {
-                Id = Guid.NewGuid(),
-                Qan = "ABC123",
-                QualificationName = "New Name",
-                Versions = new List<GetQualificationDetailsQueryResponse>()
-            },
-            Organisation = new GetQualificationDetailsQueryResponse.AwardingOrganisation
-            {
-                Id = Guid.NewGuid(),
-                NameOfqual = "New Org"
-            },
-            Stage = new GetQualificationDetailsQueryResponse.LifecycleStage
-            {
-                Id = Guid.NewGuid(),
-                Name = "Draft"
-            },
-            ProcStatus = new GetQualificationDetailsQueryResponse.ProcessStatus
-            {
-                Id = Guid.NewGuid(),
-                Name = "Decision Required"
-            }
-        };
-
-        var previous = new GetQualificationDetailsQueryResponse
-        {
-            Id = Guid.NewGuid(),
-            QualificationId = latest.QualificationId,
-            Version = 1,
-            Qual = new GetQualificationDetailsQueryResponse.Qualification
-            {
-                Id = Guid.NewGuid(),
-                Qan = "ABC123",
-                QualificationName = "Old Name",
-                Versions = new List<GetQualificationDetailsQueryResponse>()
-            },
-            Organisation = new GetQualificationDetailsQueryResponse.AwardingOrganisation
-            {
-                Id = Guid.NewGuid(),
-                NameOfqual = "Old Org"
-            },
-            Stage = new GetQualificationDetailsQueryResponse.LifecycleStage
-            {
-                Id = Guid.NewGuid(),
-                Name = "Draft"
-            },
-            ProcStatus = new GetQualificationDetailsQueryResponse.ProcessStatus
-            {
-                Id = Guid.NewGuid(),
-                Name = "Decision Required"
-            }
-        };
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetQualificationDetailsQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetQualificationDetailsQueryResponse>
-            {
-                Success = true,
-                Value = latest
-            });
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetQualificationVersionQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetQualificationDetailsQueryResponse>
-            {
-                Success = true,
-                Value = previous
-            });
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetProcessStatusesQueryResponse>
-            {
-                Success = true,
-                Value = new GetProcessStatusesQueryResponse
-                {
-                    ProcessStatuses =
-                    {
-                    new() { Id = Guid.NewGuid(), Name = "Decision Required" }
-                    }
-                }
-            });
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetFeedbackForQualificationFundingByIdQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetFeedbackForQualificationFundingByIdQueryResponse>
-            {
-                Success = true,
-                Value = new GetFeedbackForQualificationFundingByIdQueryResponse
-                {
-                    QualificationFundedOffers = new()
-                }
-            });
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetApplicationsByQanQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetApplicationsByQanQueryResponse>
-            {
-                Success = true,
-                Value = new GetApplicationsByQanQueryResponse
-                {
-                    Applications = new()
-                }
-            });
-
-        // Act
-        var result = await _controller.QualificationDetails("ABC123");
-
-        // Assert
-        var view = Assert.IsType<ViewResult>(result);
-        var model = Assert.IsType<ChangedQualificationDetailsViewModel>(view.Model);
-        Assert.Equal(2, model.Version);
-        Assert.NotEmpty(model.KeyFieldChanges);
-        Assert.Contains(model.KeyFieldChanges, k => k.Name.Contains("Title", StringComparison.OrdinalIgnoreCase));
-        Assert.Contains(model.KeyFieldChanges, k => k.Name.Contains("Organisation", StringComparison.OrdinalIgnoreCase));
-    }
-
-    [Fact]
-    public async Task QualificationDetails_LoadsFundedOffers()
-    {
-        // Arrange
-        var details = _fixture.Create<GetQualificationDetailsQueryResponse>();
-        details.Version = 1;
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetQualificationDetailsQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetQualificationDetailsQueryResponse> { Success = true, Value = details });
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetFeedbackForQualificationFundingByIdQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetFeedbackForQualificationFundingByIdQueryResponse>
-            {
-                Success = true,
-                Value = new GetFeedbackForQualificationFundingByIdQueryResponse { QualificationFundedOffers = new() }
-            });
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetApplicationsByQanQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetApplicationsByQanQueryResponse>
-            {
-                Success = true,
-                Value = new GetApplicationsByQanQueryResponse { Applications = new() }
-            });
-
-        // Act
-        var result = await _controller.QualificationDetails("ABC");
-
-        // Assert
-        Assert.IsType<ViewResult>(result);
-    }
-
-    [Fact]
-    public async Task QualificationDetails_MapsFundedOffers()
-    {
-        // Arrange
-        var details = _fixture.Create<GetQualificationDetailsQueryResponse>();
-        details.Version = 1;
-
-        var funding = new GetFeedbackForQualificationFundingByIdQueryResponse
-        {
-            QualificationFundedOffers = new(),
-            Approved = true
-        };
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetQualificationDetailsQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetQualificationDetailsQueryResponse> { Success = true, Value = details });
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetFeedbackForQualificationFundingByIdQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetFeedbackForQualificationFundingByIdQueryResponse> { Success = true, Value = funding });
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetApplicationsByQanQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetApplicationsByQanQueryResponse>
-            {
-                Success = true,
-                Value = new GetApplicationsByQanQueryResponse { Applications = new() }
-            });
-
-        // Act
-        var result = await _controller.QualificationDetails("ABC");
-
-        // Assert
-        var view = Assert.IsType<ViewResult>(result);
-        var model = Assert.IsType<ChangedQualificationDetailsViewModel>(view.Model);
-        Assert.True(model.FundingsOffersOutcomeStatus);
-    }
-
-    [Fact]
-    public async Task QualificationDetails_LoadsApplications()
-    {
-        // Arrange
-        var details = _fixture.Create<GetQualificationDetailsQueryResponse>();
-        details.Version = 1;
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetQualificationDetailsQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetQualificationDetailsQueryResponse> { Success = true, Value = details });
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetFeedbackForQualificationFundingByIdQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetFeedbackForQualificationFundingByIdQueryResponse>
-            {
-                Success = true,
-                Value = new GetFeedbackForQualificationFundingByIdQueryResponse { QualificationFundedOffers = new() }
-            });
-
-        var apps = new GetApplicationsByQanQueryResponse { Applications = new() };
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetApplicationsByQanQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetApplicationsByQanQueryResponse> { Success = true, Value = apps });
-
-        // Act
-        var result = await _controller.QualificationDetails("ABC");
-
-        // Assert
-        Assert.IsType<ViewResult>(result);
-    }
-
-    [Fact]
-    public async Task QualificationDetails_Exception_RedirectsToError()
-    {
-        // Arrange
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetQualificationDetailsQuery>(), It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new Exception());
-
-        // Act
-        var result = await _controller.QualificationDetails("ABC");
-
-        // Assert
-        var redirect = Assert.IsType<RedirectResult>(result);
-        Assert.Equal("/Home/Error", redirect.Url);
-    }
-
-    [Fact]
-    public async Task QualificationDetails_Post_LoadsProcessStatusesBeforePermissionCheck()
-    {
-        // Arrange
-        var model = new ChangedQualificationDetailsViewModel
-        {
-            Qual = new() { Qan = "ABC" },
-            AdditionalActions = new() { ProcessStatusId = Guid.NewGuid(), Note = "" }
-        };
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetProcessStatusesQueryResponse>
-            {
-                Success = true,
-                Value = new GetProcessStatusesQueryResponse
-                {
-                    ProcessStatuses =
-                    {
-                    new() { Id = model.AdditionalActions.ProcessStatusId.Value, Name = "Decision Required" }
-                    }
-                }
-            });
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<UpdateQualificationStatusCommand>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<EmptyResponse> { Success = true, Value = new EmptyResponse() });
-
-        // Act
-        var result = await _controller.QualificationDetails(model);
-
-        // Assert
-        var redirect = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal("QualificationDetails", redirect.ActionName);
-    }
-
-    [Fact]
-    public async Task QualificationDetails_Post_AddsComment_WhenNoProcStatusAndNote()
-    {
-        // Arrange
-        var model = new ChangedQualificationDetailsViewModel
-        {
-            Qual = new() { Qan = "ABC123" },
-            AdditionalActions = new() { Note = "Test note", ProcessStatusId = null }
-        };
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<AddQualificationDiscussionHistoryCommand>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<EmptyResponse>
-            {
-                Success = true,
-                Value = new EmptyResponse()
-            });
-
-        // Act
-        var result = await _controller.QualificationDetails(model);
-
-        // Assert
-        var redirect = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal("QualificationDetails", redirect.ActionName);
-        Assert.Equal("ABC123", redirect.RouteValues["qualificationReference"]);
-    }
-
-    [Fact]
-    public async Task QualificationDetails_Post_Redirects_WhenNoStatusAndNoNote()
-    {
-        // Arrange
-        var model = new ChangedQualificationDetailsViewModel
-        {
-            Qual = new() { Qan = "ABC123" },
-            AdditionalActions = new() { Note = "", ProcessStatusId = null }
-        };
-
-        // Act
-        var result = await _controller.QualificationDetails(model);
-
-        // Assert
-        var redirect = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal("QualificationDetails", redirect.ActionName);
-        Assert.Equal("ABC123", redirect.RouteValues["qualificationReference"]);
-    }
-
-    [Fact]
-    public async Task QualificationDetails_Post_UpdatesStatus_WhenProcessStatusProvided()
-    {
-        // Arrange
-        var model = new ChangedQualificationDetailsViewModel
-        {
-            Qual = new() { Qan = "ABC123" },
-            AdditionalActions = new() { ProcessStatusId = Guid.NewGuid(), Note = "" }
-        };
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<UpdateQualificationStatusCommand>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<EmptyResponse>
-            {
-                Success = true,
-                Value = new EmptyResponse()
-            });
-
-        // Act
-        var result = await _controller.QualificationDetails(model);
-
-        // Assert
-        var redirect = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal("QualificationDetails", redirect.ActionName);
-        Assert.Equal("ABC123", redirect.RouteValues["qualificationReference"]);
-    }
-
-    [Fact]
-    public async Task QualificationDetails_Post_AddsCommentAndUpdatesStatus_WhenBothProvided()
-    {
-        // Arrange
-        var model = new ChangedQualificationDetailsViewModel
-        {
-            Qual = new() { Qan = "ABC123" },
-            AdditionalActions = new()
-            {
-                Note = "Some note",
-                ProcessStatusId = Guid.NewGuid()
-            }
-        };
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<AddQualificationDiscussionHistoryCommand>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<EmptyResponse>
-            {
-                Success = true,
-                Value = new EmptyResponse()
-            });
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<UpdateQualificationStatusCommand>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<EmptyResponse>
-            {
-                Success = true,
-                Value = new EmptyResponse()
-            });
-
-        // Act
-        var result = await _controller.QualificationDetails(model);
-
-        // Assert
-        var redirect = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal("QualificationDetails", redirect.ActionName);
-        Assert.Equal("ABC123", redirect.RouteValues["qualificationReference"]);
-    }
-
-    [Fact]
-    public async Task QualificationDetails_Post_ReturnsErrorView_WhenMediatorThrows()
-    {
-        // Arrange
-        var model = new ChangedQualificationDetailsViewModel
-        {
-            Qual = new() { Qan = "ABC123" },
-            AdditionalActions = new() { Note = "Test", ProcessStatusId = Guid.NewGuid() }
-        };
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetProcessStatusesQueryResponse>
-            {
-                Success = true,
-                Value = new GetProcessStatusesQueryResponse
-                {
-                    ProcessStatuses =
-                    {
-                    new() { Id = Guid.NewGuid(), Name = "Decision Required" }
-                    }
-                }
-            });
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<UpdateQualificationStatusCommand>(), It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new Exception("Test failure"));
-
-        // Act
-        var result = await _controller.QualificationDetails(model);
-
-        // Assert
-        var redirect = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal("QualificationDetails", redirect.ActionName);
-        Assert.Equal("ABC123", redirect.RouteValues["qualificationReference"]);
-    }
-
-
-
-    [Fact]
-    public async Task Clear_Empty()
-    {
-        // Arrange
-
-        var queryResponse = _fixture.Create<BaseMediatrResponse<GetChangedQualificationsQueryResponse>>();
-        queryResponse.Success = true;
-        queryResponse.Value.Data = _fixture.CreateMany<ChangedQualification>(2).ToList();
-
-        _mediatorMock.Setup(m => m.Send(It.IsAny<GetChangedQualificationsQuery>(), default))
-                     .ReturnsAsync(queryResponse);
-
-        // Act
-        var result = await _controller.Clear(recordsPerPage: 10);
-
-        // Assert
-        var redirect = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal("Index", redirect.ActionName);
-        Assert.Equal(0, redirect.RouteValues["pageNumber"]);
-        Assert.Equal(10, redirect.RouteValues["recordsPerPage"]);
-    }
+    #endregion
 
     #region Clear
 
     [Fact]
+    public async Task Clear_Empty_RedirectsToIndexWithDefaults()
+    {
+        var controller = CreateController();
+
+        var result = await controller.Clear();
+
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal(nameof(ChangedController.Index), redirect.ActionName);
+        Assert.Equal(0, redirect.RouteValues["pageNumber"]);
+        Assert.Equal(10, redirect.RouteValues["recordsPerPage"]);
+    }
+
+    [Fact]
     public async Task Clear_RemovesSessionKey()
     {
-        // Arrange
-        _controller.HttpContext.Session.SetObject("ChangedQualificationFilters", new QualificationFilterSessionModel());
+        var controller = CreateController();
 
-        // Act
-        await _controller.Clear();
+        controller.HttpContext.Session.SetObject(
+            "ChangedQualificationFilters",
+            new QualificationFilterSessionModel());
 
-        // Assert
-        Assert.Null(_controller.HttpContext.Session.GetObject<QualificationFilterSessionModel>("ChangedQualificationFilters"));
+        await controller.Clear();
+
+        Assert.Null(controller.HttpContext.Session
+            .GetObject<QualificationFilterSessionModel>("ChangedQualificationFilters"));
     }
 
     [Fact]
     public async Task Clear_InvalidModelState_ReturnsIndexView()
     {
-        // Arrange
-        _controller.ModelState.AddModelError("x", "y");
+        var controller = CreateController();
 
-        // Act
-        var result = await _controller.Clear();
+        controller.ModelState.AddModelError("x", "y");
 
-        // Assert
+        var result = await controller.Clear();
+
         var view = Assert.IsType<ViewResult>(result);
         Assert.Equal("Index", view.ViewName);
     }
 
-    //[Fact]
-    //public async Task Clear_Exception_ReturnsIndexView()
-    //{
-    //    Arrange
-    //   var throwingSession = new TestSessionThrowing();
-    //    _controller.HttpContext.Session = throwingSession;
+    [Fact]
+    public async Task Clear_Exception_ReturnsIndexView()
+    {
+        var controller = CreateController();
 
-    //    Act
-    //   var result = await _controller.Clear();
+        controller.HttpContext.Session = new TestSessionThrowing();
 
-    //    Assert
-    //   var view = Assert.IsType<ViewResult>(result);
-    //    Assert.Equal("Index", view.ViewName);
-    //}
+        var result = await controller.Clear();
+
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.Equal("Index", view.ViewName);
+    }
 
     #endregion
 
-
-
+    #region Search
     [Fact]
     public async Task Search_WritesFiltersToSession_AndRedirectsToIndex()
     {
-        // Arrange
-        var viewModel = _fixture.Create<ChangedQualificationsViewModel>();
+        var controller = CreateController();
 
-        // Act
-        var result = await _controller.Search(viewModel);
+        var viewModel = new ChangedQualificationsViewModel
+        {
+            Filter = new NewQualificationFilterViewModel
+            {
+                QualificationName = "Math",
+                Organisation = "OrgA",
+                QAN = "12345678",
+                ProcessStatusIds = new List<Guid>(),
+                AgeGroups = new List<AgeGroup>()
+            },
+            PaginationViewModel = new PaginationViewModel
+            {
+                RecordsPerPage = 20
+            }
+        };
 
-        // Assert
+        var result = await controller.Search(viewModel);
+
         var redirect = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal("Index", redirect.ActionName);
+        Assert.Equal(nameof(ChangedController.Index), redirect.ActionName);
 
-        var sessionJson = _controller.HttpContext.Session.GetString("ChangedQualificationFilters");
-        Assert.NotNull(sessionJson);
+        var sessionModel = controller.HttpContext.Session
+            .GetObject<QualificationFilterSessionModel>("ChangedQualificationFilters");
 
-        var sessionModel = System.Text.Json.JsonSerializer.Deserialize<QualificationFilterSessionModel>(sessionJson);
-
-        Assert.Equal(viewModel.Filter.QualificationName, sessionModel!.QualificationName);
-        Assert.Equal(viewModel.Filter.Organisation, sessionModel.Organisation);
-        Assert.Equal(viewModel.Filter.QAN, sessionModel.QAN);
-        Assert.Equal(viewModel.PaginationViewModel.RecordsPerPage, sessionModel.RecordsPerPage);
+        Assert.NotNull(sessionModel);
+        Assert.Equal("Math", sessionModel.QualificationName);
+        Assert.Equal("OrgA", sessionModel.Organisation);
+        Assert.Equal("12345678", sessionModel.QAN);
+        Assert.Equal(20, sessionModel.RecordsPerPage);
     }
 
-    #region Search
 
     [Fact]
     public async Task Search_ResetsPageNumberToOne()
     {
-        // Arrange
+        var controller = CreateController();
+
         var vm = new ChangedQualificationsViewModel
         {
-            Filter = new(),
-            PaginationViewModel = new() { RecordsPerPage = 20 }
+            Filter = new NewQualificationFilterViewModel(),
+            PaginationViewModel = new PaginationViewModel { RecordsPerPage = 20 }
         };
 
-        // Act
-        await _controller.Search(vm);
+        await controller.Search(vm);
 
-        // Assert
-        var session = _controller.HttpContext.Session.GetObject<QualificationFilterSessionModel>("ChangedQualificationFilters");
+        var session = controller.HttpContext.Session
+            .GetObject<QualificationFilterSessionModel>("ChangedQualificationFilters");
+
         Assert.Equal(1, session.PageNumber);
     }
-
-    //[Fact]
-    //public async Task Search_Exception_ReturnsIndexView()
-    //{
-    //    // Arrange
-    //    var vm = new ChangedQualificationsViewModel { Filter = new(), PaginationViewModel = new() };
-
-    //    var throwingSession = new TestSessionThrowing();
-    //    _controller.HttpContext.Session = throwingSession;
-
-    //    // Act
-    //    var result = await _controller.Search(vm);
-
-    //    // Assert
-    //    var view = Assert.IsType<ViewResult>(result);
-    //    Assert.Equal("Index", view.ViewName);
-    //}
 
     [Fact]
     public async Task Search_MapsNullFieldsCorrectly()
     {
-        // Arrange
+        var controller = CreateController();
+
         var vm = new ChangedQualificationsViewModel
         {
-            Filter = new(),
-            PaginationViewModel = new() { RecordsPerPage = 10 }
+            Filter = new NewQualificationFilterViewModel(),
+            PaginationViewModel = new PaginationViewModel { RecordsPerPage = 10 }
         };
 
-        // Act
-        await _controller.Search(vm);
+        await controller.Search(vm);
 
-        // Assert
-        var session = _controller.HttpContext.Session.GetObject<QualificationFilterSessionModel>("ChangedQualificationFilters");
-        Assert.Equal("", session.QualificationName!);
+        var session = controller.HttpContext.Session
+            .GetObject<QualificationFilterSessionModel>("ChangedQualificationFilters");
+
+        Assert.Equal("", session.QualificationName);
         Assert.Equal("", session.Organisation);
         Assert.Equal("", session.QAN);
     }
 
+    [Fact]
+    public async Task Search_Exception_ReturnsIndexView()
+    {
+        var controller = CreateController();
+
+        var vm = new ChangedQualificationsViewModel
+        {
+            Filter = new NewQualificationFilterViewModel(),
+            PaginationViewModel = new PaginationViewModel()
+        };
+
+        controller.HttpContext.Session = new TestSessionThrowing();
+
+        var result = await controller.Search(vm);
+
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.Equal("Index", view.ViewName);
+    }
     #endregion
-
-
-    [Fact]
-    public async Task QualificationDetails_Post_Redirects_WhenUserCannotSetStatus()
-    {
-        // Arrange
-        var model = new ChangedQualificationDetailsViewModel
-        {
-            Qual = new() { Qan = "ABC123" },
-            AdditionalActions = new()
-            {
-                ProcessStatusId = Guid.NewGuid(),
-                Note = ""
-            },
-            Version = 1
-        };
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetProcessStatusesQueryResponse>
-            {
-                Success = true,
-                Value = new GetProcessStatusesQueryResponse
-                {
-                    ProcessStatuses =
-                    {
-                    new() { Id = Guid.NewGuid(), Name = "Some Other Status" }
-                    }
-                }
-            });
-
-        // Act
-        var result = await _controller.QualificationDetails(model);
-
-        // Assert
-        var redirect = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal("QualificationDetails", redirect.ActionName);
-        Assert.Equal("ABC123", redirect.RouteValues["qualificationReference"]);
-    }
-
-    [Fact]
-    public async Task QualificationDetails_Post_Redirects_WhenGetProcessStatusesThrows()
-    {
-        // Arrange
-        var model = new ChangedQualificationDetailsViewModel
-        {
-            Qual = new() { Qan = "ABC123" },
-            AdditionalActions = new()
-            {
-                ProcessStatusId = Guid.NewGuid(),
-                Note = ""
-            },
-            Version = 1
-        };
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new Exception("Failure"));
-
-        // Act
-        var result = await _controller.QualificationDetails(model);
-
-        // Assert
-        var redirect = Assert.IsType<RedirectToActionResult>(result);
-        Assert.Equal("QualificationDetails", redirect.ActionName);
-        Assert.Equal("ABC123", redirect.RouteValues["qualificationReference"]);
-    }
-
-    [Fact]
-    public async Task ExportData_ReturnsFile_WhenExportsExist()
-    {
-        // Arrange
-        var response = new BaseMediatrResponse<GetQualificationsExportResponse>
-        {
-            Success = true,
-            Value = new GetQualificationsExportResponse
-            {
-                QualificationExports = new List<QualificationExport>
-                {
-                    new QualificationExport { QANText = "ABC123" }
-                }
-            }
-        };
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetChangedQualificationsCsvExportQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(response);
-
-        // Act
-        var result = await _controller.ExportData();
-
-        // Assert
-        Assert.IsType<FileContentResult>(result);
-    }
-
-    [Fact]
-    public async Task ExportData_RedirectsToError_WhenResultIsNull()
-    {
-        // Arrange
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetChangedQualificationsCsvExportQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((BaseMediatrResponse<GetQualificationsExportResponse>)null);
-
-        // Act
-        var result = await _controller.ExportData();
-
-        // Assert
-        var redirect = Assert.IsType<RedirectResult>(result);
-        Assert.Equal("/Home/Error", redirect.Url);
-    }
-
-    [Fact]
-    public async Task ExportData_RedirectsToError_WhenExportsAreNull()
-    {
-        // Arrange
-        var response = new BaseMediatrResponse<GetQualificationsExportResponse>
-        {
-            Success = true,
-            Value = new GetQualificationsExportResponse
-            {
-                QualificationExports = null
-            }
-        };
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetChangedQualificationsCsvExportQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(response);
-
-        // Act
-        var result = await _controller.ExportData();
-
-        // Assert
-        var redirect = Assert.IsType<RedirectResult>(result);
-        Assert.Equal("/Home/Error", redirect.Url);
-    }
-
-    [Fact]
-    public async Task ExportData_RedirectsToError_OnException()
-    {
-        // Arrange
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetChangedQualificationsCsvExportQuery>(), It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new Exception("fail"));
-
-        // Act
-        var result = await _controller.ExportData();
-
-        // Assert
-        var redirect = Assert.IsType<RedirectResult>(result);
-        Assert.Equal("/Home/Error", redirect.Url);
-    }
 }

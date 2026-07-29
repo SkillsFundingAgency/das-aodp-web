@@ -1,6 +1,4 @@
-﻿using AutoFixture;
-using AutoFixture.AutoMoq;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -8,372 +6,134 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Application.Services;
 using SFA.DAS.AODP.UnitTests.Helper;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Qualifications;
+
 namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers;
 
 public class ChangedControllerTests_Timeline
 {
-    private readonly IFixture _fixture;
-    private readonly Mock<ILogger<ChangedController>> _loggerMock;
+    private readonly Mock<IMediator> _mediator;
     private readonly Mock<IUserHelperService> _userHelper;
-    private readonly Mock<IMediator> _mediatorMock;
+    private readonly Mock<ILogger<ChangedController>> _logger;
+    private readonly Mock<IQualificationTimelineHistoryBuilder> _timelineBuilder;
     private readonly ChangedController _controller;
 
     public ChangedControllerTests_Timeline()
     {
-        _fixture = new Fixture().Customize(new AutoMoqCustomization());
+        _mediator = new Mock<IMediator>();
+        _userHelper = new Mock<IUserHelperService>();
+        _logger = new Mock<ILogger<ChangedController>>();
+        _timelineBuilder = new Mock<IQualificationTimelineHistoryBuilder>();
 
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
-        _fixture.Customizations.Add(new DateOnlySpecimenBuilder());
+        _controller = new ChangedController(
+            _logger.Object,
+            _mediator.Object,
+            _userHelper.Object,
+            _timelineBuilder.Object);
 
-        _loggerMock = _fixture.Freeze<Mock<ILogger<ChangedController>>>();
-        _userHelper = _fixture.Freeze<Mock<IUserHelperService>>();
-        _mediatorMock = _fixture.Freeze<Mock<IMediator>>();
+        var httpContext = new DefaultHttpContext();
+        httpContext.Session = new TestSession();
 
-        _controller = new ChangedController(_loggerMock.Object, _mediatorMock.Object, _userHelper.Object);
-
-        var context = new DefaultHttpContext();
-        context.Session = new TestSession();
         _controller.ControllerContext = new ControllerContext
         {
-            HttpContext = context
+            HttpContext = httpContext
         };
 
-        _controller.TempData = new TempDataDictionary(_controller.HttpContext, Mock.Of<ITempDataProvider>());
+        _controller.TempData = new TempDataDictionary(
+            httpContext,
+            Mock.Of<ITempDataProvider>());
 
         _userHelper
             .Setup(u => u.GetUserRoles())
             .Returns(new List<string>());
-
-        var processResponse = new BaseMediatrResponse<GetProcessStatusesQueryResponse>
-        {
-            Success = true,
-            Value = new GetProcessStatusesQueryResponse
-            {
-                ProcessStatuses = new List<GetProcessStatusesQueryResponse.ProcessStatus>
-                {
-                    new() { Id = Guid.NewGuid(), Name = "Decision Required" },
-                    new() { Id = Guid.NewGuid(), Name = "No Action Required" }
-                }
-            }
-        };
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(processResponse);
     }
 
     [Fact]
-    public async Task Timeline_SetsQan()
+    public async Task Timeline_EmptyReference_RedirectsToError()
     {
-        _mediatorMock
-            .Setup(m => m.Send(
-                It.IsAny<GetDiscussionHistoriesForQualificationQuery>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetDiscussionHistoriesForQualificationQueryResponse>
+        var result = await _controller.QualificationDetailsTimeline("");
+
+        var redirect = Assert.IsType<RedirectResult>(result);
+        Assert.Equal("/Home/Error", redirect.Url);
+    }
+
+    [Fact]
+    public async Task Timeline_ReturnsViewModel_WithQan()
+    {
+        var response = new QualificationDiscussionHistoriesResponse
+        {
+            QualificationDiscussionHistories = new List<QualificationDiscussionHistory>()
+        };
+
+        _mediator
+            .Setup(m => m.Send(It.IsAny<GetQualificationTimelineQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<QualificationDiscussionHistoriesResponse>
             {
                 Success = true,
-                Value = new GetDiscussionHistoriesForQualificationQueryResponse
-                {
-                    QualificationDiscussionHistories = new()
-                }
+                Value = response
             });
 
-        _mediatorMock
-            .Setup(m => m.Send(
-                It.IsAny<GetQualificationDetailWithVersionsQuery>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetQualificationDetailsQueryResponse>
-            {
-                Success = true,
-                Value = new GetQualificationDetailsQueryResponse
-                {
-                    Qual = new GetQualificationDetailsQueryResponse.Qualification
-                    {
-                        Qan = "ABC",
-                        Versions = new()
-                        {
-                        new GetQualificationDetailsQueryResponse
-                        {
-                            Version = 1,
-                            InsertedTimestamp = DateTime.UtcNow,
-                            Stage = new GetQualificationDetailsQueryResponse.LifecycleStage { Id = Guid.NewGuid(), Name = "Stage" },
-                            Organisation = new GetQualificationDetailsQueryResponse.AwardingOrganisation { Id = Guid.NewGuid(), NameOfqual = "Org" },
-                            ProcStatus = new GetQualificationDetailsQueryResponse.ProcessStatus { Id = Guid.NewGuid(), Name = "Status" }
-                        }
-                        }
-                    },
-                    Stage = new GetQualificationDetailsQueryResponse.LifecycleStage { Id = Guid.NewGuid(), Name = "Stage" },
-                    Organisation = new GetQualificationDetailsQueryResponse.AwardingOrganisation { Id = Guid.NewGuid(), NameOfqual = "Org" },
-                    ProcStatus = new GetQualificationDetailsQueryResponse.ProcessStatus { Id = Guid.NewGuid(), Name = "Status" }
-                }
-            });
-
-        var result = await _controller.QualificationDetailsTimeline("ABC");
+        var result = await _controller.QualificationDetailsTimeline("ABC123");
 
         var view = Assert.IsType<ViewResult>(result);
         var model = Assert.IsType<QualificationDetailsTimelineViewModel>(view.Model);
 
-        Assert.Equal("ABC", model.Qan);
-    }
-
-    [Fact]
-    public async Task Timeline_AddsChangeHistoryEntries()
-    {
-        _mediatorMock
-            .Setup(m => m.Send(
-                It.IsAny<GetDiscussionHistoriesForQualificationQuery>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetDiscussionHistoriesForQualificationQueryResponse>
-            {
-                Success = true,
-                Value = new GetDiscussionHistoriesForQualificationQueryResponse
-                {
-                    QualificationDiscussionHistories = new()
-                }
-            });
-
-        var versions = new List<GetQualificationDetailsQueryResponse>
-        {
-            new GetQualificationDetailsQueryResponse
-            {
-                Id = Guid.NewGuid(),
-                QualificationId = Guid.NewGuid(),
-                Version = 2,
-                InsertedTimestamp = DateTime.UtcNow,
-                Level = "L2",
-                VersionFieldChanges = "Level",
-                Stage = new GetQualificationDetailsQueryResponse.LifecycleStage { Id = Guid.NewGuid(), Name = "Stage" },
-                Organisation = new GetQualificationDetailsQueryResponse.AwardingOrganisation { Id = Guid.NewGuid(), NameOfqual = "Org" },
-                ProcStatus = new GetQualificationDetailsQueryResponse.ProcessStatus { Id = Guid.NewGuid(), Name = "Proc" }
-            },
-            new GetQualificationDetailsQueryResponse
-            {
-                Id = Guid.NewGuid(),
-                QualificationId = Guid.NewGuid(),
-                Version = 1,
-                InsertedTimestamp = DateTime.UtcNow.AddMinutes(-10),
-                Level = "L1",
-                VersionFieldChanges = "Level",
-                Stage = new GetQualificationDetailsQueryResponse.LifecycleStage { Id = Guid.NewGuid(), Name = "Stage" },
-                Organisation = new GetQualificationDetailsQueryResponse.AwardingOrganisation { Id = Guid.NewGuid(), NameOfqual = "Org" },
-                ProcStatus = new GetQualificationDetailsQueryResponse.ProcessStatus { Id = Guid.NewGuid(), Name = "Proc" }
-            }
-        };
-
-        _mediatorMock
-            .Setup(m => m.Send(
-                It.IsAny<GetQualificationDetailWithVersionsQuery>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetQualificationDetailsQueryResponse>
-            {
-                Success = true,
-                Value = new GetQualificationDetailsQueryResponse
-                {
-                    Qual = new GetQualificationDetailsQueryResponse.Qualification
-                    {
-                        Id = Guid.NewGuid(),
-                        Qan = "ABC",
-                        QualificationName = "Test",
-                        Versions = versions
-                    },
-                    Stage = new GetQualificationDetailsQueryResponse.LifecycleStage { Id = Guid.NewGuid(), Name = "Stage" },
-                    Organisation = new GetQualificationDetailsQueryResponse.AwardingOrganisation { Id = Guid.NewGuid(), NameOfqual = "Org" },
-                    ProcStatus = new GetQualificationDetailsQueryResponse.ProcessStatus { Id = Guid.NewGuid(), Name = "Proc" }
-                }
-            });
-
-        var result = await _controller.QualificationDetailsTimeline("ABC");
-
-        var view = Assert.IsType<ViewResult>(result);
-        var model = Assert.IsType<QualificationDetailsTimelineViewModel>(view.Model);
-
-        Assert.NotEmpty(model.QualificationDiscussionHistories);
-        Assert.Equal("Change", model.QualificationDiscussionHistories[0].Title);
-        Assert.Equal("OFQUAL Import", model.QualificationDiscussionHistories[0].UserDisplayName);
-    }
-
-
-    [Fact]
-    public async Task Timeline_MultipleChanges()
-    {
-        _mediatorMock
-            .Setup(m => m.Send(
-                It.IsAny<GetDiscussionHistoriesForQualificationQuery>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetDiscussionHistoriesForQualificationQueryResponse>
-            {
-                Success = true,
-                Value = new GetDiscussionHistoriesForQualificationQueryResponse
-                {
-                    QualificationDiscussionHistories = new()
-                }
-            });
-
-        var versions = new List<GetQualificationDetailsQueryResponse>
-        {
-            new GetQualificationDetailsQueryResponse
-            {
-                Id = Guid.NewGuid(),
-                QualificationId = Guid.NewGuid(),
-                Version = 3,
-                InsertedTimestamp = DateTime.UtcNow,
-                Level = "L3",
-                Status = "NewStatus",
-                VersionFieldChanges = "Level,Status",
-                Stage = new GetQualificationDetailsQueryResponse.LifecycleStage { Id = Guid.NewGuid(), Name = "Stage" },
-                Organisation = new GetQualificationDetailsQueryResponse.AwardingOrganisation { Id = Guid.NewGuid(), NameOfqual = "Org" },
-                ProcStatus = new GetQualificationDetailsQueryResponse.ProcessStatus { Id = Guid.NewGuid(), Name = "Proc" }
-            },
-            new GetQualificationDetailsQueryResponse
-            {
-                Id = Guid.NewGuid(),
-                QualificationId = Guid.NewGuid(),
-                Version = 2,
-                InsertedTimestamp = DateTime.UtcNow.AddMinutes(-10),
-                Level = "L2",
-                Status = "MidStatus",
-                VersionFieldChanges = "Level,Status",
-                Stage = new GetQualificationDetailsQueryResponse.LifecycleStage { Id = Guid.NewGuid(), Name = "Stage" },
-                Organisation = new GetQualificationDetailsQueryResponse.AwardingOrganisation { Id = Guid.NewGuid(), NameOfqual = "Org" },
-                ProcStatus = new GetQualificationDetailsQueryResponse.ProcessStatus { Id = Guid.NewGuid(), Name = "Proc" }
-            },
-            new GetQualificationDetailsQueryResponse
-            {
-                Id = Guid.NewGuid(),
-                QualificationId = Guid.NewGuid(),
-                Version = 1,
-                InsertedTimestamp = DateTime.UtcNow.AddMinutes(-20),
-                Level = "L1",
-                Status = "OldStatus",
-                VersionFieldChanges = "Level,Status",
-                Stage = new GetQualificationDetailsQueryResponse.LifecycleStage { Id = Guid.NewGuid(), Name = "Stage" },
-                Organisation = new GetQualificationDetailsQueryResponse.AwardingOrganisation { Id = Guid.NewGuid(), NameOfqual = "Org" },
-                ProcStatus = new GetQualificationDetailsQueryResponse.ProcessStatus { Id = Guid.NewGuid(), Name = "Proc" }
-            }
-        };
-
-        _mediatorMock
-            .Setup(m => m.Send(
-                It.IsAny<GetQualificationDetailWithVersionsQuery>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetQualificationDetailsQueryResponse>
-            {
-                Success = true,
-                Value = new GetQualificationDetailsQueryResponse
-                {
-                    Qual = new GetQualificationDetailsQueryResponse.Qualification
-                    {
-                        Id = Guid.NewGuid(),
-                        Qan = "ABC",
-                        QualificationName = "Test",
-                        Versions = versions
-                    },
-                    Stage = new GetQualificationDetailsQueryResponse.LifecycleStage { Id = Guid.NewGuid(), Name = "Stage" },
-                    Organisation = new GetQualificationDetailsQueryResponse.AwardingOrganisation { Id = Guid.NewGuid(), NameOfqual = "Org" },
-                    ProcStatus = new GetQualificationDetailsQueryResponse.ProcessStatus { Id = Guid.NewGuid(), Name = "Proc" }
-                }
-            });
-
-        var result = await _controller.QualificationDetailsTimeline("ABC");
-
-        var view = Assert.IsType<ViewResult>(result);
-        var model = Assert.IsType<QualificationDetailsTimelineViewModel>(view.Model);
-
-        Assert.True(model.QualificationDiscussionHistories.Count >= 2);
-        Assert.All(model.QualificationDiscussionHistories, h => Assert.Equal("Change", h.Title));
-    }
-
-    [Fact]
-    public async Task Timeline_NoChanges()
-    {
-        _mediatorMock
-            .Setup(m => m.Send(
-                It.IsAny<GetDiscussionHistoriesForQualificationQuery>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetDiscussionHistoriesForQualificationQueryResponse>
-            {
-                Success = true,
-                Value = new GetDiscussionHistoriesForQualificationQueryResponse
-                {
-                    QualificationDiscussionHistories = new()
-                }
-            });
-
-        var versions = new List<GetQualificationDetailsQueryResponse>
-        {
-            new GetQualificationDetailsQueryResponse
-            {
-                Id = Guid.NewGuid(),
-                QualificationId = Guid.NewGuid(),
-                Version = 2,
-                InsertedTimestamp = DateTime.UtcNow,
-                Level = "L1",
-                Status = "SameStatus",
-                VersionFieldChanges = "",
-                Stage = new GetQualificationDetailsQueryResponse.LifecycleStage { Id = Guid.NewGuid(), Name = "Stage" },
-                Organisation = new GetQualificationDetailsQueryResponse.AwardingOrganisation { Id = Guid.NewGuid(), NameOfqual = "Org" },
-                ProcStatus = new GetQualificationDetailsQueryResponse.ProcessStatus { Id = Guid.NewGuid(), Name = "Proc" }
-            },
-            new GetQualificationDetailsQueryResponse
-            {
-                Id = Guid.NewGuid(),
-                QualificationId = Guid.NewGuid(),
-                Version = 1,
-                InsertedTimestamp = DateTime.UtcNow.AddMinutes(-10),
-                Level = "L1",
-                Status = "SameStatus",
-                VersionFieldChanges = "",
-                Stage = new GetQualificationDetailsQueryResponse.LifecycleStage { Id = Guid.NewGuid(), Name = "Stage" },
-                Organisation = new GetQualificationDetailsQueryResponse.AwardingOrganisation { Id = Guid.NewGuid(), NameOfqual = "Org" },
-                ProcStatus = new GetQualificationDetailsQueryResponse.ProcessStatus { Id = Guid.NewGuid(), Name = "Proc" }
-            }
-        };
-
-        _mediatorMock
-            .Setup(m => m.Send(
-                It.IsAny<GetQualificationDetailWithVersionsQuery>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetQualificationDetailsQueryResponse>
-            {
-                Success = true,
-                Value = new GetQualificationDetailsQueryResponse
-                {
-                    Qual = new GetQualificationDetailsQueryResponse.Qualification
-                    {
-                        Id = Guid.NewGuid(),
-                        Qan = "ABC",
-                        QualificationName = "Test",
-                        Versions = versions
-                    },
-                    Stage = new GetQualificationDetailsQueryResponse.LifecycleStage { Id = Guid.NewGuid(), Name = "Stage" },
-                    Organisation = new GetQualificationDetailsQueryResponse.AwardingOrganisation { Id = Guid.NewGuid(), NameOfqual = "Org" },
-                    ProcStatus = new GetQualificationDetailsQueryResponse.ProcessStatus { Id = Guid.NewGuid(), Name = "Proc" }
-                }
-            });
-
-        var result = await _controller.QualificationDetailsTimeline("ABC");
-
-        var view = Assert.IsType<ViewResult>(result);
-        var model = Assert.IsType<QualificationDetailsTimelineViewModel>(view.Model);
-
+        Assert.Equal("ABC123", model.Qan);
         Assert.Empty(model.QualificationDiscussionHistories);
     }
 
+    [Fact]
+    public async Task Timeline_ReturnsDiscussionHistoryEntries()
+    {
+        var response = new QualificationDiscussionHistoriesResponse
+        {
+            QualificationDiscussionHistories = new List<QualificationDiscussionHistory>
+            {
+                new QualificationDiscussionHistory
+                {
+                    Id = Guid.NewGuid(),
+                    QualificationId = Guid.NewGuid(),
+                    ActionTypeId = Guid.NewGuid(),
+                    UserDisplayName = "System",
+                    Notes = "Updated qualification",
+                    Timestamp = DateTime.UtcNow,
+                    Title = "Change",
+                    ActionType = new Application.Queries.Qualifications.ActionType
+                    {
+                        Id = Guid.NewGuid(),
+                        Description = "Change"
+                    }
+                }
+            }
+        };
+
+        _mediator
+            .Setup(m => m.Send(It.IsAny<GetQualificationTimelineQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<QualificationDiscussionHistoriesResponse>
+            {
+                Success = true,
+                Value = response
+            });
+
+        var result = await _controller.QualificationDetailsTimeline("ABC");
+
+        var view = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<QualificationDetailsTimelineViewModel>(view.Model);
+
+        Assert.Single(model.QualificationDiscussionHistories);
+        Assert.Equal("Change", model.QualificationDiscussionHistories[0].Title);
+    }
 
     [Fact]
-    public async Task Timeline_ReturnsErrorOnFailure()
+    public async Task Timeline_Failure_RedirectsToError()
     {
-        _mediatorMock
-            .Setup(m => m.Send(
-                It.IsAny<GetDiscussionHistoriesForQualificationQuery>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetDiscussionHistoriesForQualificationQueryResponse>
+        _mediator
+            .Setup(m => m.Send(It.IsAny<GetQualificationTimelineQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<QualificationDiscussionHistoriesResponse>
             {
                 Success = false,
                 ErrorMessage = "Boom"
@@ -381,6 +141,20 @@ public class ChangedControllerTests_Timeline
 
         var result = await _controller.QualificationDetailsTimeline("ABC");
 
-        Assert.IsType<RedirectResult>(result);
+        var redirect = Assert.IsType<RedirectResult>(result);
+        Assert.Equal("/Home/Error", redirect.Url);
+    }
+
+    [Fact]
+    public async Task Timeline_Exception_RedirectsToError()
+    {
+        _mediator
+            .Setup(m => m.Send(It.IsAny<GetQualificationTimelineQuery>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new Exception("boom"));
+
+        var result = await _controller.QualificationDetailsTimeline("ABC");
+
+        var redirect = Assert.IsType<RedirectResult>(result);
+        Assert.Equal("/Home/Error", redirect.Url);
     }
 }

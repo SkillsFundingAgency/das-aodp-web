@@ -13,9 +13,9 @@ namespace SFA.DAS.AODP.Web.Models.BulkActions
 
         public static readonly string[] AllowedStatuses =
         {
-            ProcessStatus.DecisionRequired,
-            ProcessStatus.NoActionRequired,
-            ProcessStatus.OnHold
+            ProcessStatusLookup.DecisionRequired.Name,
+            ProcessStatusLookup.NoActionRequired.Name,
+            ProcessStatusLookup.OnHold.Name,
         };
     }
 

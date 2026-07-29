@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 
-namespace SFA.DAS.AODP.Web.Extensions
+namespace SFA.DAS.AODP.Application.Extensions
 {
     public static class DateTimeExtensions
     {
