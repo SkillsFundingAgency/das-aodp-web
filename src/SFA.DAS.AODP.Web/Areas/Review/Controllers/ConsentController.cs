@@ -18,13 +18,15 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         [HttpGet]
         public IActionResult Index()
         {
-            if (Request.Cookies.ContainsKey(GetConsentCookieName(HttpContext)))
+            if (Request.Cookies.TryGetValue(GetConsentCookieName(HttpContext), out var consentValue)
+                && consentValue == "true")
             {
                 return RedirectToAction("Index", "Applications", new { area = "Apply" });
             }
 
             return View(new DataConsentViewModel());
         }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]

@@ -29,13 +29,16 @@ namespace SFA.DAS.AODP.Web.Filters
                 return;
             }
 
-            if (context.HttpContext.Request.Cookies.ContainsKey(ConsentController.GetConsentCookieName(context.HttpContext)))
+            if (context.HttpContext.Request.Cookies.TryGetValue(
+                    ConsentController.GetConsentCookieName(context.HttpContext),
+                    out var consentValue) && consentValue == "true")
             {
                 return;
             }
 
             context.Result = new RedirectToActionResult("Index", "Consent", new { area = "Review" });
         }
+
 
         public void OnActionExecuted(ActionExecutedContext context)
         {

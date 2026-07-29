@@ -52,10 +52,13 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         [Route("apply/applications")]
         public async Task<IActionResult> Index()
         {
-            if (!Request.Cookies.ContainsKey(ConsentController.GetConsentCookieName(HttpContext)))
-            {
-                return RedirectToAction("Index", "Consent", new { area = "Review" });
-            }
+            if (!Request.Cookies.TryGetValue(
+                    ConsentController.GetConsentCookieName(HttpContext),
+                    out var consentValue)
+                || consentValue != "true")
+                    {
+                        return RedirectToAction("Index", "Consent", new { area = "Review" });
+                    }
 
             var organisationId = Guid.Parse(_userHelperService.GetUserOrganisationId());
             var response = await Send(new GetApplicationsByOrganisationIdQuery(organisationId));

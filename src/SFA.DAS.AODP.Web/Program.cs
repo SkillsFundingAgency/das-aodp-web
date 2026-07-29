@@ -173,9 +173,7 @@ internal class Program
     {
         endpoints.MapAreaControllerRoute(name: "Review",
                                        areaName: "Review",
-                                        //pattern: "Review",
                                         pattern: "Review/{controller=Home}/{action=Index}/{id?}",
-                                       // defaults: new { area = "Review", controller = "Home", action = "Index" });
                                        defaults: new { area = "Review" });
 
 
