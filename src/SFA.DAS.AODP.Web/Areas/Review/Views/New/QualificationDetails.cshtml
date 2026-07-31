@@ -12,6 +12,8 @@
         Area = Model.BackArea,
         Text = "Back"
     };
+
+    var isCompleted = string.Equals(Model.Stage?.Name, "Completed", System.StringComparison.OrdinalIgnoreCase);
 }
 
 @await Html.PartialAsync("_BackLinkPartial", backLinkModel)

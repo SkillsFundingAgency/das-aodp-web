@@ -96,7 +96,7 @@ public class GetQualificationTimelineQueryHandlerTests
                 QualificationName = "Qualification",
                 Versions = new List<GetQualificationDetailsQueryResponse>()
             },
-            Organisation = new GetQualificationDetailsQueryResponse.AwardingOrganisation
+            Organisation = new AwardingOrganisation
             {
                 Id = Guid.NewGuid(),
                 NameOfqual = "Organisation"
