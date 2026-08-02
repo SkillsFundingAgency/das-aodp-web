@@ -39,7 +39,7 @@ namespace SFA.DAS.AODP.Application.UnitTests.Commands.Rollover
             };
 
             _mockApiClient
-                .Setup(c => c.PostWithResponseCodeAsMultipart<ValidateRolloverExtensionCommandResponse>(
+                .Setup(c => c.PostWithResponseCodeAsJsonFile<ValidateRolloverExtensionCommandResponse>(
                     It.IsAny<ValidateRolloverExtensionApiRequest>()))
                 .ReturnsAsync(expectedApiResponse);
 
@@ -53,7 +53,7 @@ namespace SFA.DAS.AODP.Application.UnitTests.Commands.Rollover
             Assert.Null(result.ErrorMessage);
 
             _mockApiClient.Verify(c =>
-                c.PostWithResponseCodeAsMultipart<ValidateRolloverExtensionCommandResponse>(
+                c.PostWithResponseCodeAsJsonFile<ValidateRolloverExtensionCommandResponse>(
                     It.IsAny<ValidateRolloverExtensionApiRequest>()),
                 Times.Once);
         }
@@ -65,7 +65,7 @@ namespace SFA.DAS.AODP.Application.UnitTests.Commands.Rollover
             var request = new ValidateRolloverExtensionCommand();
 
             _mockApiClient
-                .Setup(c => c.PostWithResponseCodeAsMultipart<ValidateRolloverExtensionCommandResponse>(
+                .Setup(c => c.PostWithResponseCodeAsJsonFile<ValidateRolloverExtensionCommandResponse>(
                     It.IsAny<ValidateRolloverExtensionApiRequest>()))
                 .ThrowsAsync(new Exception("API failed"));
 
@@ -77,7 +77,7 @@ namespace SFA.DAS.AODP.Application.UnitTests.Commands.Rollover
             Assert.Equal("API failed", result.ErrorMessage);
 
             _mockApiClient.Verify(c =>
-                c.PostWithResponseCodeAsMultipart<ValidateRolloverExtensionCommandResponse>(
+                c.PostWithResponseCodeAsJsonFile<ValidateRolloverExtensionCommandResponse>(
                     It.IsAny<ValidateRolloverExtensionApiRequest>()),
                 Times.Once);
         }
@@ -94,9 +94,9 @@ namespace SFA.DAS.AODP.Application.UnitTests.Commands.Rollover
             ValidateRolloverExtensionApiRequest? captured = null;
 
             _mockApiClient
-                .Setup(c => c.PostWithResponseCodeAsMultipart<ValidateRolloverExtensionCommandResponse>(
-                    It.IsAny<IPostMultipartFormDataApiRequest>()))
-                .Callback<IPostMultipartFormDataApiRequest>(req =>
+                .Setup(c => c.PostWithResponseCodeAsJsonFile<ValidateRolloverExtensionCommandResponse>(
+                    It.IsAny<IPostMultipartJsonFileApiRequest>()))
+                .Callback<IPostMultipartJsonFileApiRequest>(req =>
                 {
                     captured = req as ValidateRolloverExtensionApiRequest;
                 })
@@ -108,46 +108,6 @@ namespace SFA.DAS.AODP.Application.UnitTests.Commands.Rollover
             // Assert
             Assert.NotNull(captured);
             Assert.Equal(request, captured!.Data);
-        }
-
-        [Fact]
-        public void ApiRequest_WhenCandidateIsProvided_MapsNestedValuesToMultipartFormData()
-        {
-            // Arrange
-            var proposedEndDate = new DateTime(2026, 7, 31, 10, 15, 0, DateTimeKind.Utc);
-            var request = new ValidateRolloverExtensionApiRequest
-            {
-                Data = new ValidateRolloverExtensionCommand
-                {
-                    RolloverCandidates =
-                    [
-                        new RolloverCandidateForValidation
-                        {
-                            Qan = "123/4567/8",
-                            FundingStreamName = "Adult Skills",
-                            RollOverStatus = "Approved",
-                            ExclusionReason = "Not eligible",
-                            ProposedFundingApprovalEndDate = proposedEndDate,
-                            Comments = "Checked"
-                        }
-                    ]
-                }
-            };
-            KeyValuePair<string, string>[] expected =
-            [
-                new("RolloverCandidates[0].Qan", "123/4567/8"),
-                new("RolloverCandidates[0].FundingStreamName", "Adult Skills"),
-                new("RolloverCandidates[0].RollOverStatus", "Approved"),
-                new("RolloverCandidates[0].ExclusionReason", "Not eligible"),
-                new("RolloverCandidates[0].ProposedFundingApprovalEndDate", "2026-07-31T10:15:00Z"),
-                new("RolloverCandidates[0].Comments", "Checked")
-            ];
-
-            // Act
-            var result = request.FormData.ToArray();
-
-            // Assert
-            result.ShouldBe(expected);
         }
 
     }

@@ -127,6 +127,25 @@ namespace SFA.DAS.AODP.Infrastructure.ApiClient
             return JsonConvert.DeserializeObject<TResponse>(responseContent) ?? default;
         }
 
+        public async Task<TResponse?> PostWithResponseCodeAsJsonFile<TResponse>(IPostMultipartJsonFileApiRequest request)
+        {
+            using var multipartContent = new MultipartFormDataContent();
+            var jsonContent = new StringContent(JsonConvert.SerializeObject(request.Data), Encoding.UTF8, "application/json");
+            multipartContent.Add(jsonContent, "payload", "payload.json");
+
+            using var requestMessage = new HttpRequestMessage(HttpMethod.Post, request.PostUrl)
+            {
+                Content = multipartContent,
+            };
+            AddAuthenticationHeader(requestMessage);
+
+            var response = await _httpClient.SendAsync(requestMessage).ConfigureAwait(false);
+            var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            response.EnsureSuccessStatusCode();
+            return JsonConvert.DeserializeObject<TResponse>(responseContent) ?? default;
+        }
+
         public async Task PostWithResponseCode(IPostApiRequest request)
         {
             var stringContent = new StringContent(JsonConvert.SerializeObject(request.Data), Encoding.UTF8, "application/json");

@@ -33,7 +33,7 @@ namespace SFA.DAS.AODP.Application.UnitTests.Commands.Rollover
             };
 
             _mockApiClient
-                .Setup(c => c.PostWithResponseCodeAsMultipart<SubmitRolloverExtensionCommandResponse>(
+                .Setup(c => c.PostWithResponseCodeAsJsonFile<SubmitRolloverExtensionCommandResponse>(
                     It.IsAny<SubmitRolloverExtensionApiRequest>()))
                 .ReturnsAsync(expectedApiResponse);
 
@@ -47,7 +47,7 @@ namespace SFA.DAS.AODP.Application.UnitTests.Commands.Rollover
             Assert.Null(result.ErrorMessage);
 
             _mockApiClient.Verify(c =>
-                c.PostWithResponseCodeAsMultipart<SubmitRolloverExtensionCommandResponse>(
+                c.PostWithResponseCodeAsJsonFile<SubmitRolloverExtensionCommandResponse>(
                     It.IsAny<SubmitRolloverExtensionApiRequest>()),
                 Times.Once);
         }
@@ -59,7 +59,7 @@ namespace SFA.DAS.AODP.Application.UnitTests.Commands.Rollover
             var request = new SubmitRolloverExtensionCommand();
 
             _mockApiClient
-                .Setup(c => c.PostWithResponseCodeAsMultipart<SubmitRolloverExtensionCommandResponse>(
+                .Setup(c => c.PostWithResponseCodeAsJsonFile<SubmitRolloverExtensionCommandResponse>(
                     It.IsAny<SubmitRolloverExtensionApiRequest>()))
                 .ThrowsAsync(new Exception("API failed"));
 
@@ -71,7 +71,7 @@ namespace SFA.DAS.AODP.Application.UnitTests.Commands.Rollover
             Assert.Equal("API failed", result.ErrorMessage);
 
             _mockApiClient.Verify(c =>
-                c.PostWithResponseCodeAsMultipart<SubmitRolloverExtensionCommandResponse>(
+                c.PostWithResponseCodeAsJsonFile<SubmitRolloverExtensionCommandResponse>(
                     It.IsAny<SubmitRolloverExtensionApiRequest>()),
                 Times.Once);
         }
@@ -88,9 +88,9 @@ namespace SFA.DAS.AODP.Application.UnitTests.Commands.Rollover
             SubmitRolloverExtensionApiRequest? captured = null;
 
             _mockApiClient
-                .Setup(c => c.PostWithResponseCodeAsMultipart<SubmitRolloverExtensionCommandResponse>(
-                    It.IsAny<IPostMultipartFormDataApiRequest>()))
-                .Callback<IPostMultipartFormDataApiRequest>(req =>
+                .Setup(c => c.PostWithResponseCodeAsJsonFile<SubmitRolloverExtensionCommandResponse>(
+                    It.IsAny<IPostMultipartJsonFileApiRequest>()))
+                .Callback<IPostMultipartJsonFileApiRequest>(req =>
                 {
                     captured = req as SubmitRolloverExtensionApiRequest;
                 })
@@ -104,44 +104,5 @@ namespace SFA.DAS.AODP.Application.UnitTests.Commands.Rollover
             Assert.Equal(request, captured!.Data);
         }
 
-        [Fact]
-        public void ApiRequest_WhenItemIsProvided_MapsNestedValuesToMultipartFormData()
-        {
-            // Arrange
-            var proposedEndDate = new DateTime(2026, 7, 31, 10, 15, 0, DateTimeKind.Utc);
-            var request = new SubmitRolloverExtensionApiRequest
-            {
-                Data = new SubmitRolloverExtensionCommand
-                {
-                    Items =
-                    [
-                        new FundingExtensionItem
-                        {
-                            Qan = "123/4567/8",
-                            FundingStreamName = "Adult Skills",
-                            RolloverStatus = "Approved",
-                            ExclusionReason = "Not eligible",
-                            ProposedFundingApprovalEndDate = proposedEndDate,
-                            Comments = "Checked"
-                        }
-                    ]
-                }
-            };
-            KeyValuePair<string, string>[] expected =
-            [
-                new("Items[0].Qan", "123/4567/8"),
-                new("Items[0].FundingStreamName", "Adult Skills"),
-                new("Items[0].RolloverStatus", "Approved"),
-                new("Items[0].ExclusionReason", "Not eligible"),
-                new("Items[0].ProposedFundingApprovalEndDate", "2026-07-31T10:15:00Z"),
-                new("Items[0].Comments", "Checked")
-            ];
-
-            // Act
-            var result = request.FormData.ToArray();
-
-            // Assert
-            result.ShouldBe(expected);
-        }
     }
 }
