@@ -129,7 +129,7 @@ namespace SFA.DAS.AODP.Infrastructure.ApiClient
 
         public async Task<TResponse?> PostWithResponseCodeAsJsonFile<TResponse>(IPostMultipartJsonFileApiRequest request)
         {
-            using var multipartContent = new MultipartFormDataContent();
+            using var multipartContent = CreateWafCompatibleMultipartContent();
             var jsonContent = new StringContent(JsonConvert.SerializeObject(request.Data), Encoding.UTF8, "application/json");
             multipartContent.Add(jsonContent, "payload", "payload.json");
 
@@ -144,6 +144,21 @@ namespace SFA.DAS.AODP.Infrastructure.ApiClient
 
             response.EnsureSuccessStatusCode();
             return JsonConvert.DeserializeObject<TResponse>(responseContent) ?? default;
+        }
+
+        private static MultipartFormDataContent CreateWafCompatibleMultipartContent()
+        {
+            var boundary = $"---------------------------{Guid.NewGuid():N}";
+            var content = new MultipartFormDataContent(boundary);
+            var boundaryParameter = content.Headers.ContentType?.Parameters
+                .Single(parameter => string.Equals(parameter.Name, "boundary", StringComparison.OrdinalIgnoreCase));
+
+            if (boundaryParameter is not null)
+            {
+                boundaryParameter.Value = boundary;
+            }
+
+            return content;
         }
 
         public async Task PostWithResponseCode(IPostApiRequest request)

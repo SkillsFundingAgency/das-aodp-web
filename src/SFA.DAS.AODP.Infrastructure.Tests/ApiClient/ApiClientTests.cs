@@ -74,11 +74,13 @@ public class ApiClientTests : UnitTest
         handler.FormData.Single().Value.ShouldContain("\"Qan\":\"12345678\"");
         handler.FileNames.ShouldBe(["payload.json"]);
         handler.PartContentTypes.ShouldBe(["application/json"]);
+        handler.ContentTypeHeader.ShouldNotContain("\"");
     }
 
     private sealed class RecordingHttpMessageHandler : HttpMessageHandler
     {
         public string ContentType { get; private set; } = string.Empty;
+        public string ContentTypeHeader { get; private set; } = string.Empty;
         public KeyValuePair<string, string>[] FormData { get; private set; } = [];
         public Uri? RequestUri { get; private set; }
         public string[] FileNames { get; private set; } = [];
@@ -89,6 +91,7 @@ public class ApiClientTests : UnitTest
             CancellationToken cancellationToken)
         {
             ContentType = request.Content?.Headers.ContentType?.MediaType ?? string.Empty;
+            ContentTypeHeader = request.Content?.Headers.ContentType?.ToString() ?? string.Empty;
             RequestUri = request.RequestUri;
 
             var multipartContent = request.Content.ShouldBeOfType<MultipartFormDataContent>();
