@@ -86,8 +86,6 @@
                                         @{
                                             RenderCheckBoxes(new()
                                             {
-                                            {ApplicationStatus.Approved, ApplicationStatusDisplay.Dictionary[ApplicationStatus.Approved].ToString()},
-                                            {ApplicationStatus.NotApproved, ApplicationStatusDisplay.Dictionary[ApplicationStatus.NotApproved].ToString()},
                                             {ApplicationStatus.Withdrawn, ApplicationStatusDisplay.Dictionary[ApplicationStatus.Withdrawn].ToString()},
                                             });
                                         }
@@ -115,12 +113,10 @@
 
                                 @{
                                     RenderCheckBoxes(new()
-                            {
-                            {ApplicationStatus.NewMessage, ApplicationStatusDisplay.Dictionary[ApplicationStatus.NewMessage].ToString()},
-                            {ApplicationStatus.InReview, ApplicationStatusDisplay.Dictionary[ApplicationStatus.InReview].ToString()},
-                            {ApplicationStatus.Approved, ApplicationStatusDisplay.Dictionary[ApplicationStatus.Approved].ToString()},
-                            {ApplicationStatus.NotApproved, ApplicationStatusDisplay.Dictionary[ApplicationStatus.NotApproved].ToString()},
-                            });
+                                    {
+                                    {ApplicationStatus.NewMessage, ApplicationStatusDisplay.Dictionary[ApplicationStatus.NewMessage].ToString()},
+                                    {ApplicationStatus.InReview, ApplicationStatusDisplay.Dictionary[ApplicationStatus.InReview].ToString()},
+                                    });
                                 }
 
                             </div>

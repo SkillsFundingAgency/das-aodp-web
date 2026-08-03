@@ -41,14 +41,14 @@
              <p class="govuk-body">Review qualifications that have had changes made to them by Ofqual.</p>
          }
 
-         @if (Model.UserRoles.Contains(RoleConstants.QFAUImport))
-         {
-             <h2 class="govuk-heading-s govuk-!-margin-top-6;">
-                 <a asp-area="Admin" asp-controller="OutputFile" asp-action="Index" class="govuk-link">Download an output file</a>
-             </h2>
-             <p class="govuk-body">Download a record of all active and archived funding requests.</p>
-         }
-     </div>
+        @if (Model.UserRoles.Contains(RoleConstants.QFAUImport))
+        {
+            <h2 class="govuk-heading-s" style="margin-top:1.5rem;">
+                <a asp-area="Admin" asp-controller="OutputFile" asp-action="Index" class="govuk-link">Download an output file</a>
+            </h2>
+            <p class="govuk-body">Download a record of all active and archived funding.</p>
+        }
+    </div>
 
      <div class="govuk-grid-column-one-half">
          @if (Model.UserRoles.Contains(RoleConstants.QFAUImport))

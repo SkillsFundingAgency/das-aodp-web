@@ -56,13 +56,22 @@ public class RolloverController : ControllerBase
 
     [HttpGet]
     [Route("review/rollover")]
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
         var session = GetSessionModel(createIfNull: true);
-        var model = session!.Start != null
-            ? new RolloverStartViewModel { SelectedProcess = session.Start.SelectedProcess }
-            : new RolloverStartViewModel();
+        var response = await Send(new GetRolloverStartSummaryQuery());
 
+        var startSummary = response ?? new GetRolloverStartSummaryQueryResponse();
+
+        var model = new RolloverStartViewModel
+        {
+            SelectedProcess = session.Start?.SelectedProcess,
+            TotalCandidatesCount = startSummary.TotalCandidatesCount,
+            CandidatesEligibleCount = startSummary.CandidatesEligibleCount,
+            CandidatesIneligibleCount = startSummary.CandidatesIneligibleCount,
+            CandidatesRemainingCount = startSummary.CandidatesRemainingCount,
+        };
+   
         return View("RolloverStart", model);
     }
 

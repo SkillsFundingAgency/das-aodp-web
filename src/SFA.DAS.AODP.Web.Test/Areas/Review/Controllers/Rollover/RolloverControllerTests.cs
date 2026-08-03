@@ -18,44 +18,116 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers.Rollover;
 public class RolloverControllerTests : RolloverControllerTestBase
 {
     [Fact]
-    public void Index_Get_ReturnsRolloverStartView_WithEmptyModel_WhenNoSession()
+    public async Task Index_Get_ReturnsRolloverStartView_WithSummaryCounts_AndSelectedProcess()
     {
-        var controller = CreateController(CreateEmptySession());
+        var session = CreateEmptySession();
+        var saved = new SFA.DAS.AODP.Domain.Rollover.Rollover
+        {
+            Start = new RolloverStart { SelectedProcess = RolloverProcess.InitialSelection }
+        };
+        session.SetString("RolloverSession", JsonConvert.SerializeObject(saved));
 
-        var result = controller.Index();
+        MediatorMock
+            .Setup(m => m.Send(It.IsAny<GetRolloverStartSummaryQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetRolloverStartSummaryQueryResponse>
+            {
+                Success = true,
+                Value = new GetRolloverStartSummaryQueryResponse
+                {
+                    TotalCandidatesCount = 10,
+                    CandidatesEligibleCount = 4,
+                    CandidatesIneligibleCount = 3,
+                    CandidatesRemainingCount = 2
+                }
+            });
 
-        var viewResult = Assert.IsType<ViewResult>(result);
-        Assert.Equal("RolloverStart", viewResult.ViewName);
-        var model = Assert.IsType<RolloverStartViewModel>(viewResult.Model);
+        var controller = CreateController(session);
+        var result = await controller.Index();
+
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.Equal("RolloverStart", view.ViewName);
+
+        var model = Assert.IsType<RolloverStartViewModel>(view.Model);
+        Assert.Equal(RolloverProcess.InitialSelection, model.SelectedProcess);
+        Assert.Equal(10, model.TotalCandidatesCount);
+        Assert.Equal(4, model.CandidatesEligibleCount);
+        Assert.Equal(3, model.CandidatesIneligibleCount);
+        Assert.Equal(2, model.CandidatesRemainingCount);
+    }
+
+    [Fact]
+    public async Task Index_Get_WhenSessionHasNoStart_SetsSelectedProcessToNull()
+    {
+        var session = CreateEmptySession();
+        session.SetString("RolloverSession", JsonConvert.SerializeObject(new SFA.DAS.AODP.Domain.Rollover.Rollover()));
+
+        MediatorMock
+            .Setup(m => m.Send(It.IsAny<GetRolloverStartSummaryQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetRolloverStartSummaryQueryResponse>
+            {
+                Success = true,
+                Value = new GetRolloverStartSummaryQueryResponse()
+            });
+
+        var controller = CreateController(session);
+        var result = await controller.Index();
+
+        var view = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<RolloverStartViewModel>(view.Model);
+
         Assert.Null(model.SelectedProcess);
     }
 
     [Fact]
-    public void Index_Get_HandlesSessionGetException_ReturnsView()
+    public async Task Index_Get_WhenNoSessionModel_CreatesNewSessionModel()
     {
-        var controller = CreateController(CreateThrowingSessionOnGet());
+        var session = CreateEmptySession();
 
-        var result = controller.Index();
+        MediatorMock
+            .Setup(m => m.Send(It.IsAny<GetRolloverStartSummaryQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetRolloverStartSummaryQueryResponse>
+            {
+                Success = true,
+                Value = new GetRolloverStartSummaryQueryResponse()
+            });
 
-        var viewResult = Assert.IsType<ViewResult>(result);
-        Assert.Equal("RolloverStart", viewResult.ViewName);
+        var controller = CreateController(session);
+        var result = await controller.Index();
+
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.Equal("RolloverStart", view.ViewName);
+
+        var model = Assert.IsType<RolloverStartViewModel>(view.Model);
+        Assert.Null(model.SelectedProcess);
+
+        Assert.True(session.TryGetValue("RolloverSession", out _));
     }
 
     [Fact]
-    public void Index_Get_WhenSessionHasStart_PopulatesModel()
+    public async Task Index_Get_WhenMediatorFails_ReturnsViewWithZeroCounts()
     {
         var session = CreateEmptySession();
-        var sessionModel = new SFA.DAS.AODP.Domain.Rollover.Rollover { Start = new RolloverStart { SelectedProcess = RolloverProcess.FinalUpload } };
-        session.SetString("RolloverSession", JsonConvert.SerializeObject(sessionModel));
+
+        MediatorMock
+            .Setup(m => m.Send(It.IsAny<GetRolloverStartSummaryQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetRolloverStartSummaryQueryResponse>
+            {
+                Success = true,
+                Value = null
+            });
 
         var controller = CreateController(session);
-        var result = controller.Index();
+        var result = await controller.Index();
 
-        // Assert
-        var viewResult = Assert.IsType<ViewResult>(result);
-        var vm = Assert.IsType<RolloverStartViewModel>(viewResult.Model);
-        Assert.Equal(RolloverProcess.FinalUpload, vm.SelectedProcess);
+        var view = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<RolloverStartViewModel>(view.Model);
+
+        Assert.Equal(0, model.TotalCandidatesCount);
+        Assert.Equal(0, model.CandidatesEligibleCount);
+        Assert.Equal(0, model.CandidatesIneligibleCount);
+        Assert.Equal(0, model.CandidatesRemainingCount);
     }
+
 
     [Fact]
     public async Task Index_Post_InvalidModelState_ReturnsStartView_WithSameModel()
@@ -63,13 +135,13 @@ public class RolloverControllerTests : RolloverControllerTestBase
         var controller = CreateController(CreateEmptySession());
         controller.ModelState.AddModelError("SelectedProcess", "required");
 
-        var vm = new RolloverStartViewModel();
+        var model = new RolloverStartViewModel();
 
-        var result = await controller.Index(vm);
+        var result = await controller.Index(model);
 
         var viewResult = Assert.IsType<ViewResult>(result);
         Assert.Equal("RolloverStart", viewResult.ViewName);
-        Assert.Same(vm, viewResult.Model);
+        Assert.Same(model, viewResult.Model);
     }
 
     [Fact]
@@ -78,9 +150,15 @@ public class RolloverControllerTests : RolloverControllerTestBase
         var session = CreateEmptySession();
         var controller = CreateController(session);
 
-        var vm = new RolloverStartViewModel { SelectedProcess = RolloverProcess.InitialSelection };
+        var model = new RolloverStartViewModel
+        {
+            SelectedProcess = RolloverProcess.InitialSelection
+        };
 
-        MediatorMock.Setup(o => o.Send(It.IsAny<GetRolloverWorkflowCandidatesCountQuery>()))
+        MediatorMock
+            .Setup(m => m.Send(
+                It.IsAny<GetRolloverWorkflowCandidatesCountQuery>(),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(new BaseMediatrResponse<GetRolloverWorkflowCandidatesCountQueryResponse>
             {
                 Success = true,
@@ -90,16 +168,17 @@ public class RolloverControllerTests : RolloverControllerTestBase
                 }
             });
 
-        var result = await controller.Index(vm);
+        var result = await controller.Index(model);
 
         var redirect = Assert.IsType<RedirectToActionResult>(result);
         Assert.Equal(nameof(RolloverController.CheckData), redirect.ActionName);
 
         var json = session.GetString("RolloverSession");
         Assert.NotNull(json);
-        var sessionModel = JsonConvert.DeserializeObject<AODP.Domain.Rollover.Rollover>(json);
-        Assert.NotNull(sessionModel?.Start);
-        Assert.Equal(RolloverProcess.InitialSelection, sessionModel.Start!.SelectedProcess);
+
+        var saved = JsonConvert.DeserializeObject<AODP.Domain.Rollover.Rollover>(json);
+        Assert.NotNull(saved?.Start);
+        Assert.Equal(RolloverProcess.InitialSelection, saved.Start.SelectedProcess);
     }
 
     [Fact]
@@ -108,9 +187,15 @@ public class RolloverControllerTests : RolloverControllerTestBase
         var session = CreateEmptySession();
         var controller = CreateController(session);
 
-        var vm = new RolloverStartViewModel { SelectedProcess = RolloverProcess.FinalUpload };
+        var model = new RolloverStartViewModel
+        {
+            SelectedProcess = RolloverProcess.FinalUpload
+        };
 
-        MediatorMock.Setup(o => o.Send(It.IsAny<GetRolloverWorkflowCandidatesCountQuery>()))
+        MediatorMock
+            .Setup(m => m.Send(
+                It.IsAny<GetRolloverWorkflowCandidatesCountQuery>(),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(new BaseMediatrResponse<GetRolloverWorkflowCandidatesCountQueryResponse>
             {
                 Success = true,
@@ -120,27 +205,34 @@ public class RolloverControllerTests : RolloverControllerTestBase
                 }
             });
 
-        var result = await controller.Index(vm);
+        var result = await controller.Index(model);
 
         var redirect = Assert.IsType<RedirectToActionResult>(result);
         Assert.Equal(nameof(RolloverController.UploadQualificationsToRollover), redirect.ActionName);
 
         var json = session.GetString("RolloverSession");
         Assert.NotNull(json);
-        var sessionModel = JsonConvert.DeserializeObject<AODP.Domain.Rollover.Rollover>(json);
-        Assert.NotNull(sessionModel?.Start);
-        Assert.Equal(RolloverProcess.FinalUpload, sessionModel.Start!.SelectedProcess);
+
+        var saved = JsonConvert.DeserializeObject<AODP.Domain.Rollover.Rollover>(json);
+        Assert.NotNull(saved?.Start);
+        Assert.Equal(RolloverProcess.FinalUpload, saved.Start.SelectedProcess);
     }
 
     [Fact]
-    public async Task Index_Post_SelectedProcessFinalUpload_NoRolloverInProgress_AddModelError()
+    public async Task Index_Post_SelectedProcessFinalUpload_NoRolloverInProgress_ReturnsViewWithError()
     {
         var session = CreateEmptySession();
         var controller = CreateController(session);
 
-        var vm = new RolloverStartViewModel { SelectedProcess = RolloverProcess.FinalUpload };
+        var model = new RolloverStartViewModel
+        {
+            SelectedProcess = RolloverProcess.FinalUpload
+        };
 
-        MediatorMock.Setup(o => o.Send(It.IsAny<GetRolloverWorkflowCandidatesCountQuery>()))
+        MediatorMock
+            .Setup(m => m.Send(
+                It.IsAny<GetRolloverWorkflowCandidatesCountQuery>(),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(new BaseMediatrResponse<GetRolloverWorkflowCandidatesCountQueryResponse>
             {
                 Success = true,
@@ -150,9 +242,18 @@ public class RolloverControllerTests : RolloverControllerTestBase
                 }
             });
 
-        await controller.Index(vm);
+        var result = await controller.Index(model);
 
-        controller.ModelState.ErrorCount.ShouldBe(1);
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.Equal("RolloverStart", viewResult.ViewName);
+        Assert.Same(model, viewResult.Model);
+
+        var error = Assert.Single(
+            controller.ModelState[nameof(model.SelectedProcess)]!.Errors);
+
+        Assert.Equal(
+            "There is no existing rollover run in progress",
+            error.ErrorMessage);
     }
 
     [Fact]
@@ -388,7 +489,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
             {
                 Success = true,
                 Value = new GetRolloverWorkflowCandidatesCountQueryResponse { TotalRecords = 1 }
-            }); 
+            });
 
         var session = CreateEmptySession();
         var controller = CreateController(session);
@@ -674,7 +775,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
                 ]
             }
         };
-        
+
         var session = CreateEmptySession();
         session.SetString("RolloverSession", JsonConvert.SerializeObject(rollover));
         var controller = CreateController(session);
@@ -920,7 +1021,7 @@ public class RolloverControllerTests : RolloverControllerTestBase
         Assert.Equal("Test User", sentCommand.CreatedByUserName);
         Assert.Equal(new DateTime(2028, 03, 15), sentCommand.MaximumApprovalFundingEndDate);
     }
-    
+
     [Fact]
     public async Task EnterRolloverFundingApprovalEndDate_InvalidModel_ReturnsViewWithModel()
     {
@@ -1078,8 +1179,8 @@ public class RolloverControllerTests : RolloverControllerTestBase
         var session = CreateEmptySession();
         var controller = CreateController(session);
 
-        var model = new RolloverPreviousDataViewModel 
-        { 
+        var model = new RolloverPreviousDataViewModel
+        {
             CandidateCount = 5,
             SelectedOption = RolloverPreviousFileOption.RemovePrevious
         };
@@ -1107,8 +1208,8 @@ public class RolloverControllerTests : RolloverControllerTestBase
         var session = CreateEmptySession();
         var controller = CreateController(session);
 
-        var model = new RolloverPreviousDataViewModel 
-        { 
+        var model = new RolloverPreviousDataViewModel
+        {
             CandidateCount = 5,
             SelectedOption = RolloverPreviousFileOption.RemovePrevious
         };
@@ -1122,26 +1223,26 @@ public class RolloverControllerTests : RolloverControllerTestBase
         Assert.Equal(nameof(RolloverController.SelectCandidates), redirectResult.ActionName);
     }
 
-         [Fact]
-        public async Task PreviousFile_Post_WithContinueProcessingOption_DoesNotCallRemovePreviousQuery()
+    [Fact]
+    public async Task PreviousFile_Post_WithContinueProcessingOption_DoesNotCallRemovePreviousQuery()
+    {
+        var session = CreateEmptySession();
+        var controller = CreateController(session);
+
+        var model = new RolloverPreviousDataViewModel
         {
-            var session = CreateEmptySession();
-            var controller = CreateController(session);
+            CandidateCount = 5,
+            SelectedOption = RolloverPreviousFileOption.ContinueProcessing
+        };
 
-            var model = new RolloverPreviousDataViewModel 
-            { 
-                CandidateCount = 5,
-                SelectedOption = RolloverPreviousFileOption.ContinueProcessing
-            };
+        var result = await controller.PreviousFile(model);
 
-            var result = await controller.PreviousFile(model);
+        var redirectResult = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal(nameof(RolloverController.FundingStreamInclusionExclusion), redirectResult.ActionName);
 
-            var redirectResult = Assert.IsType<RedirectToActionResult>(result);
-            Assert.Equal(nameof(RolloverController.FundingStreamInclusionExclusion), redirectResult.ActionName);
-
-            MediatorMock.Verify(
-                m => m.Send(It.IsAny<RemovePreviousWorkflowCandidatesQuery>(), It.IsAny<CancellationToken>()),
-                Times.Never,
-                "RemovePreviousWorkflowCandidatesQuery should not be called for ContinueProcessing");
-        }
+        MediatorMock.Verify(
+            m => m.Send(It.IsAny<RemovePreviousWorkflowCandidatesQuery>(), It.IsAny<CancellationToken>()),
+            Times.Never,
+            "RemovePreviousWorkflowCandidatesQuery should not be called for ContinueProcessing");
     }
+}
