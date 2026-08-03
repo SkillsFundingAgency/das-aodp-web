@@ -12,7 +12,7 @@ namespace SFA.DAS.AODP.Infrastructure.UnitTests.ApiClient;
 public class ApiClientTests : UnitTest
 {
     [Fact]
-    public async Task PostWithResponseCodeAsMultipart_WhenRequestIsProvided_SendsMultipartFormData()
+    public async Task PostWithResponseCodeAsJsonFile_WhenQueryBuilderRequestIsProvided_SendsOneJsonFile()
     {
         // Arrange
         var handler = new RecordingHttpMessageHandler();
@@ -29,20 +29,17 @@ public class ApiClientTests : UnitTest
                 TypeIds: [2],
                 SectorSubjectAreaIds: ["01"],
                 AwardingOrganisationIds: ["AO1"]));
-        KeyValuePair<string, string>[] expected =
-        [
-            new("LevelIds", "1"),
-            new("TypeIds", "2"),
-            new("SectorSubjectAreaIds", "01"),
-            new("AwardingOrganisationIds", "AO1")
-        ];
-
         // Act
-        await sut.PostWithResponseCodeAsMultipart<object>(request);
+        await sut.PostWithResponseCodeAsJsonFile<object>(request);
 
         // Assert
         handler.ContentType.ShouldStartWith("multipart/form-data");
-        handler.FormData.ShouldBe(expected);
+        handler.FormData.Length.ShouldBe(1);
+        handler.FormData.Single().Key.ShouldBe("payload");
+        handler.FormData.Single().Value.ShouldContain("\"LevelIds\":[1]");
+        handler.FileNames.ShouldBe(["payload.json"]);
+        handler.PartContentTypes.ShouldBe(["application/json"]);
+        handler.ContentTypeHeader.ShouldNotContain("\"");
         handler.RequestUri.ShouldBe(new Uri("https://aodp.example/api/rollover/querybuilder/qualificationversions"));
     }
 

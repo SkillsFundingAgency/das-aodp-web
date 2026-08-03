@@ -2,11 +2,9 @@
 
 namespace SFA.DAS.AODP.Domain.Rollover;
 
-public class GetQualificationVersionsForRolloverQueryBuilderApiRequest(RolloverQueryBuilderRequest data) : IPostMultipartFormDataApiRequest
+public class GetQualificationVersionsForRolloverQueryBuilderApiRequest(RolloverQueryBuilderRequest data) : IPostMultipartJsonFileApiRequest
 {
     public string PostUrl => "api/rollover/querybuilder/qualificationversions";
 
-    public RolloverQueryBuilderRequest Data { get; } = data;
-
-    public IEnumerable<KeyValuePair<string, string>> FormData => MultipartFormDataMapper.Map(Data);
+    public object Data { get; } = data;
 }
