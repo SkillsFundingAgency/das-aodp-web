@@ -1,0 +1,24 @@
+﻿@using SFA.DAS.AODP.Web.Areas.Review.Controllers
+@using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover
+@using SFA.DAS.AODP.Web.Extensions
+@using SFA.DAS.AODP.Web.Views.Shared
+@model SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.RolloverUploadQualificationsViewModel
+
+@{
+    ViewData["Title"] = "Upload candidates to rollover";
+
+    var backLinkModel = new BackLinkModel
+    {
+        Action = nameof(RolloverController.Index),
+        Controller = "Rollover",
+        Area = "Review"
+    };
+}
+
+@await Html.PartialAsync("_BackLinkPartial", backLinkModel)
+
+<partial name="_FileUploadErrors" model="Model" />
+
+<h1 class="govuk-heading-l">@ViewData["Title"]</h1>
+
+<partial name="_ValidateCandidatesFileUpload" model="Model" />
