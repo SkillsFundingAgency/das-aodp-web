@@ -348,7 +348,7 @@ public class QualificationTimelineHistoryBuilderTests
                 QualificationName = qualificationName,
                 Versions = []
             },
-            Organisation = new GetQualificationDetailsQueryResponse.AwardingOrganisation
+            Organisation = new AwardingOrganisation
             {
                 Id = Guid.NewGuid(),
                 NameOfqual = organisationName

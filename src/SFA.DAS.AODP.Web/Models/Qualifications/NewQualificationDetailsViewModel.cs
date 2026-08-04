@@ -1,6 +1,7 @@
 ﻿using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Models.Qualifications;
 using System.ComponentModel;
+using SFA.DAS.AODP.Models.Qualifications;
 
 namespace SFA.DAS.AODP.Web.Models.Qualifications;
 
@@ -107,18 +108,6 @@ public class NewQualificationDetailsViewModel
     {
         public Guid Id { get; set; }
         public string? Name { get; set; }
-    }
-
-    public partial class AwardingOrganisation
-    {
-        public Guid Id { get; set; }
-        public int? Ukprn { get; set; }
-        public string? RecognitionNumber { get; set; }
-        public string? NameLegal { get; set; }
-        public string? NameOfqual { get; set; }
-        public string? NameGovUk { get; set; }
-        public string? Name_Dsi { get; set; }
-        public string? Acronym { get; set; }
     }
 
     public partial class Qualification

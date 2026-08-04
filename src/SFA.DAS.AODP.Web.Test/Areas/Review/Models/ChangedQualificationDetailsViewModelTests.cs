@@ -3,6 +3,7 @@ using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Models.Qualifications;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Models.Qualifications;
+using AwardingOrganisation = SFA.DAS.AODP.Web.Models.Qualifications.AwardingOrganisation;
 
 namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Models;
 
@@ -504,7 +505,7 @@ public class ChangedQualificationDetailsViewModelTests
                 Id = lifecycleStageId,
                 Name = "Completed"
             },
-            Organisation = new GetQualificationDetailsQueryResponse.AwardingOrganisation
+            Organisation = new SFA.DAS.AODP.Domain.Rollover.AwardingOrganisation
             {
                 Id = awardingOrganisationId,
                 Ukprn = 12345678,
@@ -606,7 +607,7 @@ public class ChangedQualificationDetailsViewModelTests
                 Id = lifecycleStageId,
                 Name = "In progress"
             },
-            Organisation = new GetQualificationDetailsQueryResponse.AwardingOrganisation
+            Organisation = new SFA.DAS.AODP.Domain.Rollover.AwardingOrganisation
             {
                 Id = awardingOrganisationId,
                 Ukprn = 87654321,
