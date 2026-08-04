@@ -14,7 +14,11 @@ public class WhenHandlingGetQualificationVersionsForRolloverQueryBuilderQuery : 
     public async Task Handle_ShouldPostAllSelectedFilterIdsAndReturnQualificationVersions()
     {
         // Arrange
-        var filters = RolloverQueryBuilderRequestMapper.ForAll(new QueryBuilderFilters());
+        var filters = new RolloverQueryBuilderRequest(
+            LevelIds: [1, 2],
+            TypeIds: [3, 4],
+            SectorSubjectAreaIds: ["01", "02"],
+            AwardingOrganisationIds: ["AO1", "AO2"]);
 
         var expectedResponse = new GetQualificationVersionsForRolloverQueryBuilderQueryResponse
         {
@@ -30,7 +34,7 @@ public class WhenHandlingGetQualificationVersionsForRolloverQueryBuilderQuery : 
         };
 
         _apiClientMock
-            .Setup(a => a.PostWithResponseCode<GetQualificationVersionsForRolloverQueryBuilderQueryResponse>(
+            .Setup(a => a.PostWithResponseCodeAsJsonFile<GetQualificationVersionsForRolloverQueryBuilderQueryResponse>(
                 It.IsAny<GetQualificationVersionsForRolloverQueryBuilderApiRequest>()))
             .ReturnsAsync(expectedResponse);
 
@@ -42,7 +46,7 @@ public class WhenHandlingGetQualificationVersionsForRolloverQueryBuilderQuery : 
         // Assert
         result.Success.ShouldBeTrue();
         result.Value.QualificationVersions.ShouldBe(expectedResponse.QualificationVersions);
-        _apiClientMock.Verify(a => a.PostWithResponseCode<GetQualificationVersionsForRolloverQueryBuilderQueryResponse>(
+        _apiClientMock.Verify(a => a.PostWithResponseCodeAsJsonFile<GetQualificationVersionsForRolloverQueryBuilderQueryResponse>(
             It.Is<GetQualificationVersionsForRolloverQueryBuilderApiRequest>(r => r.Data == filters)), Times.Once);
     }
 
@@ -55,7 +59,7 @@ public class WhenHandlingGetQualificationVersionsForRolloverQueryBuilderQuery : 
         var exception = new Exception(exceptionMessage);
 
         _apiClientMock
-            .Setup(a => a.PostWithResponseCode<GetQualificationVersionsForRolloverQueryBuilderQueryResponse>(
+            .Setup(a => a.PostWithResponseCodeAsJsonFile<GetQualificationVersionsForRolloverQueryBuilderQueryResponse>(
                 It.IsAny<GetQualificationVersionsForRolloverQueryBuilderApiRequest>()))
             .ThrowsAsync(exception);
 

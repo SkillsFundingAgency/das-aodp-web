@@ -5,7 +5,7 @@ using SFA.DAS.AODP.Domain.Rollover;
 
 namespace SFA.DAS.AODP.Application.UnitTests.Commands.Rollover
 {
-    public class SubmitRolloverExtensionCommandHandlerTests
+    public class SubmitRolloverExtensionCommandHandlerTests : UnitTest
     {
         private readonly Mock<IApiClient> _mockApiClient;
         private readonly SubmitRolloverExtensionCommandHandler _handler;
@@ -33,12 +33,12 @@ namespace SFA.DAS.AODP.Application.UnitTests.Commands.Rollover
             };
 
             _mockApiClient
-                .Setup(c => c.PostWithResponseCode<SubmitRolloverExtensionCommandResponse>(
+                .Setup(c => c.PostWithResponseCodeAsJsonFile<SubmitRolloverExtensionCommandResponse>(
                     It.IsAny<SubmitRolloverExtensionApiRequest>()))
                 .ReturnsAsync(expectedApiResponse);
 
             // Act
-            var result = await _handler.Handle(request, CancellationToken.None);
+            var result = await _handler.Handle(request, CancellationToken);
 
             // Assert
             Assert.True(result.Success);
@@ -47,7 +47,7 @@ namespace SFA.DAS.AODP.Application.UnitTests.Commands.Rollover
             Assert.Null(result.ErrorMessage);
 
             _mockApiClient.Verify(c =>
-                c.PostWithResponseCode<SubmitRolloverExtensionCommandResponse>(
+                c.PostWithResponseCodeAsJsonFile<SubmitRolloverExtensionCommandResponse>(
                     It.IsAny<SubmitRolloverExtensionApiRequest>()),
                 Times.Once);
         }
@@ -59,19 +59,19 @@ namespace SFA.DAS.AODP.Application.UnitTests.Commands.Rollover
             var request = new SubmitRolloverExtensionCommand();
 
             _mockApiClient
-                .Setup(c => c.PostWithResponseCode<SubmitRolloverExtensionCommandResponse>(
+                .Setup(c => c.PostWithResponseCodeAsJsonFile<SubmitRolloverExtensionCommandResponse>(
                     It.IsAny<SubmitRolloverExtensionApiRequest>()))
                 .ThrowsAsync(new Exception("API failed"));
 
             // Act
-            var result = await _handler.Handle(request, CancellationToken.None);
+            var result = await _handler.Handle(request, CancellationToken);
 
             // Assert
             Assert.False(result.Success);
             Assert.Equal("API failed", result.ErrorMessage);
 
             _mockApiClient.Verify(c =>
-                c.PostWithResponseCode<SubmitRolloverExtensionCommandResponse>(
+                c.PostWithResponseCodeAsJsonFile<SubmitRolloverExtensionCommandResponse>(
                     It.IsAny<SubmitRolloverExtensionApiRequest>()),
                 Times.Once);
         }
@@ -88,20 +88,21 @@ namespace SFA.DAS.AODP.Application.UnitTests.Commands.Rollover
             SubmitRolloverExtensionApiRequest? captured = null;
 
             _mockApiClient
-                .Setup(c => c.PostWithResponseCode<SubmitRolloverExtensionCommandResponse>(
-                    It.IsAny<IPostApiRequest>()))
-                .Callback<IPostApiRequest>(req =>
+                .Setup(c => c.PostWithResponseCodeAsJsonFile<SubmitRolloverExtensionCommandResponse>(
+                    It.IsAny<IPostMultipartJsonFileApiRequest>()))
+                .Callback<IPostMultipartJsonFileApiRequest>(req =>
                 {
                     captured = req as SubmitRolloverExtensionApiRequest;
                 })
                 .ReturnsAsync(new SubmitRolloverExtensionCommandResponse());
 
             // Act
-            await _handler.Handle(request, CancellationToken.None);
+            await _handler.Handle(request, CancellationToken);
 
             // Assert
             Assert.NotNull(captured);
             Assert.Equal(request, captured!.Data);
         }
+
     }
 }

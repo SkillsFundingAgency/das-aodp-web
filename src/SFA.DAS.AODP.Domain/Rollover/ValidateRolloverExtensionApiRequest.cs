@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace SFA.DAS.AODP.Domain.Rollover;
 
 [ExcludeFromCodeCoverage]
-public class ValidateRolloverExtensionApiRequest : IPostApiRequest
+public class ValidateRolloverExtensionApiRequest : IPostMultipartJsonFileApiRequest
 {
     public string PostUrl => "api/rollover/validaterolloverextension";
 
