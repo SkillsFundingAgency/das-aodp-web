@@ -9,10 +9,14 @@ using SFA.DAS.AODP.Application.Commands.Qualification;
 using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Domain.Qualifications.Requests;
+using SFA.DAS.AODP.Domain.Rollover;
+using SFA.DAS.AODP.Models.Qualifications;
+using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Extensions;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Qualifications;
+using AwardingOrganisation = SFA.DAS.AODP.Domain.Rollover.AwardingOrganisation;
 using SFA.DAS.AODP.Web.Models.Session;
 using System.Security.Claims;
 
@@ -89,7 +93,7 @@ public class NewControllerTests
                 Id = Guid.NewGuid(),
                 Name = "Draft"
             },
-            Organisation = new GetQualificationDetailsQueryResponse.AwardingOrganisation
+            Organisation = new AwardingOrganisation
             {
                 Id = Guid.NewGuid(),
                 NameOfqual = organisationName
@@ -299,6 +303,26 @@ public class NewControllerTests
 
         Assert.Equal(DefaultQan, model.Qan);
     }
+    [Fact]
+    public async Task QualificationDetailsTimeline_WhenMediatorThrows_RedirectsToQualificationDetails()
+    {
+        var controller = CreateController();
+
+        _mediator
+            .Setup(m => m.Send(
+                It.IsAny<GetQualificationTimelineQuery>(),
+                It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new Exception("test"));
+
+        var result = await controller.QualificationDetailsTimeline(DefaultQan);
+
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+
+        Assert.Equal(nameof(NewController.QualificationDetails), redirect.ActionName);
+        Assert.NotNull(redirect.RouteValues);
+        Assert.Equal(DefaultQan, redirect.RouteValues["qualificationReference"]);
+    }
+
     #endregion
 
     #region ExportData

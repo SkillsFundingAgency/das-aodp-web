@@ -47,6 +47,7 @@
 		<PackageReference Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" Version="10.0.8" />
 		<PackageReference Include="Microsoft.FeatureManagement.AspNetCore" Version="4.5.0" />
 		<PackageReference Include="BuildBundlerMinifier" Version="3.2.449" PrivateAssets="All" />
+		<PackageReference Include="OpenTelemetry.Api" Version="1.15.3" />
 		<PackageReference Include="SFA.DAS.Configuration.AzureTableStorage" Version="17.1.165" />
 	</ItemGroup>
 
@@ -63,12 +64,16 @@
 
 	<ItemGroup>
 	  <Folder Include="Models\Filters\" />
+	  <Folder Include="Areas\Review\Domain\Rollover\" />
+	  <Folder Include="CsvHelper\" />
 	  <Folder Include="Providers\" />
 	  <Folder Include="Validators\NewFolder\" />
+	  <Folder Include="Views\Shared\Rollover\" />
 	</ItemGroup>
 
 	<PropertyGroup>
 		<DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
+		<UserSecretsId>bd638dc4-8934-455d-bf76-2d3b4c52255c</UserSecretsId>
 	</PropertyGroup>
 
 	<Target Name="EnsureBundleRuns" BeforeTargets="ResolveStaticWebAssets;_GenerateStaticWebAssetsManifest;ProcessStaticWebAssets;ComputeFilesToPublish;Build">

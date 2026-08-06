@@ -18,6 +18,7 @@ using SFA.DAS.AODP.Web.Models.Qualifications;
 using SFA.DAS.AODP.Web.Models.Session;
 using System.Globalization;
 using System.Text.Json;
+using CsvHelper;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 using ProcessStatus = SFA.DAS.AODP.Application.Queries.Qualifications.ProcessStatus;
 
@@ -443,7 +444,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         private static string GenerateCsv(IEnumerable<QualificationExport> qualifications)
         {
             using (var writer = new StringWriter())
-            using (var csv = new CsvHelper.CsvWriter(writer, new CsvConfiguration(CultureInfo.InvariantCulture)))
+            using (var csv = new CsvWriter(writer, new CsvConfiguration(CultureInfo.InvariantCulture)))
             {
                 csv.WriteRecords(qualifications);
                 return writer.ToString();

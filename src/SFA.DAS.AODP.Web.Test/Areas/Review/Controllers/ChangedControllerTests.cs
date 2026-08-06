@@ -19,6 +19,9 @@ using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 using SFA.DAS.AODP.Web.Models.Session;
 using System.Security.Claims;
+using SFA.DAS.AODP.Domain.Rollover;
+using SFA.DAS.AODP.Models.Qualifications;
+using AwardingOrganisation = SFA.DAS.AODP.Domain.Rollover.AwardingOrganisation;
 
 namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers;
 
@@ -141,7 +144,7 @@ public class ChangedControllerTests
                 Id = Guid.NewGuid(),
                 Name = "Draft"
             },
-            Organisation = new GetQualificationDetailsQueryResponse.AwardingOrganisation
+            Organisation = new AwardingOrganisation
             {
                 Id = Guid.NewGuid(),
                 NameOfqual = organisationName
