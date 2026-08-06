@@ -17,6 +17,8 @@ using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview;
 using SFA.DAS.AODP.Web.Helpers.Export;
 using SFA.DAS.AODP.Web.Helpers.User;
+using SFA.DAS.AODP.Web.Models.Session;
+using SFA.DAS.AODP.Web.Extensions;
 using System.IO.Compression;
 
 namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
@@ -39,16 +41,39 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
         {
             _fixture.Register(() => DateOnly.FromDateTime(new DateTime(2020, 1, 1)));
             _controller = new(_loggerMock.Object, _mediatorMock.Object, _userHelperServiceMock.Object, _fileServiceMock.Object, _aodpOptions, _applicationExportServiceMock.Object);
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Session = new TestSession();
+
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = httpContext
+            };
+
+            _controller.TempData = new TempDataDictionary(
+                httpContext,
+                Mock.Of<ITempDataProvider>());
         }
 
         [Fact]
         public async Task IndexMethod_PopulatesAndReturnsViewCorrectly()
         {
-            //Arrange
+            var httpContext = new DefaultHttpContext();
+            httpContext.Session = new TestSession();
+
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = httpContext
+            };
+
+            _controller.TempData = new TempDataDictionary(
+                httpContext,
+                Mock.Of<ITempDataProvider>());
+
             var expectedUserType = UserType.Ofqual;
             _userHelperServiceMock.Setup(x => x.GetUserType()).Returns(expectedUserType);
 
-            var expectedModel = new Models.Applications.ApplicationsReviewQuery
+            var sessionModel = new ApplicationsReviewFilterSessionModel
             {
                 PageNumber = 2,
                 RecordsPerPage = 10,
@@ -57,6 +82,8 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
                 Status = new List<ApplicationStatus> { ApplicationStatus.InReview, ApplicationStatus.Approved },
                 ReviewerSelection = "Bob Smith"
             };
+
+            httpContext.Session.SetObject("ApplicationsReviewFilters", sessionModel);
 
             var expectedApplication = new GetApplicationsForReviewQueryResponse.Application
             {
@@ -82,17 +109,19 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
             };
 
             _mediatorMock.Setup(m => m.Send(It.IsAny<GetApplicationsForReviewQuery>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new BaseMediatrResponse<GetApplicationsForReviewQueryResponse> { Success = true, Value = response});
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationsForReviewQueryResponse>
+                {
+                    Success = true,
+                    Value = response
+                });
 
-            //Act
-            var result = await _controller.Index(expectedModel) as ViewResult;
+            var result = await _controller.Index(sessionModel.PageNumber) as ViewResult;
 
-            //Assert
-            var model = Assert.IsType<ApplicationsReviewListViewModel>(Assert.IsType<ViewResult>(result).Model);
+            var model = Assert.IsType<ApplicationsReviewListViewModel>(result.Model);
+
             Assert.Equal(expectedUserType.ToString(), model.UserType);
-            // Check the url is set correctly from configuration
             Assert.Equal(_aodpOptions.Value.FindRegulatedQualificationUrl, model.FindRegulatedQualificationUrl);
-            Assert.Equal(response.TotalRecordsCount, model.TotalItems);
+            Assert.Equal(response.TotalRecordsCount, model.PaginationViewModel.TotalRecords);
 
             var app = Assert.Single(model.Applications);
             Assert.Equal(expectedApplication.Id, app.Id);
@@ -105,18 +134,18 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
             _mediatorMock.Verify(m => m.Send(
                 It.Is<GetApplicationsForReviewQuery>(q =>
                     q.ReviewUser == expectedUserType.ToString() &&
-                    q.ApplicationSearch == expectedModel.ApplicationSearch &&
-                    q.AwardingOrganisationSearch == expectedModel.AwardingOrganisationSearch &&
-                    q.ApplicationStatuses.SequenceEqual(expectedModel.Status.Select(s => s.ToString())) &&
-                    q.ApplicationsWithNewMessages == expectedModel.Status.Contains(ApplicationStatus.NewMessage) &&
-                    q.Limit == expectedModel.RecordsPerPage &&
-                    q.Offset == expectedModel.RecordsPerPage * (expectedModel.PageNumber - 1) &&
+                    q.ApplicationSearch == sessionModel.ApplicationSearch &&
+                    q.AwardingOrganisationSearch == sessionModel.AwardingOrganisationSearch &&
+                    q.ApplicationStatuses.SequenceEqual(sessionModel.Status.Select(s => s.ToString())) &&
+                    q.ApplicationsWithNewMessages == sessionModel.Status.Contains(ApplicationStatus.NewMessage) &&
+                    q.Limit == sessionModel.RecordsPerPage &&
+                    q.Offset == sessionModel.RecordsPerPage * (sessionModel.PageNumber - 1) &&
                     q.ReviewerSearch == "Bob Smith" &&
                     q.UnassignedOnly == false),
                 It.IsAny<CancellationToken>()),
                 Times.Once);
-
         }
+
 
         [Fact]
         public async Task DownloadAllApplicationFiles_Success_ReturnsZipFile()
@@ -391,7 +420,5 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
                 ), It.IsAny<CancellationToken>()), Times.Once);
             });
         }
-
-
     }
 }

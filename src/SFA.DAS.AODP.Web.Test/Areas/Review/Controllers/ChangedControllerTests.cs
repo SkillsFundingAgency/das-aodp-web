@@ -10,10 +10,14 @@ using SFA.DAS.AODP.Application.Commands.Qualification;
 using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Application.Services;
+using SFA.DAS.AODP.Domain.Qualifications.Requests;
+using SFA.DAS.AODP.Models.Qualifications;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
+using SFA.DAS.AODP.Web.Extensions;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Qualifications;
+using SFA.DAS.AODP.Web.Models.Session;
 using System.Security.Claims;
 using SFA.DAS.AODP.Domain.Rollover;
 using SFA.DAS.AODP.Models.Qualifications;
@@ -58,20 +62,54 @@ public class ChangedControllerTests
             FindRegulatedQualificationUrl = DefaultFindQualificationUrl
         });
 
+    public ChangedControllerTests()
+    {
+        _userHelper
+            .Setup(u => u.GetUserRoles())
+            .Returns(new List<string>());
+
+        _mediator
+            .Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetProcessStatusesQueryResponse>
+            {
+                Success = true,
+                Value = new GetProcessStatusesQueryResponse
+                {
+                    ProcessStatuses =
+                    {
+                    new() { Id = Guid.NewGuid(), Name = "Decision Required" },
+                    new() { Id = Guid.NewGuid(), Name = "No Action Required" }
+                    }
+                }
+            });
+    }
+
+    #region Helper methods
+
     private ChangedController CreateController()
     {
-        var controller = new ChangedController(_logger.Object, _mediator.Object, _userHelper.Object, _timelineBuilder.Object);
+        var controller = new ChangedController(
+            _logger.Object,
+            _mediator.Object,
+            _userHelper.Object,
+            _timelineBuilder.Object);
 
         var httpContext = new DefaultHttpContext();
-        var claims = new[] { new Claim(ClaimTypes.Name, DefaultUserName) };
-        httpContext.User = new ClaimsPrincipal(new ClaimsIdentity(claims, "TestAuth"));
+        httpContext.Session = new TestSession();
+
+        httpContext.User = new ClaimsPrincipal(
+            new ClaimsIdentity(
+                new[] { new Claim(ClaimTypes.Name, DefaultUserName) },
+                "TestAuth"));
 
         controller.ControllerContext = new ControllerContext
         {
             HttpContext = httpContext
         };
 
-        controller.TempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
+        controller.TempData = new TempDataDictionary(
+            httpContext,
+            Mock.Of<ITempDataProvider>());
 
         return controller;
     }
@@ -176,6 +214,7 @@ public class ChangedControllerTests
                 Value = applicationsResponse
             });
     }
+    #endregion
 
     [Fact]
     public async Task QualificationDetails_Get_ReturnsRedirect_WhenQualificationReferenceNull()
@@ -426,126 +465,6 @@ public class ChangedControllerTests
     }
 
     [Fact]
-    public async Task Search_RedirectsToIndex_WithMappedRouteValues()
-    {
-        var controller = CreateController();
-
-        var viewModel = new ChangedQualificationsViewModel
-        {
-            PaginationViewModel = new PaginationViewModel
-            {
-                RecordsPerPage = DefaultRecordsPerPage
-            },
-            Filter = new NewQualificationFilterViewModel
-            {
-                QualificationName = SearchName,
-                Organisation = SearchOrganisation,
-                QAN = SearchQan,
-                ProcessStatusIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() }
-            }
-        };
-
-        var result = await controller.Search(viewModel);
-
-        var redirect = Assert.IsType<RedirectToActionResult>(result);
-
-        Assert.Multiple(() =>
-        {
-            Assert.Equal(nameof(ChangedController.Index), redirect.ActionName);
-            Assert.Equal(ResetPageNumber, redirect.RouteValues!["pageNumber"]);
-            Assert.Equal(DefaultRecordsPerPage, redirect.RouteValues["recordsPerPage"]);
-            Assert.Equal(SearchName, redirect.RouteValues["name"]);
-            Assert.Equal(SearchOrganisation, redirect.RouteValues["organisation"]);
-            Assert.Equal(SearchQan, redirect.RouteValues["qan"]);
-            Assert.Equal(viewModel.Filter.ProcessStatusIds, redirect.RouteValues["processStatusIds"]);
-        });
-    }
-
-    [Fact]
-    public async Task Clear_RedirectsToIndex_WhenModelStateValid()
-    {
-        var controller = CreateController();
-
-        var result = await controller.Clear(DefaultRecordsPerPage);
-
-        var redirect = Assert.IsType<RedirectToActionResult>(result);
-
-        Assert.Multiple(() =>
-        {
-            Assert.Equal(nameof(ChangedController.Index), redirect.ActionName);
-            Assert.Equal(ClearedPageNumber, redirect.RouteValues!["pageNumber"]);
-            Assert.Equal(DefaultRecordsPerPage, redirect.RouteValues["recordsPerPage"]);
-        });
-    }
-
-    [Fact]
-    public async Task Clear_ReturnsIndexView_WhenModelStateInvalid()
-    {
-        var controller = CreateController();
-        controller.ModelState.AddModelError("recordsPerPage", "invalid");
-
-        var result = await controller.Clear(DefaultRecordsPerPage);
-
-        var view = Assert.IsType<ViewResult>(result);
-
-        Assert.Multiple(() =>
-        {
-            Assert.Equal("Index", view.ViewName);
-        });
-    }
-
-    [Fact]
-    public async Task ChangePage_RedirectsToIndex_WithOverriddenPageNumber()
-    {
-        var controller = CreateController();
-
-        var qualificationQuery = new QualificationQuery
-        {
-            PageNumber = DefaultPageNumber,
-            RecordsPerPage = DefaultRecordsPerPage,
-            Name = SearchName,
-            Organisation = SearchOrganisation,
-            Qan = SearchQan
-        };
-
-        var result = await controller.ChangePage(qualificationQuery, ChangedPageNumber);
-
-        var redirect = Assert.IsType<RedirectToActionResult>(result);
-
-        Assert.Multiple(() =>
-        {
-            Assert.Equal(nameof(ChangedController.Index), redirect.ActionName);
-            Assert.Equal(ChangedPageNumber, redirect.RouteValues!["pageNumber"]);
-            Assert.Equal(DefaultRecordsPerPage, redirect.RouteValues["recordsPerPage"]);
-            Assert.Equal(SearchName, redirect.RouteValues["name"]);
-            Assert.Equal(SearchOrganisation, redirect.RouteValues["organisation"]);
-            Assert.Equal(SearchQan, redirect.RouteValues["qan"]);
-        });
-    }
-
-    [Fact]
-    public async Task ChangePage_ReturnsIndexView_WhenModelStateInvalid()
-    {
-        var controller = CreateController();
-        controller.ModelState.AddModelError("pageNumber", "invalid");
-
-        var qualificationQuery = new QualificationQuery
-        {
-            PageNumber = DefaultPageNumber,
-            RecordsPerPage = DefaultRecordsPerPage
-        };
-
-        var result = await controller.ChangePage(qualificationQuery, ChangedPageNumber);
-
-        var view = Assert.IsType<ViewResult>(result);
-
-        Assert.Multiple(() =>
-        {
-            Assert.Equal("Index", view.ViewName);
-        });
-    }
-
-    [Fact]
     public async Task GetProcessStatuses_ReturnsOnlyReviewerAllowedStatuses_WhenUserIsNotApprover()
     {
         var controller = CreateController();
@@ -735,78 +654,359 @@ public class ChangedControllerTests
         Assert.Equal("/Home/Error", redirect.Url);
     }
 
+    #region Index
+
     [Fact]
-    public async Task Index_ReturnsView_WithModel()
+    public async Task Index_ReturnsViewResult_Empty()
     {
         var controller = CreateController();
 
-        var qualificationQuery = new QualificationQuery
+        controller.HttpContext.Session.SetObject("ChangedQualificationFilters",
+            new QualificationFilterSessionModel
+            {
+                PageNumber = 1,
+                RecordsPerPage = 10
+            });
+
+        var response = new BaseMediatrResponse<GetChangedQualificationsQueryResponse>
         {
-            PageNumber = DefaultPageNumber,
-            RecordsPerPage = DefaultRecordsPerPage,
-            Name = SearchName,
-            Organisation = SearchOrganisation,
-            Qan = SearchQan
+            Success = true,
+            Value = new GetChangedQualificationsQueryResponse
+            {
+                Data = new List<ChangedQualification>(),
+                TotalRecords = 0,
+                Skip = 0,
+                Take = 10
+            }
         };
 
-        var processStatusesResponse = CreateProcessStatusesResponse((Guid.NewGuid(), DecisionRequiredStatus));
+        _mediator
+            .Setup(m => m.Send(It.IsAny<GetChangedQualificationsQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(response);
 
-        _mediator.Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetProcessStatusesQueryResponse>
+        var result = await controller.Index(pageNumber: 1);
+
+        Assert.IsType<ViewResult>(result);
+    }
+
+
+    [Fact]
+    public async Task Index_ReturnsViewResult_WithListOfNewQualifications()
+    {
+        var controller = CreateController();
+
+        controller.HttpContext.Session.SetObject("ChangedQualificationFilters",
+            new QualificationFilterSessionModel
             {
-                Success = true,
-                Value = processStatusesResponse
+                PageNumber = 1,
+                RecordsPerPage = 10
             });
 
-        _mediator.Setup(m => m.Send(It.IsAny<GetChangedQualificationsQuery>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<GetChangedQualificationsQueryResponse>
-            {
-                Success = true,
-                Value = new GetChangedQualificationsQueryResponse
-                {
-                    Data = new List<ChangedQualification>(),
-                    TotalRecords = 0,
-                    Skip = DefaultRecordsPerPage,
-                    Take = DefaultRecordsPerPage
-                }
-            });
+        var items = new List<ChangedQualification>
+    {
+        new ChangedQualification
+        {
+            QualificationId = Guid.NewGuid(),
+            Subject = "Math",
+            AwardingOrganisation = "OrgA",
+            Status = ProcessStatusLookup.DecisionRequired.Name
+        },
+        new ChangedQualification
+        {
+            QualificationId = Guid.NewGuid(),
+            Subject = "English",
+            AwardingOrganisation = "OrgB",
+            Status = ProcessStatusLookup.DecisionRequired.Name
+        }
+    };
 
-        var result = await controller.Index(qualificationQuery);
+        var response = new BaseMediatrResponse<GetChangedQualificationsQueryResponse>
+        {
+            Success = true,
+            Value = new GetChangedQualificationsQueryResponse
+            {
+                Data = items,
+                TotalRecords = 2,
+                Skip = 0,
+                Take = 10
+            }
+        };
+
+        _mediator
+            .Setup(m => m.Send(It.IsAny<GetChangedQualificationsQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(response);
+
+        var result = await controller.Index(pageNumber: 1);
 
         var view = Assert.IsType<ViewResult>(result);
         var model = Assert.IsType<ChangedQualificationsViewModel>(view.Model);
 
-        Assert.Multiple(() =>
-        {
-            Assert.NotNull(model);
-            Assert.NotNull(model.Filter);
-            Assert.Equal(SearchName, model.Filter.QualificationName);
-            Assert.Equal(SearchOrganisation, model.Filter.Organisation);
-            Assert.Equal(SearchQan, model.Filter.QAN);
-        });
+        Assert.Equal(2, model.ChangedQualifications.Count);
+        Assert.Equal("Math", model.ChangedQualifications[0].Subject);
+        Assert.Equal("OrgA", model.ChangedQualifications[0].AwardingOrganisationName);
+        Assert.Equal(ProcessStatusLookup.DecisionRequired.Name, model.ChangedQualifications[0].CurrentProcessStatus.Name);
     }
 
     [Fact]
-    public async Task Index_RedirectsToHomeError_WhenExceptionThrown()
+    public async Task Index_ReturnsNotFound_WhenQueryFails()
     {
         var controller = CreateController();
 
-        var qualificationQuery = new QualificationQuery
+        var queryResponse = new BaseMediatrResponse<GetChangedQualificationsQueryResponse>
         {
-            PageNumber = DefaultPageNumber,
-            RecordsPerPage = DefaultRecordsPerPage
+            Success = false
         };
 
-        _mediator.Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new Exception("boom"));
+        _mediator.Setup(m => m.Send(It.IsAny<GetChangedQualificationsQuery>(), It.IsAny<CancellationToken>()))
+                 .ReturnsAsync(queryResponse);
 
-        var result = await controller.Index(qualificationQuery);
+        _mediator.Setup(m => m.Send(It.IsAny<GetProcessStatusesQuery>(), It.IsAny<CancellationToken>()))
+                 .ReturnsAsync(new BaseMediatrResponse<GetProcessStatusesQueryResponse>
+                 {
+                     Success = true,
+                     Value = new GetProcessStatusesQueryResponse()
+                 });
+
+        var sessionModel = new QualificationFilterSessionModel
+        {
+            PageNumber = 1,
+            RecordsPerPage = 10
+        };
+
+        controller.HttpContext.Session.SetObject("ChangedQualificationFilters", sessionModel);
+
+        var result = await controller.Index(pageNumber: 1);
 
         var redirect = Assert.IsType<RedirectResult>(result);
-
-        Assert.Multiple(() =>
-        {
-            Assert.Equal("/Home/Error", redirect.Url);
-        });
+        Assert.Equal("/Home/Error", redirect.Url);
     }
+
+    [Fact]
+    public async Task Index_StoresUpdatedSessionModel()
+    {
+        var controller = CreateController();
+
+        var sessionModel = new QualificationFilterSessionModel
+        {
+            PageNumber = 1,
+            RecordsPerPage = 10
+        };
+
+        controller.HttpContext.Session.SetObject("ChangedQualificationFilters", sessionModel);
+
+        _mediator
+            .Setup(m => m.Send(It.IsAny<GetChangedQualificationsQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetChangedQualificationsQueryResponse>
+            {
+                Success = true,
+                Value = new GetChangedQualificationsQueryResponse { Data = new(), TotalRecords = 0 }
+            });
+
+        await controller.Index(pageNumber: 5);
+
+        var updated = controller.HttpContext.Session.GetObject<QualificationFilterSessionModel>("ChangedQualificationFilters");
+        Assert.Equal(5, updated.PageNumber);
+    }
+
+    [Fact]
+    public async Task Index_InvalidPaging_ShowsNotification()
+    {
+        var controller = CreateController();
+
+        var sessionModel = new QualificationFilterSessionModel
+        {
+            PageNumber = -1,
+            RecordsPerPage = 999
+        };
+
+        controller.HttpContext.Session.SetObject("ChangedQualificationFilters", sessionModel);
+
+        controller.TempData[ChangedController.NewQualDataKeys.InvalidPageParams.ToString()] = true;
+
+        _mediator
+            .Setup(m => m.Send(It.IsAny<GetChangedQualificationsQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetChangedQualificationsQueryResponse>
+            {
+                Success = true,
+                Value = new GetChangedQualificationsQueryResponse { Data = new(), TotalRecords = 0 }
+            });
+
+        var result = await controller.Index(pageNumber: -1);
+
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.NotNull(controller.TempData[ChangedController.NewQualDataKeys.InvalidPageParams.ToString()]);
+    }
+
+    [Fact]
+    public async Task Index_Exception_RedirectsToError()
+    {
+        var controller = CreateController();
+
+        _mediator
+            .Setup(m => m.Send(It.IsAny<GetChangedQualificationsQuery>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new Exception());
+
+        var result = await controller.Index(pageNumber: 1);
+
+        var redirect = Assert.IsType<RedirectResult>(result);
+        Assert.Equal("/Home/Error", redirect.Url);
+    }
+
+    #endregion
+
+    #region Clear
+
+    [Fact]
+    public async Task Clear_Empty_RedirectsToIndexWithDefaults()
+    {
+        var controller = CreateController();
+
+        var result = await controller.Clear();
+
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal(nameof(ChangedController.Index), redirect.ActionName);
+        Assert.Equal(0, redirect.RouteValues["pageNumber"]);
+        Assert.Equal(10, redirect.RouteValues["recordsPerPage"]);
+    }
+
+    [Fact]
+    public async Task Clear_RemovesSessionKey()
+    {
+        var controller = CreateController();
+
+        controller.HttpContext.Session.SetObject(
+            "ChangedQualificationFilters",
+            new QualificationFilterSessionModel());
+
+        await controller.Clear();
+
+        Assert.Null(controller.HttpContext.Session
+            .GetObject<QualificationFilterSessionModel>("ChangedQualificationFilters"));
+    }
+
+    [Fact]
+    public async Task Clear_InvalidModelState_ReturnsIndexView()
+    {
+        var controller = CreateController();
+
+        controller.ModelState.AddModelError("x", "y");
+
+        var result = await controller.Clear();
+
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.Equal("Index", view.ViewName);
+    }
+
+    [Fact]
+    public async Task Clear_Exception_ReturnsIndexView()
+    {
+        var controller = CreateController();
+
+        controller.HttpContext.Session = new TestSessionThrowing();
+
+        var result = await controller.Clear();
+
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.Equal("Index", view.ViewName);
+    }
+
+    #endregion
+
+    #region Search
+    [Fact]
+    public async Task Search_WritesFiltersToSession_AndRedirectsToIndex()
+    {
+        var controller = CreateController();
+
+        var viewModel = new ChangedQualificationsViewModel
+        {
+            Filter = new NewQualificationFilterViewModel
+            {
+                QualificationName = "Math",
+                Organisation = "OrgA",
+                QAN = "12345678",
+                ProcessStatusIds = new List<Guid>(),
+                AgeGroups = new List<AgeGroup>()
+            },
+            PaginationViewModel = new PaginationViewModel
+            {
+                RecordsPerPage = 20
+            }
+        };
+
+        var result = await controller.Search(viewModel);
+
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal(nameof(ChangedController.Index), redirect.ActionName);
+
+        var sessionModel = controller.HttpContext.Session
+            .GetObject<QualificationFilterSessionModel>("ChangedQualificationFilters");
+
+        Assert.NotNull(sessionModel);
+        Assert.Equal("Math", sessionModel.QualificationName);
+        Assert.Equal("OrgA", sessionModel.Organisation);
+        Assert.Equal("12345678", sessionModel.QAN);
+        Assert.Equal(20, sessionModel.RecordsPerPage);
+    }
+
+
+    [Fact]
+    public async Task Search_ResetsPageNumberToOne()
+    {
+        var controller = CreateController();
+
+        var vm = new ChangedQualificationsViewModel
+        {
+            Filter = new NewQualificationFilterViewModel(),
+            PaginationViewModel = new PaginationViewModel { RecordsPerPage = 20 }
+        };
+
+        await controller.Search(vm);
+
+        var session = controller.HttpContext.Session
+            .GetObject<QualificationFilterSessionModel>("ChangedQualificationFilters");
+
+        Assert.Equal(1, session.PageNumber);
+    }
+
+    [Fact]
+    public async Task Search_MapsNullFieldsCorrectly()
+    {
+        var controller = CreateController();
+
+        var vm = new ChangedQualificationsViewModel
+        {
+            Filter = new NewQualificationFilterViewModel(),
+            PaginationViewModel = new PaginationViewModel { RecordsPerPage = 10 }
+        };
+
+        await controller.Search(vm);
+
+        var session = controller.HttpContext.Session
+            .GetObject<QualificationFilterSessionModel>("ChangedQualificationFilters");
+
+        Assert.Equal("", session.QualificationName);
+        Assert.Equal("", session.Organisation);
+        Assert.Equal("", session.QAN);
+    }
+
+    [Fact]
+    public async Task Search_Exception_ReturnsIndexView()
+    {
+        var controller = CreateController();
+
+        var vm = new ChangedQualificationsViewModel
+        {
+            Filter = new NewQualificationFilterViewModel(),
+            PaginationViewModel = new PaginationViewModel()
+        };
+
+        controller.HttpContext.Session = new TestSessionThrowing();
+
+        var result = await controller.Search(vm);
+
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.Equal("Index", view.ViewName);
+    }
+    #endregion
 }

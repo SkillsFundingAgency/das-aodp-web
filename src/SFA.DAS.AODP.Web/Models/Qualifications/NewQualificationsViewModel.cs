@@ -2,6 +2,7 @@
 using SFA.DAS.AODP.Domain.Qualifications.Requests;
 using SFA.DAS.AODP.Web.Extensions;
 using SFA.DAS.AODP.Web.Models.BulkActions;
+using SFA.DAS.AODP.Web.Models.GdsComponents;
 
 namespace SFA.DAS.AODP.Web.Models.Qualifications
 {
@@ -19,7 +20,13 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
 
         public List<NewQualificationViewModel> NewQualifications { get; set; }
 
+        // Business‑logic pagination:
+        // Calculates current page, total pages, start/end record numbers.
         public PaginationViewModel PaginationViewModel { get; set; }
+
+        // UI pagination model for the GOV.UK component:
+        // Builds pagination URLs for the GOV.UK component.
+        public PaginationModel GdsPagination { get; set; }
 
         public JobStatusViewModel JobStatusViewModel { get; set; }
 
@@ -41,7 +48,9 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
             QualificationQuery qualificationQuery)
         {
             var viewModel = new NewQualificationsViewModel();
+
             viewModel.PaginationViewModel = new PaginationViewModel(response.TotalRecords, response.Skip, response.Take);
+
             viewModel.NewQualifications = response.Data.Select(s => new NewQualificationViewModel()
             {
                 QualificationId = s.QualificationId,

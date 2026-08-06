@@ -9,7 +9,6 @@ namespace SFA.DAS.AODP.Web.UnitTests.Testing
         public bool IsAvailable => true;
         public string Id { get; } = Guid.NewGuid().ToString();
         public IEnumerable<string> Keys => _store.Keys;
-
         public void Clear() => _store.Clear();
 
         public Task CommitAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;

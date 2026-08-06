@@ -126,20 +126,6 @@
                 @if (Model.ChangedQualifications.Any())
                 {
                     <form asp-controller="Changed" asp-action="ApplyBulkAction" asp-area="Review" method="post">
-                        <input type="hidden" name="pageNumber" value="@Model.PaginationViewModel.CurrentPage" />
-                        <input type="hidden" name="recordsPerPage" value="@Model.PaginationViewModel.RecordsPerPage" />
-                        <input type="hidden" name="name" value="@Model.Filter.QualificationName" />
-                        <input type="hidden" name="organisation" value="@Model.Filter.Organisation" />
-                        <input type="hidden" name="qan" value="@Model.Filter.QAN" />
-
-                        @if (Model.Filter.ProcessStatusIds != null)
-                        {
-                            foreach (var id in Model.Filter.ProcessStatusIds)
-                            {
-                                <input type="hidden" name="processStatusIds" value="@id" />
-                            }
-                        }
-
                         @{
                             var selectionHasError =
                                 ViewData.ModelState.TryGetValue("SelectedQualificationIds", out var selState) &&
@@ -158,14 +144,7 @@
 
                             @{
                                 var selectAllViewModel = SelectAllViewModelFactory.ForQualifications(
-                                    Model.PaginationViewModel.CurrentPage,
-                                    Model.PaginationViewModel.RecordsPerPage,
-                                    nameof(ChangedController).Replace("Controller", ""),
-                                    Model.Filter.QualificationName,
-                                    Model.Filter.Organisation,
-                                    Model.Filter.QAN,
-                                    Model.Filter.ProcessStatusIds,
-                                    Model.Filter.AgeGroups
+                                    nameof(ChangedController).Replace("Controller", "")
                                 );
                             }
 
@@ -233,127 +212,9 @@
 
                             <div class="govuk-grid-row" id="New_Qual_Pagination_Footer_Section">
                                 <div class="govuk-grid-column-three-quarters">
-                                    <nav class="govuk-pagination" aria-label="Pagination">
-                                        @if (Model.PaginationViewModel.HasPreviousPage)
-                                        {
-                                            <div class="govuk-pagination__prev">
-                                                <a class="govuk-link govuk-pagination__link" rel="prev"
-                                                    asp-controller="Changed"
-                                                    asp-action="ChangePage"
-                                                    asp-route-area="Review"
-                                                    asp-route-newPage="@Model.PaginationViewModel.PreviousPage"
-                                                    asp-route-recordsPerPAge="@Model.PaginationViewModel.RecordsPerPage"
-                                                    asp-route-name="@Model.Filter.QualificationName"
-                                                    asp-route-organisation="@Model.Filter.Organisation"
-                                                    asp-route-qan="@Model.Filter.QAN">
-                                                    <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
-                                                        <path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z"></path>
-                                                    </svg>
-                                                    <span class="govuk-pagination__link-title">
-                                                        Previous<span class="govuk-visually-hidden"> page</span>
-                                                    </span>
-                                                </a>
-                                            </div>
-                                        }
-                                        <ul class="govuk-pagination__list">
-                                            @if (Model.PaginationViewModel.ShowExtendedPreviousNavigation)
-                                            {
-                                                <li class="govuk-pagination__item">
-                                                    <a class="govuk-link govuk-pagination__link" aria-label="Page @Model.PaginationViewModel.FirstPage"
-                                                        asp-controller="Changed"
-                                                        asp-action="ChangePage"
-                                                        asp-route-area="Review"
-                                                        asp-route-newPage="@Model.PaginationViewModel.FirstPage"
-                                                        asp-route-recordsPerPAge="@Model.PaginationViewModel.RecordsPerPage"
-                                                        asp-route-name="@Model.Filter.QualificationName"
-                                                        asp-route-organisation="@Model.Filter.Organisation"
-                                                        asp-route-qan="@Model.Filter.QAN">
-                                                        @Model.PaginationViewModel.FirstPage
-                                                    </a>
-                                                </li>
-                                                <li class="govuk-pagination__item govuk-pagination__item--ellipses">
-                                                    &ctdot;
-                                                </li>
-                                            }
-                                            @if (Model.PaginationViewModel.HasPreviousPage)
-                                            {
-                                                <li class="govuk-pagination__item">
-                                                    <a class="govuk-link govuk-pagination__link" aria-label="Page @(Model.PaginationViewModel.PreviousPage)"
-                                                        asp-controller="Changed"
-                                                        asp-action="ChangePage"
-                                                        asp-route-area="Review"
-                                                        asp-route-newPage="@Model.PaginationViewModel.PreviousPage"
-                                                        asp-route-recordsPerPAge="@Model.PaginationViewModel.RecordsPerPage"
-                                                        asp-route-name="@Model.Filter.QualificationName"
-                                                        asp-route-organisation="@Model.Filter.Organisation"
-                                                        asp-route-qan="@Model.Filter.QAN">
-                                                        @(Model.PaginationViewModel.PreviousPage)
-                                                    </a>
-                                                </li>
-                                            }
-                                            <li class="govuk-pagination__item govuk-pagination__item--current">
-                                                <a class="govuk-link govuk-pagination__link" href="#" aria-label="Page @Model.PaginationViewModel.CurrentPage" aria-current="true">
-                                                    @Model.PaginationViewModel.CurrentPage
-                                                </a>
-                                            </li>
-                                            @if (Model.PaginationViewModel.HasNextPage)
-                                            {
-                                                <li class="govuk-pagination__item">
-                                                    <a class="govuk-link govuk-pagination__link" aria-label="Page @(Model.PaginationViewModel.NextPage)"
-                                                        asp-controller="Changed"
-                                                        asp-action="ChangePage"
-                                                        asp-route-area="Review"
-                                                        asp-route-newPage="@Model.PaginationViewModel.NextPage"
-                                                        asp-route-recordsPerPAge="@Model.PaginationViewModel.RecordsPerPage"
-                                                        asp-route-name="@Model.Filter.QualificationName"
-                                                        asp-route-organisation="@Model.Filter.Organisation"
-                                                        asp-route-qan="@Model.Filter.QAN">
-                                                        @(Model.PaginationViewModel.NextPage)
-                                                    </a>
-                                                </li>
-                                            }
-                                            @if (Model.PaginationViewModel.ShowExtendedNextNavigation)
-                                            {
-                                                <li class="govuk-pagination__item govuk-pagination__item--ellipses">
-                                                    &ctdot;
-                                                </li>
-                                                <li class="govuk-pagination__item">
-                                                    <a class="govuk-link govuk-pagination__link" aria-label="Page @Model.PaginationViewModel.TotalPages"
-                                                        asp-controller="Changed"
-                                                        asp-action="ChangePage"
-                                                        asp-route-area="Review"
-                                                        asp-route-newPage="@Model.PaginationViewModel.TotalPages"
-                                                        asp-route-recordsPerPAge="@Model.PaginationViewModel.RecordsPerPage"
-                                                        asp-route-name="@Model.Filter.QualificationName"
-                                                        asp-route-organisation="@Model.Filter.Organisation"
-                                                        asp-route-qan="@Model.Filter.QAN">
-                                                        @Model.PaginationViewModel.TotalPages
-                                                    </a>
-                                                </li>
-                                            }
-                                        </ul>
-                                        @if (Model.PaginationViewModel.HasNextPage)
-                                        {
-                                            <div class="govuk-pagination__next">
-                                                <a class="govuk-link govuk-pagination__link" rel="next"
-                                                    asp-controller="Changed"
-                                                    asp-action="ChangePage"
-                                                    asp-route-area="Review"
-                                                    asp-route-newPage="@Model.PaginationViewModel.NextPage"
-                                                    asp-route-recordsPerPAge="@Model.PaginationViewModel.RecordsPerPage"
-                                                    asp-route-name="@Model.Filter.QualificationName"
-                                                    asp-route-organisation="@Model.Filter.Organisation"
-                                                    asp-route-qan="@Model.Filter.QAN">
-                                                    <span class="govuk-pagination__link-title">
-                                                        Next<span class="govuk-visually-hidden"> page</span>
-                                                    </span>
-                                                    <svg class="govuk-pagination__icon govuk-pagination__icon--next" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
-                                                        <path d="m8.107-0.0078125-1.4136 1.414 4.2926 4.293h-12.986v2h12.896l-4.1855 3.9766 1.377 1.4492 6.7441-6.4062-6.7246-6.7266z"></path>
-                                                    </svg>
-                                                </a>
-                                            </div>
-                                        }
-                                    </nav>
+                                    <partial name="~/Views/Shared/GdsComponents/_GdsSessionPagination.cshtml"
+                                             model="Model.GdsPagination" />
+
                                 </div>
                             </div>
 
