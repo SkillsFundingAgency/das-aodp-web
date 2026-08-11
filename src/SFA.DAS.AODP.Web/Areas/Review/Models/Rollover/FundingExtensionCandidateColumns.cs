@@ -26,6 +26,7 @@
         public const string CurrentFundingApprovalEndDate = "CurrentFundingApprovalEndDate";
         public const string ProposedFundingApprovalEndDate = "ProposedFundingApprovalEndDate";
         public const string Comments = "Comments";
+        public const string Pldns = "PLDNS";
 
         public static readonly IReadOnlyList<string> Required = new[]
         {
@@ -51,7 +52,8 @@
             ExclusionReason,
             CurrentFundingApprovalEndDate,
             ProposedFundingApprovalEndDate,
-            Comments
+            Comments,
+            Pldns
         };
 
         public static string ColumnNamesForView()
