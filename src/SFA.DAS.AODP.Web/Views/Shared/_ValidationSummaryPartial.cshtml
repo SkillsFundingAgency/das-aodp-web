@@ -1,4 +1,5 @@
-﻿@if (!ViewContext.ModelState.IsValid)
+﻿@using Microsoft.AspNetCore.Mvc.ModelBinding
+@if (!ViewContext.ModelState.IsValid)
 {
     <div class="govuk-error-summary" data-module="govuk-error-summary">
         <div role="alert">
@@ -10,12 +11,15 @@
 
                     @foreach (var ms in ViewContext.ModelState)
                     {
-                        var error = @ms.Value.Errors.FirstOrDefault();
-                        if (error == null) continue;
+                        @if (ms.Value.ValidationState is ModelValidationState.Invalid)
+                        {
+                            var error = @ms.Value.Errors.FirstOrDefault();
+                            if (error == null) continue;
 
-                        <li>
-                            <a href="#@ms.Key">@error.ErrorMessage</a>
-                        </li>
+                            <li>
+                                <a href="#@ms.Key">@error.ErrorMessage</a>
+                            </li>
+                        }
                     }
 
                 </ul>

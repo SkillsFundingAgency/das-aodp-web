@@ -1,0 +1,28 @@
+﻿@using SFA.DAS.AODP.Web.Extensions
+@model SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.RolloverImportStatusViewModel
+@{
+    ViewData["Title"] = "Do you need to update any data before starting?";
+}
+
+<a class="govuk-back-link" asp-action="Index" asp-controller="Rollover" asp-area="Review">Back</a>
+
+<h1 class="govuk-heading-xl">Do you need to update any data before starting?</h1>
+
+<div class="govuk-inset-text govuk-inset-text--l">
+    <div>Ofqual regulated qualifications last imported: <strong>@(Model.RegulatedQualificationsLastImported?.ToDateDisplayFormat() ?? "")</strong></div>
+    <div>Funded qualifications last imported: <strong>@(Model.FundedQualificationsLastImported?.ToDateDisplayFormat() ?? "")</strong></div>
+    <div>Defunding list last imported: <strong>@(Model.DefundingListLastImported?.ToDateDisplayFormat() ?? "")</strong></div>
+    <div>PLDNS list last imported: <strong>@(Model.PldnsListLastImported?.ToDateDisplayFormat() ?? "")</strong></div>
+
+    <br />
+    <p class="govuk-body">
+        Go to <a asp-area="Admin" asp-controller="Import" asp-action="Index" class="govuk-link">Import data</a> if you need to update your data.
+    </p>
+</div>
+
+<form asp-action="CheckData" asp-controller="Rollover" asp-area="Review" method="post">
+    @Html.AntiForgeryToken()
+    <div class="govuk-form-group govuk-!-margin-top-6">
+        <govuk-button type="submit">Continue</govuk-button>
+    </div>
+</form>

@@ -3,12 +3,7 @@ using Azure.Storage.Blobs.Models;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Options;
 using SFA.DAS.AODP.Infrastructure.Common.IO;
-using SFA.DAS.AODP.Models.Common;
-using SFA.DAS.AODP.Models.Exceptions;
 using SFA.DAS.AODP.Models.Settings;
-using System;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SFA.DAS.AODP.Infrastructure.File
 {
@@ -107,8 +102,13 @@ namespace SFA.DAS.AODP.Infrastructure.File
 
         public async Task UploadXlsxFileAsync(string folderName, string fileName, Stream stream, string? contentType, string fileNamePrefix)
         {
-            var maxAllowedFileSize = fileName is "Pldns.xlsx" ? _importFileUploadSettings.MaxPldnsUploadSizeInMB : _importFileUploadSettings.MaxDefundingListUploadSizeInMB;
-            _uploadValidator.ValidateOrThrow(fileName, stream, maxAllowedFileSize);
+            var isPldns = fileName.StartsWith("pldns", StringComparison.OrdinalIgnoreCase);
+
+            var maxAllowedFileSize = isPldns
+                ? _importFileUploadSettings.MaxPldnsUploadSizeInMB
+                : _importFileUploadSettings.MaxDefundingListUploadSizeInMB;
+
+            _uploadValidator.ValidateOrThrow(fileName, stream, maxAllowedFileSize, false);
 
             var safeFileName = Path.GetFileName(fileName).Trim();
             var fileExtension = Path.GetExtension(safeFileName);

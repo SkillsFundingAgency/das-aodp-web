@@ -1,0 +1,74 @@
+﻿@using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover
+@model RolloverUploadQualificationsViewModel
+
+<p class="govuk-body"><strong>@Model.ValidationSummary?.FailedCandidateCount</strong> candidates have failed validation.</p>
+
+<p class="govuk-body">These could include:</p>
+
+<ul class="govuk-list govuk-list--bullet">
+    <li>a candidate is missing an exclude or extend status</li>
+    <li>a candidate is marked to exclude, but doesn't have an exclusion reason</li>
+    <li>you added a qualification since the original export from QFAST.  This means it hasn't been checked for eligibility</li>
+    <li>the candidate is no longer viable for rollover </li>
+</ul>
+
+<div class="govuk-inset-text">
+    <p>A CSV file has been exported to your device which lists all validation errors found in the rollover file.</p>
+    <p>You must fix these errors, then import the file again to complete rollover.</p>
+
+    @if (Model?.ValidationSummary?.NotValidCandidates.Count > 0)
+    {
+        <p>Some qualifications could not be included and have been removed from the file:</p>
+        <details class="govuk-details govuk-!-margin-top-4">
+            <summary class="govuk-details__summary">
+                <span class="govuk-details__summary-text">
+                    View candidates that were removed
+                </span>
+            </summary>
+
+            <div class="govuk-details__text">
+                <table class="govuk-table govuk-table--small govuk-!-margin-bottom-2">
+                    <thead>
+                        <tr>
+                            <th class="govuk-table__header govuk-body-s">QAN</th>
+                            <th class="govuk-table__header govuk-body-s">Funding stream</th>
+                            <th class="govuk-table__header govuk-body-s">Error</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.ValidationSummary.NotValidCandidates)
+                        {
+                            <tr>
+                                <td class="govuk-table__cell govuk-body-s">@item.Qan</td>
+                                <td class="govuk-table__cell govuk-body-s">@item.FundingStream</td>
+                                <td class="govuk-table__cell govuk-body-s">
+                                    <ul class="govuk-list govuk-list--bullet govuk-body-s govuk-!-margin-bottom-0">
+                                        @foreach (var err in item.ErrorMessages)
+                                        {
+                                            <li>@err</li>
+                                        }
+                                    </ul>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+            </div>
+        </details>
+    }
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model?.ValidationSummary?.ErrorFileToken))
+{
+    <iframe title="Validation Errors" src="@Url.Action(
+        "DownloadCandidateValidationErrors",
+        "Rollover",
+        new
+        {
+            area = "Review",
+            token = Model.ValidationSummary.ErrorFileToken
+        })"
+        style="display:none">
+    </iframe>
+}
