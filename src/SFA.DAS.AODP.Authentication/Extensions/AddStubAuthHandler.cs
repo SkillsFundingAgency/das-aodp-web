@@ -65,10 +65,16 @@ namespace SFA.DAS.AODP.Authentication.Extensions
                 new Claim("rolecode", "ifate_admin_forms"),
 
 
-                // AO
-                new Claim(ClaimTypes.Role, "ao_user"),
-                new Claim("rolecode", "ao_user"),
+                // AO USER ONE
+                new Claim("email", "ao1"),
+                new Claim(ClaimTypes.Email, "ao1"),
+                new Claim(ClaimTypes.NameIdentifier, "ao1"),
 
+                new Claim("rolecode", "ao_user"),
+                new Claim("organisation", "{\"id\":\"00000000-0000-0000-0000-000000000001\"}"),
+                new Claim("ukPrn", "12345678"),
+                new Claim(CustomClaimsIdentity.DisplayName, "AO One"),
+                new Claim(ClaimTypes.Role, "ao_user"),
             };
 
             var identity = new ClaimsIdentity(claims, "Provider-stub");

@@ -1,4 +1,4 @@
-﻿using AutoFixture;
+using AutoFixture;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +12,8 @@ using SFA.DAS.AODP.Application.Queries.Application.Form;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Web.Areas.Apply.Controllers;
+using SFA.DAS.AODP.Web.Areas.Review.Controllers;
+using System.Security.Claims;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Application;
 using SFA.DAS.AODP.Web.Validators;
@@ -52,6 +54,27 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
             };
         }
 
+        private void SetConsentCookie(bool hasConsentCookie)
+        {
+            var httpContext = new DefaultHttpContext();
+            httpContext.User = new ClaimsPrincipal(new ClaimsIdentity(new[]
+            {
+                new Claim("rolecode", "ao_user"),
+                new Claim("email", "ao.user@test.com")
+            }, "test"));
+
+            if (hasConsentCookie)
+            {
+                httpContext.Request.Headers.Cookie =
+                    $"{ConsentController.GetConsentCookieName(httpContext)}=true";
+            }
+
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = httpContext
+            };
+        }
+
         [Fact]
         public async Task Index_ReturnsView_WithListApplicationsViewModel()
         {
@@ -61,6 +84,8 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
                 Success = true,
                 Value = _fixture.Create<GetApplicationsByOrganisationIdQueryResponse>()
             };
+
+            SetConsentCookie(true);
 
             _mediatorMock
                 .Setup(m => m.Send(It.IsAny<GetApplicationsByOrganisationIdQuery>(), default))
@@ -75,6 +100,24 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
             {
                 Assert.NotNull(model);
                 Assert.Equal(organisationId, model.OrganisationId);
+            });
+        }
+
+        [Fact]
+        public async Task Index_RedirectsToConsent_WhenConsentCookieIsMissing()
+        {
+            SetConsentCookie(false);
+
+            var result = await _controller.Index();
+
+            var redirectResult = Assert.IsType<RedirectToActionResult>(result);
+
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("Index", redirectResult.ActionName);
+                Assert.Equal("Consent", redirectResult.ControllerName);
+                Assert.NotNull(redirectResult.RouteValues);
+                Assert.Equal("Review", redirectResult.RouteValues["area"]);
             });
         }
 
