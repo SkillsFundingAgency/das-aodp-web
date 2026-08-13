@@ -29,7 +29,9 @@
                     Which stage of the rollover process are you here to do?
                 </govuk-radios-fieldset-legend>
 
-                @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.SelectedProcess))
+                @{
+                    await Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.SelectedProcess));
+                }
 
                 <govuk-radios-item value="InitialSelection">Initial selection of funding streams to be checked for rollover</govuk-radios-item>
                 <govuk-radios-item value="FinalUpload">Final upload of a file with the QA'd decision for rollover</govuk-radios-item>

@@ -26,7 +26,9 @@
                                 All relevant criteria have now been applied.
                             </govuk-radios-hint>
 
-                            @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.Approved))
+                            @{
+                                await Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.Approved));
+                            }
 
                             <govuk-radios-item value="true" checked="@(Model.NewDecision == false && Model.Approved == true)">Approved - for one or more offers</govuk-radios-item>
                             <govuk-radios-item value="false" checked="@(Model.NewDecision == false && Model.Approved == false)">Rejected</govuk-radios-item>

@@ -69,7 +69,9 @@
                                                     <div class="govuk-label govuk-label--s">Status</div>
                                                 </govuk-checkboxes-fieldset-legend>
 
-                                                @Html.RenderPartialAsync("Validation/_CheckboxValidationPartial", nameof(Model.Filter.ProcessStatusIds))
+                                                @{
+                                                    await Html.RenderPartialAsync("Validation/_CheckboxValidationPartial", nameof(Model.Filter.ProcessStatusIds));
+                                                }
 
                                                 @foreach (var status in Model.ProcessStatuses)
                                                 {
