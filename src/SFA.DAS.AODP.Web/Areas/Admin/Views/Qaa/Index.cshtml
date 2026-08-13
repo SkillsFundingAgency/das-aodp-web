@@ -1,0 +1,87 @@
+@using SFA.DAS.AODP.Web.Models.Qaa
+@using SFA.DAS.AODP.Web.Views.Shared
+@model QaaViewModel
+
+@{
+    ViewData["Title"] = "Download QAA data";
+
+    var backLinkModel = new BackLinkModel
+    {
+        Action = "Index",
+        Controller = "Home",
+        Area = "Review"
+    };
+}
+
+@await Html.PartialAsync("_BackLinkPartial", backLinkModel)
+
+<div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-xl">@ViewData["Title"]</h1>
+
+        @if (Model.DataLastImportedDate.HasValue)
+        {
+            <div class="govuk-inset-text">
+                Data last imported from QAA: <strong>@Model.DataLastImportedDate.Value.ToDateDisplayFormat()</strong>
+            </div>
+        }
+
+        <p class="govuk-body">This will download a CSV file to your device.</p>
+
+        <a asp-controller="Qaa" asp-action="Download" asp-area="Admin" role="button"
+           draggable="false" class="govuk-button" data-module="govuk-button">
+            Download QAA file
+        </a>
+
+        <details class="govuk-details" data-module="govuk-details">
+            <summary class="govuk-details__summary">
+                <span class="govuk-details__summary-text">What's changed in the QAA data</span>
+            </summary>
+            <div class="govuk-details__text">
+                @if (Model.MostRecentDownloadDate.HasValue)
+                {
+                    <p class="govuk-body">
+                        Since the most recent QAA file download on
+                        <strong>@Model.MostRecentDownloadDate.Value.ToDateTimeDisplayFormat()</strong>, there are:
+                    </p>
+                }
+                else
+                {
+                    <p class="govuk-body">Since the QAA data was first imported, there are:</p>
+                }
+                <ul class="govuk-list govuk-list--bullet">
+                    <li>@Model.NewQualificationsCount new qualifications</li>
+                    <li>@Model.ExtendedQualificationsCount extended qualifications</li>
+                    <li>@Model.DiscontinuedQualificationsCount discontinued qualifications</li>
+                </ul>
+            </div>
+        </details>
+    </div>
+</div>
+
+<h2 class="govuk-heading-l govuk-!-margin-top-7">Download history</h2>
+
+@if (Model.DownloadHistory.Any())
+{
+    <table class="govuk-table">
+        <thead class="govuk-table__head">
+            <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">User</th>
+                <th scope="col" class="govuk-table__header">Download date</th>
+            </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+            @foreach (var log in Model.DownloadHistory)
+            {
+                <tr class="govuk-table__row">
+                    <td class="govuk-table__cell">@log.UserDisplayName</td>
+                    <td class="govuk-table__cell">@log.DownloadDate.ToDateTimeDisplayFormat()</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p class="govuk-body">No downloads to display.</p>
+}
