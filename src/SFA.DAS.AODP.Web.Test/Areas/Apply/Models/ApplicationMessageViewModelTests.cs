@@ -19,17 +19,35 @@ public class ApplicationMessageViewModelTests : UnitTest
     }
 
     [Fact]
-    public void TimelineMetadata_ShouldReturnQfauWithFormattedSentAt()
+    public void TimelineMetadata_WhenSentByStaff_ShouldReturnQfauWithFormattedSentAt()
     {
         // Arrange
         var sut = CreateViewModel(
-            sentAt: new DateTime(2026, 6, 12, 14, 5, 0));
+            sentAt: new DateTime(2026, 6, 12, 14, 5, 0),
+            messageType: nameof(MessageType.InternalNotes));
 
         // Act
         var result = sut.TimelineMetadata;
 
         // Assert
         result.ShouldBe("Qualification Funding Approval Unit, 12 Jun 2026 at 14:05");
+    }
+
+    [Theory]
+    [InlineData(nameof(MessageType.ReplyToInformationRequest))]
+    [InlineData(nameof(MessageType.ApplicationSubmitted))]
+    public void TimelineMetadata_WhenSentByAwardingOrganisation_ShouldReturnSentByNameWithFormattedSentAt(string messageType)
+    {
+        // Arrange
+        var sut = CreateViewModel(
+            sentAt: new DateTime(2026, 6, 12, 14, 5, 0),
+            messageType: messageType);
+
+        // Act
+        var result = sut.TimelineMetadata;
+
+        // Assert
+        result.ShouldBe("Test User, 12 Jun 2026 at 14:05");
     }
 
     [Theory]

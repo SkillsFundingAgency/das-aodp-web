@@ -70,6 +70,15 @@ public class ApplicationMessageViewModel : TimelineItemBase
     public string MessageTypeDisplay => MessageTypeConfiguration.DisplayName;
     public string SentByEmail { get; set; } = null!;
     public override string TimelineTitle => $"{MessageHeader}";
-    public override string TimelineMetadata => $"Qualification Funding Approval Unit, {SentAt.ToString("dd MMM yyyy 'at' HH:mm", CultureInfo.InvariantCulture)}";
+    public override string TimelineMetadata
+    {
+        get
+        {
+            var formattedSentAt = SentAt.ToString("dd MMM yyyy 'at' HH:mm", CultureInfo.InvariantCulture);
+            return MessageTypeConfiguration.SentByAwardingOrganisation
+                ? $"{SentByName}, {formattedSentAt}"
+                : $"Qualification Funding Approval Unit, {formattedSentAt}";
+        }
+    }
     public override bool ShowText => Text.Length > 0;
 }
