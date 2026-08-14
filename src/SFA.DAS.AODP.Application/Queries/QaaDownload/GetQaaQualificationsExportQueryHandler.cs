@@ -1,5 +1,3 @@
-using MediatR;
-using SFA.DAS.AODP.Domain.Interfaces;
 using SFA.DAS.AODP.Domain.QaaDownload;
 
 namespace SFA.DAS.AODP.Application.Queries.QaaDownload
