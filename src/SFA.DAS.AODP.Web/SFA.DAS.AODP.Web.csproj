@@ -75,7 +75,10 @@
 		<UserSecretsId>bd638dc4-8934-455d-bf76-2d3b4c52255c</UserSecretsId>
 	</PropertyGroup>
 
-	<Target Name="EnsureBundleRuns" BeforeTargets="ResolveStaticWebAssets;_GenerateStaticWebAssetsManifest;ProcessStaticWebAssets;ComputeFilesToPublish;Build">
+	<!-- BundleMinify must run before ResolveProjectStaticWebAssets (hooked to AssignTargetPaths, which
+	     fires earlier than Build/ResolveStaticWebAssets) - otherwise a Rebuild, which deletes these
+	     generated files via Clean, hits a hard "file not found" error instead of a plain Build. -->
+	<Target Name="EnsureBundleRuns" BeforeTargets="ResolveProjectStaticWebAssets;AssignTargetPaths;ResolveStaticWebAssets;_GenerateStaticWebAssetsManifest;ProcessStaticWebAssets;ComputeFilesToPublish;Build">
 		<CallTarget Targets="BundleMinify" />
 	</Target>
 
