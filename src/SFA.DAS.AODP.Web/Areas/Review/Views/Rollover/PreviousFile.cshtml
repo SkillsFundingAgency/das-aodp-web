@@ -26,7 +26,9 @@
         <govuk-radios-fieldset>
             <govuk-radios-fieldset-legend is-page-heading="true" class="govuk-fieldset__legend--m">@ViewData["Question"]</govuk-radios-fieldset-legend>
 
-            @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.SelectedOption))
+            @{
+                await Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.SelectedOption));
+            }
 
             <govuk-radios-item value="ContinueProcessing">Continue processing the @Model.CandidateCount previously imported candidates?</govuk-radios-item>
             <govuk-radios-item value="RemovePrevious">Remove the previously imported candidates and either upload or generate a new list?</govuk-radios-item>
