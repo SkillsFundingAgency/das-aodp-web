@@ -290,6 +290,15 @@
                         Download application
                     </a>
                 </div>
+
+                <div class="govuk-grid-row">
+                    <h2 class="govuk-heading-m">Delete application</h2>
+                    <p class="govuk-body">Permanently delete this application. This cannot be undone.</p>
+
+                    <a class="govuk-button govuk-button--warning" asp-action="Delete" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId">
+                        Delete application
+                    </a>
+                </div>
             }
 
             @if (!IsReadOnly)

@@ -36,7 +36,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
     {
         enum UpdateKeys
         {
-            SharingStatusUpdated, QanUpdated, OwnerUpdated, ReviewerUpdated
+            SharingStatusUpdated, QanUpdated, OwnerUpdated, ReviewerUpdated, ApplicationDeleted
         }
         private readonly IUserHelperService _userHelperService;
         private readonly UserType UserType;
@@ -70,6 +70,11 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 BulkActionApplications.SaveReviewersSuccessKey,
                 ViewNotificationMessageType.Success,
                 BulkActionApplications.SaveReviewersSuccessMessage);
+
+            ShowNotificationIfKeyExists(
+                UpdateKeys.ApplicationDeleted.ToString(),
+                ViewNotificationMessageType.Success,
+                "The application has been deleted.");
 
             return View(viewModel);
         }
@@ -284,6 +289,47 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
             return View(applicationReviewViewModel);
 
+        }
+
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
+        [HttpGet]
+        [Route("review/application-reviews/{applicationReviewId}/delete")]
+        public async Task<IActionResult> Delete(Guid applicationReviewId)
+        {
+            var review = await Send(new GetApplicationForReviewByIdQuery(applicationReviewId));
+
+            return View(new DeleteApplicationReviewViewModel
+            {
+                ApplicationReviewId = applicationReviewId,
+                ApplicationId = review.Id,
+                ApplicationName = review.Name,
+                ApplicationReference = review.Reference
+            });
+        }
+
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
+        [HttpPost]
+        [Route("review/application-reviews/{applicationReviewId}/delete")]
+        public async Task<IActionResult> Delete(DeleteApplicationReviewViewModel model)
+        {
+            try
+            {
+                var command = new DeleteApplicationCommand(model.ApplicationId)
+                {
+                    UserType = _userHelperService.GetUserType().ToString()
+                };
+
+                await Send(command);
+                await DeleteApplicationFiles(model.ApplicationId);
+                TempData[UpdateKeys.ApplicationDeleted.ToString()] = true;
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+                return View(model);
+            }
         }
 
         [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
@@ -793,6 +839,17 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             var zipBytes = await _exportService.GenerateExportZipAsync(exportData, files);
 
             return File(zipBytes, "application/zip", ApplicationExportPathBuilder.GetZipFileName(exportData.ApplicationMetadata));
+        }
+
+        private async Task DeleteApplicationFiles(Guid applicationId)
+        {
+            var files = _fileService.ListBlobs(applicationId.ToString());
+            var messageFiles = _fileService.ListBlobs($"{ApplicationExportConstants.MessageFolderName}/{applicationId}");
+
+            foreach (var file in files.Concat(messageFiles))
+            {
+                await _fileService.DeleteFileAsync(file.FullPath);
+            }
         }
 
         private async Task<Guid> GetApplicationIdWithAccessValidation(Guid applicationReviewId)

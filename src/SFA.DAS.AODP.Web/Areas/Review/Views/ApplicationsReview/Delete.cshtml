@@ -1,0 +1,47 @@
+@using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
+@model DeleteApplicationReviewViewModel
+
+@{
+    ViewData["Title"] = "Delete application";
+}
+
+<a class="govuk-back-link"
+   asp-area="Review"
+   asp-action="ViewApplication"
+   asp-route-applicationReviewId="@Model.ApplicationReviewId"
+   asp-controller="ApplicationsReview">Back to application</a>
+
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
+<h1 class="govuk-heading-l">Delete application?</h1>
+
+<form asp-action="Delete" asp-controller="ApplicationsReview" method="post">
+    @Html.HiddenFor(m => m.ApplicationReviewId)
+    @Html.HiddenFor(m => m.ApplicationId)
+
+    <govuk-warning-text icon-fallback-text="Warning">
+        Are you sure you wish to delete this application? This action cannot be undone.
+    </govuk-warning-text>
+
+    <p class="govuk-body">
+       Name: @Model.ApplicationName
+       <br />
+       Reference: @Model.ApplicationReference.ToString().PadLeft(6, '0')
+    </p>
+
+    <div class="govuk-button-group">
+
+        <govuk-button class="govuk-button--warning" type="submit">
+            Delete
+        </govuk-button>
+
+        <a class="govuk-button govuk-button--secondary"
+           asp-area="Review"
+           asp-action="ViewApplication"
+           asp-route-applicationReviewId="@Model.ApplicationReviewId"
+           asp-controller="ApplicationsReview">
+            Cancel
+        </a>
+
+    </div>
+</form>
