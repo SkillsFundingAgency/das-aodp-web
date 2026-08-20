@@ -199,6 +199,10 @@ internal class Program
                     pattern: "Admin/OutputFile/{action=Index}/{id?}",
                     defaults: new { area = "Admin", controller = "OutputFile" }).RequireAuthorization(PolicyConstants.IsAdminImportUser);
 
+        endpoints.MapControllerRoute(name: "AdminDefaultForQaa",
+                    pattern: "Admin/Qaa/{action=Index}/{id?}",
+                    defaults: new { area = "Admin", controller = "Qaa" }).RequireAuthorization(PolicyConstants.IsAdminImportUser);
+
         endpoints.MapControllerRoute(name: "AdminDefaultForForms",
                     pattern: "Admin/Forms/{action=index}/{id?}",
                     defaults: new { area = "Admin", controller = "Forms" }).RequireAuthorization(PolicyConstants.IsAdminFormsUser);
