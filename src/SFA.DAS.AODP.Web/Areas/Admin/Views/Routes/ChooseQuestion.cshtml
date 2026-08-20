@@ -25,7 +25,9 @@
                     Select one option. Only questions requiring user to select a option are shown.
                 </govuk-radios-hint>
 
-                @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.ChosenQuestionId))
+                @{
+                    await Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.ChosenQuestionId));
+                }
 
                 @foreach (var question in Model.Questions.OrderBy(o => o.Order))
                 {

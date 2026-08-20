@@ -20,7 +20,9 @@
     <div class="govuk-form-group">
         <govuk-input for="Title" inputmode="text" autocomplete="off">
             <govuk-input-label is-page-heading="false" class="govuk-label--s">Title</govuk-input-label>
-            @Html.RenderPartialAsync("Validation/_TextInputValidationPartial", nameof(Model.Title))
+            @{
+                await Html.RenderPartialAsync("Validation/_TextInputValidationPartial", nameof(Model.Title));
+            }
         </govuk-input>
     </div>
     <div class="govuk-form-group">
@@ -34,7 +36,9 @@
                     Select one option.
                 </govuk-radios-hint>
 
-                @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.QuestionType))
+                @{
+                    await Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.QuestionType));
+                }
 
                 <govuk-radios-item value="@QuestionType.Text">Short text</govuk-radios-item>
                 <govuk-radios-item value="@QuestionType.TextArea">Long text</govuk-radios-item>
@@ -58,7 +62,9 @@
                     Select one option.
                 </govuk-radios-hint>
 
-                @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.Required))
+                @{
+                    await Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.Required));
+                }
 
                 <govuk-radios-item value="true" checked="@Model.Required">Mandatory</govuk-radios-item>
                 <govuk-radios-item value="false" checked="@Model.Required == false">

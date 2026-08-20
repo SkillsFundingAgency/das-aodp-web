@@ -32,7 +32,9 @@
                     </div>
                 </govuk-radios-fieldset-legend>
 
-                @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.ImportType))
+                @{
+                    await Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.ImportType));
+                }
 
                 <govuk-radios-item value="Regulated Qualifications">
                     Regulated Qualifications

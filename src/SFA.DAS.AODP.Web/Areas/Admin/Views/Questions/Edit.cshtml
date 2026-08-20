@@ -57,7 +57,9 @@
                     Select one option.
                 </govuk-radios-hint>
 
-                @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.Required))
+                @{
+                    await Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.Required));
+                }
 
                 <govuk-radios-item value="true" checked="@Model.Required">Mandatory</govuk-radios-item>
                 <govuk-radios-item value="false" checked="@Model.Required == false">
