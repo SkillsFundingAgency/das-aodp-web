@@ -24,7 +24,7 @@
 
 <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-        <govuk-back-link asp-area="Apply" asp-controller="Applications" asp-action="Index" asp-route-organisationId="@Model.OrganisationId">Back to view all applications</govuk-back-link>
+        <govuk-back-link asp-area="Apply" asp-controller="Applications" asp-action="Index" asp-route-organisationId="@Model.OrganisationId">Back to manage funding applications</govuk-back-link>
 
         <h1 class="govuk-heading-l">Application overview</h1>
 
@@ -81,7 +81,7 @@
 
         @if (!Model.IsSubmitted)
         {
-            <a class="govuk-button" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init=""
+            <a class="govuk-button govuk-button--secondary" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init=""
                asp-action="Edit"
                asp-controller="Applications"
                asp-route-applicationId="@Model.ApplicationId"
@@ -89,13 +89,13 @@
                 Edit application details
             </a>
 
-            <a class="govuk-button" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init=""
+            <a class="govuk-button govuk-button--secondary" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init=""
                asp-action="ApplicationFormPreview"
                asp-controller="Applications"
                asp-route-formVersionId="@Model.FormVersionId"
                asp-route-applicationId="@Model.ApplicationId"
                asp-route-organisationId="@Model.OrganisationId">
-                Form Preview
+                Form preview
             </a>
         }
 

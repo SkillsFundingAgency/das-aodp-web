@@ -9,7 +9,7 @@
             <div class="govuk-error-summary__body">
                 <ul class="govuk-list govuk-error-summary__list">
                     <li>
-                        There was an error when processing that request, please try again later.
+                        @(ViewBag.NotificationMessage ?? "There was an error when processing that request, please try again later.")
                     </li>
                 </ul>
             </div>

@@ -1,12 +1,12 @@
 ﻿@model DeleteFormViewModel
 
 <a class="govuk-back-link" asp-action="Index" asp-controller="Forms">
-    Back to Forms
+    Back to forms
 </a>
 
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
-<h1 class="govuk-heading-l">Delete Form?</h1>
+<h1 class="govuk-heading-l">Delete form?</h1>
 
 <form asp-action="Delete" method="post">
     @Html.HiddenFor(m => m.FormId)

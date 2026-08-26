@@ -5,7 +5,7 @@
 @model ApplicationMessagesViewModel
 
 @{
-    ViewData["Title"] = "Application Messages";
+    ViewData["Title"] = "Application messages";
 }
 
 <div class="govuk-grid-row">
@@ -35,11 +35,10 @@
             </div>
         }
 
-        <h1 class="govuk-heading-l govuk-!-margin-bottom-2">Application messages</h1>
-
-        <div class="govuk-hint">
+        <span class="govuk-caption-l">
             Request for funding
-        </div>
+        </span>
+        <h1 class="govuk-heading-l govuk-!-margin-bottom-2">Application messages</h1>
 
         <!-- Message Box and Message Send  -->
         @if (!Model.AdditionalActions.Preview)
@@ -102,7 +101,7 @@
                 </govuk-summary-list>
 
                 <div class="govuk-form-group @(ViewData.ModelState["Files"]?.Errors.Count > 0 ? "govuk-form-group--error" : "")">
-                    <label class="govuk-label govuk-label--s" for="file-upload">
+                    <label class="govuk-label govuk-label--s" for="Files">
                         Upload files (optional)
                     </label>
                     <div id="files-hint" class="govuk-hint">

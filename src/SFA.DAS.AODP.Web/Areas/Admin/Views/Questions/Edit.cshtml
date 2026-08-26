@@ -3,11 +3,11 @@
 @model EditQuestionViewModel
 
 @{
-    ViewData["Title"] = "Edit Question";
+    ViewData["Title"] = "Edit question";
 }
 
 <a class="govuk-back-link" asp-action="Edit" asp-controller="Pages" asp-route-formVersionId="@Model.FormVersionId" asp-route-sectionId="@Model.SectionId" asp-route-pageId="@Model.PageId">
-    Back to Page
+    Back to page
 </a>
 
 <partial name="_NotificationPartial" />
@@ -15,7 +15,7 @@
 <partial name="_ValidationSummaryPartial" />
 
 
-<h1 class="govuk-heading-l">Edit Question</h1>
+<h1 class="govuk-heading-l">Edit question</h1>
 
 @{
     ViewBag.IsEditable = Model.Editable;
@@ -94,7 +94,7 @@
         <partial name="~/Areas/Admin/Views/Shared/FormBuilder/Helper/_MarkdownHelper.cshtml" />
         @if (!string.IsNullOrEmpty(Model.Helper))
         {
-            <div class="govuk-label govuk-label--s">Guidance Preview</div>
+            <div class="govuk-label govuk-label--s">Guidance preview</div>
             <div class="govuk-inset-text">
                 @Html.Raw(MarkdownHelper.ToGovUkHtml(Model.Helper))
             </div>
@@ -109,7 +109,7 @@
                     data-prevent-double-click="true"
                     value="true"
                     name="AdditionalActions[UpdateDescriptionPreview]">
-                Update Description Preview
+                Update description preview
             </button>
         }
 

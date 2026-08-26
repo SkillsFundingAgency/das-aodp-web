@@ -9,6 +9,7 @@
     var currentUserReview = Model.Feedbacks.Where(f => f.UserType == Model.UserType.ToString()).First();
 
     var IsReadOnly = Model.ApplicationStatus is ApplicationStatus.Withdrawn || Model.IsApplicationCompleted;
+    var canEditApplicationDetails = !IsReadOnly && Model.UserType == UserType.Qfau;
     var backHref = Model.BackUrl ?? Url.Action("Index", "ApplicationsReview", new { area = "Review" });
 }
 
@@ -53,15 +54,35 @@
     <div class="govuk-grid-column-two-thirds">
 
         <div class="govuk-grid-row">
-            <h1 class="govuk-heading-xl">
+            <span class="govuk-caption-xl">
+                @(Model.IsApplicationCompleted ? "Completed application" : "Request for funding")
+            </span>
+            <h1 class="govuk-heading-xl govuk-!-margin-bottom-2">
                 Application details
-                <span class="govuk-caption-l">
-                    @(Model.IsApplicationCompleted ? "Completed application" : "Request for funding")
-                </span>
             </h1>
+            <p class="govuk-!-margin-bottom-6">
+                <a class="govuk-link"
+                   asp-route="Review_ApplicationMessages"
+                   asp-route-applicationReviewId="@Model.ApplicationReviewId">
+                    View messages
+                </a>
+            </p>
         </div>
 
         <div class="govuk-grid-row">
+            @if (canEditApplicationDetails)
+            {
+                <form id="application-details-form"
+                      asp-route-applicationReviewId="@Model.ApplicationReviewId"
+                      asp-action="SaveApplicationDetails"
+                      asp-controller="ApplicationsReview"
+                      method="post"
+                      gfa-prepend-error-summary="false">
+                    <input type="hidden" name="ApplicationReviewId" value="@Model.ApplicationReviewId" />
+                    <input type="hidden" name="ApplicationId" value="@Model.Id" />
+                </form>
+            }
+
             <govuk-summary-list>
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key>
@@ -99,7 +120,7 @@
 
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key>
-                        Awarding Organisation
+                        Awarding organisation
                     </govuk-summary-list-row-key>
                     <govuk-summary-list-row-value>
                         @Model.AwardingOrganisation
@@ -108,7 +129,7 @@
 
                 <govuk-summary-list-row>
                     <govuk-summary-list-row-key>
-                        Qualification Title
+                        Qualification title
                     </govuk-summary-list-row-key>
                     <govuk-summary-list-row-value>
                         @Model.Name
@@ -122,23 +143,21 @@
                         QAN
                     </govuk-summary-list-row-key>
                     <govuk-summary-list-row-value>
-                        @if (!IsReadOnly && Model.UserType == UserType.Qfau)
+                        @if (canEditApplicationDetails)
                         {
-                            <form asp-route-applicationReviewId="@Model.ApplicationReviewId"
-                                  asp-action="UpdateQan"
-                                  asp-Controller="ApplicationsReview"
-                                  method="post"
-                                  gfa-prepend-error-summary="false">
-
-                                <div class="govuk-form-group govuk-!-margin-bottom-0">
-                                    <div class="select-picker qan-input">
-                                        <govuk-input for="Qan" value="@Html.Encode(Model.Qan)" autocomplete="off">
-                                            <govuk-input-label class="govuk-visually-hidden">Update QAN</govuk-input-label>
-                                        </govuk-input>
-                                        <govuk-button class="govuk-button govuk-button--secondary" type="submit">Change</govuk-button>
-                                    </div>
+                            <span asp-validation-for="Qan" class="govuk-error-message"></span>
+                            <div class="govuk-form-group govuk-!-margin-bottom-0">
+                                <div class="select-picker qan-input">
+                                    <label class="govuk-label govuk-visually-hidden" for="Qan">Update QAN</label>
+                                    <input class="govuk-input"
+                                           id="Qan"
+                                           name="Qan"
+                                           type="text"
+                                           value="@Model.Qan"
+                                           autocomplete="off"
+                                           form="application-details-form" />
                                 </div>
-                            </form>
+                            </div>
                         }
                         else
                         {
@@ -187,27 +206,19 @@
                             Reviewer 1
                         </govuk-summary-list-row-key>
                         <govuk-summary-list-row-value>
-                            @if (!IsReadOnly)
+                            @if (canEditApplicationDetails)
                             {
                                 <span asp-validation-for="Reviewer1" class="govuk-error-message"></span>
-                                <form asp-route-applicationReviewId="@Model.ApplicationReviewId"
-                                      asp-action="UpdateReviewer"
-                                      asp-Controller="ApplicationsReview"
-                                      method="post">
-                                    <input type="hidden" name="ReviewerFieldName" value="@nameof(Model.Reviewer1)" />
-                                    <input type="hidden" name="ApplicationId" value="@Model.Id" />
-
-                                    <div class="govuk-form-group govuk-!-margin-bottom-0">
-                                        <div class="select-picker">
-                                            <select asp-for="Reviewer1"
-                                                    name="ReviewerValue"
-                                                    class="govuk-select"
-                                                    asp-items="Model.ReviewerOptions">
-                                            </select>
-                                            <govuk-button type="submit" class="govuk-button  govuk-button--secondary">Change</govuk-button>
-                                        </div>
+                                <div class="govuk-form-group govuk-!-margin-bottom-0">
+                                    <div class="select-picker">
+                                        <label class="govuk-label govuk-visually-hidden" asp-for="Reviewer1">Reviewer 1</label>
+                                        <select asp-for="Reviewer1"
+                                                class="govuk-select"
+                                                asp-items="Model.ReviewerOptions"
+                                                form="application-details-form">
+                                        </select>
                                     </div>
-                                </form>
+                                </div>
                             }
                             else
                             {
@@ -221,27 +232,19 @@
                             Reviewer 2
                         </govuk-summary-list-row-key>
                         <govuk-summary-list-row-value>
-                            @if (!IsReadOnly)
+                            @if (canEditApplicationDetails)
                             {
                                 <span asp-validation-for="Reviewer2" class="govuk-error-message"></span>
-                                <form asp-route-applicationReviewId="@Model.ApplicationReviewId"
-                                      asp-action="UpdateReviewer"
-                                      asp-Controller="ApplicationsReview"
-                                      method="post">
-                                    <input type="hidden" name="ReviewerFieldName" value="@nameof(Model.Reviewer2)" />
-                                    <input type="hidden" name="ApplicationId" value="@Model.Id" />
-
-                                    <div class="govuk-form-group govuk-!-margin-bottom-0">
-                                        <div class="select-picker">
-                                            <select asp-for="Reviewer2"
-                                                    name="ReviewerValue"
-                                                    class="govuk-select"
-                                                    asp-items="Model.ReviewerOptions">
-                                            </select>
-                                            <govuk-button type="submit" class="govuk-button govuk-button--secondary">Change</govuk-button>
-                                        </div>
+                                <div class="govuk-form-group govuk-!-margin-bottom-0">
+                                    <div class="select-picker">
+                                        <label class="govuk-label govuk-visually-hidden" asp-for="Reviewer2">Reviewer 2</label>
+                                        <select asp-for="Reviewer2"
+                                                class="govuk-select"
+                                                asp-items="Model.ReviewerOptions"
+                                                form="application-details-form">
+                                        </select>
                                     </div>
-                                </form>
+                                </div>
                             }
                             else
                             {
@@ -279,6 +282,11 @@
                 }
             </govuk-summary-list>
 
+            @if (canEditApplicationDetails)
+            {
+                <button class="govuk-button govuk-button--secondary" data-module="govuk-button" type="submit" form="application-details-form">Save</button>
+            }
+
             @if (Model.UserType == SFA.DAS.AODP.Models.Users.UserType.Qfau)
             {
                 <div class="govuk-grid-row">
@@ -302,13 +310,13 @@
 
                         @if (currentUserReview.Status == ApplicationStatus.Approved.ToString() || currentUserReview.Status == ApplicationStatus.NotApproved.ToString())
                         {
-                            <a class="govuk-button" asp-action="QfauFundingReviewSummary" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId">
+                            <a class="govuk-button govuk-button--secondary" asp-action="QfauFundingReviewSummary" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId">
                                 DfE funding review
                             </a>
                         }
                         else
                         {
-                            <a class="govuk-button" asp-action="QfauFundingReviewOutcome" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId">
+                            <a class="govuk-button govuk-button--secondary" asp-action="QfauFundingReviewOutcome" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId">
                                 DfE funding review
                             </a>
                         }
@@ -403,7 +411,7 @@
 
     </div>
 
-    <div class="govuk-grid-column-one-third">
+    <div class="govuk-grid-column-one-third"> 
         @await Html.PartialAsync("_RelatedLinks", Model.RelatedLinks)
     </div>
 
@@ -456,7 +464,7 @@
                         Comments
                     </govuk-summary-list-row-key>
                     <govuk-summary-list-row-value>
-                        <p style="white-space: pre-line">@review.Comments</p>
+                        <p style="white-space: pre-line">@review.Comments</p> bvj 
                     </govuk-summary-list-row-value>
                 </govuk-summary-list-row>
             </govuk-summary-list>

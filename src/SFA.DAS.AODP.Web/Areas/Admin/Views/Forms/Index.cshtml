@@ -4,14 +4,14 @@
 @model FormVersionListViewModel
 
 @{
-    ViewData["Title"] = "View Forms";
+    ViewData["Title"] = "View forms";
 }
 
-<h1 class="govuk-heading-l">View Forms</h1>
+<h1 class="govuk-heading-l">View forms</h1>
 
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
-<a class="govuk-button" asp-action="Create" asp-controller="Forms">Create New Form</a>
+<a class="govuk-button" asp-action="Create" asp-controller="Forms">Create new form</a>
 
 <form asp-action="Index" method="post">
 
@@ -50,14 +50,14 @@
                         {
                             <button @(OrderButtonHelper.ShouldAutoFocus(TempData, OrderButtonHelper.OrderDirection.Up, item.FormId.Value, i, Model.FormVersions.Count) ? "autofocus" : "")
                                     class="govuk-button govuk-button--secondary" type="submit" value="@item.FormId.Value" name="AdditionalActions[MoveUp]">
-                                Move Up
+                                Move up
                             </button>
                         }
                         @if (i != Model.FormVersions.Count() - 1)
                         {
                             <button @(OrderButtonHelper.ShouldAutoFocus(TempData, OrderButtonHelper.OrderDirection.Down, item.FormId.Value, i, Model.FormVersions.Count) ? "autofocus" : "")
                                     class="govuk-button govuk-button--secondary" type="submit" value="@item.FormId.Value" name="AdditionalActions[MoveDown]">
-                                Move Down
+                                Move down
                             </button>
                         }
                         <a class="govuk-button govuk-button--warning" asp-action="Delete" asp-controller="Forms" asp-route-formVersionId="@(item.DraftVersionId ?? item.PublishedVersionId)">Delete form</a>
