@@ -19,8 +19,8 @@ public class ApplicationMessagesViewModel : IHasRelatedLinks
 {
     public Guid ApplicationReviewId { get; set; }
     public string Hint => (UserType == UserType.Qfau) ?
-        "Leave messages, comments and recommendations to other DfE staff members, IfATE, Ofqual or the AO applicant owner. You will be able to upload files when you are previewing the message."
-        : "Leave messages, comments and recommendations to DfE or the AO applicant owner. You will be able to upload files when you are previewing the message.";
+        "Leave messages, comments and recommendations to other DfE staff, Skills England, Ofqual or the AO applicant. You can upload files when you preview the message."
+        : "Leave messages, comments and recommendations to DfE or the AO applicant owner. You can upload files when you preview the message";
     
     [DisplayName("Message")]
     [Required(ErrorMessage = ErrorMessages.ApplicationMessages.TextRequired)]
