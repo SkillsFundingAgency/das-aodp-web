@@ -5,6 +5,7 @@ using SFA.DAS.AODP.Application.Services;
 using SFA.DAS.AODP.Domain.Interfaces;
 using SFA.DAS.AODP.Infrastructure.ApiClient;
 using SFA.DAS.AODP.Infrastructure.Extensions;
+using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover;
 using SFA.DAS.AODP.Web.Helpers.Export;
 using SFA.DAS.AODP.Web.Helpers.File;
@@ -30,7 +31,12 @@ public static class AddServiceRegistrationsExtension
 
         services.AddFluentValidators();
 
-        services.AddFileService(configuration);
+        var storageSettings = configuration.GetRequiredSection("Storage").Get<StorageSettings>();
+        if (storageSettings != null)
+        {
+            services.AddSingleton(storageSettings);
+            services.AddFileService(storageSettings);
+        }
 
         services.AddScoped<IUserHelperService, UserHelperService>();
 
