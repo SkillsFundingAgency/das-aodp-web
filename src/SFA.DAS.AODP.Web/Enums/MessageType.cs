@@ -92,6 +92,13 @@ public static class MessageTypeConfigurationRules
             { MessageType.ReplyToInformationRequest, () => new MessageTypeConfiguration
             {
                 DisplayName = "Reply To Information Request",
+                SentByAwardingOrganisation = true,
+            } },
+
+            { MessageType.ApplicationSubmitted, () => new MessageTypeConfiguration
+            {
+                DisplayName = "Application Submitted",
+                SentByAwardingOrganisation = true,
             } }
         };
 
@@ -112,4 +119,5 @@ public class MessageTypeConfiguration
 {
     public string? DisplayName { get; set; }
     public string? MessageInformationBanner { get; set; }
+    public bool SentByAwardingOrganisation { get; set; }
 }
