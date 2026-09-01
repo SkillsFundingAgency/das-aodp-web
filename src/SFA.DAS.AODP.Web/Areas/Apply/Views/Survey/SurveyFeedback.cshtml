@@ -18,7 +18,9 @@
                 <govuk-radios-fieldset-legend is-page-heading="false" class="govuk-fieldset__legend--s">
                     Overall, how did you feel about the service you received today?
                 </govuk-radios-fieldset-legend>
-                @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.SatisfactionScore))
+                @{
+                    await Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.SatisfactionScore));
+                }
                 <govuk-radios-item value="@(SatisfactionScoreIndex.VerySatisfied)">
                     Very satisfied
                 </govuk-radios-item>

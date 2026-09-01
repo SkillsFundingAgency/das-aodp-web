@@ -11,6 +11,7 @@ using Moq;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.Qualifications;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Application.Services;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Helpers.User;
@@ -29,6 +30,7 @@ public class ChangedControllerBulkActionTests
     private readonly Mock<IMediator> _mediatorMock;
     private readonly ChangedController _controller;
     private readonly Mock<IUrlHelper> _urlHelperMock;
+    private readonly Mock<IQualificationTimelineHistoryBuilder> _timelineBuilder;
 
     public ChangedControllerBulkActionTests()
     {
@@ -37,11 +39,13 @@ public class ChangedControllerBulkActionTests
         _loggerMock = _fixture.Freeze<Mock<ILogger<ChangedController>>>();
         _userHelperMock = _fixture.Freeze<Mock<IUserHelperService>>();
         _mediatorMock = _fixture.Freeze<Mock<IMediator>>();
+        _timelineBuilder = _fixture.Freeze<Mock<IQualificationTimelineHistoryBuilder>>();
 
         _controller = new ChangedController(
             _loggerMock.Object,
             _mediatorMock.Object,
-            _userHelperMock.Object);
+            _userHelperMock.Object,
+            _timelineBuilder.Object);
 
         _controller.ControllerContext = new ControllerContext
         {
@@ -63,7 +67,7 @@ public class ChangedControllerBulkActionTests
                 Success = true,
                 Value = new GetProcessStatusesQueryResponse
                 {
-                    ProcessStatuses = new List<GetProcessStatusesQueryResponse.ProcessStatus>
+                    ProcessStatuses = new List<ProcessStatus>
                     {
                         new() { Id = Guid.NewGuid(), Name = "Decision Required" }
                     }
@@ -427,7 +431,7 @@ public class ChangedControllerBulkActionTests
         Assert.Equal("Test qualification", failed.Title);
         Assert.Equal("Qualification not found.", failed.FailureReason);
 
-        Assert.Equal("Go back to Changed qualifications", errorModel.BackLinkText);
+        Assert.Equal("Go back to changed qualifications", errorModel.BackLinkText);
         Assert.Equal("/Review/Changed/Index?pageNumber=1&recordsPerPage=10", errorModel.BackLinkUrl);
     }
 
@@ -628,7 +632,7 @@ public class ChangedControllerBulkActionTests
                 FailureReason = "Qualification not found."
             }
         },
-            BackLinkText = "Go back to Changed qualifications",
+            BackLinkText = "Go back to changed qualifications",
             BackLinkUrl = "/Review/Changed/Index?pageNumber=1&recordsPerPage=10"
         };
 
@@ -643,7 +647,7 @@ public class ChangedControllerBulkActionTests
         Assert.Equal("12345678", model.Failed.Single().Qan);
         Assert.Equal("Test qualification", model.Failed.Single().Title);
         Assert.Equal("Qualification not found.", model.Failed.Single().FailureReason);
-        Assert.Equal("Go back to Changed qualifications", model.BackLinkText);
+        Assert.Equal("Go back to changed qualifications", model.BackLinkText);
         Assert.Equal("/Review/Changed/Index?pageNumber=1&recordsPerPage=10", model.BackLinkUrl);
     }
 

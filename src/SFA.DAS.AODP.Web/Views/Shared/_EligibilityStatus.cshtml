@@ -1,0 +1,17 @@
+﻿@model SFA.DAS.AODP.Models.Qualifications.EligibleForFundingStatus
+
+@if (Model.IsEligible)
+{
+    <div class="govuk-body">Eligible</div>
+}
+else
+{
+    var display = Model.ToDisplayString();
+
+    if (!string.IsNullOrWhiteSpace(display))
+    {
+        <div class="govuk-body">
+            @Html.Raw(display)
+        </div>
+    }
+}

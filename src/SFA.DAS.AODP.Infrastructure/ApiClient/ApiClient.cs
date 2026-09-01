@@ -106,6 +106,61 @@ namespace SFA.DAS.AODP.Infrastructure.ApiClient
             return JsonConvert.DeserializeObject<TResponse>(responseContent) ?? default;
         }
 
+        public async Task<TResponse?> PostWithResponseCodeAsMultipart<TResponse>(IPostMultipartFormDataApiRequest request)
+        {
+            using var multipartContent = new MultipartFormDataContent();
+            foreach (var field in request.FormData)
+            {
+                multipartContent.Add(new StringContent(field.Value, Encoding.UTF8), field.Key);
+            }
+
+            using var requestMessage = new HttpRequestMessage(HttpMethod.Post, request.PostUrl)
+            {
+                Content = multipartContent,
+            };
+            AddAuthenticationHeader(requestMessage);
+
+            var response = await _httpClient.SendAsync(requestMessage).ConfigureAwait(false);
+            var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            response.EnsureSuccessStatusCode();
+            return JsonConvert.DeserializeObject<TResponse>(responseContent) ?? default;
+        }
+
+        public async Task<TResponse?> PostWithResponseCodeAsJsonFile<TResponse>(IPostMultipartJsonFileApiRequest request)
+        {
+            using var multipartContent = CreateWafCompatibleMultipartContent();
+            var jsonContent = new StringContent(JsonConvert.SerializeObject(request.Data), Encoding.UTF8, "application/json");
+            multipartContent.Add(jsonContent, "payload", "payload.json");
+
+            using var requestMessage = new HttpRequestMessage(HttpMethod.Post, request.PostUrl)
+            {
+                Content = multipartContent,
+            };
+            AddAuthenticationHeader(requestMessage);
+
+            var response = await _httpClient.SendAsync(requestMessage).ConfigureAwait(false);
+            var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+            response.EnsureSuccessStatusCode();
+            return JsonConvert.DeserializeObject<TResponse>(responseContent) ?? default;
+        }
+
+        private static MultipartFormDataContent CreateWafCompatibleMultipartContent()
+        {
+            var boundary = $"---------------------------{Guid.NewGuid():N}";
+            var content = new MultipartFormDataContent(boundary);
+            var boundaryParameter = content.Headers.ContentType?.Parameters
+                .Single(parameter => string.Equals(parameter.Name, "boundary", StringComparison.OrdinalIgnoreCase));
+
+            if (boundaryParameter is not null)
+            {
+                boundaryParameter.Value = boundary;
+            }
+
+            return content;
+        }
+
         public async Task PostWithResponseCode(IPostApiRequest request)
         {
             var stringContent = new StringContent(JsonConvert.SerializeObject(request.Data), Encoding.UTF8, "application/json");

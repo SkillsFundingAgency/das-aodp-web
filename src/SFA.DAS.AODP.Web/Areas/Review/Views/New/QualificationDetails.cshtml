@@ -1,10 +1,9 @@
 ﻿@using System.Globalization
-@using SFA.DAS.AODP.Web.Extensions
 @using SFA.DAS.AODP.Web.Views.Shared
 @model SFA.DAS.AODP.Web.Models.Qualifications.NewQualificationDetailsViewModel
 
 @{
-    ViewData["Title"] = "Qualification Details";
+    ViewData["Title"] = "Qualification details";
 
     var backLinkModel = new BackLinkModel
     {
@@ -13,6 +12,8 @@
         Area = Model.BackArea,
         Text = "Back"
     };
+
+    var isCompleted = string.Equals(Model.Stage?.Name, "Completed", System.StringComparison.OrdinalIgnoreCase);
 }
 
 @await Html.PartialAsync("_BackLinkPartial", backLinkModel)
@@ -22,7 +23,7 @@
 <span class="govuk-caption-xl">
     @(Model.IsQualificationCompleted ? "Completed qualification" : "Newly regulated qualification")
 </span>
-<h1 class="govuk-heading-xl">Qualification Details</h1>
+<h1 class="govuk-heading-xl">Qualification details</h1>
 
 <div class="govuk-tabs" data-module="govuk-tabs">
     <ul class="govuk-tabs__list">
@@ -61,6 +62,26 @@
             <govuk-summary-list-row>
                 <govuk-summary-list-row-key>Qualification title</govuk-summary-list-row-key>
                 <govuk-summary-list-row-value>@Model.Qual.QualificationName</govuk-summary-list-row-value>
+            </govuk-summary-list-row>
+            <govuk-summary-list-row>
+                <govuk-summary-list-row-key>Eligibility status</govuk-summary-list-row-key>
+                <govuk-summary-list-row-value>
+                    <partial name="_EligibilityStatus" model="Model.EligibleForFundingStatus" />
+                </govuk-summary-list-row-value>
+            </govuk-summary-list-row>
+            @if (!(Model.EligibleForFundingStatus?.IsEligible ?? false)
+                && !string.IsNullOrWhiteSpace(Model.FundingEligibilityConflictType))
+            {
+                <govuk-summary-list-row>
+                    <govuk-summary-list-row-key>Ineligibility funding conflict</govuk-summary-list-row-key>
+                    <govuk-summary-list-row-value>@Model.FundingEligibilityConflictType</govuk-summary-list-row-value>
+                </govuk-summary-list-row>
+            }
+            <govuk-summary-list-row>
+                <govuk-summary-list-row-key>Eligibility status</govuk-summary-list-row-key>
+                <govuk-summary-list-row-value>
+                    <partial name="_EligibilityStatus" model="Model.EligibleForFundingStatus" />
+                </govuk-summary-list-row-value>
             </govuk-summary-list-row>
             <govuk-summary-list-row>
                 <govuk-summary-list-row-key>Awarding organisation</govuk-summary-list-row-key>
@@ -187,7 +208,7 @@
                 <div class="govuk-form-group">
                     @if (Model.FundingsOffersOutcomeStatus.HasValue)
                     {
-                        <a class="govuk-button" asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersSummary"
+                        <a class="govuk-button govuk-button--secondary" asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersSummary"
                            asp-route-qualificationReference="@Model.Qual.Qan"
                            asp-route-qualificationVersionId="@Model.Id"
                            asp-route-qualificationId="@Model.QualificationId"
@@ -198,7 +219,7 @@
                     }
                     else
                     {
-                        <a class="govuk-button" asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersOutcome"
+                    <a class="govuk-button govuk-button--secondary" asp-route-area="Review" asp-controller="QualificationFunding" asp-action="QualificationFundingOffersOutcome"
                            asp-route-qualificationReference="@Model.Qual.Qan"
                            asp-route-mode="New">
                             DfE funding review

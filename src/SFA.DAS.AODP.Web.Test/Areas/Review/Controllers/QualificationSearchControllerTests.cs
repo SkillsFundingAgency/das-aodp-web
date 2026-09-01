@@ -61,7 +61,7 @@ public class QualificationSearchControllerTests
 
         // also ensure process statuses call returns an empty list so Map can run safely
         var procStatusesBody = _fixture.Build<GetProcessStatusesQueryResponse>()
-            .With(p => p.ProcessStatuses, new List<GetProcessStatusesQueryResponse.ProcessStatus>())
+            .With(p => p.ProcessStatuses, new List<ProcessStatus>())
             .Create();
 
         var procStatusesResponse = _fixture.Build<BaseMediatrResponse<GetProcessStatusesQueryResponse>>()
@@ -136,7 +136,7 @@ public class QualificationSearchControllerTests
 
         // GetProcessStatusesQuery - return empty list to allow flow
         var procStatusesBody = _fixture.Build<GetProcessStatusesQueryResponse>()
-            .With(p => p.ProcessStatuses, new List<GetProcessStatusesQueryResponse.ProcessStatus>())
+            .With(p => p.ProcessStatuses, new List<ProcessStatus>())
             .Create();
 
         var procStatusesResponse = _fixture.Build<BaseMediatrResponse<GetProcessStatusesQueryResponse>>()
@@ -237,7 +237,7 @@ public class QualificationSearchControllerTests
     {
         // Arrange - ensure process statuses and qualifications work so exception happens only in job runs
         var procStatusesBody = _fixture.Build<GetProcessStatusesQueryResponse>()
-            .With(p => p.ProcessStatuses, new List<GetProcessStatusesQueryResponse.ProcessStatus>())
+            .With(p => p.ProcessStatuses, new List<ProcessStatus>())
             .Create();
 
         var procStatusesResponse = _fixture.Build<BaseMediatrResponse<GetProcessStatusesQueryResponse>>()

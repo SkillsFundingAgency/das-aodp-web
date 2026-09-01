@@ -6,7 +6,7 @@ using SFA.DAS.Aodp.Domain.Files;
 namespace SFA.DAS.AODP.Infrastructure.File
 {
     /*
-     * Low‑level wrapper over Azure Blob Storage that upload and reads raw bytes by container and path. 
+     * Low‑level wrapper over Azure Blob Storage that upload and reads raw bytes by container and path.
      * */
     public class BlobStorageFileService : IFileService
     {

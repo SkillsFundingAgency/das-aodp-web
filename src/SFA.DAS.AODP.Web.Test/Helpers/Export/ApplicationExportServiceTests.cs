@@ -55,6 +55,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Helpers.Export
 					BlobContainer = "aqany",
 					FileCategory = FileCategory.QuestionUpload,
 					FileName = "file.txt",
+					IsDownloadable = true,
                 }
 			};
 
@@ -122,7 +123,8 @@ namespace SFA.DAS.AODP.Web.UnitTests.Helpers.Export
 				new FileMetadataDto
                 {
 					BlobContainer = "any",
-					BlobPath = "files/app/question/file"
+					BlobPath = "files/app/question/file",
+					IsDownloadable = true,
                 }
 			};
 
@@ -157,7 +159,8 @@ namespace SFA.DAS.AODP.Web.UnitTests.Helpers.Export
 					FileCategory = FileCategory.MessageAttachment,
 					FileName = "msg.txt",
 					BlobContainer = "files",
-					BlobPath = "messages/msg.txt"
+					BlobPath = "messages/msg.txt",
+					IsDownloadable = true,
 				}
 			};
 
@@ -224,7 +227,8 @@ namespace SFA.DAS.AODP.Web.UnitTests.Helpers.Export
 					FileName = "answer.txt",
 					BlobContainer = "files",
 					BlobPath = "path/blob",
-					QuestionId = questionId
+					QuestionId = questionId,
+					IsDownloadable = true,
 				}
 			};
 
@@ -239,6 +243,48 @@ namespace SFA.DAS.AODP.Web.UnitTests.Helpers.Export
             var result = await _service.GenerateExportZipAsync(exportData, files);
 
             Assert.True(result.Length > 0);
+        }
+
+        [Fact]
+        public async Task GenerateExportZipAsync_SkipsFiles_WhenNotDownloadable()
+        {
+            var exportData = new GetApplicationExportDataQueryResponse
+            {
+                ApplicationMetadata = new ApplicationExportMetadataResponse
+                {
+                    OrganisationName = "Org",
+                    Qan = "123",
+                    SubmissionId = 1,
+                    FormName = "Form"
+                },
+                ApplicationFormStructure = new GetFormPreviewByIdQueryResponse
+                {
+                    SectionsWithPagesAndQuestions = new()
+                },
+                ApplicationFormResponse = new()
+            };
+
+            var files = new List<FileMetadataDto>
+			{
+				new FileMetadataDto
+				{
+					FileCategory = FileCategory.QuestionUpload,
+					FileName = "notscanned.txt",
+					BlobContainer = "files",
+					BlobPath = "path/blob",
+					IsDownloadable = false,
+				}
+			};
+
+            _htmlRendererMock!
+                .Setup(x => x.RenderAsync(It.IsAny<string>(), It.IsAny<object>()))
+                .ReturnsAsync("<html></html>");
+
+            var result = await _service.GenerateExportZipAsync(exportData, files);
+
+            Assert.True(result.Length > 0);
+
+            _fileServiceMock!.Verify(x => x.OpenReadStreamAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
 
         [Fact]
@@ -268,7 +314,8 @@ namespace SFA.DAS.AODP.Web.UnitTests.Helpers.Export
 					FileName = "fallback.txt",
 					BlobContainer = "files",
 					BlobPath = "path/blob",
-					QuestionId = Guid.NewGuid() // no matching question
+					QuestionId = Guid.NewGuid(), // no matching question
+					IsDownloadable = true,
 				}
 			};
 

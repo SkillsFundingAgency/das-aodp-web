@@ -49,6 +49,11 @@ namespace SFA.DAS.AODP.Web.Helpers.Export
 
                 foreach (var file in files)
                 {
+                    if (!file.IsDownloadable)
+                    {
+                        continue;
+                    }
+
                     bool isMessageFile = file.FileCategory == FileCategory.MessageAttachment;
 
                     string filePath;

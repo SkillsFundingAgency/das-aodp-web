@@ -26,10 +26,9 @@
                 </div>
             </div>
         }
-
+        <span class="govuk-caption-xl">Request for funding</span>
         <h1 class="govuk-heading-xl">
             Skills England review
-            <span class="govuk-caption-l">Request for funding</span>
         </h1>
 
         @if (!Model.AdditionalActions.Preview)
@@ -48,7 +47,9 @@
                                 All relevant criteria have now been applied.
                             </govuk-radios-hint>
 
-                            @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.Approved))
+                            @{
+                                await Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.Approved));
+                            }
 
                             <govuk-radios-item value="true" checked="@(Model.NewDecision == false && Model.Approved == true)">Approved</govuk-radios-item>
                             <govuk-radios-item value="false" checked="@(Model.NewDecision == false && Model.Approved == false)">Rejected</govuk-radios-item>

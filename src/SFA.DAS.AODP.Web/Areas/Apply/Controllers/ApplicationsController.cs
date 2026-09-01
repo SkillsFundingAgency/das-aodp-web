@@ -1,5 +1,4 @@
-﻿using DocumentFormat.OpenXml.Spreadsheet;
-using FluentValidation;
+﻿using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,6 +9,7 @@ using SFA.DAS.AODP.Application.Queries.Application.Form;
 using SFA.DAS.AODP.Application.Queries.Files.Get;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Infrastructure.Common.IO;
+using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Web.Authentication;
@@ -42,10 +42,10 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
 
         private const string DefaultQANValidationMessage = "Invalid Qualification Number.";
 
-        public ApplicationsController(IMediator mediator, 
-            IApplicationAnswersValidator validator, 
-            ILogger<ApplicationsController> logger, 
-            IFileService fileService, 
+        public ApplicationsController(IMediator mediator,
+            IApplicationAnswersValidator validator,
+            ILogger<ApplicationsController> logger,
+            IFileService fileService,
             IUserHelperService userHelperService,
             FileUploadValidator fileUploadValidator) : base(mediator, logger)
         {
@@ -59,6 +59,14 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         [Route("apply/applications")]
         public async Task<IActionResult> Index()
         {
+            if (!Request.Cookies.TryGetValue(
+                    ConsentController.GetConsentCookieName(HttpContext),
+                    out var consentValue)
+                || consentValue != "true")
+                    {
+                        return RedirectToAction("Index", "Consent", new { area = "Review" });
+                    }
+
             var organisationId = Guid.Parse(_userHelperService.GetUserOrganisationId());
             var response = await Send(new GetApplicationsByOrganisationIdQuery(organisationId));
             ListApplicationsViewModel model = ListApplicationsViewModel.Map(response, organisationId);
@@ -563,5 +571,3 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
         }
     }
 }
-
-

@@ -44,7 +44,7 @@
 
                     @if (!Model.AreSectionsEmpty)
                     {
-                        @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.ChosenSectionId))
+                        await Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.ChosenSectionId));
 
                         @foreach (var sectionInformation in Model.Sections.OrderBy(o => o.Order))
                         {
@@ -66,7 +66,7 @@
            asp-action="Edit"
            asp-controller="Forms"
            asp-route-formVersionId="@Model.FormVersionId">
-            Return to Form
+            Return to form
         </a>
     }
     else

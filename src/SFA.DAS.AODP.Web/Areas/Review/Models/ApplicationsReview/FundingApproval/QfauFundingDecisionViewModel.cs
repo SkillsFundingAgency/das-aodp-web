@@ -49,17 +49,6 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
                 Status = status,
             };
 
-            foreach (var funding in response.FundedOffers ?? [])
-            {
-                model.OfferFundingDetails.Add(new()
-                {
-                    Comments = funding.Comments,
-                    EndDate = funding.EndDate,
-                    StartDate = funding.StartDate,
-                    FundingOfferId = funding.FundingOfferId,
-                });
-            }
-
             if (response.RelatedQualification != null)
             {
                 model.RelatedQualification = new()
@@ -71,6 +60,19 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
             }
 
             model.MapOffers(offers);
+
+            foreach (var funding in response.FundedOffers ?? [])
+            {
+                model.OfferFundingDetails.Add(new()
+                {
+                    Comments = funding.Comments,
+                    EndDate = funding.EndDate,
+                    StartDate = funding.StartDate,
+                    FundingOfferId = funding.FundingOfferId,
+                });
+            }
+
+            model.SortOfferFundingDetailsByOfferName();
 
             var messages = new List<string>();
 
@@ -88,7 +90,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
             {
                 messages.Add(FundingDecisionMessages.MissingQualification);
             }
-            else if (qualificationStatus is ProcessStatus.Rejected or ProcessStatus.NoActionRequired)
+            else if (qualificationStatus == ProcessStatusLookup.Rejected.Name || qualificationStatus == ProcessStatusLookup.NoActionRequired.Name)
             {
                 messages.Add(FundingDecisionMessages.InvalidQualificationStatus(qualificationStatus));
             }
@@ -111,6 +113,19 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
                     Name = offer.Name,
                 });
             }
+        }
+
+        private void SortOfferFundingDetailsByOfferName()
+        {
+            OfferFundingDetails = OfferFundingDetails
+                .OrderBy(detail => GetOfferName(detail.FundingOfferId), StringComparer.OrdinalIgnoreCase)
+                .ThenBy(detail => detail.FundingOfferId)
+                .ToList();
+        }
+
+        private string GetOfferName(Guid fundingOfferId)
+        {
+            return FundingOffers.FirstOrDefault(offer => offer.Id == fundingOfferId)?.Name ?? string.Empty;
         }
     }
 }

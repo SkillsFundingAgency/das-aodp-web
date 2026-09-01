@@ -435,7 +435,7 @@ public class ImportControllerTests
         // Assert
         var viewResult = Assert.IsType<ViewResult>(result);
         Assert.Equal("UploadImportFile", viewResult.ViewName);
-        Assert.Equal("Import Defunding List", _controller.ViewBag.PageTitle);
+        Assert.Equal("Import defunding list", _controller.ViewBag.PageTitle);
         Assert.Equal("DefundingList", _controller.ViewBag.FormAction);
     }
 

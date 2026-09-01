@@ -8,6 +8,7 @@ using SFA.DAS.AODP.Application.Commands.Qualifications;
 using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Models.Qualifications;
+using SFA.DAS.AODP.Domain.Models;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
@@ -32,8 +33,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         private readonly IUserHelperService _userHelperService;
         private List<string> ReviewerAllowedStatuses { get; set; } = new List<string>()
         {
-            ProcessStatus.DecisionRequired,
-            ProcessStatus.NoActionRequired,
+            ProcessStatusLookup.DecisionRequired.Name,
+            ProcessStatusLookup.NoActionRequired.Name,
         };
         public enum NewQualDataKeys { InvalidPageParams, CommentSaved}
 
@@ -238,19 +239,23 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                     return Redirect("/Home/Error");
                 }
 
-                QualificationDetailsTimelineViewModel result = await Send(new GetDiscussionHistoriesForQualificationQuery { QualificationReference = qualificationReference });
-                result.Qan = qualificationReference;
+                var response = await Send(new GetQualificationTimelineQuery 
+                { 
+                    QualificationReference = qualificationReference 
+                });
 
-                
+                var viewModel = (QualificationDetailsTimelineViewModel)response;
+                viewModel.Qan = qualificationReference;
+  
 
                 if (!string.IsNullOrWhiteSpace(returnTo) &&
                     string.Equals(returnTo, "QualificationSearch", StringComparison.OrdinalIgnoreCase))
                 {
-                    result.BackController = "QualificationSearch";
-                    result.ReturnTo = returnTo;
+                    viewModel.BackController = "QualificationSearch";
+                    viewModel.ReturnTo = returnTo;
                 }
 
-                return View(result);
+                return View(viewModel);
             }
             catch (Exception ex)
             {
@@ -334,7 +339,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 var errorModel = new QualificationBulkActionErrorModel
                 {
                     Failed = failed,
-                    BackLinkText = "Go back to New qualifications",
+                    BackLinkText = "Go back to new qualifications",
                     BackLinkUrl = Url.Action(nameof(Index), qualificationQuery.ToRouteValues())!
                 };
 
@@ -379,7 +384,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             return ReviewerAllowedStatuses.Contains(processStatName);
         }
 
-        public async Task<List<GetProcessStatusesQueryResponse.ProcessStatus>> GetProcessStatuses()
+        public async Task<List<ProcessStatus>> GetProcessStatuses()
         {
             var procStatuses = await Send(new GetProcessStatusesQuery());
             if (!_userHelperService.GetUserRoles().Contains(RoleConstants.QFAUApprover))
@@ -414,7 +419,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             NewQualificationsViewModel? postedModel = null)
         {
             var procStatuses = await Send(new GetProcessStatusesQuery());
-            var statuses = procStatuses.ProcessStatuses ?? new List<GetProcessStatusesQueryResponse.ProcessStatus>();
+            var statuses = procStatuses.ProcessStatuses;
 
             NewQualificationsViewModel vm;
 
