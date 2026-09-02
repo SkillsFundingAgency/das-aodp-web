@@ -58,39 +58,62 @@ namespace SFA.DAS.AODP.Infrastructure.UnitTests.File
         }
 
         [Fact]
-        public void Resolve_Pldns_Returns_ImportsContainer_With_Pldns_Date_Structure()
+        public void Resolve_Pldns_Returns_ImportsContainer_With_Fixed_Path()
         {
             // Act
             var result = _sut.Resolve(FileCategory.Pldns, context: null);
 
             // Assert
             Assert.Equal(AzureBlobLocationPolicy.ImportsContainer, result.Container);
-
-            var expectedPrefix =
-                $"{AzureBlobLocationPolicy.PldnsPrefix}";
-
-            Assert.StartsWith(expectedPrefix, result.BlobPath);
+            Assert.Equal(
+                $"{AzureBlobLocationPolicy.PldnsPrefix}/{AzureBlobLocationPolicy.PldnsPrefix}.xlsx",
+                result.BlobPath);
         }
 
         [Fact]
-        public void Resolve_DefundingList_Returns_ImportsContainer_With_DefundingList_Prefix()
+        public void Resolve_DefundingList_Returns_ImportsContainer_With_Fixed_Path()
         {
             // Act
             var result = _sut.Resolve(FileCategory.DefundingList, context: null);
 
             // Assert
             Assert.Equal(AzureBlobLocationPolicy.ImportsContainer, result.Container);
-            Assert.StartsWith(
-                $"{AzureBlobLocationPolicy.DefundingListPrefix}/",
+            Assert.Equal(
+                $"{AzureBlobLocationPolicy.DefundingListPrefix}/{AzureBlobLocationPolicy.DefundingListPrefix}.xlsx",
                 result.BlobPath);
         }
 
         [Fact]
-        public void Resolve_Generates_Unique_BlobPaths()
+        public void Resolve_Pldns_And_DefundingList_Return_The_Same_BlobPath_On_Repeated_Calls()
         {
+            // These categories represent a single, ongoing import file that gets overwritten
+            // on each upload — unlike QuestionUpload/MessageAttachment, repeated calls must
+            // resolve to the exact same location, not a fresh one each time.
+
             // Act
-            var first = _sut.Resolve(FileCategory.DefundingList, null);
-            var second = _sut.Resolve(FileCategory.DefundingList, null);
+            var pldnsFirst = _sut.Resolve(FileCategory.Pldns, null);
+            var pldnsSecond = _sut.Resolve(FileCategory.Pldns, null);
+
+            var defundingFirst = _sut.Resolve(FileCategory.DefundingList, null);
+            var defundingSecond = _sut.Resolve(FileCategory.DefundingList, null);
+
+            // Assert
+            Assert.Equal(pldnsFirst.BlobPath, pldnsSecond.BlobPath);
+            Assert.Equal(defundingFirst.BlobPath, defundingSecond.BlobPath);
+        }
+
+        [Fact]
+        public void Resolve_QuestionUpload_Generates_Unique_BlobPaths()
+        {
+            // Unlike the import categories, question uploads/message attachments must remain
+            // distinct even when they otherwise share the same context.
+            var applicationId = Guid.NewGuid();
+            var questionId = Guid.NewGuid();
+            var context = new FileContext(ApplicationId: applicationId, QuestionId: questionId, MessageId: null);
+
+            // Act
+            var first = _sut.Resolve(FileCategory.QuestionUpload, context);
+            var second = _sut.Resolve(FileCategory.QuestionUpload, context);
 
             // Assert
             Assert.NotEqual(first.BlobPath, second.BlobPath);

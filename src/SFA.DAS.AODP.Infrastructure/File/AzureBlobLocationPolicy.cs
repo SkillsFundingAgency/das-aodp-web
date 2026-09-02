@@ -43,21 +43,23 @@ namespace SFA.DAS.AODP.Infrastructure.File
                     ),
 
                 // PLDNs imports
-                // importfilescontainer/Pldns/{fileId}
+                // importfilescontainer/Pldns/Pldns.xlsx
+                // Overwritten on each import — there is only ever one current PLDNS file,
+                // tracked by a single FileRecord per FileCategory.Pldns.
                 FileCategory.Pldns =>
                     new FileStorageLocation(
                         ImportsContainer,
-                        $"{PldnsPrefix}/" +
-                        $"{Guid.NewGuid()}"
+                        $"{PldnsPrefix}/{PldnsPrefix}.xlsx"
                     ),
 
                 // Defunding list imports
-                // importfilescontainer/DefundingList/{fileId}
+                // importfilescontainer/DefundingList/DefundingList.xlsx
+                // Overwritten on each import — there is only ever one current file,
+                // tracked by a single FileRecord per FileCategory.DefundingList.
                 FileCategory.DefundingList =>
                     new FileStorageLocation(
                         ImportsContainer,
-                        $"{DefundingListPrefix}/" +
-                        $"{Guid.NewGuid()}"
+                        $"{DefundingListPrefix}/{DefundingListPrefix}.xlsx"
                     ),
 
                 _ =>
