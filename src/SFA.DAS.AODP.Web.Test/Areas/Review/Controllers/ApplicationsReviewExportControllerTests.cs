@@ -6,10 +6,14 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Queries.Application.Review;
+using SFA.DAS.AODP.Application.Queries.Files;
+using SFA.DAS.AODP.Application.Queries.Files.Get;
 using SFA.DAS.AODP.Infrastructure.File;
+using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Helpers.Export;
+using SFA.DAS.AODP.Web.Helpers.User;
 
 namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
 {
@@ -28,10 +32,11 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
             _controller = new ApplicationsReviewController(
                 _loggerMock.Object,
                 _mediatorMock.Object,
-                Mock.Of<SFA.DAS.AODP.Web.Helpers.User.IUserHelperService>(),
+                Mock.Of<IUserHelperService>(),
                 _fileServiceMock.Object,
                 Microsoft.Extensions.Options.Options.Create(
-                    new SFA.DAS.AODP.Models.Settings.AodpConfiguration()),
+                    new 
+                    AodpConfiguration()),
                 _exportServiceMock.Object);
 
             _controller.ControllerContext = new ControllerContext
@@ -85,24 +90,33 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
                     Value = exportData
                 });
 
-            _fileServiceMock
-                .Setup(x => x.ListBlobs(applicationId.ToString()))
-                .Returns(new List<UploadedBlob>
+            _mediatorMock
+                .Setup(m => m.Send(
+                    It.IsAny<GetFileMetadataQuery>(),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetFileMetadataQueryResponse>
                 {
-                    new UploadedBlob { FileName = "questionfile.txt", FullPath = "12345/questionfile.txt" }
-                });
-
-            _fileServiceMock
-                .Setup(x => x.ListBlobs($"{ApplicationExportConstants.MessageFolderName}/{applicationId.ToString()}"))
-                .Returns(new List<UploadedBlob>
-                {
-                    new UploadedBlob { FileName = "messagefile.txt", FullPath = "messages/12345/messagefile.txt" }
+                    Success = true,
+                    Value = new GetFileMetadataQueryResponse
+                    {
+                        Files = 
+                        [
+                            new FileMetadataDto
+                            {
+                                FileId = Guid.NewGuid(),
+                                FileName = "questionfile.txt",
+                                BlobContainer = "files",
+                                BlobPath = "app/questionfile.txt",
+                                QuestionId = Guid.NewGuid()
+                            }
+                        ]
+                    }
                 });
 
             _exportServiceMock
                 .Setup(x => x.GenerateExportZipAsync(
                     It.IsAny<GetApplicationExportDataQueryResponse>(),
-                    It.IsAny<List<UploadedBlob>>()))
+                    It.IsAny<List<FileMetadataDto>>()))
                 .ReturnsAsync(new byte[] { 1, 2, 3 });
 
             // Act
@@ -113,10 +127,10 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
 
             Assert.Equal("application/zip", fileResult.ContentType);
             Assert.Equal(
-                "Test Org_123456_" + submissionId.ToString().PadLeft(6, '0') + ".zip",
-                fileResult.FileDownloadName
-            );
+                    "Test Org_123456_" + submissionId.ToString().PadLeft(6, '0') + ".zip",
+                    fileResult.FileDownloadName);
         }
+
 
         [Fact]
         public async Task DownloadApplicationFormAndFiles_WhenQanIsNull_UsesNoQAN()
@@ -155,12 +169,21 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
                    }
                });
 
-            _fileServiceMock
-                .Setup(f => f.ListBlobs(It.IsAny<string>()))
-                .Returns(new List<UploadedBlob>());
+            _mediatorMock
+                .Setup(m => m.Send(
+                    It.IsAny<GetFileMetadataQuery>(),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetFileMetadataQueryResponse>
+                {
+                    Success = true,
+                    Value = new GetFileMetadataQueryResponse
+                    {
+                        Files = []
+                    }
+                });
 
             _exportServiceMock
-                .Setup(s => s.GenerateExportZipAsync(exportData, It.IsAny<List<UploadedBlob>>()))
+                .Setup(s => s.GenerateExportZipAsync(exportData, It.IsAny<List<FileMetadataDto>>()))
                 .ReturnsAsync(new byte[] { 1 });
 
             // Act
@@ -170,8 +193,9 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
             var fileResult = Assert.IsType<FileContentResult>(result);
 
             Assert.Equal("application/zip", fileResult.ContentType);
-            Assert.True(fileResult.FileDownloadName.Contains("NoQAN"));
+            Assert.Contains("NoQAN", fileResult.FileDownloadName);
         }
+
 
         [Fact]
         public async Task DownloadApplicationFormAndFiles_CallsMediator()
@@ -207,12 +231,21 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
                    }
                });
 
-            _fileServiceMock
-                .Setup(f => f.ListBlobs(It.IsAny<string>()))
-                .Returns(new List<UploadedBlob>());
+            _mediatorMock
+                .Setup(m => m.Send(
+                    It.IsAny<GetFileMetadataQuery>(),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetFileMetadataQueryResponse>
+                {
+                    Success = true,
+                    Value = new GetFileMetadataQueryResponse
+                    {
+                        Files = []
+                    }
+                });
 
             _exportServiceMock
-                .Setup(s => s.GenerateExportZipAsync(It.IsAny<GetApplicationExportDataQueryResponse>(), It.IsAny<List<UploadedBlob>>()))
+                .Setup(s => s.GenerateExportZipAsync(It.IsAny<GetApplicationExportDataQueryResponse>(), It.IsAny<List<FileMetadataDto>>()))
                 .ReturnsAsync(new byte[] { 1 });
 
             // Act
@@ -222,6 +255,11 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
             _mediatorMock.Verify(m =>
                 m.Send(It.IsAny<GetApplicationExportDataQuery>(), It.IsAny<CancellationToken>()),
                 Times.Once);
+
+            _mediatorMock.Verify(m =>
+                m.Send(It.IsAny<GetFileMetadataQuery>(), It.IsAny<CancellationToken>()),
+                Times.Once);
         }
+
     }
 }

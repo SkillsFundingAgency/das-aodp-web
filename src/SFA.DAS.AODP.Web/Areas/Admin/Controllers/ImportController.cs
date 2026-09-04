@@ -1,10 +1,15 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SFA.DAS.Aodp.Domain.Files;
+using SFA.DAS.AODP.Application.Commands.Files;
 using SFA.DAS.AODP.Application.Commands.Import;
 using SFA.DAS.AODP.Application.Queries.Import;
 using SFA.DAS.AODP.Infrastructure.File;
+using SFA.DAS.AODP.Models.Common;
+using SFA.DAS.AODP.Models.Exceptions;
 using SFA.DAS.AODP.Web.Areas.Admin.Models;
+using SFA.DAS.AODP.Web.Areas.Admin.Storage;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.User;
@@ -19,14 +24,17 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
     {
         private readonly IUserHelperService _userHelperService;
         private readonly IFileService _fileService;
+        private readonly ImportFileUploadSettings _importFileUploadSettings;
+
         public enum SendKeys { RequestFailed, JobStatusFailed }
         private const string UploadImportListViewPath = "UploadImportFile";
         private const string ConfirmImportSelectionAction = nameof(ConfirmImportSelection);
 
-        public ImportController(ILogger<ImportController> logger, IMediator mediator, IUserHelperService userHelperService, IFileService fileService) : base(mediator, logger)
+        public ImportController(ILogger<ImportController> logger, IMediator mediator, IUserHelperService userHelperService, IFileService fileService, ImportFileUploadSettings importFileUploadSettings) : base(mediator, logger)
         {
             _userHelperService = userHelperService;
             _fileService = fileService;
+            _importFileUploadSettings = importFileUploadSettings;
         }
 
         [HttpGet]
@@ -259,12 +267,11 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
 
             try
             {
-                var folderName = JobNames.Pldns.ToString();
-                var contentType = model.File.ContentType;
-                var fileNamePrefix = _userHelperService.GetUserDisplayName() ?? string.Empty;
-
-                using var stream = model.File.OpenReadStream();
-                await _fileService.UploadXlsxFileAsync(folderName, "Pldns.xlsx", stream, contentType, fileNamePrefix);
+                await UploadXlsxAsync(
+                    FileCategory.Pldns,
+                    ImportStoragePaths.PldnsFileName,
+                    model.File,
+                    _importFileUploadSettings.MaxPldnsUploadSizeInMB);
             }
             catch (Exception ex)
             {
@@ -302,12 +309,12 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
 
             try
             {
-                var folderName = JobNames.DefundingList.ToString();
-                var contentType = model.File.ContentType;
-                var fileNamePrefix = _userHelperService.GetUserDisplayName() ?? string.Empty;
+                await UploadXlsxAsync(
+                    FileCategory.DefundingList,
+                    ImportStoragePaths.DefundingListFileName,
+                    model.File,
+                    _importFileUploadSettings.MaxDefundingListUploadSizeInMB);
 
-                using var stream = model.File.OpenReadStream();
-                await _fileService.UploadXlsxFileAsync(folderName, "DefundingList.xlsx", stream, contentType, fileNamePrefix);
             }
             catch (Exception ex)
             {
@@ -318,6 +325,57 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
 
             var viewModel = new ImportRequestViewModel() { ImportType = JobNames.DefundingList.ToString() };
             return RedirectToAction(ConfirmImportSelectionAction, viewModel);
+        }
+
+        private async Task UploadXlsxAsync(
+            FileCategory category,
+            string fileName,          
+            IFormFile file,
+            int? maxAllowedFileSizeMb)
+        {
+            var uploadedExtension = Path.GetExtension(file.FileName);
+
+            if (!string.Equals(uploadedExtension, ".xlsx", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new FileUploadPolicyException(FileUploadRejectionReason.FileTypeNotAllowed);
+            }
+
+            using var stream = file.OpenReadStream();
+
+
+            if (maxAllowedFileSizeMb.HasValue)
+            {
+                var maxBytes = maxAllowedFileSizeMb.Value * 1024L * 1024L;
+
+                if (stream.Length > maxBytes)
+                {
+                    throw new FileUploadPolicyException(FileUploadRejectionReason.FileTooLarge);
+                }
+            }
+
+            stream.Position = 0;
+
+
+            var resolvedContentType = string.IsNullOrWhiteSpace(file.ContentType)
+                ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                : file.ContentType;
+
+            var storageLocation = await _fileService.UploadAsync(
+                category,
+                null,
+                fileName,
+                resolvedContentType,
+                stream);
+
+            await _mediator.Send(new CreateFileMetadataCommand
+            {
+                FileName = fileName,  
+                ContentType = resolvedContentType,
+                BlobPath = storageLocation.BlobPath,
+                BlobContainer = storageLocation.Container,
+                FileCategory = category,
+                UploadedBy = _userHelperService.GetUserDisplayName() ?? string.Empty,
+            });
         }
     }
 }

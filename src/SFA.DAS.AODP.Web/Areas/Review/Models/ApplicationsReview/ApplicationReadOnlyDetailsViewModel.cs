@@ -1,4 +1,5 @@
 ﻿using SFA.DAS.AODP.Application.Queries.Application.Form;
+using SFA.DAS.AODP.Application.Queries.Files;
 using SFA.DAS.AODP.Application.Queries.Review;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Forms;
@@ -58,13 +59,16 @@ public class ApplicationReadOnlyDetailsViewModel
 
     public class File
     {
+        public Guid FileId { get; set; }
         public string FileDisplayName { get; set; }
         public string FullPath { get; set; }
         public string FileName { get; set; }
         public string Extension { get; set; }
+
+        public bool IsDownloadable { get; set; } = false;
     }
 
-    public static ApplicationReadOnlyDetailsViewModel Map(GetFormPreviewByIdQueryResponse form, GetApplicationFormByReviewIdQueryResponse answers, List<UploadedBlob> files)
+    public static ApplicationReadOnlyDetailsViewModel Map(GetFormPreviewByIdQueryResponse form, GetApplicationFormByReviewIdQueryResponse answers, List<FileMetadataDto> files)
     {
         var model = new ApplicationReadOnlyDetailsViewModel
         {
@@ -103,18 +107,25 @@ public class ApplicationReadOnlyDetailsViewModel
         return model;
     }
 
-    private static Answer? GetAnswer(GetFormPreviewByIdQueryResponse.Question question, GetApplicationFormByReviewIdQueryResponse answers, List<UploadedBlob> files)
+    private static Answer? GetAnswer(GetFormPreviewByIdQueryResponse.Question question, GetApplicationFormByReviewIdQueryResponse answers, List<FileMetadataDto> files)
     {
-        if (question.Type == QuestionType.File.ToString()) return new Answer()
+        if (question.Type == QuestionType.File.ToString())
         {
-            Files = files.Where(f => f.FullPath.StartsWith($"{answers.ApplicationId}/{question.Id}")).ToList().Select(s => new File()
+            return new Answer
             {
-                Extension = s.Extension,
-                FileDisplayName = s.FileNameWithPrefix,
-                FullPath = s.FullPath,
-                FileName = s.FileName,
-            }).ToList()
-        };
+                Files = files
+                    .Where(f => f.QuestionId == question.Id)
+                    .Select(f => new File
+                    {
+                        FileId = f.FileId,
+                        FileDisplayName = f.FileName,
+                        FileName = f.FileName,
+                        Extension = Path.GetExtension(f.FileName),
+                        IsDownloadable = f.IsDownloadable
+                    })
+                    .ToList()
+            };
+        }
 
         var answer = answers.QuestionsWithAnswers.FirstOrDefault(q => q.Id == question.Id)?.Answer;
         if (answer == null) return null;

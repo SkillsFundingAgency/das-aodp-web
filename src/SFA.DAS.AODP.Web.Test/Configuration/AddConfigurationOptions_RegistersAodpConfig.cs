@@ -82,28 +82,30 @@ namespace SFA.DAS.AODP.Web.UnitTests.Configuration
             // Arrange
             var inmemorySettings = new Dictionary<string, string>
             {
-                { "BlobStorageSettings:ConnectionString", "ConnectionString" },
-                { "BlobStorageSettings:FileUploadContainerName", "containerName" }
+                { "BlobStorageSettings:ConnectionString", "ConnectionString" }
             };
 
             IConfiguration configuration = new ConfigurationBuilder()
                 .AddInMemoryCollection(inmemorySettings!)
                 .Build();
+
             var services = new ServiceCollection();
 
             // Act
             services.AddConfigurationOptions(configuration);
             var serviceProvider = services.BuildServiceProvider();
 
-            // Assert 
+            // Assert
             var options = serviceProvider.GetRequiredService<IOptions<BlobStorageSettings>>();
+
             Assert.Equal("ConnectionString", options.Value.ConnectionString);
-            Assert.Equal("containerName", options.Value.FileUploadContainerName);
 
             var singleton = serviceProvider.GetRequiredService<BlobStorageSettings>();
+
             Assert.Equal("ConnectionString", singleton.ConnectionString);
-            Assert.Equal("containerName", singleton.FileUploadContainerName);
         }
+
+
 
         [Fact]
         public void AddConfigurationOptions_RegistersFindRegulatedQualificationUrl()

@@ -6,19 +6,22 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Logging;
 using Moq;
+using SFA.DAS.Aodp.Domain.Files;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.Application.Application;
+using SFA.DAS.AODP.Application.Commands.Files;
 using SFA.DAS.AODP.Application.Queries.Application.Application;
+using SFA.DAS.AODP.Application.Queries.Files;
+using SFA.DAS.AODP.Application.Queries.Files.Get;
+using SFA.DAS.AODP.Infrastructure.Common.IO;
 using SFA.DAS.AODP.Infrastructure.File;
-using SFA.DAS.AODP.Models.Common;
-using SFA.DAS.AODP.Models.Exceptions;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationMessage;
-using SFA.DAS.AODP.Web.Helpers;
 using SFA.DAS.AODP.Web.Helpers.File;
 using SFA.DAS.AODP.Web.Helpers.User;
+using SFA.DAS.AODP.Web.Models.RelatedLinks;
 using System.Text;
 
 namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
@@ -26,426 +29,540 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
     public class ApplicationMessagesControllerTests
     {
         private readonly Fixture _fixture = new();
-        private readonly FormBuilderSettings _formBuilderSettings = new();
 
-        private readonly Mock<IUserHelperService> _userHelperServiceMock = new();
-        private readonly ApplicationMessagesController _controller;
-        private readonly Mock<ILogger<ApplicationMessagesController>> _loggerMock = new();
         private readonly Mock<IMediator> _mediatorMock = new();
+        private readonly Mock<ILogger<ApplicationMessagesController>> _loggerMock = new();
+        private readonly Mock<IUserHelperService> _userHelperServiceMock = new();
+        private readonly Mock<IMessageFileValidationService> _messageFileValidationServiceMock = new();
+        private readonly Mock<IFileService> _fileServiceMock = new();
 
-        private readonly Mock<IMessageFileValidationService> _messageFileValidationService = new();
-        private readonly Mock<IFileService> _fileService = new();
-
+        private readonly ApplicationMessagesController _controller;
 
         public ApplicationMessagesControllerTests()
         {
-            _controller = new(
+            var formBuilderSettings = new FormBuilderSettings
+            {
+                MaxUploadFileSize = 10,
+                UploadFileTypesAllowed = new() { ".pdf", ".docx", ".xlsx" }
+            };
+
+            var fileUploadValidator = new FileUploadValidator(formBuilderSettings);
+
+            _userHelperServiceMock
+                .Setup(u => u.GetUserType())
+                .Returns(UserType.Ofqual);
+
+            _userHelperServiceMock
+                .Setup(u => u.GetUserEmail())
+                .Returns("review@test.com");
+
+            _userHelperServiceMock
+                .Setup(u => u.GetUserDisplayName())
+                .Returns("Review User");
+
+            _controller = new ApplicationMessagesController(
                 _mediatorMock.Object,
                 _loggerMock.Object,
                 _userHelperServiceMock.Object,
-                _formBuilderSettings,
-                _messageFileValidationService.Object,
-                _fileService.Object);
+                formBuilderSettings,
+                _messageFileValidationServiceMock.Object,
+                _fileServiceMock.Object,
+                fileUploadValidator);
 
-            SetupControllerUrl();
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext()
+            };
+
+            var urlMock = new Mock<IUrlHelper>();
+            urlMock
+                .Setup(u => u.RouteUrl(It.IsAny<UrlRouteContext>()))
+                .Returns("/fake-url");
+            urlMock
+                .Setup(u => u.Action(It.IsAny<UrlActionContext>()))
+                .Returns("/fake-url");
+
+            _controller.Url = urlMock.Object;
 
             _controller.TempData = new TempDataDictionary(
-                new DefaultHttpContext(),
+                _controller.HttpContext,
                 Mock.Of<ITempDataProvider>());
         }
 
-        [Fact]
-        public async Task ApplicationMessages_ValidFiles_Uploaded()
-        {
-            // Arrange
-            var fileName = _fixture.Create<string>();
-            var contentType = _fixture.Create<string>();
-            var stream = new MemoryStream(Encoding.UTF8.GetBytes("test"));
-            var formFile = new Mock<IFormFile>();
-
-            formFile.SetupGet(f => f.FileName).Returns(fileName);
-            formFile.SetupGet(f => f.ContentType).Returns(contentType);
-            formFile.Setup(f => f.OpenReadStream()).Returns(stream);
-
-
-            ApplicationMessagesViewModel model = new()
-            {
-                ApplicationReviewId = Guid.NewGuid(),
-                AdditionalActions = new()
-                {
-                    Send = true
-                },
-                Files = new()
-                {
-                    formFile.Object
-                }
-            };
-            var applicationId = Guid.NewGuid();
-
-            var msgResponse = new BaseMediatrResponse<CreateApplicationMessageCommandResponse>()
-            {
-                Success = true,
-                Value = _fixture.Create<CreateApplicationMessageCommandResponse>()
-            };
-
-            var metaDataResponse = new BaseMediatrResponse<GetApplicationMetadataByIdQueryResponse>()
-            {
-                Success = true,
-                Value = _fixture.Create<GetApplicationMetadataByIdQueryResponse>()
-            };
-
-            var applicationSharingResponse = new BaseMediatrResponse<GetApplicationReviewSharingStatusByIdQueryResponse>()
-            {
-                Success = true,
-                Value = new()
-                {
-                    ApplicationId = applicationId,
-                }
-            };
-
-            _mediatorMock.Setup(m => m.Send(It.IsAny<CreateApplicationMessageCommand>(), default)).ReturnsAsync(msgResponse);
-            _mediatorMock.Setup(m => m.Send(It.IsAny<GetApplicationMetadataByIdQuery>(), default)).ReturnsAsync(metaDataResponse);
-            _mediatorMock.Setup(m => m.Send(It.IsAny<GetApplicationReviewSharingStatusByIdQuery>(), default)).ReturnsAsync(applicationSharingResponse);
-
-            // Act
-            var result = await _controller.ApplicationMessages(model);
-
-            // Assert
-            Assert.IsType<RedirectToActionResult>(result);
-
-            _fileService.Verify(f => f.UploadFileAsync($"messages/{applicationId}/{msgResponse.Value.Id}", It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>()));
-            _fileService.Verify(f => f.UploadFileAsync(It.IsAny<string>(), fileName, It.IsAny<Stream>(), It.IsAny<string>(), It.IsAny<string>()));
-            _fileService.Verify(f => f.UploadFileAsync(It.IsAny<string>(), It.IsAny<string>(), stream, It.IsAny<string>(), It.IsAny<string>()));
-            _fileService.Verify(f => f.UploadFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>(), contentType, It.IsAny<string>()));
-            _fileService.Verify(f => f.UploadFileAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<string>(), metaDataResponse.Value.Reference.ToString().PadLeft(6, '0')));
-
-        }
-
-
-        [Fact]
-        public async Task ApplicationMessages_InvalidFiles_ErrorViewModelReturned()
-        {
-            // Arrange
-            var formFile = new Mock<IFormFile>();
-
-            ApplicationMessagesViewModel model = new()
-            {
-                AdditionalActions = new()
-                {
-                    Send = true
-                },
-                Files = new()
-                {
-                    formFile.Object
-                }
-            };
-
-            var applicationId = Guid.NewGuid();
-
-            var applicationSharingResponse = new BaseMediatrResponse<GetApplicationReviewSharingStatusByIdQueryResponse>()
-            {
-                Success = true,
-                Value = new()
-                {
-                    ApplicationId = applicationId,
-                }
-            };
-            _mediatorMock.Setup(m => m.Send(It.IsAny<GetApplicationReviewSharingStatusByIdQuery>(), default)).ReturnsAsync(applicationSharingResponse);
-
-            _messageFileValidationService
-                .Setup(f => f.ValidateFiles(model.Files))
-                .Throws(new FileUploadPolicyException(FileUploadRejectionReason.InvalidFileName));
-            // Act
-            var result = await _controller.ApplicationMessages(model);
-
-            // Assert
-            var viewResult = Assert.IsType<ViewResult>(result);
-            var resultViewModel = Assert.IsAssignableFrom<ApplicationMessagesViewModel>(viewResult.ViewData.Model);
-            Assert.True(resultViewModel.AdditionalActions.Preview);
-            Assert.False(_controller.ModelState.IsValid);
-            Assert.Contains("Files", _controller.ModelState.Keys);
-        }
-
-        [Theory]
-        [InlineData(UserType.Qfau)]
-        [InlineData(UserType.SkillsEngland)]
-        [InlineData(UserType.Ofqual)]
-        public async Task ApplicationMessageFileDownload_Success_ReturnsFile(UserType userType)
-        {
-            // Arrange
-            var messageId = _fixture.Create<Guid>();
-            var applicationId = _fixture.Create<Guid>();
-            var file = $"messages/{applicationId}/{messageId}/";
-
-            var blob = _fixture.Create<UploadedBlob>();
-            string content = "Test file content";
-
-            _fileService.Setup(f => f.GetBlobDetails(file)).ReturnsAsync(blob);
-            _fileService.Setup(fs => fs.OpenReadStreamAsync(It.IsAny<string>()))
-                .ReturnsAsync(new MemoryStream(Encoding.UTF8.GetBytes(content)));
-
-            BaseMediatrResponse<GetApplicationMessageByIdQueryResponse> messageByIdResponse = new()
-            {
-                Value = new()
-                {
-                    SharedWithDfe = userType == UserType.Qfau,
-                    SharedWithOfqual = userType == UserType.Ofqual,
-                    SharedWithSkillsEngland = userType == UserType.SkillsEngland,
-                },
-                Success = true,
-            };
-            _mediatorMock.Setup(m => m.Send(It.IsAny<GetApplicationMessageByIdQuery>(), default)).ReturnsAsync(messageByIdResponse);
-
-
-            var applicationSharingResponse = new BaseMediatrResponse<GetApplicationReviewSharingStatusByIdQueryResponse>()
-            {
-                Success = true,
-                Value = new()
-                {
-                    ApplicationId = applicationId,
-                }
-            };
-            _mediatorMock.Setup(m => m.Send(It.IsAny<GetApplicationReviewSharingStatusByIdQuery>(), default)).ReturnsAsync(applicationSharingResponse);
-
-            _userHelperServiceMock.Setup(u => u.GetUserType()).Returns(userType);
-
-
-            // Act
-            var result = await _controller.ApplicationReviewMessageFileDownload(file, applicationId, messageId);
-
-            // Assert
-            var fileResult = Assert.IsType<FileStreamResult>(result);
-            Assert.Equal("application/octet-stream", fileResult.ContentType);
-            Assert.Equal(blob.FileNameWithPrefix, fileResult.FileDownloadName);
-
-            using StreamReader reader = new(fileResult.FileStream);
-            Assert.Equal(content, reader.ReadToEnd());
-        }
-
-        [Theory]
-        [InlineData(UserType.Qfau)]
-        [InlineData(UserType.SkillsEngland)]
-        [InlineData(UserType.Ofqual)]
-        public async Task ApplicationMessageFileDownload_NotShared_ReturnsBadRequest(UserType userType)
-        {
-            // Arrange
-            var messageId = _fixture.Create<Guid>();
-            var applicationId = _fixture.Create<Guid>();
-            var file = $"messages/{applicationId}/{messageId}/";
-
-            BaseMediatrResponse<GetApplicationMessageByIdQueryResponse> messageByIdResponse = new()
-            {
-                Value = new()
-                {
-                    SharedWithDfe = userType != UserType.Qfau,
-                    SharedWithOfqual = userType != UserType.Ofqual,
-                    SharedWithSkillsEngland = userType != UserType.SkillsEngland,
-                },
-                Success = true,
-            };
-            _mediatorMock.Setup(m => m.Send(It.IsAny<GetApplicationMessageByIdQuery>(), default)).ReturnsAsync(messageByIdResponse);
-
-
-            var applicationSharingResponse = new BaseMediatrResponse<GetApplicationReviewSharingStatusByIdQueryResponse>()
-            {
-                Success = true,
-                Value = new()
-                {
-                    ApplicationId = applicationId,
-                }
-            };
-            _mediatorMock.Setup(m => m.Send(It.IsAny<GetApplicationReviewSharingStatusByIdQuery>(), default)).ReturnsAsync(applicationSharingResponse);
-
-            _userHelperServiceMock.Setup(u => u.GetUserType()).Returns(userType);
-
-
-            // Act
-            var result = await _controller.ApplicationReviewMessageFileDownload(file, applicationId, messageId);
-
-            // Assert
-            Assert.IsType<BadRequestResult>(result);
-        }
-
-
-        [Fact]
-        public async Task ApplicationMessageFileDownload_InvalidFilePath_ReturnsBadRequest()
-        {
-            // Arrange
-            var messageId = _fixture.Create<Guid>();
-            var applicationId = _fixture.Create<Guid>();
-            var file = $"messages/{Guid.NewGuid()}/";
-
-            var applicationSharingResponse = new BaseMediatrResponse<GetApplicationReviewSharingStatusByIdQueryResponse>()
-            {
-                Success = true,
-                Value = new()
-                {
-                    ApplicationId = applicationId,
-                }
-            };
-            _mediatorMock.Setup(m => m.Send(It.IsAny<GetApplicationReviewSharingStatusByIdQuery>(), default)).ReturnsAsync(applicationSharingResponse);
-
-
-            // Act
-            var result = await _controller.ApplicationReviewMessageFileDownload(file, applicationId, messageId);
-
-            // Assert
-            Assert.IsType<BadRequestResult>(result);
-        }
-
-        [Fact]
-        public async Task ApplicationMessages_EmailSentTrue_SetsMessageSentBanner()
-        {
-            // Arrange
-            var applicationReviewId = Guid.NewGuid();
-            var applicationId = Guid.NewGuid();
-
-            var msgResponse = new BaseMediatrResponse<CreateApplicationMessageCommandResponse>
-            {
-                Success = true,
-                Value = new CreateApplicationMessageCommandResponse
-                {
-                    Id = Guid.NewGuid(),
-                    EmailSent = true
-                }
-            };
-
-            var applicationSharingResponse = new BaseMediatrResponse<GetApplicationReviewSharingStatusByIdQueryResponse>
-            {
-                Success = true,
-                Value = new GetApplicationReviewSharingStatusByIdQueryResponse
-                {
-                    ApplicationId = applicationId
-                }
-            };
-
-            _mediatorMock
-                .Setup(m => m.Send(It.IsAny<GetApplicationReviewSharingStatusByIdQuery>(), default))
-                .ReturnsAsync(applicationSharingResponse);
-
-            _mediatorMock
-                .Setup(m => m.Send(It.IsAny<CreateApplicationMessageCommand>(), default))
-                .ReturnsAsync(msgResponse);
-
-            var model = new ApplicationMessagesViewModel
-            {
-                ApplicationReviewId = applicationReviewId,
-                AdditionalActions = new() { Send = true }
-            };
-
-            // Act
-            var result = await _controller.ApplicationMessages(model);
-
-            // Assert
-            Assert.IsType<RedirectToActionResult>(result);
-            Assert.True(_controller.TempData.ContainsKey(ApplicationMessagesController.NotificationKeys.MessageSentBanner.ToString()));
-        }
-
-        [Fact]
-        public async Task ApplicationMessages_EmailSentFalse_DoesNotSetMessageSentBanner()
-        {
-            // Arrange
-            var applicationReviewId = Guid.NewGuid();
-            var applicationId = Guid.NewGuid();
-
-            var msgResponse = new BaseMediatrResponse<CreateApplicationMessageCommandResponse>
-            {
-                Success = true,
-                Value = new CreateApplicationMessageCommandResponse
-                {
-                    Id = Guid.NewGuid(),
-                    EmailSent = false
-                }
-            };
-
-            var applicationSharingResponse = new BaseMediatrResponse<GetApplicationReviewSharingStatusByIdQueryResponse>
-            {
-                Success = true,
-                Value = new GetApplicationReviewSharingStatusByIdQueryResponse
-                {
-                    ApplicationId = applicationId
-                }
-            };
-
-            _mediatorMock
-                .Setup(m => m.Send(It.IsAny<GetApplicationReviewSharingStatusByIdQuery>(), default))
-                .ReturnsAsync(applicationSharingResponse);
-
-            _mediatorMock
-                .Setup(m => m.Send(It.IsAny<CreateApplicationMessageCommand>(), default))
-                .ReturnsAsync(msgResponse);
-
-            var model = new ApplicationMessagesViewModel
-            {
-                ApplicationReviewId = applicationReviewId,
-                AdditionalActions = new() { Send = true }
-            };
-
-            // Act
-            var result = await _controller.ApplicationMessages(model);
-
-            // Assert
-            Assert.IsType<RedirectToActionResult>(result);
-            Assert.False(_controller.TempData.ContainsKey(ApplicationMessagesController.NotificationKeys.MessageSentBanner.ToString()));
-        }
+        // -----------------------------
+        // ApplicationMessagesAsync (GET)
+        // -----------------------------
 
         [Fact]
         public async Task ApplicationMessagesAsync_SetsRelatedLinks()
         {
-            // Arrange
             var applicationReviewId = Guid.NewGuid();
             var applicationId = Guid.NewGuid();
 
             _mediatorMock
-                .Setup(m => m.Send(It.IsAny<GetApplicationReviewSharingStatusByIdQuery>(), default))
+                .Setup(m => m.Send(It.IsAny<GetApplicationReviewSharingStatusByIdQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new BaseMediatrResponse<GetApplicationReviewSharingStatusByIdQueryResponse>
                 {
                     Success = true,
                     Value = new GetApplicationReviewSharingStatusByIdQueryResponse
                     {
                         ApplicationId = applicationId,
-                        SharedWithOfqual = true,
-                        SharedWithSkillsEngland = true
+                        SharedWithOfqual = true
                     }
                 });
 
             _mediatorMock
-                .Setup(m => m.Send(It.IsAny<GetApplicationMessagesByApplicationIdQuery>(), default))
+                .Setup(m => m.Send(It.IsAny<GetApplicationMessagesByApplicationIdQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new BaseMediatrResponse<GetApplicationMessagesByApplicationIdQueryResponse>
                 {
                     Success = true,
                     Value = new GetApplicationMessagesByApplicationIdQueryResponse()
                 });
 
-            _fileService
-                .Setup(s => s.ListBlobs(It.IsAny<string>()))
-                .Returns(new List<UploadedBlob>());
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetFileMetadataQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetFileMetadataQueryResponse>
+                {
+                    Success = true,
+                    Value = new GetFileMetadataQueryResponse()
+                });
 
-            // Act
             var result = await _controller.ApplicationMessagesAsync(applicationReviewId);
 
-            // Assert
             var view = Assert.IsType<ViewResult>(result);
-            var model = Assert.IsType<SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationMessage.ApplicationMessagesViewModel>(view.Model);
+            var model = Assert.IsType<ApplicationMessagesViewModel>(view.Model);
 
             Assert.NotNull(model.RelatedLinks);
             Assert.NotEmpty(model.RelatedLinks);
         }
 
-        private void SetupControllerUrl()
+        [Fact]
+        public async Task ApplicationMessagesAsync_MapsTimelineMessages()
         {
-            _controller.ControllerContext = new ControllerContext
-            {
-                HttpContext = new DefaultHttpContext()
-            };
+            var applicationReviewId = Guid.NewGuid();
+            var applicationId = Guid.NewGuid();
+            var messageId = Guid.NewGuid();
 
-            var url = new Mock<IUrlHelper>();
+            // Access validation
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationReviewSharingStatusByIdQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationReviewSharingStatusByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = new GetApplicationReviewSharingStatusByIdQueryResponse
+                    {
+                        ApplicationId = applicationId,
+                        SharedWithOfqual = true
+                    }
+                });
 
-            url.Setup(u => u.RouteUrl(It.IsAny<UrlRouteContext>()))
-               .Returns("/fake-url");
+            // Return ONE message
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationMessagesByApplicationIdQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationMessagesByApplicationIdQueryResponse>
+                {
+                    Success = true,
+                    Value = new GetApplicationMessagesByApplicationIdQueryResponse
+                    {
+                        Messages = new()
+                        {
+                    new()
+                    {
+                        MessageId = messageId,
+                        MessageText = "Hello",
+                        MessageHeader = "Header",
+                        SentAt = DateTime.UtcNow,
+                        SentByName = "Reviewer",
+                        SentByEmail = "review@test.com",
+                        MessageType = "Info"
+                    }
+                        }
+                    }
+                });
 
-            _controller.Url = url.Object;
+            // Return ONE file linked to the message
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetFileMetadataQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetFileMetadataQueryResponse>
+                {
+                    Success = true,
+                    Value = new GetFileMetadataQueryResponse
+                    {
+                        Files = new()
+                        {
+                    new FileMetadataDto
+                    {
+                        FileId = Guid.NewGuid(),
+                        FileName = "test.pdf",
+                        MessageId = messageId,
+                        IsDownloadable = true
+                    }
+                        }
+                    }
+                });
+
+            var result = await _controller.ApplicationMessagesAsync(applicationReviewId);
+
+            var view = Assert.IsType<ViewResult>(result);
+            var model = Assert.IsType<ApplicationMessagesViewModel>(view.Model);
+
+            Assert.Single(model.TimelineMessages);
+            Assert.Single(model.TimelineMessages[0].Files);
+            Assert.Equal("Hello", model.TimelineMessages[0].Text);
         }
 
+        [Fact]
+        public async Task ApplicationMessagesAsync_EditMessage_SetsPreviewFalse()
+        {
+            var applicationReviewId = Guid.NewGuid();
+            var applicationId = Guid.NewGuid();
+
+            // Access validation
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationReviewSharingStatusByIdQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationReviewSharingStatusByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = new GetApplicationReviewSharingStatusByIdQueryResponse
+                    {
+                        ApplicationId = applicationId,
+                        SharedWithOfqual = true
+                    }
+                });
+
+            // No messages needed
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationMessagesByApplicationIdQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationMessagesByApplicationIdQueryResponse>
+                {
+                    Success = true,
+                    Value = new GetApplicationMessagesByApplicationIdQueryResponse()
+                });
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetFileMetadataQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetFileMetadataQueryResponse>
+                {
+                    Success = true,
+                    Value = new GetFileMetadataQueryResponse()
+                });
+
+            _controller.TempData["EditMessage"] = "Edited text";
+            _controller.TempData["EditMessageType"] = "Warning";
+
+            var result = await _controller.ApplicationMessagesAsync(applicationReviewId);
+
+            var view = Assert.IsType<ViewResult>(result);
+            var model = Assert.IsType<ApplicationMessagesViewModel>(view.Model);
+
+            Assert.Equal("Edited text", model.MessageText);
+            Assert.Equal("Warning", model.SelectedMessageType);
+            Assert.False(model.AdditionalActions.Preview);
+        }
+
+        [Fact]
+        public async Task ApplicationMessagesAsync_PreviewMessage_SetsPreviewTrue()
+        {
+            var applicationReviewId = Guid.NewGuid();
+            var applicationId = Guid.NewGuid();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationReviewSharingStatusByIdQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationReviewSharingStatusByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = new GetApplicationReviewSharingStatusByIdQueryResponse
+                    {
+                        ApplicationId = applicationId,
+                        SharedWithOfqual = true
+                    }
+                });
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationMessagesByApplicationIdQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationMessagesByApplicationIdQueryResponse>
+                {
+                    Success = true,
+                    Value = new GetApplicationMessagesByApplicationIdQueryResponse()
+                });
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetFileMetadataQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetFileMetadataQueryResponse>
+                {
+                    Success = true,
+                    Value = new GetFileMetadataQueryResponse()
+                });
+
+            _controller.TempData["PreviewMessage"] = "Preview text";
+            _controller.TempData["PreviewMessageType"] = "Info";
+
+            var result = await _controller.ApplicationMessagesAsync(applicationReviewId);
+
+            var view = Assert.IsType<ViewResult>(result);
+            var model = Assert.IsType<ApplicationMessagesViewModel>(view.Model);
+
+            Assert.Equal("Preview text", model.MessageText);
+            Assert.Equal("Info", model.SelectedMessageType);
+            Assert.True(model.AdditionalActions.Preview);
+        }
+
+
+        // -----------------------------
+        // ApplicationMessages (POST)
+        // -----------------------------
+
+        [Fact]
+        public async Task ApplicationMessages_EmailSentTrue_SetsBanner()
+        {
+            var applicationReviewId = Guid.NewGuid();
+            var applicationId = Guid.NewGuid();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationReviewSharingStatusByIdQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationReviewSharingStatusByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = new GetApplicationReviewSharingStatusByIdQueryResponse
+                    {
+                        ApplicationId = applicationId,
+                        SharedWithOfqual = true
+                    }
+                });
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<CreateApplicationMessageCommand>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<CreateApplicationMessageCommandResponse>
+                {
+                    Success = true,
+                    Value = new CreateApplicationMessageCommandResponse
+                    {
+                        Id = Guid.NewGuid(),
+                        EmailSent = true
+                    }
+                });
+
+            var model = new ApplicationMessagesViewModel
+            {
+                ApplicationReviewId = applicationReviewId,
+                MessageText = "Test message",
+                AdditionalActions = new() { Send = true }
+            };
+
+            var result = await _controller.ApplicationMessages(model);
+
+            Assert.IsType<RedirectToActionResult>(result);
+            Assert.True(_controller.TempData.ContainsKey(
+                ApplicationMessagesController.NotificationKeys.MessageSentBanner.ToString()));
+        }
+
+        [Fact]
+        public async Task ApplicationMessages_SendWithFiles_InvokesHandleFileUploadsAsync()
+        {
+            var applicationReviewId = Guid.NewGuid();
+            var applicationId = Guid.NewGuid();
+            var messageId = Guid.NewGuid();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationReviewSharingStatusByIdQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationReviewSharingStatusByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = new GetApplicationReviewSharingStatusByIdQueryResponse
+                    {
+                        ApplicationId = applicationId,
+                        SharedWithOfqual = true
+                    }
+                });
+
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<CreateApplicationMessageCommand>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<CreateApplicationMessageCommandResponse>
+                {
+                    Success = true,
+                    Value = new CreateApplicationMessageCommandResponse
+                    {
+                        Id = messageId,
+                        EmailSent = false
+                    }
+                });
+
+
+            _fileServiceMock
+                .Setup(f => f.UploadAsync(
+                    FileCategory.MessageAttachment,
+                    It.IsAny<FileContext>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<Stream>()))
+                .ReturnsAsync(new FileStorageLocation("container", "blob/path"));
+
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<CreateFileMetadataCommand>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<EmptyResponse> { Success = true });
+
+
+            var fileBytes = Encoding.UTF8.GetBytes("test");
+            var stream = new MemoryStream(fileBytes);
+
+            var formFile = new Mock<IFormFile>();
+            formFile.Setup(f => f.FileName).Returns("test.pdf");
+            formFile.Setup(f => f.ContentType).Returns("application/pdf");
+            formFile.Setup(f => f.OpenReadStream()).Returns(stream);
+
+            var model = new ApplicationMessagesViewModel
+            {
+                ApplicationReviewId = applicationReviewId,
+                MessageText = "Hello",
+                SelectedMessageType = "Info",
+                AdditionalActions = new() { Send = true },
+                Files = new() { formFile.Object }
+            };
+
+            // Act
+            var result = await _controller.ApplicationMessages(model);
+
+            // Assert
+            Assert.IsType<RedirectToActionResult>(result);
+
+            _fileServiceMock.Verify(f =>
+                f.UploadAsync(
+                    FileCategory.MessageAttachment,
+                    It.IsAny<FileContext>(),
+                    "test.pdf",
+                    "application/pdf",
+                    It.IsAny<Stream>()),
+                Times.Once);
+
+            _mediatorMock.Verify(m =>
+                m.Send(It.IsAny<CreateFileMetadataCommand>(), It.IsAny<CancellationToken>()),
+                Times.Once);
+        }
+
+
+        // -----------------------------
+        // File download tests
+        // -----------------------------
+
+        [Fact]
+        public async Task ApplicationReviewMessageFileDownload_EmptyFileId_ReturnsBadRequest()
+        {
+            var result = await _controller.ApplicationReviewMessageFileDownload(
+                Guid.NewGuid(),
+                Guid.NewGuid(),
+                Guid.Empty);
+
+            Assert.IsType<BadRequestResult>(result);
+        }
+
+        [Fact]
+        public async Task ApplicationReviewMessageFileDownload_NotShared_ReturnsForbid()
+        {
+            var applicationReviewId = Guid.NewGuid();
+            var applicationId = Guid.NewGuid();
+            var messageId = Guid.NewGuid();
+            var fileId = Guid.NewGuid();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationReviewSharingStatusByIdQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationReviewSharingStatusByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = new GetApplicationReviewSharingStatusByIdQueryResponse
+                    {
+                        ApplicationId = applicationId,
+                        SharedWithOfqual = true
+                    }
+                });
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationMessageByIdQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationMessageByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = new GetApplicationMessageByIdQueryResponse
+                    {
+                        SharedWithOfqual = false
+                    }
+                });
+
+            var result = await _controller.ApplicationReviewMessageFileDownload(
+                applicationReviewId,
+                messageId,
+                fileId);
+
+            Assert.IsType<ForbidResult>(result);
+        }
+
+        [Fact]
+        public async Task ApplicationReviewMessageFileDownload_ValidFile_ReturnsFile()
+        {
+            var applicationReviewId = Guid.NewGuid();
+            var applicationId = Guid.NewGuid();
+            var messageId = Guid.NewGuid();
+            var fileId = Guid.NewGuid();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationReviewSharingStatusByIdQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationReviewSharingStatusByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = new GetApplicationReviewSharingStatusByIdQueryResponse
+                    {
+                        ApplicationId = applicationId,
+                        SharedWithOfqual = true
+                    }
+                });
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationMessageByIdQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationMessageByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = new GetApplicationMessageByIdQueryResponse
+                    {
+                        SharedWithOfqual = true
+                    }
+                });
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetFileMetadataQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetFileMetadataQueryResponse>
+                {
+                    Success = true,
+                    Value = new GetFileMetadataQueryResponse
+                    {
+                        Files = new()
+                        {
+                            new FileMetadataDto
+                            {
+                                FileId = fileId,
+                                ApplicationId = applicationId,
+                                MessageId = messageId,
+                                FileName = "test.pdf",
+                                BlobContainer = "files",
+                                BlobPath = "path/blob",
+                                ContentType = "application/pdf",
+                                IsDownloadable = true
+                            }
+                        }
+                    }
+                });
+
+            _fileServiceMock
+                .Setup(f => f.OpenReadStreamAsync("files", "path/blob"))
+                .ReturnsAsync(new MemoryStream(Encoding.UTF8.GetBytes("content")));
+
+            var result = await _controller.ApplicationReviewMessageFileDownload(
+                applicationReviewId,
+                messageId,
+                fileId);
+
+            var fileResult = Assert.IsType<FileStreamResult>(result);
+            Assert.Equal("application/pdf", fileResult.ContentType);
+            Assert.Equal("test.pdf", fileResult.FileDownloadName);
+        }
     }
 }

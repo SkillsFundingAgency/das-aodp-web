@@ -1,5 +1,7 @@
-﻿using SFA.DAS.AODP.Application.Queries.Application.Form;
+﻿using SFA.DAS.Aodp.Domain.Files;
+using SFA.DAS.AODP.Application.Queries.Application.Form;
 using SFA.DAS.AODP.Application.Queries.Application.Review;
+using SFA.DAS.AODP.Application.Queries.Files;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview;
 using SFA.DAS.AODP.Web.Constants;
@@ -10,7 +12,7 @@ namespace SFA.DAS.AODP.Web.Helpers.Export
 {
     public interface IApplicationExportService
     {
-        Task<byte[]> GenerateExportZipAsync(GetApplicationExportDataQueryResponse exportData, List<UploadedBlob> files);
+        Task<byte[]> GenerateExportZipAsync(GetApplicationExportDataQueryResponse exportData, List<FileMetadataDto> files);
     }
 
     public class ApplicationExportService : IApplicationExportService
@@ -26,7 +28,7 @@ namespace SFA.DAS.AODP.Web.Helpers.Export
 
         public async Task<byte[]> GenerateExportZipAsync(
             GetApplicationExportDataQueryResponse exportData,
-            List<UploadedBlob> files)
+            List<FileMetadataDto> files)
         {
             var metadata = exportData.ApplicationMetadata;
             var form = exportData.ApplicationFormStructure;
@@ -47,35 +49,39 @@ namespace SFA.DAS.AODP.Web.Helpers.Export
 
                 foreach (var file in files)
                 {
-                    bool isMessageFile = file.FullPath.StartsWith($"{ApplicationExportConstants.MessageFolderName}/", StringComparison.OrdinalIgnoreCase);
+                    if (!file.IsDownloadable)
+                    {
+                        continue;
+                    }
+
+                    bool isMessageFile = file.FileCategory == FileCategory.MessageAttachment;
 
                     string filePath;
 
                     if (!isMessageFile)
                     {
-                        var questionId = ExtractQuestionIdFromBlobPath(file.FullPath);
 
-                        if (questionId != null && questionMap.TryGetValue(questionId.Value, out var questionReference))
+                        if (file.QuestionId.HasValue  && questionMap.TryGetValue(file.QuestionId.Value, out var questionReference))
                         {
                             filePath =
                                 $"{questionReference}/" +
-                                $"{file.FileNameWithPrefix.SanitiseFileName()}";
+                                $"{file.FileName.SanitiseFileName()}";
                         }
                         else
                         {
-                            filePath = $"{file.FileNameWithPrefix.SanitiseFileName()}";
+                            filePath = $"{file.FileName.SanitiseFileName()}";
                         }
                     }
                     else
                     {
                         filePath =
                             $"{ApplicationExportConstants.MessageFolderName}/" +
-                            $"{file.FileNameWithPrefix.SanitiseFileName()}";
+                            $"{file.FileName.SanitiseFileName()}";
                     }
 
                     await using var fileStream =
-                        await _fileService.OpenReadStreamAsync(file.FullPath)
-                        ?? throw new IOException($"Could not open stream for {file.FullPath}");
+                        await _fileService.OpenReadStreamAsync(file.BlobContainer, file.BlobPath)
+                        ?? throw new IOException($"Could not open stream for {file.BlobContainer}/{file.BlobPath}");
 
                     var entry = archive.CreateEntry(filePath);
 
@@ -90,7 +96,7 @@ namespace SFA.DAS.AODP.Web.Helpers.Export
 
         private async Task<string> GenerateSummaryHtml(
             GetApplicationExportDataQueryResponse exportData,
-            List<UploadedBlob> files,
+            List<FileMetadataDto> files,
             Dictionary<Guid, string> questionMap)
         {
             var readOnlyVm = ApplicationReadOnlyDetailsViewModel.Map(
@@ -106,33 +112,6 @@ namespace SFA.DAS.AODP.Web.Helpers.Export
             };
 
             return await _htmlExportRenderer.RenderAsync(ApplicationExportConstants.SummaryViewName, exportSummaryModel);
-        }
-
-        private Guid? ExtractQuestionIdFromBlobPath(string fullPath)
-        {
-            if (string.IsNullOrWhiteSpace(fullPath))
-                return null;
-
-            if (fullPath.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-            {
-                var uri = new Uri(fullPath);
-                fullPath = uri.AbsolutePath.TrimStart('/');
-            }
-
-            var parts = fullPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
-
-            // expected:
-            // 0 = container ("files")
-            // 1 = applicationId
-            // 2 = questionId
-            // 3 = fileId
-
-            if (parts.Length < 2)
-                return null;
-
-            return Guid.TryParse(parts[1], out var questionId)
-                ? questionId
-                : null;
         }
 
         private Dictionary<Guid, string> BuildQuestionMap(GetFormPreviewByIdQueryResponse form)

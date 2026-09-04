@@ -2,9 +2,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using SFA.DAS.Aodp.Domain.Files;
 using SFA.DAS.AODP.Application.Commands.Application.Review;
 using SFA.DAS.AODP.Application.Commands.Review;
 using SFA.DAS.AODP.Application.Queries.Application.Form;
+using SFA.DAS.AODP.Application.Queries.Files.Get;
 using SFA.DAS.AODP.Application.Queries.Application.Review;
 using SFA.DAS.AODP.Application.Queries.Review;
 using SFA.DAS.AODP.Infrastructure.File;
@@ -40,7 +42,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         }
         private readonly IUserHelperService _userHelperService;
         private readonly UserType UserType;
-        private readonly IFileService _fileService;
+        private readonly IFileService _blobService;
         private readonly IOptions<AodpConfiguration> _aodpConfiguration;
         private const string DefaultQANValidationMessage = "Invalid Qualification Number.";
         private const string ApplicationDetailsUpdatedMessage = "Application details updated";
@@ -52,7 +54,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         {
             _userHelperService = userHelperService;
             UserType = userHelperService.GetUserType();
-            _fileService = fileService;
+            _blobService = fileService;
             _aodpConfiguration = aodpConfiguration;
             _exportService = exportService;
         }
@@ -829,20 +831,39 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             return View(viewModel);
         }
 
-        [Authorize(Policy = PolicyConstants.IsReviewUser)]
+        //[Authorize(Policy = PolicyConstants.IsReviewUser)]
         [HttpPost]
         [Route("review/application-reviews/{applicationReviewId}/details")]
-        public async Task<IActionResult> ApplicationFileDownload(ApplicationFileDownloadViewModel model)
+        public async Task<IActionResult> ApplicationFileDownload( ApplicationFileDownloadViewModel model)
         {
-            var applicationId = await GetApplicationIdWithAccessValidation(model.ApplicationReviewId);
-            if (!model.FilePath.StartsWith(applicationId.ToString()))
-            {
-                return BadRequest();
-            }
+            var applicationId =
+                await GetApplicationIdWithAccessValidation(model.ApplicationReviewId);
 
-            var file = await _fileService.GetBlobDetails(model.FilePath.ToString());
-            var fileStream = await _fileService.OpenReadStreamAsync(model.FilePath);
-            return File(fileStream, "application/octet-stream", file.FileNameWithPrefix);
+            var fileResponse = await Send(new GetFileMetadataQuery
+            {
+                FileId = model.FileId
+            });
+
+            var file = fileResponse?.Files?.SingleOrDefault();
+
+            if (file == null)
+                return NotFound();
+
+            if (file.ApplicationId != applicationId)
+                return Forbid();
+
+            if (!file.IsDownloadable)
+                return Forbid();
+
+            var stream = await _blobService.OpenReadStreamAsync(
+                file.BlobContainer,
+                file.BlobPath);
+
+            var contentType = string.IsNullOrWhiteSpace(file.ContentType)
+                ? "application/octet-stream"
+                : file.ContentType;
+
+            return File(stream, contentType, file.FileName);
         }
         [Authorize(Policy = PolicyConstants.IsReviewUser)]
         [HttpPost]
@@ -850,12 +871,19 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         public async Task<IActionResult> DownloadAllApplicationFiles(Guid applicationReviewId)
         {
             var applicationId = await GetApplicationIdWithAccessValidation(applicationReviewId);
-            var files = _fileService.ListBlobs(applicationId.ToString());
 
-            if (files == null || !files.Any())
+            var fileMetadataResponse = await Send(new GetFileMetadataQuery
             {
-                throw new InvalidOperationException($"No files found for applicationId {applicationId}");
+                FileCategories = [FileCategory.QuestionUpload],
+                ApplicationId = applicationId
+            });
+
+            if (fileMetadataResponse.Files.Count() == 0)
+            {
+                throw new InvalidOperationException(
+                    $"No files found for applicationId {applicationId}");
             }
+            var files = fileMetadataResponse.Files;
 
             using (var memoryStream = new MemoryStream())
             {
@@ -863,30 +891,38 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 {
                     foreach (var file in files)
                     {
-                        var fileStream = await _fileService.OpenReadStreamAsync(file.FullPath);
-
-                        if (fileStream != null)
+                        if (!file.IsDownloadable)
                         {
-                            var entry = archive.CreateEntry(file.FileNameWithPrefix);
-
-                            using (var entryStream = entry.Open())
-                            {
-                                await fileStream.CopyToAsync(entryStream);
-                            }
+                            continue;
                         }
-                        else
+
+                        var fileStream = await _blobService.OpenReadStreamAsync(
+                                file.BlobContainer,
+                                file.BlobPath);
+
+
+                        if (fileStream == null)
                         {
-                            throw new IOException($"Could not open stream for {file.FullPath}");
+                            throw new IOException(
+                                $"Could not open stream for fileId {file.FileId}");
+                        }
+
+                        var entry = archive.CreateEntry(file.FileName);
+
+                        using (var entryStream = entry.Open())
+                        {
+                            await fileStream.CopyToAsync(entryStream);
                         }
                     }
                 }
 
                 memoryStream.Seek(0, SeekOrigin.Begin);
 
-                var applicationMetadata = await Send(new GetApplicationMetadataByIdQuery(applicationId));
+                var applicationMetadata =
+                    await Send(new GetApplicationMetadataByIdQuery(applicationId));
 
-                string formattedDateTime = DateTime.Now.ToString("ddMMyyyy-HHmmss");
-                string zipFileName = $"{applicationMetadata.Reference}-{formattedDateTime}-allfiles.zip";
+                string zipFileName =
+                    $"{applicationMetadata.Reference}-{DateTime.Now:ddMMyyyy-HHmmss}-allfiles.zip";
 
                 return File(memoryStream.ToArray(), "application/zip", zipFileName);
             }
@@ -901,14 +937,18 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
             var exportData = await Send(new GetApplicationExportDataQuery(applicationReviewId));
 
-            var questionFiles = _fileService.ListBlobs(applicationId.ToString());
-            var messageFiles = _fileService.ListBlobs($"{ApplicationExportConstants.MessageFolderName}/{applicationId}");
+            var fileResponse = await Send(new GetFileMetadataQuery
+            {
+                FileCategories = [FileCategory.QuestionUpload, FileCategory.MessageAttachment],
+                ApplicationId = applicationId
+            });
 
-            var files = questionFiles.Concat(messageFiles).ToList();
+            var files = fileResponse.Files.Where(f => f.IsDownloadable).ToList();
 
             var zipBytes = await _exportService.GenerateExportZipAsync(exportData, files);
 
             return File(zipBytes, "application/zip", ApplicationExportPathBuilder.GetZipFileName(exportData.ApplicationMetadata));
+
         }
 
         private async Task<Guid> GetApplicationIdWithAccessValidation(Guid applicationReviewId)
@@ -1171,10 +1211,14 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
             var form = await Send(new GetFormPreviewByIdQuery(applicationId));
             var applicationFormDetails = await Send(new GetApplicationFormByReviewIdQuery(applicationReviewId));
-            
-            var files = _fileService.ListBlobs(applicationId.ToString());
 
-            var vm = ApplicationReadOnlyDetailsViewModel.Map(form, applicationFormDetails, files);
+            var applicationFiles = await Send(new GetFileMetadataQuery
+            {
+                FileCategories = [FileCategory.QuestionUpload],
+                ApplicationId = applicationId
+            });
+
+            var vm = ApplicationReadOnlyDetailsViewModel.Map(form, applicationFormDetails, applicationFiles.Files);
             vm.ApplicationReviewId = applicationReviewId;
 
             return vm;
