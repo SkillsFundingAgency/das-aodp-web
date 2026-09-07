@@ -5,7 +5,7 @@ using SFA.DAS.Aodp.Domain.Files;
 using SFA.DAS.AODP.Application.Queries.Application.Form;
 using SFA.DAS.AODP.Application.Queries.Application.Review;
 using SFA.DAS.AODP.Application.Queries.Files;
-using SFA.DAS.AODP.Infrastructure.File;
+using SFA.DAS.AODP.Application.Services.Files;
 using SFA.DAS.AODP.Web.Helpers.Export;
 
 namespace SFA.DAS.AODP.Web.UnitTests.Helpers.Export
@@ -60,7 +60,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Helpers.Export
 			};
 
 			_fileServiceMock!
-				.Setup(x => x.OpenReadStreamAsync(It.IsAny<string>(), It.IsAny<string>()))
+				.Setup(x => x.DownloadAsync(It.IsAny<FileMetadataDto>()))
 				.ReturnsAsync(new MemoryStream(new byte[] { 1, 2, 3 }));
 
 			_htmlRendererMock!
@@ -71,7 +71,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Helpers.Export
 
 			Assert.True(result.Length > 0);
 
-			_fileServiceMock.Verify(x => x.OpenReadStreamAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+			_fileServiceMock.Verify(x => x.DownloadAsync(It.IsAny<FileMetadataDto>()), Times.Once);
 			_htmlRendererMock.Verify(x => x.RenderAsync("ExportSummary", It.IsAny<object>()), Times.Once);
 		}
 
@@ -129,8 +129,8 @@ namespace SFA.DAS.AODP.Web.UnitTests.Helpers.Export
 			};
 
 			_fileServiceMock!
-				.Setup(x => x.OpenReadStreamAsync(It.IsAny<string>(), It.IsAny<string>()))
-				.ReturnsAsync((Stream)null);
+				.Setup(x => x.DownloadAsync(It.IsAny<FileMetadataDto>()))
+				.ReturnsAsync((Stream?)null);
 
 			//Assert.ThrowsAsync<IOException>(() =>
 			//	_service.GenerateExportZipAsync(exportData, files));
@@ -165,7 +165,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Helpers.Export
 			};
 
             _fileServiceMock!
-                .Setup(x => x.OpenReadStreamAsync("files", "messages/msg.txt"))
+                .Setup(x => x.DownloadAsync(It.Is<FileMetadataDto>(f => f.BlobContainer == "files" && f.BlobPath == "messages/msg.txt")))
                 .ReturnsAsync(new MemoryStream(new byte[] { 1 }));
 
             _htmlRendererMock!
@@ -233,7 +233,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Helpers.Export
 			};
 
             _fileServiceMock!
-                .Setup(x => x.OpenReadStreamAsync("files", "path/blob"))
+                .Setup(x => x.DownloadAsync(It.Is<FileMetadataDto>(f => f.BlobContainer == "files" && f.BlobPath == "path/blob")))
                 .ReturnsAsync(new MemoryStream(new byte[] { 1 }));
 
             _htmlRendererMock!
@@ -276,6 +276,12 @@ namespace SFA.DAS.AODP.Web.UnitTests.Helpers.Export
 				}
 			};
 
+            // "Not downloadable" is now decided inside IFileService.DownloadAsync, not by this
+            // service — so it still gets called once per file, it just comes back null.
+            _fileServiceMock!
+                .Setup(x => x.DownloadAsync(It.IsAny<FileMetadataDto>()))
+                .ReturnsAsync((Stream?)null);
+
             _htmlRendererMock!
                 .Setup(x => x.RenderAsync(It.IsAny<string>(), It.IsAny<object>()))
                 .ReturnsAsync("<html></html>");
@@ -284,7 +290,8 @@ namespace SFA.DAS.AODP.Web.UnitTests.Helpers.Export
 
             Assert.True(result.Length > 0);
 
-            _fileServiceMock!.Verify(x => x.OpenReadStreamAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            using var zip = new System.IO.Compression.ZipArchive(new MemoryStream(result));
+            Assert.Single(zip.Entries); // summary only — the file itself was skipped
         }
 
         [Fact]
@@ -320,7 +327,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Helpers.Export
 			};
 
             _fileServiceMock!
-                .Setup(x => x.OpenReadStreamAsync("files", "path/blob"))
+                .Setup(x => x.DownloadAsync(It.Is<FileMetadataDto>(f => f.BlobContainer == "files" && f.BlobPath == "path/blob")))
                 .ReturnsAsync(new MemoryStream(new byte[] { 1 }));
 
             _htmlRendererMock!

@@ -6,16 +6,16 @@ using SFA.DAS.Aodp.Domain.Files;
 
 namespace SFA.DAS.AODP.Infrastructure.UnitTests.File
 {
-    public class BlobStorageFileServiceTests
+    public class BlobStorageServiceTests
     {
         private readonly Mock<BlobServiceClient> _blobServiceClient;
         private readonly Mock<IFileStorageLocationPolicy> _locationPolicy;
         private readonly Mock<BlobContainerClient> _containerClient;
         private readonly Mock<BlobClient> _blobClient;
 
-        private readonly BlobStorageFileService _sut;
+        private readonly BlobStorageService _sut;
 
-        public BlobStorageFileServiceTests()
+        public BlobStorageServiceTests()
         {
             _blobServiceClient = new Mock<BlobServiceClient>();
             _locationPolicy = new Mock<IFileStorageLocationPolicy>();
@@ -30,7 +30,7 @@ namespace SFA.DAS.AODP.Infrastructure.UnitTests.File
                 .Setup(c => c.GetBlobClient(It.IsAny<string>()))
                 .Returns(_blobClient.Object);
 
-            _sut = new BlobStorageFileService(
+            _sut = new BlobStorageService(
                 _blobServiceClient.Object,
                 _locationPolicy.Object);
         }

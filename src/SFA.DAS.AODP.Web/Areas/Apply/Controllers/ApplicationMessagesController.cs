@@ -5,6 +5,7 @@ using SFA.DAS.Aodp.Domain.Files;
 using SFA.DAS.AODP.Application.Commands.Application.Application;
 using SFA.DAS.AODP.Application.Commands.Files;
 using SFA.DAS.AODP.Application.Queries.Application.Application;
+using SFA.DAS.AODP.Application.Services.Files;
 using SFA.DAS.AODP.Application.Queries.Files.Get;
 using SFA.DAS.AODP.Infrastructure.Common.IO;
 using SFA.DAS.AODP.Infrastructure.File;
@@ -35,16 +36,16 @@ public class ApplicationMessagesController : ControllerBase
     private readonly UserType UserType = UserType.AwardingOrganisation;
     private readonly IMessageFileValidationService _messageFileValidationService;
     private readonly FormBuilderSettings _formBuilderSettings;
-    private readonly IFileService _blobFileService;
+    private readonly IFileService _fileService;
     private readonly FileUploadValidator _fileUploadValidator;
 
 
-    public ApplicationMessagesController(IMediator mediator, ILogger<ApplicationMessagesController> logger, IUserHelperService userHelperService, IMessageFileValidationService messageFileValidationService, FormBuilderSettings formBuilderSettings, IFileService blobService, FileUploadValidator fileUploadValidator) : base(mediator, logger)
+    public ApplicationMessagesController(IMediator mediator, ILogger<ApplicationMessagesController> logger, IUserHelperService userHelperService, IMessageFileValidationService messageFileValidationService, FormBuilderSettings formBuilderSettings, IFileService fileService, FileUploadValidator fileUploadValidator) : base(mediator, logger)
     {
         _userHelperService = userHelperService;
         _messageFileValidationService = messageFileValidationService;
         _formBuilderSettings = formBuilderSettings;
-        _blobFileService = blobService;
+        _fileService = fileService;
         _fileUploadValidator = fileUploadValidator;
     }
 
@@ -277,12 +278,10 @@ public class ApplicationMessagesController : ControllerBase
         if (file.ApplicationId != applicationId || file.MessageId != messageId)
             return Forbid();
 
-        if (!file.IsDownloadable)
-            return Forbid();
+        var stream = await _fileService.DownloadAsync(file);
 
-        var stream = await _blobFileService.OpenReadStreamAsync(
-            file.BlobContainer,
-            file.BlobPath);
+        if (stream is null)
+            return Forbid();
 
         var contentType = string.IsNullOrWhiteSpace(file.ContentType)
                 ? "application/octet-stream"
@@ -306,25 +305,13 @@ public class ApplicationMessagesController : ControllerBase
                     stream,
                     importFileSize: null);
 
-            var location = await _blobFileService.UploadAsync(
+            await _fileService.UploadAsync(
                 FileCategory.MessageAttachment,
                 new (applicationId,null,messageId),
                 file.FileName,
                 file.ContentType,
-                stream
-                );
-
-            await _mediator.Send(new CreateFileMetadataCommand
-            {
-                FileCategory = FileCategory.MessageAttachment,
-                FileName = file.Name,
-                ContentType = file.ContentType,
-                BlobPath = location.BlobPath,
-                BlobContainer = location.Container,
-                ApplicationId = applicationId,
-                MessageId = messageId,
-                UploadedBy = _userHelperService.GetUserDisplayName() ?? string.Empty,
-            });
+                stream,
+                _userHelperService.GetUserDisplayName() ?? string.Empty);
         }
     } 
 }

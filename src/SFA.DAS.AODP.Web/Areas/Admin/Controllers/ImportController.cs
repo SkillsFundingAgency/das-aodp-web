@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.Aodp.Domain.Files;
 using SFA.DAS.AODP.Application.Commands.Files;
 using SFA.DAS.AODP.Application.Commands.Import;
+using SFA.DAS.AODP.Application.Services.Files;
 using SFA.DAS.AODP.Application.Queries.Import;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Common;
@@ -360,22 +361,13 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
                 ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 : file.ContentType;
 
-            var storageLocation = await _fileService.UploadAsync(
+            await _fileService.UploadAsync(
                 category,
                 null,
                 fileName,
                 resolvedContentType,
-                stream);
-
-            await _mediator.Send(new CreateFileMetadataCommand
-            {
-                FileName = fileName,  
-                ContentType = resolvedContentType,
-                BlobPath = storageLocation.BlobPath,
-                BlobContainer = storageLocation.Container,
-                FileCategory = category,
-                UploadedBy = _userHelperService.GetUserDisplayName() ?? string.Empty,
-            });
+                stream,
+                _userHelperService.GetUserDisplayName() ?? string.Empty);
         }
     }
 }

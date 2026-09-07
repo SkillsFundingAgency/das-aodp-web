@@ -23,7 +23,7 @@ namespace SFA.DAS.AODP.Infrastructure.Extensions
             }
 
             services.AddSingleton(new BlobServiceClient(primaryConnection));
-            services.AddScoped<IFileService, BlobStorageFileService>();
+            services.AddScoped<IBlobStorageService, BlobStorageService>();
 
             return services;
         }

@@ -11,6 +11,7 @@ using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.Files;
 using SFA.DAS.AODP.Application.Commands.Import;
 using SFA.DAS.AODP.Application.Queries.Import;
+using SFA.DAS.AODP.Application.Services.Files;
 using SFA.DAS.AODP.Infrastructure.Common.IO;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Settings;
@@ -395,18 +396,11 @@ public class ImportControllerTests
                     null,
                     ImportStoragePaths.PldnsFileName,
                     It.IsAny<string>(),
-                    It.IsAny<Stream>()))
-            .ReturnsAsync(storageLocation);
-
-        _mediatorMock
-            .Setup(m => m.Send(
-                It.IsAny<CreateFileMetadataCommand>(),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<EmptyResponse>
-            {
-                Success = true,
-                Value = new EmptyResponse()
-            });
+                    It.IsAny<Stream>(),
+                    It.IsAny<string>(),
+                    It.IsAny<Guid?>(),
+                    It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FileUploadResult(Guid.NewGuid(), storageLocation));
 
         // Act
         var result = await _controller.Pldns(model);
@@ -421,7 +415,10 @@ public class ImportControllerTests
                 null,
                 ImportStoragePaths.PldnsFileName,
                 It.IsAny<string>(),
-                It.IsAny<Stream>()),
+                It.IsAny<Stream>(),
+                It.IsAny<string>(),
+                It.IsAny<Guid?>(),
+                It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -468,18 +465,11 @@ public class ImportControllerTests
                 null,
                 ImportStoragePaths.DefundingListFileName,
                 It.IsAny<string>(),
-                It.IsAny<Stream>()))
-            .ReturnsAsync(storageLocation);
-
-        _mediatorMock
-            .Setup(m => m.Send(
-                It.IsAny<CreateFileMetadataCommand>(),
+                It.IsAny<Stream>(),
+                It.IsAny<string>(),
+                It.IsAny<Guid?>(),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<EmptyResponse>
-            {
-                Success = true,
-                Value = new EmptyResponse()
-            });
+            .ReturnsAsync(new FileUploadResult(Guid.NewGuid(), storageLocation));
 
         // Act
         var result = await _controller.DefundingList(model);
@@ -494,7 +484,10 @@ public class ImportControllerTests
                 null,
                 ImportStoragePaths.DefundingListFileName,
                 It.IsAny<string>(),
-                It.IsAny<Stream>()),
+                It.IsAny<Stream>(),
+                It.IsAny<string>(),
+                It.IsAny<Guid?>(),
+                It.IsAny<CancellationToken>()),
             Times.Once);
     }
 

@@ -14,6 +14,7 @@ using SFA.DAS.AODP.Application.Commands.Files;
 using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Files;
 using SFA.DAS.AODP.Application.Queries.Files.Get;
+using SFA.DAS.AODP.Application.Services.Files;
 using SFA.DAS.AODP.Infrastructure.Common.IO;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Common;
@@ -123,8 +124,11 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Apply.Controllers
                         c.MessageId == messageId),
                     fileName,
                     contentType,
-                    It.IsAny<Stream>()))
-                .ReturnsAsync(new FileStorageLocation("files", "messages/blob-path"));
+                    It.IsAny<Stream>(),
+                    It.IsAny<string>(),
+                    It.IsAny<Guid?>(),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new FileUploadResult(Guid.NewGuid(), new FileStorageLocation("files", "messages/blob-path")));
 
             _mediatorMock
                 .Setup(m => m.Send(
@@ -141,14 +145,6 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Apply.Controllers
                         }
                     }));
 
-            _mediatorMock
-                .Setup(m => m.Send(It.IsAny<CreateFileMetadataCommand>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new BaseMediatrResponse<EmptyResponse>
-                {
-                    Success = true,
-                    Value = new EmptyResponse()
-                });
-
             _controller.TempData = new Mock<ITempDataDictionary>().Object;
 
             // Act
@@ -164,7 +160,10 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Apply.Controllers
                     It.IsAny<FileContext>(),
                     fileName,
                     contentType,
-                    It.IsAny<Stream>()),
+                    It.IsAny<Stream>(),
+                    It.IsAny<string>(),
+                    It.IsAny<Guid?>(),
+                    It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -257,7 +256,7 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Apply.Controllers
 
             var content = "Test file content";
             _fileService
-                .Setup(f => f.OpenReadStreamAsync("files", "messages/test.docx"))
+                .Setup(f => f.DownloadAsync(fileMetadata))
                 .ReturnsAsync(new MemoryStream(Encoding.UTF8.GetBytes(content)));
 
             // Act
@@ -471,7 +470,7 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Apply.Controllers
                 });
 
             _fileService
-                .Setup(f => f.OpenReadStreamAsync("files", "messages/test.docx"))
+                .Setup(f => f.DownloadAsync(It.IsAny<FileMetadataDto>()))
                 .ReturnsAsync(new MemoryStream(Encoding.UTF8.GetBytes("content")));
 
             var result = await _controller.ApplicationMessageFileDownload(applicationId, messageId, fileId);

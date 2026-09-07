@@ -2,7 +2,7 @@
 using SFA.DAS.AODP.Application.Queries.Application.Form;
 using SFA.DAS.AODP.Application.Queries.Application.Review;
 using SFA.DAS.AODP.Application.Queries.Files;
-using SFA.DAS.AODP.Infrastructure.File;
+using SFA.DAS.AODP.Application.Services.Files;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview;
 using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Extensions;
@@ -49,7 +49,9 @@ namespace SFA.DAS.AODP.Web.Helpers.Export
 
                 foreach (var file in files)
                 {
-                    if (!file.IsDownloadable)
+                    await using var fileStream = await _fileService.DownloadAsync(file);
+
+                    if (fileStream is null)
                     {
                         continue;
                     }
@@ -78,10 +80,6 @@ namespace SFA.DAS.AODP.Web.Helpers.Export
                             $"{ApplicationExportConstants.MessageFolderName}/" +
                             $"{file.FileName.SanitiseFileName()}";
                     }
-
-                    await using var fileStream =
-                        await _fileService.OpenReadStreamAsync(file.BlobContainer, file.BlobPath)
-                        ?? throw new IOException($"Could not open stream for {file.BlobContainer}/{file.BlobPath}");
 
                     var entry = archive.CreateEntry(filePath);
 

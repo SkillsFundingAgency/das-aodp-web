@@ -7,6 +7,7 @@ using SFA.DAS.AODP.Application.Commands.Files;
 using SFA.DAS.AODP.Application.Queries.Files;
 using SFA.DAS.AODP.Application.Queries.Files.Get;
 using SFA.DAS.AODP.Application.Queries.Review.Rollover;
+using SFA.DAS.AODP.Application.Services.Files;
 using SFA.DAS.AODP.Domain.Rollover;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover;
@@ -213,21 +214,16 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
                     null,
                     It.IsAny<string>(),
                     It.IsAny<string>(),
-                    It.IsAny<Stream>()))
-                .ReturnsAsync(new FileStorageLocation("importfilescontainer", "Rollover/test.csv"));
-
-            MediatorMock
-                .Setup(m => m.Send(It.IsAny<CreateFileMetadataCommand>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new BaseMediatrResponse<EmptyResponse> { Success = true });
+                    It.IsAny<Stream>(),
+                    It.IsAny<string>(),
+                    It.IsAny<Guid?>(),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new FileUploadResult(Guid.NewGuid(), new FileStorageLocation("importfilescontainer", "Rollover/test.csv")));
 
             // Never becomes downloadable, however many times it's checked.
-            MediatorMock
-                .Setup(m => m.Send(It.IsAny<GetFileMetadataQuery>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new BaseMediatrResponse<GetFileMetadataQueryResponse>
-                {
-                    Success = true,
-                    Value = new GetFileMetadataQueryResponse { Files = new List<FileMetadataDto>() }
-                });
+            FileServiceMock
+                .Setup(f => f.GetCleanFileStreamAsync(It.IsAny<FileUploadResult>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Stream?)null);
 
             var model = new RolloverUploadQualificationCandidatesViewModel
             {
@@ -277,17 +273,16 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
                 null,
                 It.IsAny<string>(),
                 It.IsAny<string>(),
-                It.IsAny<Stream>()),
-                Times.Once);
-
-            MediatorMock.Verify(m => m.Send(
-                It.Is<CreateFileMetadataCommand>(c => c.FileCategory == SFA.DAS.Aodp.Domain.Files.FileCategory.RolloverCandidateImport
-                    && c.BlobContainer == "importfilescontainer"
-                    && c.BlobPath == "Rollover/test.csv"),
+                It.IsAny<Stream>(),
+                It.IsAny<string>(),
+                It.IsAny<Guid?>(),
                 It.IsAny<CancellationToken>()),
                 Times.Once);
 
-            FileServiceMock.Verify(f => f.OpenReadStreamAsync("importfilescontainer", "Rollover/test.csv"), Times.Once);
+            // The controller doesn't construct a location itself — it can only pass through
+            // whatever FileUploadResult UploadAsync gave it, so this proves it reads from
+            // wherever the upload actually landed rather than a location it computed itself.
+            FileServiceMock.Verify(f => f.GetCleanFileStreamAsync(It.IsAny<FileUploadResult>(), It.IsAny<CancellationToken>()), Times.Once);
         }
     }
 }

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using SFA.DAS.AODP.Application.Commands.Files;
 using SFA.DAS.AODP.Application.Commands.Rollover;
+using SFA.DAS.AODP.Application.Services.Files;
 using SFA.DAS.AODP.Application.Queries.Files.Get;
 using SFA.DAS.AODP.Application.Queries.Import;
 using SFA.DAS.AODP.Application.Queries.Review.Rollover;
@@ -39,14 +40,6 @@ public class RolloverController : ControllerBase
     private readonly IUserHelperService _userHelperService;
     private readonly ICacheService _cacheService;
     private readonly IFileService _fileService;
-    private readonly IDelayService _delayService;
-    private static readonly TimeSpan[] ScanCheckDelays =
-    [
-        TimeSpan.FromMilliseconds(500),
-        TimeSpan.FromSeconds(1),
-        TimeSpan.FromSeconds(2),
-        TimeSpan.FromSeconds(4)
-    ];
 
     public RolloverController(ILogger<RolloverController> logger,
         IMediator mediator,
@@ -55,8 +48,7 @@ public class RolloverController : ControllerBase
         ICsvFileReader csvFileReader,
         IUserHelperService userHelperService,
         ICacheService cacheService,
-        IFileService fileService,
-        IDelayService delayService) : base(mediator, logger)
+        IFileService fileService) : base(mediator, logger)
     {
         _logger = logger;
         _rolloverEligibilityDatesViewModeValidator = validatorEligibilityDates;
@@ -65,7 +57,6 @@ public class RolloverController : ControllerBase
         _cacheService = cacheService;
         _userHelperService = userHelperService;
         _fileService = fileService;
-        _delayService = delayService;
     }
 
     [HttpGet]
@@ -145,27 +136,17 @@ public class RolloverController : ControllerBase
 
         try
         {
-            var location = await _fileService.UploadAsync(
+            var uploadResult = await _fileService.UploadAsync(
                 FileCategory.RolloverCandidateSubmitted,
                 null,
                 model.File.FileName,
                 model.File.ContentType,
-                model.File.OpenReadStream());
+                model.File.OpenReadStream(),
+                _userHelperService.GetUserDisplayName() ?? string.Empty);
 
-            var fileId = Guid.NewGuid();
+            var fileStream = await _fileService.GetCleanFileStreamAsync(uploadResult);
 
-            await Send(new CreateFileMetadataCommand
-            {
-                Id = fileId,
-                FileCategory = FileCategory.RolloverCandidateSubmitted,
-                FileName = model.File.FileName,
-                ContentType = model.File.ContentType,
-                BlobContainer = location.Container,
-                BlobPath = location.BlobPath,
-                UploadedBy = _userHelperService.GetUserDisplayName() ?? string.Empty,
-            });
-
-            if (!await WaitForScanToCompleteAsync(fileId))
+            if (fileStream is null)
             {
                 ModelState.AddModelError(
                     nameof(model.File),
@@ -173,8 +154,6 @@ public class RolloverController : ControllerBase
 
                 return View(model);
             }
-
-            var fileStream = await _fileService.OpenReadStreamAsync(location.Container, location.BlobPath);
 
             var file = await _csvFileReader.FileReadAsync(
                 fileStream,
@@ -600,27 +579,17 @@ public class RolloverController : ControllerBase
 
         try
         {
-            var location = await _fileService.UploadAsync(
+            var uploadResult = await _fileService.UploadAsync(
                 FileCategory.RolloverCandidateImport,
                 null,
                 model.File.FileName,
                 model.File.ContentType,
-                model.File.OpenReadStream());
+                model.File.OpenReadStream(),
+                _userHelperService.GetUserDisplayName() ?? string.Empty);
 
-            var fileId = Guid.NewGuid();
+            var fileStream = await _fileService.GetCleanFileStreamAsync(uploadResult);
 
-            await Send(new CreateFileMetadataCommand
-            {
-                Id = fileId,
-                FileCategory = FileCategory.RolloverCandidateImport,
-                FileName = model.File.FileName,
-                ContentType = model.File.ContentType,
-                BlobContainer = location.Container,
-                BlobPath = location.BlobPath,
-                UploadedBy = _userHelperService.GetUserDisplayName() ?? string.Empty,
-            });
-
-            if (!await WaitForScanToCompleteAsync(fileId))
+            if (fileStream is null)
             {
                 ModelState.AddModelError(
                     nameof(model.File),
@@ -628,8 +597,6 @@ public class RolloverController : ControllerBase
 
                 return View(model);
             }
-
-            var fileStream = await _fileService.OpenReadStreamAsync(location.Container, location.BlobPath);
 
             file = await _csvFileReader.FileReadAsync(
                 fileStream,
@@ -1324,33 +1291,6 @@ public class RolloverController : ControllerBase
             RolloverQueryBuilderRequestMapper.ForAwardingOrganisationFilter(session.QueryBuilderFilters)));
 
         return response?.AwardingOrganisations.ToList() ?? [];
-    }
-
-    private async Task<bool> WaitForScanToCompleteAsync(Guid fileId)
-    {
-        if (await IsFileDownloadableAsync(fileId))
-        {
-            return true;
-        }
-
-        foreach (var delay in ScanCheckDelays)
-        {
-            await _delayService.DelayAsync(delay);
-
-            if (await IsFileDownloadableAsync(fileId))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private async Task<bool> IsFileDownloadableAsync(Guid fileId)
-    {
-        var response = await Send(new GetFileMetadataQuery { FileId = fileId });
-
-        return response.Files.Any(f => f.FileId == fileId && f.IsDownloadable);
     }
 
     private void ClearSessionModel()

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.Aodp.Domain.Files;
 using SFA.DAS.AODP.Application.Commands.Application.Application;
 using SFA.DAS.AODP.Application.Commands.Files;
+using SFA.DAS.AODP.Application.Services.Files;
 using SFA.DAS.AODP.Application.Queries.Application.Form;
 using SFA.DAS.AODP.Application.Queries.Files.Get;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
@@ -537,7 +538,7 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
                             importFileSize: null);
 
 
-                    var location = await _fileService.UploadAsync(
+                    await _fileService.UploadAsync(
                         FileCategory.QuestionUpload,
                         new FileContext
                         (
@@ -547,19 +548,8 @@ namespace SFA.DAS.AODP.Web.Areas.Apply.Controllers
                         ),
                         file.FileName,
                         file.ContentType,
-                        stream);
-
-                    await _mediator.Send(new CreateFileMetadataCommand
-                    {
-                        FileCategory = FileCategory.QuestionUpload,
-                        FileName = file.FileName,
-                        ContentType = file.ContentType,
-                        BlobContainer = location.Container,
-                        BlobPath = location.BlobPath,
-                        ApplicationId = viewModel.ApplicationId,
-                        QuestionId = question.Id,
-                        UploadedBy = _userHelperService.GetUserDisplayName() ?? string.Empty,
-                    });
+                        stream,
+                        _userHelperService.GetUserDisplayName() ?? string.Empty);
                 }
             }
         }

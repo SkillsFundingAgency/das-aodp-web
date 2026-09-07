@@ -2,6 +2,7 @@
 using SFA.DAS.AODP.Application.Behaviours;
 using SFA.DAS.AODP.Application.Queries.FormBuilder.Forms;
 using SFA.DAS.AODP.Application.Services;
+using SFA.DAS.AODP.Application.Services.Files;
 using SFA.DAS.AODP.Domain.Interfaces;
 using SFA.DAS.AODP.Infrastructure.ApiClient;
 using SFA.DAS.AODP.Infrastructure.Common.IO;
@@ -45,6 +46,8 @@ public static class AddServiceRegistrationsExtension
         services.AddSingleton<FileUploadValidator>();
 
         services.AddSingleton<IFileStorageLocationPolicy, AzureBlobLocationPolicy>();
+
+        services.AddScoped<IFileService, FileService>();
 
         services.AddTransient<IQualificationTimelineHistoryBuilder, QualificationTimelineHistoryBuilder>();
 

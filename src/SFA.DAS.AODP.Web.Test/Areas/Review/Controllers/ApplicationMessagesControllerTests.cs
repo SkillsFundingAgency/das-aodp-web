@@ -13,6 +13,7 @@ using SFA.DAS.AODP.Application.Commands.Files;
 using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Files;
 using SFA.DAS.AODP.Application.Queries.Files.Get;
+using SFA.DAS.AODP.Application.Services.Files;
 using SFA.DAS.AODP.Infrastructure.Common.IO;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Settings;
@@ -395,13 +396,11 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
                     It.IsAny<FileContext>(),
                     It.IsAny<string>(),
                     It.IsAny<string>(),
-                    It.IsAny<Stream>()))
-                .ReturnsAsync(new FileStorageLocation("container", "blob/path"));
-
-
-            _mediatorMock
-                .Setup(m => m.Send(It.IsAny<CreateFileMetadataCommand>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(new BaseMediatrResponse<EmptyResponse> { Success = true });
+                    It.IsAny<Stream>(),
+                    It.IsAny<string>(),
+                    It.IsAny<Guid?>(),
+                    It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new FileUploadResult(Guid.NewGuid(), new FileStorageLocation("container", "blob/path")));
 
 
             var fileBytes = Encoding.UTF8.GetBytes("test");
@@ -433,11 +432,10 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
                     It.IsAny<FileContext>(),
                     "test.pdf",
                     "application/pdf",
-                    It.IsAny<Stream>()),
-                Times.Once);
-
-            _mediatorMock.Verify(m =>
-                m.Send(It.IsAny<CreateFileMetadataCommand>(), It.IsAny<CancellationToken>()),
+                    It.IsAny<Stream>(),
+                    It.IsAny<string>(),
+                    It.IsAny<Guid?>(),
+                    It.IsAny<CancellationToken>()),
                 Times.Once);
         }
 
@@ -552,7 +550,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
                 });
 
             _fileServiceMock
-                .Setup(f => f.OpenReadStreamAsync("files", "path/blob"))
+                .Setup(f => f.DownloadAsync(It.IsAny<FileMetadataDto>()))
                 .ReturnsAsync(new MemoryStream(Encoding.UTF8.GetBytes("content")));
 
             var result = await _controller.ApplicationReviewMessageFileDownload(

@@ -1,4 +1,4 @@
-﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Polly;
 using SFA.DAS.Aodp.Domain.Files;
@@ -8,12 +8,12 @@ namespace SFA.DAS.AODP.Infrastructure.File
     /*
      * Low‑level wrapper over Azure Blob Storage that upload and reads raw bytes by container and path.
      * */
-    public class BlobStorageFileService : IFileService
+    public class BlobStorageService : IBlobStorageService
     {
         private readonly BlobServiceClient _blobServiceClient;
         private readonly IFileStorageLocationPolicy _fileStorageLocationPolicy;
 
-        public BlobStorageFileService(
+        public BlobStorageService(
             BlobServiceClient blobServiceClient,
             IFileStorageLocationPolicy fileStorageLocationPolicy)
         {
@@ -30,6 +30,24 @@ namespace SFA.DAS.AODP.Infrastructure.File
         {
             var location = _fileStorageLocationPolicy.Resolve(category, context);
 
+            await UploadToLocationAsync(location, fileName, contentType, stream);
+
+            return location;
+        }
+
+        public Task UploadAsync(
+            FileStorageLocation location,
+            string fileName,
+            string? contentType,
+            Stream stream)
+            => UploadToLocationAsync(location, fileName, contentType, stream);
+
+        private async Task UploadToLocationAsync(
+            FileStorageLocation location,
+            string fileName,
+            string? contentType,
+            Stream stream)
+        {
             var containerClient =
                 _blobServiceClient.GetBlobContainerClient(location.Container);
 
@@ -52,8 +70,6 @@ namespace SFA.DAS.AODP.Infrastructure.File
             };
 
             await blobClient.UploadAsync(stream, options);
-
-            return location;
         }
 
 

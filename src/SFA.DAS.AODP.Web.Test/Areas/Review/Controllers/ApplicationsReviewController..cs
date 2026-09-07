@@ -16,6 +16,7 @@ using SFA.DAS.AODP.Application.Queries.Files;
 using SFA.DAS.AODP.Application.Queries.Files.Get;
 using SFA.DAS.AODP.Application.Queries.Review;
 using SFA.DAS.AODP.Application.Queries.Users;
+using SFA.DAS.AODP.Application.Services.Files;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Models.Settings;
@@ -148,7 +149,7 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
                 });
 
             _fileServiceMock
-                .Setup(f => f.OpenReadStreamAsync("files", "path/blob"))
+                .Setup(f => f.DownloadAsync(It.Is<FileMetadataDto>(fm => fm.FileId == fileId)))
                 .ReturnsAsync(new MemoryStream(Encoding.UTF8.GetBytes("content")));
 
             var result = await _controller.ApplicationFileDownload(
@@ -207,7 +208,7 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
                 });
 
             _fileServiceMock
-                .Setup(f => f.OpenReadStreamAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .Setup(f => f.DownloadAsync(It.IsAny<FileMetadataDto>()))
                 .ReturnsAsync(new MemoryStream(Encoding.UTF8.GetBytes("test")));
 
             _mediatorMock

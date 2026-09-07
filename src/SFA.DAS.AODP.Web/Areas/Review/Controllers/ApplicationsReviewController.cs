@@ -9,6 +9,7 @@ using SFA.DAS.AODP.Application.Queries.Application.Form;
 using SFA.DAS.AODP.Application.Queries.Files.Get;
 using SFA.DAS.AODP.Application.Queries.Application.Review;
 using SFA.DAS.AODP.Application.Queries.Review;
+using SFA.DAS.AODP.Application.Services.Files;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Models.Users;
@@ -42,7 +43,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         }
         private readonly IUserHelperService _userHelperService;
         private readonly UserType UserType;
-        private readonly IFileService _blobService;
+        private readonly IFileService _fileService;
         private readonly IOptions<AodpConfiguration> _aodpConfiguration;
         private const string DefaultQANValidationMessage = "Invalid Qualification Number.";
         private const string ApplicationDetailsUpdatedMessage = "Application details updated";
@@ -54,7 +55,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         {
             _userHelperService = userHelperService;
             UserType = userHelperService.GetUserType();
-            _blobService = fileService;
+            _fileService = fileService;
             _aodpConfiguration = aodpConfiguration;
             _exportService = exportService;
         }
@@ -852,12 +853,10 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             if (file.ApplicationId != applicationId)
                 return Forbid();
 
-            if (!file.IsDownloadable)
-                return Forbid();
+            var stream = await _fileService.DownloadAsync(file);
 
-            var stream = await _blobService.OpenReadStreamAsync(
-                file.BlobContainer,
-                file.BlobPath);
+            if (stream is null)
+                return Forbid();
 
             var contentType = string.IsNullOrWhiteSpace(file.ContentType)
                 ? "application/octet-stream"
@@ -891,20 +890,11 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 {
                     foreach (var file in files)
                     {
-                        if (!file.IsDownloadable)
-                        {
-                            continue;
-                        }
-
-                        var fileStream = await _blobService.OpenReadStreamAsync(
-                                file.BlobContainer,
-                                file.BlobPath);
-
+                        var fileStream = await _fileService.DownloadAsync(file);
 
                         if (fileStream == null)
                         {
-                            throw new IOException(
-                                $"Could not open stream for fileId {file.FileId}");
+                            continue;
                         }
 
                         var entry = archive.CreateEntry(file.FileName);
@@ -943,9 +933,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 ApplicationId = applicationId
             });
 
-            var files = fileResponse.Files.Where(f => f.IsDownloadable).ToList();
-
-            var zipBytes = await _exportService.GenerateExportZipAsync(exportData, files);
+            var zipBytes = await _exportService.GenerateExportZipAsync(exportData, fileResponse.Files.ToList());
 
             return File(zipBytes, "application/zip", ApplicationExportPathBuilder.GetZipFileName(exportData.ApplicationMetadata));
 
