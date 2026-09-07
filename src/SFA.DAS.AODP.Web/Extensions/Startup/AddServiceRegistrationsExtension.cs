@@ -35,6 +35,7 @@ public static class AddServiceRegistrationsExtension
         services.AddFileService(configuration);
 
         services.AddScoped<IUserHelperService, UserHelperService>();
+        services.AddScoped<IDelayService, DelayService>();
 
         services.AddSingleton<IMessageFileValidationService, MessageFileValidationService>();
         services.AddScoped<IHtmlExportRenderer, HtmlExportRenderer>();

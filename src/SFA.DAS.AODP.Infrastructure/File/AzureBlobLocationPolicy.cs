@@ -9,6 +9,8 @@ namespace SFA.DAS.AODP.Infrastructure.File
         public const string ApplicationFilesContainer = "files";
         public const string ImportsContainer = "importfilescontainer";
         public const string FundedQualificationsContainer = "funded-qualifications-import";
+        public const string RolloverCandidateImportContainer = "rollover-import";
+        public const string RolloverCandidateSubmittedContainer = "rollover-submitted";
 
         public const string PldnsPrefix = "Pldns";
         public const string DefundingListPrefix = "DefundingList";
@@ -60,6 +62,22 @@ namespace SFA.DAS.AODP.Infrastructure.File
                     new FileStorageLocation(
                         ImportsContainer,
                         $"{DefundingListPrefix}/{DefundingListPrefix}.xlsx"
+                    ),
+
+                // Rollover candidate list imports
+                // rollover-import/{fileId}.csv
+                FileCategory.RolloverCandidateImport =>
+                    new FileStorageLocation(
+                        RolloverCandidateImportContainer,
+                        $"{Guid.NewGuid()}.csv"
+                    ),
+
+                // Rollover final-list (submitted for rollover)
+                // rollover-submitted/{fileId}.csv
+                FileCategory.RolloverCandidateSubmitted =>
+                    new FileStorageLocation(
+                        RolloverCandidateSubmittedContainer,
+                        $"{Guid.NewGuid()}.csv"
                     ),
 
                 _ =>

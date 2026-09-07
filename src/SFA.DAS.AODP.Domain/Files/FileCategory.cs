@@ -9,6 +9,8 @@
         DefundingList,
         ApprovedFunding,
         ArchivedFunding,
-        FundingOutput
+        FundingOutput,
+        RolloverCandidateImport,
+        RolloverCandidateSubmitted
     }
 }
