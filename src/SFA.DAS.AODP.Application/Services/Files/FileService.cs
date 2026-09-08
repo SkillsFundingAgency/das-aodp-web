@@ -12,8 +12,8 @@ namespace SFA.DAS.AODP.Application.Services.Files
         [
             TimeSpan.FromMilliseconds(500),
             TimeSpan.FromSeconds(1),
-            TimeSpan.FromSeconds(2),
-            TimeSpan.FromSeconds(4)
+            TimeSpan.FromSeconds(1.5),
+            TimeSpan.FromSeconds(2)
         ];
 
         private readonly IFileStorageLocationPolicy _fileStorageLocationPolicy;
