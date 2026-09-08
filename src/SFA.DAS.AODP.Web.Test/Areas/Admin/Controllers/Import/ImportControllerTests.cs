@@ -566,6 +566,10 @@ public class ImportControllerTests
                     It.IsAny<CancellationToken>()))
             .ReturnsAsync(new FileUploadResult(Guid.NewGuid(), storageLocation));
 
+        _fileService
+            .Setup(f => f.WaitForCleanFileAsync(FileCategory.Pldns, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
         // Act
         var result = await _controller.Pldns(model);
 
@@ -584,6 +588,54 @@ public class ImportControllerTests
                 It.IsAny<Guid?>(),
                 It.IsAny<CancellationToken>()),
             Times.Once);
+    }
+
+    [Fact]
+    public async Task Pldns_Post_WhenScanNotConfirmedClean_BlocksAndReturnsUploadView()
+    {
+        // Arrange
+        var userName = "TestUser";
+        _userHelpService.Setup(s => s.GetUserDisplayName()).Returns(userName);
+
+        var mockFile = new Mock<IFormFile>();
+        mockFile.Setup(f => f.FileName).Returns("Pldns.xlsx");
+        mockFile.Setup(f => f.ContentType)
+            .Returns("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+        var stream = new MemoryStream(new byte[] { 1, 2, 3 });
+        mockFile.Setup(f => f.OpenReadStream()).Returns(stream);
+
+        var model = _fixture.Build<UploadImportFileViewModel>()
+            .With(m => m.File, mockFile.Object)
+            .Create();
+
+        var storageLocation = new FileStorageLocation(
+            "importfilescontainer",
+            "pldns/file-id");
+
+        _fileService.Setup(f =>
+                f.UploadAsync(
+                    FileCategory.Pldns,
+                    null,
+                    ImportStoragePaths.PldnsFileName,
+                    It.IsAny<string>(),
+                    It.IsAny<Stream>(),
+                    It.IsAny<string>(),
+                    It.IsAny<Guid?>(),
+                    It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FileUploadResult(Guid.NewGuid(), storageLocation));
+
+        _fileService
+            .Setup(f => f.WaitForCleanFileAsync(FileCategory.Pldns, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        // Act
+        var result = await _controller.Pldns(model);
+
+        // Assert
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.Equal("UploadImportFile", view.ViewName);
+        Assert.False(_controller.ModelState.IsValid);
     }
 
 
@@ -635,6 +687,10 @@ public class ImportControllerTests
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(new FileUploadResult(Guid.NewGuid(), storageLocation));
 
+        _fileService
+            .Setup(f => f.WaitForCleanFileAsync(FileCategory.DefundingList, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
         // Act
         var result = await _controller.DefundingList(model);
 
@@ -653,6 +709,54 @@ public class ImportControllerTests
                 It.IsAny<Guid?>(),
                 It.IsAny<CancellationToken>()),
             Times.Once);
+    }
+
+    [Fact]
+    public async Task DefundingList_Post_WhenScanNotConfirmedClean_BlocksAndReturnsUploadView()
+    {
+        // Arrange
+        var userName = "TestUser";
+        _userHelpService.Setup(s => s.GetUserDisplayName()).Returns(userName);
+
+        var mockFile = new Mock<IFormFile>();
+        mockFile.Setup(f => f.FileName).Returns("DefundingList.xlsx");
+        mockFile.Setup(f => f.ContentType)
+            .Returns("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+        var stream = new MemoryStream(new byte[] { 4, 5, 6 });
+        mockFile.Setup(f => f.OpenReadStream()).Returns(stream);
+
+        var model = _fixture.Build<UploadImportFileViewModel>()
+            .With(m => m.File, mockFile.Object)
+            .Create();
+
+        var storageLocation = new FileStorageLocation(
+            "importfilescontainer",
+            "defunding/file-id");
+
+        _fileService
+            .Setup(f => f.UploadAsync(
+                FileCategory.DefundingList,
+                null,
+                ImportStoragePaths.DefundingListFileName,
+                It.IsAny<string>(),
+                It.IsAny<Stream>(),
+                It.IsAny<string>(),
+                It.IsAny<Guid?>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new FileUploadResult(Guid.NewGuid(), storageLocation));
+
+        _fileService
+            .Setup(f => f.WaitForCleanFileAsync(FileCategory.DefundingList, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        // Act
+        var result = await _controller.DefundingList(model);
+
+        // Assert
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.Equal("UploadImportFile", view.ViewName);
+        Assert.False(_controller.ModelState.IsValid);
     }
 
     [Fact]

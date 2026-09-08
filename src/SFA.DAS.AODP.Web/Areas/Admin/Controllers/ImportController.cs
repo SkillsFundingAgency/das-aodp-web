@@ -304,6 +304,15 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
                 return View(UploadImportListViewPath, model);
             }
 
+            if (!await _fileService.WaitForCleanFileAsync(FileCategory.Pldns))
+            {
+                ModelState.AddModelError(
+                    string.Empty,
+                    string.Format(FileUploadErrorMessages.ImportScanNotConfirmed, FileCategoryDisplayNames[FileCategory.Pldns]));
+
+                return View(UploadImportListViewPath, model);
+            }
+
             var viewModel = new ImportRequestViewModel() { ImportType = JobNames.Pldns.ToString() };
             return RedirectToAction(ConfirmImportSelectionAction, viewModel);
         }
@@ -344,6 +353,15 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
             {
                 LogException(ex);
                 ModelState.AddModelError(string.Empty, ex.Message);
+                return View(UploadImportListViewPath, model);
+            }
+
+            if (!await _fileService.WaitForCleanFileAsync(FileCategory.DefundingList))
+            {
+                ModelState.AddModelError(
+                    string.Empty,
+                    string.Format(FileUploadErrorMessages.ImportScanNotConfirmed, FileCategoryDisplayNames[FileCategory.DefundingList]));
+
                 return View(UploadImportListViewPath, model);
             }
 
