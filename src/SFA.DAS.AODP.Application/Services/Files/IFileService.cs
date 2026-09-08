@@ -50,5 +50,14 @@ namespace SFA.DAS.AODP.Application.Services.Files
         /// per file.
         /// </summary>
         Task<Stream?> DownloadAsync(FileMetadataDto file, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Polls until the most recent upload for this category is confirmed scanned clean, for
+        /// callers that only need a yes/no before proceeding (e.g. gating a job request) rather
+        /// than the file's content. Only meaningful for categories with a single, reused record
+        /// per category (see CreateFileMetadataCommandHandler.SingleRecordCategories) — for
+        /// anything else this could match the wrong upload.
+        /// </summary>
+        Task<bool> WaitForCleanFileAsync(FileCategory category, CancellationToken cancellationToken = default);
     }
 }

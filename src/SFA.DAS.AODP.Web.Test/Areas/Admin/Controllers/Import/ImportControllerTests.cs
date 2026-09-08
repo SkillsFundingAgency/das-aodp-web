@@ -183,6 +183,170 @@ public class ImportControllerTests
     }
 
     [Fact]
+    public async Task ConfirmImportSelection_Pldns_WhenScanNotConfirmedClean_BlocksJobCreation()
+    {
+        // Arrange
+        var viewModel = _fixture.Build<ConfirmImportRequestViewModel>()
+                            .With(w => w.ImportType, "Pldns")
+                            .Create();
+
+        _fileService
+            .Setup(f => f.WaitForCleanFileAsync(FileCategory.Pldns, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        // Act
+        var result = await _controller.ConfirmImportSelection(viewModel);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.Equal(nameof(ImportController.ConfirmImportSelection), viewResult.ViewName);
+        Assert.False(_controller.ModelState.IsValid);
+
+        _mediatorMock.Verify(m => m.Send(It.IsAny<RequestJobRunCommand>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ConfirmImportSelection_Pldns_WhenScanConfirmedClean_CreatesJob()
+    {
+        // Arrange
+        var viewModel = _fixture.Build<ConfirmImportRequestViewModel>()
+                            .With(w => w.ImportType, "Pldns")
+                            .Create();
+
+        var userName = "TestUser";
+        _userHelpService.Setup(s => s.GetUserDisplayName()).Returns(userName);
+
+        _fileService
+            .Setup(f => f.WaitForCleanFileAsync(FileCategory.Pldns, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var queryResponse = _fixture.Create<BaseMediatrResponse<EmptyResponse>>();
+        queryResponse.Success = true;
+        _mediatorMock.Setup(m => m.Send(It.Is<RequestJobRunCommand>(i => i.JobName == JobNames.Pldns.ToString()
+                                                                            && i.UserName == userName), default))
+                     .ReturnsAsync(queryResponse);
+
+        var body = _fixture.Build<GetJobRunsQueryResponse>()
+            .With(w => w.JobRuns, new List<JobRun>())
+            .Create();
+
+        var currentJobRuns = _fixture.Build<BaseMediatrResponse<GetJobRunsQueryResponse>>()
+            .With(w => w.Value, body)
+            .With(w => w.Success, true)
+            .Create();
+
+        _mediatorMock.Setup(m => m.Send(It.Is<GetJobRunsQuery>(i => i.JobName == JobNames.Pldns.ToString()), default))
+                     .ReturnsAsync(currentJobRuns);
+
+        // Act
+        var result = await _controller.ConfirmImportSelection(viewModel);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.Equal("SubmitImportRequest", viewResult.ViewName);
+
+        _mediatorMock.Verify(m => m.Send(It.IsAny<RequestJobRunCommand>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task ConfirmImportSelection_FundedQualifications_WhenApprovedFundingNotConfirmedClean_BlocksJobCreation()
+    {
+        // Arrange
+        var viewModel = _fixture.Build<ConfirmImportRequestViewModel>()
+                            .With(w => w.ImportType, "Funded Qualifications")
+                            .Create();
+
+        _fileService
+            .Setup(f => f.WaitForCleanFileAsync(FileCategory.ApprovedFunding, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        _fileService
+            .Setup(f => f.WaitForCleanFileAsync(FileCategory.ArchivedFunding, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        // Act
+        var result = await _controller.ConfirmImportSelection(viewModel);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.Equal(nameof(ImportController.ConfirmImportSelection), viewResult.ViewName);
+        Assert.False(_controller.ModelState.IsValid);
+
+        _mediatorMock.Verify(m => m.Send(It.IsAny<RequestJobRunCommand>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ConfirmImportSelection_FundedQualifications_WhenArchivedFundingNotConfirmedClean_BlocksJobCreation()
+    {
+        // Arrange
+        var viewModel = _fixture.Build<ConfirmImportRequestViewModel>()
+                            .With(w => w.ImportType, "Funded Qualifications")
+                            .Create();
+
+        _fileService
+            .Setup(f => f.WaitForCleanFileAsync(FileCategory.ApprovedFunding, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        _fileService
+            .Setup(f => f.WaitForCleanFileAsync(FileCategory.ArchivedFunding, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        // Act
+        var result = await _controller.ConfirmImportSelection(viewModel);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.Equal(nameof(ImportController.ConfirmImportSelection), viewResult.ViewName);
+        Assert.False(_controller.ModelState.IsValid);
+
+        _mediatorMock.Verify(m => m.Send(It.IsAny<RequestJobRunCommand>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ConfirmImportSelection_FundedQualifications_WhenBothConfirmedClean_CreatesJob()
+    {
+        // Arrange
+        var viewModel = _fixture.Build<ConfirmImportRequestViewModel>()
+                            .With(w => w.ImportType, "Funded Qualifications")
+                            .Create();
+
+        var userName = "TestUser";
+        _userHelpService.Setup(s => s.GetUserDisplayName()).Returns(userName);
+
+        _fileService
+            .Setup(f => f.WaitForCleanFileAsync(FileCategory.ApprovedFunding, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        _fileService
+            .Setup(f => f.WaitForCleanFileAsync(FileCategory.ArchivedFunding, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var queryResponse = _fixture.Create<BaseMediatrResponse<EmptyResponse>>();
+        queryResponse.Success = true;
+        _mediatorMock.Setup(m => m.Send(It.Is<RequestJobRunCommand>(i => i.JobName == JobNames.FundedQualifications.ToString()
+                                                                            && i.UserName == userName), default))
+                     .ReturnsAsync(queryResponse);
+
+        var body = _fixture.Build<GetJobRunsQueryResponse>()
+            .With(w => w.JobRuns, new List<JobRun>())
+            .Create();
+
+        var currentJobRuns = _fixture.Build<BaseMediatrResponse<GetJobRunsQueryResponse>>()
+            .With(w => w.Value, body)
+            .With(w => w.Success, true)
+            .Create();
+
+        _mediatorMock.Setup(m => m.Send(It.Is<GetJobRunsQuery>(i => i.JobName == JobNames.FundedQualifications.ToString()), default))
+                     .ReturnsAsync(currentJobRuns);
+
+        // Act
+        var result = await _controller.ConfirmImportSelection(viewModel);
+
+        // Assert
+        var viewResult = Assert.IsType<ViewResult>(result);
+        Assert.Equal("SubmitImportRequest", viewResult.ViewName);
+
+        _mediatorMock.Verify(m => m.Send(It.IsAny<RequestJobRunCommand>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
     public void SubmitImportRequest_ReturnsViewResult()
     {
         // Arrange

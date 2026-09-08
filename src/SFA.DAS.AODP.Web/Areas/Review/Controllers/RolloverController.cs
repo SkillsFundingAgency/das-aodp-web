@@ -14,6 +14,7 @@ using SFA.DAS.AODP.Web.Areas.Review.Extensions;
 using SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover;
 using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 using SFA.DAS.AODP.Web.Authentication;
+using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Extensions;
 using SFA.DAS.AODP.Web.Helpers.User;
@@ -150,7 +151,7 @@ public class RolloverController : ControllerBase
             {
                 ModelState.AddModelError(
                     nameof(model.File),
-                    "We could not verify your file is safe within the expected time. Please check the file and try uploading again.");
+                    string.Format(FileUploadErrorMessages.ScanNotConfirmed, "uploaded"));
 
                 return View(model);
             }
@@ -593,7 +594,7 @@ public class RolloverController : ControllerBase
             {
                 ModelState.AddModelError(
                     nameof(model.File),
-                    "We could not verify your file is safe within the expected time. Please check the file and try uploading again.");
+                    string.Format(FileUploadErrorMessages.ScanNotConfirmed, "uploaded"));
 
                 return View(model);
             }

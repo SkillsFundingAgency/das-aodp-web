@@ -1,17 +1,15 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.Aodp.Domain.Files;
-using SFA.DAS.AODP.Application.Commands.Files;
 using SFA.DAS.AODP.Application.Commands.Import;
 using SFA.DAS.AODP.Application.Services.Files;
 using SFA.DAS.AODP.Application.Queries.Import;
-using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Common;
 using SFA.DAS.AODP.Models.Exceptions;
 using SFA.DAS.AODP.Web.Areas.Admin.Models;
 using SFA.DAS.AODP.Web.Areas.Admin.Storage;
 using SFA.DAS.AODP.Web.Authentication;
+using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Import;
@@ -30,6 +28,14 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
         public enum SendKeys { RequestFailed, JobStatusFailed }
         private const string UploadImportListViewPath = "UploadImportFile";
         private const string ConfirmImportSelectionAction = nameof(ConfirmImportSelection);
+
+        private static readonly Dictionary<FileCategory, string> FileCategoryDisplayNames = new()
+        {
+            [FileCategory.Pldns] = "PLDNS",
+            [FileCategory.DefundingList] = "defunding list",
+            [FileCategory.ApprovedFunding] = "approved funding",
+            [FileCategory.ArchivedFunding] = "archived funding",
+        };
 
         public ImportController(ILogger<ImportController> logger, IMediator mediator, IUserHelperService userHelperService, IFileService fileService, ImportFileUploadSettings importFileUploadSettings) : base(mediator, logger)
         {
@@ -90,13 +96,30 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
             var timeSubmitted = DateTime.Now;
             var userName = _userHelperService.GetUserDisplayName();
             var jobName = string.Empty;
+            var categoriesToConfirmClean = new List<FileCategory>();
             switch (viewModel.ImportType)
             {
                 case "Regulated Qualifications": jobName = JobNames.RegulatedQualifications.ToString(); break;
-                case "Funded Qualifications": jobName = JobNames.FundedQualifications.ToString(); break;
-                case "Pldns": jobName = JobNames.Pldns.ToString(); break;
-                case "DefundingList": jobName = JobNames.DefundingList.ToString(); break;
+                case "Funded Qualifications":
+                    jobName = JobNames.FundedQualifications.ToString();
+                    categoriesToConfirmClean.Add(FileCategory.ApprovedFunding);
+                    categoriesToConfirmClean.Add(FileCategory.ArchivedFunding);
+                    break;
+                case "Pldns": jobName = JobNames.Pldns.ToString(); categoriesToConfirmClean.Add(FileCategory.Pldns); break;
+                case "DefundingList": jobName = JobNames.DefundingList.ToString(); categoriesToConfirmClean.Add(FileCategory.DefundingList); break;
                 default: break;
+            }
+
+            foreach (var category in categoriesToConfirmClean)
+            {
+                if (!await _fileService.WaitForCleanFileAsync(category))
+                {
+                    ModelState.AddModelError(
+                        string.Empty,
+                        string.Format(FileUploadErrorMessages.ImportScanNotConfirmed, FileCategoryDisplayNames[category]));
+
+                    return View(ConfirmImportSelectionAction, viewModel);
+                }
             }
 
             var jobAlreadyRunning = false;

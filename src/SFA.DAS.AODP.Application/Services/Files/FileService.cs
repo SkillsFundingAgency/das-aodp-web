@@ -111,12 +111,42 @@ namespace SFA.DAS.AODP.Application.Services.Files
             return await _blobStorageService.OpenReadStreamAsync(file.BlobContainer, file.BlobPath);
         }
 
+        public async Task<bool> WaitForCleanFileAsync(FileCategory category, CancellationToken cancellationToken = default)
+        {
+            if (await IsCategoryFileDownloadableAsync(category, cancellationToken))
+            {
+                return true;
+            }
+
+            foreach (var delay in ScanCheckDelays)
+            {
+                await _delayService.DelayAsync(delay, cancellationToken);
+
+                if (await IsCategoryFileDownloadableAsync(category, cancellationToken))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private async Task<bool> IsFileDownloadableAsync(Guid fileId, CancellationToken cancellationToken)
         {
             var response = await _mediator.Send(new GetFileMetadataQuery { FileId = fileId }, cancellationToken);
 
             return response.Success &&
                    response.Value.Files.Any(f => f.FileId == fileId && f.IsDownloadable);
+        }
+
+        private async Task<bool> IsCategoryFileDownloadableAsync(FileCategory category, CancellationToken cancellationToken)
+        {
+            var response = await _mediator.Send(
+                new GetFileMetadataQuery { FileCategories = [category] },
+                cancellationToken);
+
+            return response.Success &&
+                   response.Value.Files.Any(f => f.IsDownloadable);
         }
     }
 }
