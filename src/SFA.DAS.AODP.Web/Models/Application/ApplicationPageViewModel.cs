@@ -166,33 +166,11 @@ namespace SFA.DAS.AODP.Web.Models.Application
 
                 if (type == QuestionType.Radio || type == QuestionType.MultiChoice)
                 {
-                    responseQuestion.Options = responseQuestion?.Options?.OrderBy(o => o.Order)?.ToList() ?? [];
-                    questionModel.Options = new();
-
-                    foreach (var option in responseQuestion?.Options ?? [])
-                    {
-                        questionModel.Options.Add(new()
-                        {
-                            Id = option.Id,
-                            Value = option.Value,
-                            Order = option.Order
-                        });
-                    }
+                    PopulateOptions(questionModel, responseQuestion);
                 }
                 else if (questionModel.Type == QuestionType.File)
                 {
-                    if (filesByQuestionId.TryGetValue(questionModel.Id, out var files))
-                    {
-                        foreach (var file in files)
-                        {
-                            questionModel.UploadedFiles.Add(new()
-                            {
-                                FileId = file.FileId,
-                                DisplayName = file.FileName,
-                            });
-                        }
-                    }
-
+                    PopulateUploadedFiles(questionModel, filesByQuestionId);
                     continue;
                 }
 
@@ -202,6 +180,39 @@ namespace SFA.DAS.AODP.Web.Models.Application
             if (answers != null) PopulateExistingAnswers(model.Questions, answers);
 
             return model;
+        }
+
+        private static void PopulateOptions(Question questionModel, GetApplicationPageByIdQueryResponse.Question responseQuestion)
+        {
+            responseQuestion.Options = responseQuestion?.Options?.OrderBy(o => o.Order)?.ToList() ?? [];
+            questionModel.Options = new();
+
+            foreach (var option in responseQuestion?.Options ?? [])
+            {
+                questionModel.Options.Add(new()
+                {
+                    Id = option.Id,
+                    Value = option.Value,
+                    Order = option.Order
+                });
+            }
+        }
+
+        private static void PopulateUploadedFiles(Question questionModel, IReadOnlyDictionary<Guid, List<FileMetadataDto>> filesByQuestionId)
+        {
+            if (!filesByQuestionId.TryGetValue(questionModel.Id, out var files))
+            {
+                return;
+            }
+
+            foreach (var file in files)
+            {
+                questionModel.UploadedFiles.Add(new()
+                {
+                    FileId = file.FileId,
+                    DisplayName = file.FileName,
+                });
+            }
         }
 
         private static async void PopulateExistingAnswers(List<Question> questions, GetApplicationPageAnswersByPageIdQueryResponse answers)

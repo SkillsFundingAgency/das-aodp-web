@@ -837,6 +837,9 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         [Route("review/application-reviews/{applicationReviewId}/details")]
         public async Task<IActionResult> ApplicationFileDownload( ApplicationFileDownloadViewModel model)
         {
+            if (!ModelState.IsValid || model.FileId is null)
+                return BadRequest();
+
             var applicationId =
                 await GetApplicationIdWithAccessValidation(model.ApplicationReviewId);
 
@@ -877,7 +880,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 ApplicationId = applicationId
             });
 
-            if (fileMetadataResponse.Files.Count() == 0)
+            if (fileMetadataResponse.Files.Count == 0)
             {
                 throw new InvalidOperationException(
                     $"No files found for applicationId {applicationId}");

@@ -208,7 +208,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers
             var model = Assert.IsType<ApplicationMessagesViewModel>(view.Model);
 
             Assert.Single(model.TimelineMessages);
-            Assert.Single(model.TimelineMessages[0].Files);
+            Assert.Single(model.TimelineMessages![0].Files);
             Assert.Equal("Hello", model.TimelineMessages[0].Text);
         }
 

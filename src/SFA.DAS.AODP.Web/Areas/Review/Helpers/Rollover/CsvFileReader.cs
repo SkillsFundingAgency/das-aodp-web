@@ -112,7 +112,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover
             return result;
         }
 
-        private async Task<List<string[]>> ReadRowsAsync(Stream stream, CancellationToken ct = default)
+        private static async Task<List<string[]>> ReadRowsAsync(Stream stream)
         {
             var rows = new List<string[]>();
 

@@ -28,7 +28,7 @@ namespace SFA.DAS.AODP.Application.Tests.Commands.Files
             _apiClient
                 .Setup(a => a.PostWithResponseCode<EmptyResponse>(
                     It.IsAny<DeleteFileMetadataApiRequest>()))
-                .Returns(Task.FromResult(new EmptyResponse()));
+                .ReturnsAsync(new EmptyResponse());
 
             // Act
             var response = await _handler.Handle(request, TestContext.Current.CancellationToken);
