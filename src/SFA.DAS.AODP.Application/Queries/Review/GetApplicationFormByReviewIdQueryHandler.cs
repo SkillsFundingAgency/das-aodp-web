@@ -10,11 +10,9 @@ namespace SFA.DAS.AODP.Application.Queries.Review;
 public partial class GetApplicationFormByReviewIdQueryHandler : IRequestHandler<GetApplicationFormByReviewIdQuery, BaseMediatrResponse<GetApplicationFormByReviewIdQueryResponse>>
 {
     private readonly IApiClient _apiClient;
-    public readonly IFileService _fileService;
-    public GetApplicationFormByReviewIdQueryHandler(IApiClient apiClient, IFileService fileService)
+    public GetApplicationFormByReviewIdQueryHandler(IApiClient apiClient)
     {
         _apiClient = apiClient;
-        _fileService = fileService;
     }
 
     public async Task<BaseMediatrResponse<GetApplicationFormByReviewIdQueryResponse>> Handle(
@@ -43,12 +41,5 @@ public partial class GetApplicationFormByReviewIdQueryHandler : IRequestHandler<
         }
 
         return response;
-    }
-
-    private async Task<List<string>> GetFileNamesForApplication(Guid applicationId)
-    {
-        return _fileService.ListBlobs(applicationId.ToString())
-            .Select(blob => blob.FileName)
-            .ToList();
     }
 }

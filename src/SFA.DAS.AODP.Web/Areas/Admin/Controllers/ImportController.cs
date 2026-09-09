@@ -1,11 +1,15 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+using SFA.DAS.Aodp.Domain.Files;
 using SFA.DAS.AODP.Application.Commands.Import;
+using SFA.DAS.AODP.Application.Services.Files;
 using SFA.DAS.AODP.Application.Queries.Import;
-using SFA.DAS.AODP.Infrastructure.File;
+using SFA.DAS.AODP.Models.Common;
+using SFA.DAS.AODP.Models.Exceptions;
 using SFA.DAS.AODP.Web.Areas.Admin.Models;
+using SFA.DAS.AODP.Web.Areas.Admin.Storage;
 using SFA.DAS.AODP.Web.Authentication;
+using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Import;
@@ -19,14 +23,25 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
     {
         private readonly IUserHelperService _userHelperService;
         private readonly IFileService _fileService;
+        private readonly ImportFileUploadSettings _importFileUploadSettings;
+
         public enum SendKeys { RequestFailed, JobStatusFailed }
         private const string UploadImportListViewPath = "UploadImportFile";
         private const string ConfirmImportSelectionAction = nameof(ConfirmImportSelection);
 
-        public ImportController(ILogger<ImportController> logger, IMediator mediator, IUserHelperService userHelperService, IFileService fileService) : base(mediator, logger)
+        private static readonly Dictionary<FileCategory, string> FileCategoryDisplayNames = new()
+        {
+            [FileCategory.Pldns] = "PLDNS",
+            [FileCategory.DefundingList] = "defunding list",
+            [FileCategory.ApprovedFunding] = "approved funding",
+            [FileCategory.ArchivedFunding] = "archived funding",
+        };
+
+        public ImportController(ILogger<ImportController> logger, IMediator mediator, IUserHelperService userHelperService, IFileService fileService, ImportFileUploadSettings importFileUploadSettings) : base(mediator, logger)
         {
             _userHelperService = userHelperService;
             _fileService = fileService;
+            _importFileUploadSettings = importFileUploadSettings;
         }
 
         [HttpGet]
@@ -81,13 +96,30 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
             var timeSubmitted = DateTime.Now;
             var userName = _userHelperService.GetUserDisplayName();
             var jobName = string.Empty;
+            var categoriesToConfirmClean = new List<FileCategory>();
             switch (viewModel.ImportType)
             {
                 case "Regulated Qualifications": jobName = JobNames.RegulatedQualifications.ToString(); break;
-                case "Funded Qualifications": jobName = JobNames.FundedQualifications.ToString(); break;
-                case "Pldns": jobName = JobNames.Pldns.ToString(); break;
-                case "DefundingList": jobName = JobNames.DefundingList.ToString(); break;
+                case "Funded Qualifications":
+                    jobName = JobNames.FundedQualifications.ToString();
+                    categoriesToConfirmClean.Add(FileCategory.ApprovedFunding);
+                    categoriesToConfirmClean.Add(FileCategory.ArchivedFunding);
+                    break;
+                case "Pldns": jobName = JobNames.Pldns.ToString(); categoriesToConfirmClean.Add(FileCategory.Pldns); break;
+                case "DefundingList": jobName = JobNames.DefundingList.ToString(); categoriesToConfirmClean.Add(FileCategory.DefundingList); break;
                 default: break;
+            }
+
+            foreach (var category in categoriesToConfirmClean)
+            {
+                if (!await _fileService.WaitForCleanFileAsync(category))
+                {
+                    ModelState.AddModelError(
+                        string.Empty,
+                        string.Format(FileUploadErrorMessages.ImportScanNotConfirmed, FileCategoryDisplayNames[category]));
+
+                    return View(ConfirmImportSelectionAction, viewModel);
+                }
             }
 
             var jobAlreadyRunning = false;
@@ -259,17 +291,25 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
 
             try
             {
-                var folderName = JobNames.Pldns.ToString();
-                var contentType = model.File.ContentType;
-                var fileNamePrefix = _userHelperService.GetUserDisplayName() ?? string.Empty;
-
-                using var stream = model.File.OpenReadStream();
-                await _fileService.UploadXlsxFileAsync(folderName, "Pldns.xlsx", stream, contentType, fileNamePrefix);
+                await UploadXlsxAsync(
+                    FileCategory.Pldns,
+                    ImportStoragePaths.PldnsFileName,
+                    model.File,
+                    _importFileUploadSettings.MaxPldnsUploadSizeInMB);
             }
             catch (Exception ex)
             {
                 LogException(ex);
                 ModelState.AddModelError(string.Empty, ex.Message);
+                return View(UploadImportListViewPath, model);
+            }
+
+            if (!await _fileService.WaitForCleanFileAsync(FileCategory.Pldns))
+            {
+                ModelState.AddModelError(
+                    string.Empty,
+                    string.Format(FileUploadErrorMessages.ImportScanNotConfirmed, FileCategoryDisplayNames[FileCategory.Pldns]));
+
                 return View(UploadImportListViewPath, model);
             }
 
@@ -302,12 +342,12 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
 
             try
             {
-                var folderName = JobNames.DefundingList.ToString();
-                var contentType = model.File.ContentType;
-                var fileNamePrefix = _userHelperService.GetUserDisplayName() ?? string.Empty;
+                await UploadXlsxAsync(
+                    FileCategory.DefundingList,
+                    ImportStoragePaths.DefundingListFileName,
+                    model.File,
+                    _importFileUploadSettings.MaxDefundingListUploadSizeInMB);
 
-                using var stream = model.File.OpenReadStream();
-                await _fileService.UploadXlsxFileAsync(folderName, "DefundingList.xlsx", stream, contentType, fileNamePrefix);
             }
             catch (Exception ex)
             {
@@ -316,8 +356,59 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
                 return View(UploadImportListViewPath, model);
             }
 
+            if (!await _fileService.WaitForCleanFileAsync(FileCategory.DefundingList))
+            {
+                ModelState.AddModelError(
+                    string.Empty,
+                    string.Format(FileUploadErrorMessages.ImportScanNotConfirmed, FileCategoryDisplayNames[FileCategory.DefundingList]));
+
+                return View(UploadImportListViewPath, model);
+            }
+
             var viewModel = new ImportRequestViewModel() { ImportType = JobNames.DefundingList.ToString() };
             return RedirectToAction(ConfirmImportSelectionAction, viewModel);
+        }
+
+        private async Task UploadXlsxAsync(
+            FileCategory category,
+            string fileName,          
+            IFormFile file,
+            int? maxAllowedFileSizeMb)
+        {
+            var uploadedExtension = Path.GetExtension(file.FileName);
+
+            if (!string.Equals(uploadedExtension, ".xlsx", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new FileUploadPolicyException(FileUploadRejectionReason.FileTypeNotAllowed);
+            }
+
+            using var stream = file.OpenReadStream();
+
+
+            if (maxAllowedFileSizeMb.HasValue)
+            {
+                var maxBytes = maxAllowedFileSizeMb.Value * 1024L * 1024L;
+
+                if (stream.Length > maxBytes)
+                {
+                    throw new FileUploadPolicyException(FileUploadRejectionReason.FileTooLarge);
+                }
+            }
+
+            stream.Position = 0;
+
+
+            var resolvedContentType = string.IsNullOrWhiteSpace(file.ContentType)
+                ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                : file.ContentType;
+
+            await _fileService.UploadAsync(
+                category,
+                null,
+                fileName,
+                resolvedContentType,
+                stream,
+                _userHelperService.GetUserDisplayName() ?? string.Empty);
         }
     }
 }

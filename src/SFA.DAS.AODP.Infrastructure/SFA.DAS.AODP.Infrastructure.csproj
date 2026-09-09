@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<ItemGroup>
+		<PackageReference Include="MediatR" Version="12.5.0" />
 		<PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="10.0.10" />
 		<PackageReference Include="Microsoft.Extensions.Azure" Version="1.13.1" />
 		<PackageReference Include="OpenTelemetry.Api" Version="1.15.3" />

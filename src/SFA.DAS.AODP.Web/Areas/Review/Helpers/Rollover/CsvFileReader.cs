@@ -25,28 +25,42 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover
             IEnumerable<string> requiredHeaders,
             Func<IReadOnlyDictionary<string, string>, T> mapRow)
         {
-            var result = new CsvFileReaderResult<T>();
-
             if (file == null)
             {
+                var result = new CsvFileReaderResult<T>();
                 result.Errors.Add(MissingFileErrorMessage);
                 return result;
             }
 
-            var ext = Path.GetExtension(file.FileName)?.ToLowerInvariant();
+            var stream = file.OpenReadStream();
+            return await FileReadAsync(stream, file.FileName, file.Length, requiredHeaders, mapRow);
+        }
+
+        public async Task<CsvFileReaderResult<T>> FileReadAsync<T>(
+            Stream stream,
+            string fileName,
+            long length,
+            IEnumerable<string> requiredHeaders,
+            Func<IReadOnlyDictionary<string, string>, T> mapRow)
+        {
+            using var _ = stream;
+
+            var result = new CsvFileReaderResult<T>();
+
+            var ext = Path.GetExtension(fileName)?.ToLowerInvariant();
             if (ext != ".csv")
             {
                 result.Errors.Add(WrongExtensionMessage);
                 return result;
             }
 
-            if (file.Length == 0)
+            if (length == 0)
             {
                 result.Errors.Add(EmptyFileErrorMessage);
                 return result;
             }
 
-            var rows = await ReadRowsAsync(file);
+            var rows = await ReadRowsAsync(stream);
 
             if (rows.Count < 2) //Header + 1 row of data is the minimum
             {
@@ -98,15 +112,11 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Helpers.Rollover
             return result;
         }
 
-        private async Task<List<string[]>> ReadRowsAsync(IFormFile file, CancellationToken ct = default)
+        private static async Task<List<string[]>> ReadRowsAsync(Stream stream)
         {
             var rows = new List<string[]>();
 
-            if (file == null || file.Length == 0)
-                return rows;
-
-            using var stream = file.OpenReadStream();
-            using var reader = new StreamReader(stream);
+            using var reader = new StreamReader(stream, leaveOpen: true);
 
             while (!reader.EndOfStream)
             {

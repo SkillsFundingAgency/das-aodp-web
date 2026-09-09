@@ -1,4 +1,5 @@
-﻿using SFA.DAS.AODP.Models.Forms;
+﻿using SFA.DAS.AODP.Application.Queries.Files;
+using SFA.DAS.AODP.Models.Forms;
 using System;
 using System.ComponentModel;
 
@@ -91,7 +92,7 @@ namespace SFA.DAS.AODP.Web.Models.Application
 
         public class UploadedFile
         {
-            public string FullPath { get; set; }
+            public Guid FileId { get; set; }
             public string DisplayName { get; set; }
         }
 
@@ -103,7 +104,7 @@ namespace SFA.DAS.AODP.Web.Models.Application
             Guid sectionId,
             Guid organisationId,
             GetApplicationPageAnswersByPageIdQueryResponse answers,
-            Func<string, List<Infrastructure.File.UploadedBlob>> fetchBlobFunc)
+            IReadOnlyDictionary<Guid, List<FileMetadataDto>> filesByQuestionId)
         {
             ApplicationPageViewModel model = new ApplicationPageViewModel()
             {
@@ -114,17 +115,17 @@ namespace SFA.DAS.AODP.Web.Models.Application
                 OrganisationId = organisationId,
             };
 
-            return PopulateViewModel(model, value, fetchBlobFunc, answers);
+            return PopulateViewModel(model, value, filesByQuestionId, answers);
         }
 
         public static ApplicationPageViewModel RepopulatePageDataOnViewModel
         (
             GetApplicationPageByIdQueryResponse value,
             ApplicationPageViewModel viewModel,
-            Func<string, List<Infrastructure.File.UploadedBlob>> fetchBlobFunc
+            IReadOnlyDictionary<Guid, List<FileMetadataDto>> filesByQuestionId
         )
         {
-            return PopulateViewModel(viewModel, value, fetchBlobFunc);
+            return PopulateViewModel(viewModel, value, filesByQuestionId);
 
         }
 
@@ -132,7 +133,7 @@ namespace SFA.DAS.AODP.Web.Models.Application
         (
             ApplicationPageViewModel model,
             GetApplicationPageByIdQueryResponse value,
-            Func<string, List<Infrastructure.File.UploadedBlob>> fetchBlobFunc,
+            IReadOnlyDictionary<Guid, List<FileMetadataDto>> filesByQuestionId,
             GetApplicationPageAnswersByPageIdQueryResponse? answers = null
         )
         {
@@ -165,30 +166,11 @@ namespace SFA.DAS.AODP.Web.Models.Application
 
                 if (type == QuestionType.Radio || type == QuestionType.MultiChoice)
                 {
-                    responseQuestion.Options = responseQuestion?.Options?.OrderBy(o => o.Order)?.ToList() ?? [];
-                    questionModel.Options = new();
-
-                    foreach (var option in responseQuestion?.Options ?? [])
-                    {
-                        questionModel.Options.Add(new()
-                        {
-                            Id = option.Id,
-                            Value = option.Value,
-                            Order = option.Order
-                        });
-                    }
+                    PopulateOptions(questionModel, responseQuestion);
                 }
                 else if (questionModel.Type == QuestionType.File)
                 {
-                    var blobs = fetchBlobFunc($"{model.ApplicationId}/{questionModel.Id}");
-                    foreach (var blob in blobs)
-                    {
-                        questionModel.UploadedFiles.Add(new()
-                        {
-                            FullPath = blob.FullPath,
-                            DisplayName = blob.FileName
-                        });
-                    }
+                    PopulateUploadedFiles(questionModel, filesByQuestionId);
                     continue;
                 }
 
@@ -198,6 +180,39 @@ namespace SFA.DAS.AODP.Web.Models.Application
             if (answers != null) PopulateExistingAnswers(model.Questions, answers);
 
             return model;
+        }
+
+        private static void PopulateOptions(Question questionModel, GetApplicationPageByIdQueryResponse.Question responseQuestion)
+        {
+            responseQuestion.Options = responseQuestion?.Options?.OrderBy(o => o.Order)?.ToList() ?? [];
+            questionModel.Options = new();
+
+            foreach (var option in responseQuestion?.Options ?? [])
+            {
+                questionModel.Options.Add(new()
+                {
+                    Id = option.Id,
+                    Value = option.Value,
+                    Order = option.Order
+                });
+            }
+        }
+
+        private static void PopulateUploadedFiles(Question questionModel, IReadOnlyDictionary<Guid, List<FileMetadataDto>> filesByQuestionId)
+        {
+            if (!filesByQuestionId.TryGetValue(questionModel.Id, out var files))
+            {
+                return;
+            }
+
+            foreach (var file in files)
+            {
+                questionModel.UploadedFiles.Add(new()
+                {
+                    FileId = file.FileId,
+                    DisplayName = file.FileName,
+                });
+            }
         }
 
         private static async void PopulateExistingAnswers(List<Question> questions, GetApplicationPageAnswersByPageIdQueryResponse answers)
