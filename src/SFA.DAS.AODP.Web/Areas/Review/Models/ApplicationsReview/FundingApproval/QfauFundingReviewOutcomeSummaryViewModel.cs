@@ -38,6 +38,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApprova
                 Status = status
             };
 
+            model.MapOffers(offers);
+
             foreach (var funding in response.FundedOffers ?? [])
             {
                 model.OfferFundingDetails.Add(new()
@@ -49,7 +51,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApprova
                 });
             }
 
-            model.MapOffers(offers);
+            model.SortOfferFundingDetailsByOfferName();
 
             return model;
         }
@@ -66,6 +68,19 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApprova
                     Name = offer.Name,
                 });
             }
+        }
+
+        private void SortOfferFundingDetailsByOfferName()
+        {
+            OfferFundingDetails = OfferFundingDetails
+                .OrderBy(detail => GetOfferName(detail.FundingOfferId), StringComparer.OrdinalIgnoreCase)
+                .ThenBy(detail => detail.FundingOfferId)
+                .ToList();
+        }
+
+        private string GetOfferName(Guid fundingOfferId)
+        {
+            return FundingOffers.FirstOrDefault(offer => offer.Id == fundingOfferId)?.Name ?? string.Empty;
         }
     }
 }

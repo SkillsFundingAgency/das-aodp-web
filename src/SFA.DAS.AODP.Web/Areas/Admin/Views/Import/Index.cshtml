@@ -2,14 +2,14 @@
 @using SFA.DAS.AODP.Web.Views.Shared
 @model ImportRequestViewModel
 @{
-    ViewData["Title"] = "Import Data";
+    ViewData["Title"] = "Import data";
 
     var backLinkModel = new BackLinkModel
     {
         Action = "Index",
         Controller = "Home",
         Area = "Review",
-        Text = "Back to qualifications"
+        Text = "Back to homepage"
     };
 }
 
@@ -17,7 +17,7 @@
 
 @await Html.PartialAsync("_BackLinkPartial", backLinkModel)
 
-<h1 class="govuk-heading-1">Qualifications you need to import</h1>
+<h1 class="govuk-heading-1">Import data</h1>
 
 <form asp-controller="Import" asp-action="SelectImport" asp-area="Admin" method="post">
 
@@ -37,13 +37,13 @@
                 }
 
                 <govuk-radios-item value="Regulated Qualifications">
-                    Regulated Qualifications
+                    Regulated qualifications
                     <govuk-radios-hint class="govuk-hint govuk-radios__hint govuk-!-static-padding-0">
                         This includes qualifications with changes from Ofqual
                     </govuk-radios-hint>
                 </govuk-radios-item>
                 <govuk-radios-item value="Funded Qualifications">
-                    Funded Qualifications
+                    Funded qualifications
                     <govuk-radios-hint class="govuk-hint govuk-radios__hint govuk-!-static-padding-0">
                         This includes both currently approved and archived qualifications
                     </govuk-radios-hint>

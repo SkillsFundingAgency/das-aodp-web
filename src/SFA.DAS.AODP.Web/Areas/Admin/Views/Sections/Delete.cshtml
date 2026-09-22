@@ -1,12 +1,12 @@
 ﻿@model DeleteSectionViewModel
 
 <a class="govuk-back-link" asp-action="Edit" asp-controller="Forms" asp-route-formVersionId="@Model.FormVersionId">
-    Back to Form
+    Back to form
 </a>
 
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
-<h1 class="govuk-heading-l">Delete Section?</h1>
+<h1 class="govuk-heading-l">Delete section?</h1>
 
 @if (Model.HasAssociatedRoutes)
 {
@@ -18,7 +18,7 @@
             <div class="govuk-error-summary__body">
                 <ul class="govuk-list govuk-error-summary__list">
                     <li>
-                        <p>This Section cannot be deleted because there is a route associated with it or with the pages and questions relating to this section. You must first edit the routes to remove any association before deleting this section.</p>
+                        <p>This section cannot be deleted because there is a route associated with it or with the pages and questions relating to this section. You must first edit the routes to remove any association before deleting this section.</p>
                     </li>
                 </ul>
             </div>
