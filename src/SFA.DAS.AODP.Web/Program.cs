@@ -68,6 +68,11 @@ internal class Program
             options.Cookie.Name = ".AODP.Session";
         });
 
+        builder.Services.AddAntiforgery(options =>
+        {
+            options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        });
+
         builder.Services
              .AddMvc(options =>
              {
