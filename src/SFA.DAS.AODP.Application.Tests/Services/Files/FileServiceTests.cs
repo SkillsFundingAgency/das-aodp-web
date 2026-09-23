@@ -64,7 +64,7 @@ public class FileServiceTests
         using var stream = new MemoryStream();
 
         var result = await _service.UploadAsync(
-            FileCategory.Pldns, null, "file.pdf", "application/pdf", stream, UploadedBy);
+            FileCategory.Pldns, null, "file.pdf", "application/pdf", stream, UploadedBy, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Multiple(() =>
         {
@@ -104,7 +104,7 @@ public class FileServiceTests
         using var stream = new MemoryStream();
 
         var result = await _service.UploadAsync(
-            FileCategory.Pldns, null, "file.pdf", "application/pdf", stream, UploadedBy, suppliedId);
+            FileCategory.Pldns, null, "file.pdf", "application/pdf", stream, UploadedBy, suppliedId, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Equal(suppliedId, result.FileId);
     }
@@ -123,7 +123,7 @@ public class FileServiceTests
         using var stream = new MemoryStream();
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            _service.UploadAsync(FileCategory.Pldns, null, "file.pdf", "application/pdf", stream, UploadedBy));
+            _service.UploadAsync(FileCategory.Pldns, null, "file.pdf", "application/pdf", stream, UploadedBy, cancellationToken: TestContext.Current.CancellationToken));
 
         _blobStorageService.Verify(b => b.UploadAsync(
             It.IsAny<FileStorageLocation>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>()),
@@ -145,7 +145,7 @@ public class FileServiceTests
             .Setup(b => b.OpenReadStreamAsync(Location.Container, Location.BlobPath))
             .ReturnsAsync(expectedStream);
 
-        var result = await _service.GetCleanFileStreamAsync(upload);
+        var result = await _service.GetCleanFileStreamAsync(upload, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Same(expectedStream, result);
         _delayService.Verify(d => d.DelayAsync(It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()), Times.Never);
@@ -167,7 +167,7 @@ public class FileServiceTests
             .Setup(b => b.OpenReadStreamAsync(Location.Container, Location.BlobPath))
             .ReturnsAsync(expectedStream);
 
-        var result = await _service.GetCleanFileStreamAsync(upload);
+        var result = await _service.GetCleanFileStreamAsync(upload, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Same(expectedStream, result);
         _delayService.Verify(d => d.DelayAsync(It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()), Times.Once);
@@ -183,7 +183,7 @@ public class FileServiceTests
             .Setup(m => m.Send(It.IsAny<GetFileMetadataQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(MetadataResponse(File(fileId, isDownloadable: false)));
 
-        var result = await _service.GetCleanFileStreamAsync(upload);
+        var result = await _service.GetCleanFileStreamAsync(upload, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Null(result);
         _blobStorageService.Verify(b => b.OpenReadStreamAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
@@ -203,7 +203,7 @@ public class FileServiceTests
             .Setup(b => b.OpenReadStreamAsync(Location.Container, Location.BlobPath))
             .ReturnsAsync(expectedStream);
 
-        var result = await _service.DownloadAsync(fileId);
+        var result = await _service.DownloadAsync(fileId, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Same(expectedStream, result);
     }
@@ -217,7 +217,7 @@ public class FileServiceTests
             .Setup(m => m.Send(It.IsAny<GetFileMetadataQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(MetadataResponse());
 
-        var result = await _service.DownloadAsync(fileId);
+        var result = await _service.DownloadAsync(fileId, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Null(result);
     }
@@ -227,7 +227,7 @@ public class FileServiceTests
     {
         var file = File(Guid.NewGuid(), isDownloadable: false);
 
-        var result = await _service.DownloadAsync(file);
+        var result = await _service.DownloadAsync(file, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.Null(result);
         _blobStorageService.Verify(b => b.OpenReadStreamAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
@@ -240,7 +240,7 @@ public class FileServiceTests
             .Setup(m => m.Send(It.IsAny<GetFileMetadataQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(MetadataResponse(File(Guid.NewGuid(), isDownloadable: true)));
 
-        var result = await _service.WaitForCleanFileAsync(FileCategory.Pldns);
+        var result = await _service.WaitForCleanFileAsync(FileCategory.Pldns, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.True(result);
         _delayService.Verify(d => d.DelayAsync(It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()), Times.Never);
@@ -254,7 +254,7 @@ public class FileServiceTests
             .ReturnsAsync(MetadataResponse(File(Guid.NewGuid(), isDownloadable: false)))
             .ReturnsAsync(MetadataResponse(File(Guid.NewGuid(), isDownloadable: true)));
 
-        var result = await _service.WaitForCleanFileAsync(FileCategory.Pldns);
+        var result = await _service.WaitForCleanFileAsync(FileCategory.Pldns, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.True(result);
         _delayService.Verify(d => d.DelayAsync(It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()), Times.Once);
@@ -267,7 +267,7 @@ public class FileServiceTests
             .Setup(m => m.Send(It.IsAny<GetFileMetadataQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(MetadataResponse());
 
-        var result = await _service.WaitForCleanFileAsync(FileCategory.Pldns);
+        var result = await _service.WaitForCleanFileAsync(FileCategory.Pldns, cancellationToken: TestContext.Current.CancellationToken);
 
         Assert.False(result);
         _delayService.Verify(d => d.DelayAsync(It.IsAny<TimeSpan>(), It.IsAny<CancellationToken>()), Times.Exactly(4));

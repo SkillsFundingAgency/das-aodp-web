@@ -1,13 +1,17 @@
-﻿using AutoFixture;
+﻿using System.Security.Claims;
+using System.Text;
+using AutoFixture;
 using AutoFixture.AutoMoq;
 using AutoFixture.Kernel;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Logging;
 using Moq;
+using SFA.DAS.Aodp.Domain.Files;
 using SFA.DAS.AODP.Application;
 using SFA.DAS.AODP.Application.Commands.Application.Application;
 using SFA.DAS.AODP.Application.Commands.Files;
@@ -19,10 +23,10 @@ using SFA.DAS.AODP.Application.Services.Files;
 using SFA.DAS.AODP.Infrastructure.Common.IO;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Application;
+using SFA.DAS.AODP.Models.Forms;
 using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Areas.Apply.Controllers;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
-using System.Security.Claims;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Application;
 using SFA.DAS.AODP.Web.Validators;
@@ -37,6 +41,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
         private readonly Mock<IFileService> _fileServiceMock = new();
         private readonly Mock<IUserHelperService> _userHelperMock = new();
         private readonly Mock<ILogger<ApplicationsController>> _loggerMock = new();
+        private readonly Mock<ITempDataDictionary> _tempDataMock = new();
         private readonly ApplicationsController _controller;
         private readonly FileUploadValidator _fileUploadValidator;
 
@@ -46,9 +51,11 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
         private const string QanErrorMessage = "Bad QAN";
         private const string ExceptionMessage = "Exception";
 
+        // Minimal PDF header so any signature-based check in FileUploadValidator passes
+        private static readonly byte[] PdfBytes = Encoding.ASCII.GetBytes("%PDF-1.4\n%test\n%%EOF");
+
         public ApplicationsControllerTests()
         {
-
             _fixture.Customize(new AutoMoqCustomization
             {
                 ConfigureMembers = true
@@ -76,7 +83,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
                 _userHelperMock.Object,
                 _fileUploadValidator)
             {
-                TempData = new Mock<ITempDataDictionary>().Object
+                TempData = _tempDataMock.Object
             };
         }
 
@@ -93,6 +100,8 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
                 return new NoSpecimen();
             }
         }
+
+        #region Helpers
 
         private void SetConsentCookie(bool hasConsentCookie)
         {
@@ -114,6 +123,101 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
                 HttpContext = httpContext
             };
         }
+
+        private void SetupApplicationStatus(ApplicationStatus status)
+        {
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationByIdQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = _fixture.Build<GetApplicationByIdQueryResponse>()
+                        .With(r => r.Status, status.ToString())
+                        .Create()
+                });
+        }
+
+        private void SetupFileMetadata(List<FileMetadataDto> files)
+        {
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetFileMetadataQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetFileMetadataQueryResponse>
+                {
+                    Success = true,
+                    Value = new GetFileMetadataQueryResponse { Files = files }
+                });
+        }
+
+        private GetApplicationPageByIdQueryResponse SetupPage(int order, int totalSectionPages)
+        {
+            var page = _fixture.Build<GetApplicationPageByIdQueryResponse>()
+                .With(p => p.Order, order)
+                .With(p => p.TotalSectionPages, totalSectionPages)
+                .Create();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationPageByIdQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationPageByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = page
+                });
+
+            return page;
+        }
+
+        private void SetupSavePageAnswers()
+        {
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<UpdatePageAnswersCommand>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<UpdatePageAnswersCommandResponse>
+                {
+                    Success = true,
+                    Value = new UpdatePageAnswersCommandResponse()
+                });
+        }
+
+        private static IFormFile CreateFormFile(string fileName, string contentType, byte[] content)
+        {
+            var stream = new MemoryStream(content);
+            return new FormFile(stream, 0, content.Length, "file", fileName)
+            {
+                Headers = new HeaderDictionary(),
+                ContentType = contentType
+            };
+        }
+
+        private ApplicationPageViewModel BuildFileUploadModel(Guid applicationId, Guid sectionId, IFormFile file)
+        {
+            var model = _fixture.Build<ApplicationPageViewModel>()
+                .With(m => m.ApplicationId, applicationId)
+                .With(m => m.SectionId, sectionId)
+                .Without(m => m.RemoveFile)
+                .Create();
+
+            var question = model.Questions.First();
+            question.Type = QuestionType.File;
+            question.Answer.FormFiles = new List<IFormFile> { file };
+            model.Questions = new() { question };
+
+            return model;
+        }
+
+        private void VerifyNoUploads()
+        {
+            _fileServiceMock.Verify(s => s.UploadAsync(
+                    It.IsAny<FileCategory>(),
+                    It.IsAny<FileContext>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<Stream>(),
+                    It.IsAny<string>()),
+                Times.Never);
+        }
+
+        #endregion
+
+        #region Index
 
         [Fact]
         public async Task Index_ReturnsView_WithListApplicationsViewModel()
@@ -161,6 +265,10 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
             });
         }
 
+        #endregion
+
+        #region Create
+
         [Fact]
         public async Task Create_Post_ValidModel_RedirectsToViewApplication()
         {
@@ -190,7 +298,6 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
                 .ReturnsAsync(commandResponse);
 
             var result = await _controller.Create(model);
-
 
             Assert.Multiple(() =>
             {
@@ -266,6 +373,28 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
         }
 
         [Fact]
+        public async Task Create_Post_NullResponse_ReturnsView()
+        {
+            var model = _fixture.Build<CreateApplicationViewModel>()
+                .With(m => m.Name, "Test App")
+                .With(m => m.OrganisationId, Guid.Parse(OrgId))
+                .Create();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<CreateApplicationCommand>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<CreateApplicationCommandResponse>
+                {
+                    Success = true,
+                    Value = null!
+                });
+
+            var result = await _controller.Create(model);
+
+            var view = Assert.IsType<ViewResult>(result);
+            Assert.Equal(model, view.ViewData.Model);
+        }
+
+        [Fact]
         public async Task Create_Post_MediatorThrows_ReturnsView()
         {
             var organisationId = Guid.Parse(OrgId);
@@ -284,11 +413,41 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
             var view = Assert.IsType<ViewResult>(result);
             var returnedModel = Assert.IsAssignableFrom<CreateApplicationViewModel>(view.ViewData.Model);
 
+            Assert.Equal(model, returnedModel);
+        }
+
+        [Fact]
+        public async Task Create_Get_ReturnsView_WithModel()
+        {
+            var organisationId = Guid.NewGuid();
+            var formVersionId = Guid.NewGuid();
+
+            var formVersion = _fixture.Create<GetFormVersionByIdQueryResponse>();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetFormVersionByIdQuery>(), default))
+                .ReturnsAsync(new BaseMediatrResponse<GetFormVersionByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = formVersion
+                });
+
+            var result = await _controller.Create(organisationId, formVersionId);
+
+            var view = Assert.IsType<ViewResult>(result);
+            var model = Assert.IsType<CreateApplicationViewModel>(view.Model);
+
             Assert.Multiple(() =>
             {
-                Assert.Equal(model, returnedModel);
+                Assert.Equal(formVersionId, model.FormVersionId);
+                Assert.Equal(organisationId, model.OrganisationId);
+                Assert.Equal(formVersion.Title, model.FormTitle);
             });
         }
+
+        #endregion
+
+        #region Edit
 
         [Fact]
         public async Task Edit_Post_ValidModel_RedirectsToViewApplication()
@@ -323,9 +482,6 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
                 var redirect = Assert.IsType<RedirectToActionResult>(result);
                 Assert.Equal(nameof(ApplicationsController.ViewApplication), redirect.ActionName);
                 Assert.NotNull(redirect.RouteValues);
-                Assert.Contains("organisationId", redirect.RouteValues.Keys);
-                Assert.Contains("applicationId", redirect.RouteValues.Keys);
-                Assert.Contains("formVersionId", redirect.RouteValues.Keys);
                 Assert.Equal(organisationId, redirect.RouteValues["organisationId"]);
                 Assert.Equal(applicationId, redirect.RouteValues["applicationId"]);
                 Assert.Equal(formVersionId, redirect.RouteValues["formVersionId"]);
@@ -428,6 +584,113 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
         }
 
         [Fact]
+        public async Task Edit_Get_ReturnsView_WithModel()
+        {
+            var organisationId = Guid.NewGuid();
+            var applicationId = Guid.NewGuid();
+
+            var application = _fixture.Create<GetApplicationByIdQueryResponse>();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationByIdQuery>(), default))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = application
+                });
+
+            var result = await _controller.Edit(organisationId, applicationId);
+
+            var view = Assert.IsType<ViewResult>(result);
+            var model = Assert.IsType<EditApplicationViewModel>(view.Model);
+
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(applicationId, model.ApplicationId);
+                Assert.Equal(application.Name, model.Name);
+                Assert.Equal(application.QualificationNumber, model.QualificationNumber);
+            });
+        }
+
+        #endregion
+
+        #region Delete
+
+        [Fact]
+        public async Task Delete_Get_ReturnsView_WithModel()
+        {
+            var applicationId = Guid.NewGuid();
+            var application = _fixture.Create<GetApplicationByIdQueryResponse>();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationByIdQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = application
+                });
+
+            var result = await _controller.Delete(applicationId);
+
+            var view = Assert.IsType<ViewResult>(result);
+            var model = Assert.IsType<DeleteApplicationViewModel>(view.Model);
+
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(applicationId, model.ApplicationId);
+                Assert.Equal(application.Reference, model.ApplicationReference);
+                Assert.Equal(application.OrganisationId, model.OrganisationId);
+                Assert.Equal(application.Name, model.ApplicationName);
+                Assert.Equal(application.FormVersionId, model.FormVersionId);
+            });
+        }
+
+        [Fact]
+        public async Task Delete_Post_Success_SetsTempData_AndRedirectsToIndex()
+        {
+            var applicationId = Guid.NewGuid();
+            var model = _fixture.Create<DeleteApplicationViewModel>();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<DeleteApplicationCommand>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<EmptyResponse>
+                {
+                    Success = true,
+                    Value = new EmptyResponse()
+                });
+
+            var result = await _controller.Delete(model, applicationId);
+
+            var redirect = Assert.IsType<RedirectToActionResult>(result);
+            Assert.Equal(nameof(ApplicationsController.Index), redirect.ActionName);
+
+            _tempDataMock.VerifySet(
+                t => t[ApplicationsController.UpdateKeys.ApplicationDeletedKey.ToString()] = true,
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task Delete_Post_MediatorThrows_ReturnsView()
+        {
+            var applicationId = Guid.NewGuid();
+            var model = _fixture.Create<DeleteApplicationViewModel>();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<DeleteApplicationCommand>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new Exception(ExceptionMessage));
+
+            var result = await _controller.Delete(model, applicationId);
+
+            var view = Assert.IsType<ViewResult>(result);
+            var returnedModel = Assert.IsType<DeleteApplicationViewModel>(view.Model);
+            Assert.Equal(applicationId, returnedModel.ApplicationId);
+        }
+
+        #endregion
+
+        #region Submit / Withdraw
+
+        [Fact]
         public async Task Submit_Post_Success_RedirectsToConfirmation()
         {
             var applicationId = Guid.NewGuid();
@@ -441,7 +704,6 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
 
             var result = await _controller.Submit(applicationId, organisationId);
 
-
             Assert.Multiple(() =>
             {
                 var redirect = Assert.IsType<RedirectToActionResult>(result);
@@ -450,6 +712,52 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
                 Assert.Equal(applicationId, redirect.RouteValues["applicationId"]);
                 Assert.Equal(organisationId, redirect.RouteValues["organisationId"]);
             });
+
+            _mediatorMock.Verify(m => m.Send(
+                It.Is<SubmitApplicationCommand>(c =>
+                    c.ApplicationId == applicationId &&
+                    c.SubmittedBy == UserDisplayName &&
+                    c.SubmittedByEmail == UserEmail),
+                It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task Submit_Get_ReturnsView()
+        {
+            var applicationId = Guid.NewGuid();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationByIdQuery>(), default))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = _fixture.Create<GetApplicationByIdQueryResponse>()
+                });
+
+            var result = await _controller.Submit(applicationId);
+
+            var view = Assert.IsType<ViewResult>(result);
+            var model = Assert.IsType<SubmitApplicationViewModel>(view.Model);
+            Assert.Equal(applicationId, model.ApplicationId);
+        }
+
+        [Fact]
+        public async Task SubmitConfirmation_ReturnsView()
+        {
+            var applicationId = Guid.NewGuid();
+
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationByIdQuery>(), default))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = _fixture.Create<GetApplicationByIdQueryResponse>()
+                });
+
+            var result = await _controller.SubmitConfirmation(applicationId);
+
+            var view = Assert.IsType<ViewResult>(result);
+            Assert.IsType<SubmitApplicationViewModel>(view.Model);
         }
 
         [Fact]
@@ -462,9 +770,9 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
             {
                 Success = true,
                 Value = _fixture.Build<GetApplicationMetadataByIdQueryResponse>()
-                .With(r => r.OrganisationId, organisationId)
-                .With(r => r.FormVersionId, Guid.NewGuid())
-                .Create()
+                    .With(r => r.OrganisationId, organisationId)
+                    .With(r => r.FormVersionId, Guid.NewGuid())
+                    .Create()
             };
 
             _mediatorMock
@@ -499,6 +807,13 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
 
             var redirect = Assert.IsType<RedirectToActionResult>(result);
             Assert.Equal(nameof(ApplicationsController.WithdrawConfirmation), redirect.ActionName);
+
+            _mediatorMock.Verify(m => m.Send(
+                It.Is<WithdrawApplicationCommand>(c =>
+                    c.ApplicationId == applicationId &&
+                    c.WithdrawnBy == UserDisplayName &&
+                    c.WithdrawnByEmail == UserEmail),
+                It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -507,6 +822,10 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
             var result = _controller.WithdrawConfirmation();
             Assert.IsType<ViewResult>(result);
         }
+
+        #endregion
+
+        #region Forms / Preview / ViewApplication
 
         [Fact]
         public async Task AvailableFormsAsync_ReturnsView_WithModel()
@@ -527,88 +846,6 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
 
             var view = Assert.IsType<ViewResult>(result);
             Assert.IsType<ListAvailableFormsViewModel>(view.Model);
-        }
-
-        [Fact]
-        public async Task Create_Get_ReturnsView_WithModel()
-        {
-            var organisationId = Guid.NewGuid();
-            var formVersionId = Guid.NewGuid();
-
-            var formVersion = _fixture.Create<GetFormVersionByIdQueryResponse>();
-
-            _mediatorMock
-                .Setup(m => m.Send(It.IsAny<GetFormVersionByIdQuery>(), default))
-                .ReturnsAsync(new BaseMediatrResponse<GetFormVersionByIdQueryResponse>
-                {
-                    Success = true,
-                    Value = formVersion
-                });
-
-            var result = await _controller.Create(organisationId, formVersionId);
-
-            var view = Assert.IsType<ViewResult>(result);
-            var model = Assert.IsType<CreateApplicationViewModel>(view.Model);
-
-            Assert.Equal(formVersionId, model.FormVersionId);
-        }
-
-        [Fact]
-        public async Task Edit_Get_ReturnsView_WithModel()
-        {
-            var organisationId = Guid.NewGuid();
-            var applicationId = Guid.NewGuid();
-
-            var application = _fixture.Create<GetApplicationByIdQueryResponse>();
-
-            _mediatorMock
-                .Setup(m => m.Send(It.IsAny<GetApplicationByIdQuery>(), default))
-                .ReturnsAsync(new BaseMediatrResponse<GetApplicationByIdQueryResponse>
-                {
-                    Success = true,
-                    Value = application
-                });
-
-            var result = await _controller.Edit(organisationId, applicationId);
-
-            var view = Assert.IsType<ViewResult>(result);
-            Assert.IsType<EditApplicationViewModel>(view.Model);
-        }
-
-        [Fact]
-        public async Task Submit_Get_ReturnsView()
-        {
-            var applicationId = Guid.NewGuid();
-
-            _mediatorMock
-                .Setup(m => m.Send(It.IsAny<GetApplicationByIdQuery>(), default))
-                .ReturnsAsync(new BaseMediatrResponse<GetApplicationByIdQueryResponse>
-                {
-                    Success = true,
-                    Value = _fixture.Create<GetApplicationByIdQueryResponse>()
-                });
-
-            var result = await _controller.Submit(applicationId);
-
-            Assert.IsType<ViewResult>(result);
-        }
-
-        [Fact]
-        public async Task SubmitConfirmation_ReturnsView()
-        {
-            var applicationId = Guid.NewGuid();
-
-            _mediatorMock
-                .Setup(m => m.Send(It.IsAny<GetApplicationByIdQuery>(), default))
-                .ReturnsAsync(new BaseMediatrResponse<GetApplicationByIdQueryResponse>
-                {
-                    Success = true,
-                    Value = _fixture.Create<GetApplicationByIdQueryResponse>()
-                });
-
-            var result = await _controller.SubmitConfirmation(applicationId);
-
-            Assert.IsType<ViewResult>(result);
         }
 
         [Fact]
@@ -640,7 +877,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
             var applicationId = Guid.NewGuid();
             var formVersionId = Guid.NewGuid();
 
-            // Make sure Url is available for RelatedLinksBuilder (uses RouteUrl)
+            // Url is needed by RelatedLinksBuilder (uses RouteUrl)
             _controller.ControllerContext = new ControllerContext
             {
                 HttpContext = new DefaultHttpContext()
@@ -649,12 +886,11 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
             url.Setup(u => u.RouteUrl(It.IsAny<UrlRouteContext>())).Returns("/fake-url");
             _controller.Url = url.Object;
 
-            // User type used by SetLinks
             _userHelperMock
                 .Setup(u => u.GetUserType())
                 .Returns(SFA.DAS.AODP.Models.Users.UserType.AwardingOrganisation);
 
-            // Build responses and force matching section IDs so Map(...) doesn't throw
+            // Matching section IDs so Map(...) doesn't throw
             var formsResponse = _fixture.Create<GetApplicationFormByIdQueryResponse>();
             var statusResponse = _fixture.Create<GetApplicationFormStatusByApplicationIdQueryResponse>();
 
@@ -705,6 +941,10 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
             Assert.NotEmpty(model.RelatedLinks);
         }
 
+        #endregion
+
+        #region ApplicationPage GET
+
         [Fact]
         public async Task ApplicationPage_Get_ReturnsView_WithGroupedFiles()
         {
@@ -715,27 +955,15 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
             var sectionId = Guid.NewGuid();
             var questionId = Guid.NewGuid();
 
-            // 1. GetFileMetadataQuery response
-            var fileResponse = new GetFileMetadataQueryResponse
+            SetupFileMetadata(new List<FileMetadataDto>
             {
-                Files = new()
+                new FileMetadataDto
                 {
-                    new FileMetadataDto
-                    {
-                        FileId = Guid.NewGuid(),
-                        QuestionId = questionId,
-                        FileName = "test.pdf"
-                    }
+                    FileId = Guid.NewGuid(),
+                    QuestionId = questionId,
+                    FileName = "test.pdf"
                 }
-            };
-
-            _mediatorMock
-                .Setup(m => m.Send(It.IsAny<GetFileMetadataQuery>(), default))
-                .ReturnsAsync(new BaseMediatrResponse<GetFileMetadataQueryResponse>
-                {
-                    Success = true,
-                    Value = fileResponse
-                });
+            });
 
             _mediatorMock
                 .Setup(m => m.Send(It.IsAny<GetApplicationPageByIdQuery>(), default))
@@ -753,17 +981,7 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
                     Value = _fixture.Create<GetApplicationPageAnswersByPageIdQueryResponse>()
                 });
 
-            _mediatorMock
-                .Setup(m => m.Send(
-                    It.Is<GetApplicationByIdQuery>(q => q.ApplicationId == applicationId),
-                    default))
-                .ReturnsAsync(new BaseMediatrResponse<GetApplicationByIdQueryResponse>
-                {
-                    Success = true,
-                    Value = _fixture.Build<GetApplicationByIdQueryResponse>()
-                        .With(r => r.Status, ApplicationStatus.Draft.ToString())
-                        .Create()
-                });
+            SetupApplicationStatus(ApplicationStatus.Draft);
 
             // Act
             var result = await _controller.ApplicationPage(
@@ -775,66 +993,72 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
 
             // Assert
             var view = Assert.IsType<ViewResult>(result);
-            Assert.IsType<ApplicationPageViewModel>(view.Model);
+            var model = Assert.IsType<ApplicationPageViewModel>(view.Model);
+            Assert.False(model.IsSubmitted);
+
+            _mediatorMock.Verify(m => m.Send(
+                It.Is<GetFileMetadataQuery>(q =>
+                    q.ApplicationId == applicationId &&
+                    q.FileCategories.Contains(FileCategory.QuestionUpload)),
+                It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
-        public async Task ApplicationPage_Post_InvalidRemoveFileGuid_ReturnsBadRequest()
+        public async Task ApplicationPage_Get_WhenApplicationSubmitted_SetsIsSubmitted()
         {
-            // Arrange
-            var applicationId = Guid.NewGuid();
-            var organisationId = Guid.NewGuid();
-            var formVersionId = Guid.NewGuid();
+            SetupFileMetadata(new List<FileMetadataDto>());
 
-            var model = _fixture.Build<ApplicationPageViewModel>()
-                .With(m => m.ApplicationId, applicationId)
-                .With(m => m.RemoveFile, "not-a-guid")
-                .Create();
-
-            // Application must NOT be submitted
             _mediatorMock
-                .Setup(m => m.Send(
-                    It.IsAny<IRequest<BaseMediatrResponse<GetApplicationByIdQueryResponse>>>()))
-                .ReturnsAsync(new BaseMediatrResponse<GetApplicationByIdQueryResponse>
-                {
-                    Success = true,
-                    Value = _fixture.Build<GetApplicationByIdQueryResponse>()
-                        .With(r => r.Status, ApplicationStatus.Draft.ToString())
-                        .Create()
-                });
-
-            // File metadata is always fetched before RemoveFile logic
-            _mediatorMock
-                .Setup(m => m.Send(
-                    It.IsAny<IRequest<BaseMediatrResponse<GetFileMetadataQueryResponse>>>()))
-                .ReturnsAsync(new BaseMediatrResponse<GetFileMetadataQueryResponse>
-                {
-                    Success = true,
-                    Value = new GetFileMetadataQueryResponse
-                    {
-                        Files = new List<FileMetadataDto>()
-                    }
-                });
-
-            //Page is always loaded before RemoveFile validation
-            _mediatorMock
-                .Setup(m => m.Send(
-                    It.IsAny<IRequest<BaseMediatrResponse<GetApplicationPageByIdQueryResponse>>>()))
+                .Setup(m => m.Send(It.IsAny<GetApplicationPageByIdQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new BaseMediatrResponse<GetApplicationPageByIdQueryResponse>
                 {
                     Success = true,
                     Value = _fixture.Create<GetApplicationPageByIdQueryResponse>()
                 });
 
+            _mediatorMock
+                .Setup(m => m.Send(It.IsAny<GetApplicationPageAnswersByPageIdQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationPageAnswersByPageIdQueryResponse>
+                {
+                    Success = true,
+                    Value = _fixture.Create<GetApplicationPageAnswersByPageIdQueryResponse>()
+                });
+
+            SetupApplicationStatus(ApplicationStatus.InReview);
+
+            var result = await _controller.ApplicationPage(
+                Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), pageOrder: 1, Guid.NewGuid());
+
+            var view = Assert.IsType<ViewResult>(result);
+            var model = Assert.IsType<ApplicationPageViewModel>(view.Model);
+            Assert.True(model.IsSubmitted);
+        }
+
+        #endregion
+
+        #region ApplicationPage POST - remove file
+
+        [Fact]
+        public async Task ApplicationPage_Post_InvalidRemoveFileGuid_ReturnsBadRequest()
+        {
+            // Arrange
+            var applicationId = Guid.NewGuid();
+
+            var model = _fixture.Build<ApplicationPageViewModel>()
+                .With(m => m.ApplicationId, applicationId)
+                .With(m => m.RemoveFile, "not-a-guid")
+                .Create();
+
+            SetupApplicationStatus(ApplicationStatus.Draft);
+            SetupFileMetadata(new List<FileMetadataDto>());
+            SetupPage(order: 1, totalSectionPages: 2);
+
             // Act
-            var result = await _controller.ApplicationPageAsync(
-                model,
-                applicationId,
-                organisationId,
-                formVersionId);
+            var result = await _controller.ApplicationPageAsync(model, applicationId, Guid.NewGuid(), Guid.NewGuid());
 
             // Assert
             Assert.IsType<BadRequestResult>(result);
+            _mediatorMock.Verify(m => m.Send(It.IsAny<DeleteFileMetataCommand>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]
@@ -842,8 +1066,6 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
         {
             // Arrange
             var applicationId = Guid.NewGuid();
-            var organisationId = Guid.NewGuid();
-            var formVersionId = Guid.NewGuid();
             var missingFileId = Guid.NewGuid();
 
             var model = _fixture.Build<ApplicationPageViewModel>()
@@ -851,48 +1073,16 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
                 .With(m => m.RemoveFile, missingFileId.ToString())
                 .Create();
 
-            // Application must NOT be submitted
-            _mediatorMock
-                .Setup(m => m.Send(It.IsAny<GetApplicationByIdQuery>(), default))
-                .ReturnsAsync(new BaseMediatrResponse<GetApplicationByIdQueryResponse>
-                {
-                    Success = true,
-                    Value = _fixture.Build<GetApplicationByIdQueryResponse>()
-                        .With(r => r.Status, ApplicationStatus.Draft.ToString())
-                        .Create()
-                });
-
-            // File metadata returned, but does NOT contain requested file id
-            _mediatorMock
-                .Setup(m => m.Send(It.IsAny<GetFileMetadataQuery>(), default))
-                .ReturnsAsync(new BaseMediatrResponse<GetFileMetadataQueryResponse>
-                {
-                    Success = true,
-                    Value = new GetFileMetadataQueryResponse
-                    {
-                        Files = new List<FileMetadataDto>()
-                    }
-                });
-
-            _mediatorMock
-               .Setup(m => m.Send(
-                   It.IsAny<IRequest<BaseMediatrResponse<GetApplicationPageByIdQueryResponse>>>()))
-               .ReturnsAsync(new BaseMediatrResponse<GetApplicationPageByIdQueryResponse>
-               {
-                   Success = true,
-                   Value = _fixture.Create<GetApplicationPageByIdQueryResponse>()
-               });
-
+            SetupApplicationStatus(ApplicationStatus.Draft);
+            SetupFileMetadata(new List<FileMetadataDto>()); // does NOT contain requested file id
+            SetupPage(order: 1, totalSectionPages: 2);
 
             // Act
-            var result = await _controller.ApplicationPageAsync(
-                model,
-                applicationId,
-                organisationId,
-                formVersionId);
+            var result = await _controller.ApplicationPageAsync(model, applicationId, Guid.NewGuid(), Guid.NewGuid());
 
             // Assert
             Assert.IsType<BadRequestResult>(result);
+            _mediatorMock.Verify(m => m.Send(It.IsAny<DeleteFileMetataCommand>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]
@@ -900,33 +1090,19 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
         {
             // Arrange
             var applicationId = Guid.NewGuid();
-            var organisationId = Guid.NewGuid();
-            var formVersionId = Guid.NewGuid();
 
             var model = _fixture.Build<ApplicationPageViewModel>()
                 .With(m => m.ApplicationId, applicationId)
                 .Create();
 
-            // Application Is not Draft
-            _mediatorMock
-                .Setup(m => m.Send(It.IsAny<GetApplicationByIdQuery>(), default))
-                .ReturnsAsync(new BaseMediatrResponse<GetApplicationByIdQueryResponse>
-                {
-                    Success = true,
-                    Value = _fixture.Build<GetApplicationByIdQueryResponse>()
-                        .With(r => r.Status, ApplicationStatus.InReview.ToString())
-                        .Create()
-                });
+            SetupApplicationStatus(ApplicationStatus.InReview);
 
             // Act
-            var result = await _controller.ApplicationPageAsync(
-                model,
-                applicationId,
-                organisationId,
-                formVersionId);
+            var result = await _controller.ApplicationPageAsync(model, applicationId, Guid.NewGuid(), Guid.NewGuid());
 
             // Assert
             Assert.IsType<BadRequestResult>(result);
+            VerifyNoUploads();
         }
 
         [Fact]
@@ -934,8 +1110,6 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
         {
             // Arrange
             var applicationId = Guid.NewGuid();
-            var organisationId = Guid.NewGuid();
-            var formVersionId = Guid.NewGuid();
             var sectionId = Guid.NewGuid();
             var questionId = Guid.NewGuid();
             var fileId = Guid.NewGuid();
@@ -946,49 +1120,20 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
                 .With(m => m.RemoveFile, fileId.ToString())
                 .Create();
 
-            // --- 1: Application is NOT submitted ---
-            _mediatorMock
-                .Setup(m => m.Send(It.IsAny<GetApplicationByIdQuery>(), default))
-                .ReturnsAsync(new BaseMediatrResponse<GetApplicationByIdQueryResponse>
+            SetupApplicationStatus(ApplicationStatus.Draft);
+            SetupFileMetadata(new List<FileMetadataDto>
+            {
+                new FileMetadataDto
                 {
-                    Success = true,
-                    Value = _fixture.Build<GetApplicationByIdQueryResponse>()
-                        .With(r => r.Status, ApplicationStatus.Draft.ToString())
-                        .Create()
-                });
+                    FileId = fileId,
+                    QuestionId = questionId,
+                    FileName = "test.pdf"
+                }
+            });
+            SetupPage(order: 1, totalSectionPages: 2);
 
-            // --- 2: File exists ---
             _mediatorMock
-                .Setup(m => m.Send(It.IsAny<GetFileMetadataQuery>(), default))
-                .ReturnsAsync(new BaseMediatrResponse<GetFileMetadataQueryResponse>
-                {
-                    Success = true,
-                    Value = new GetFileMetadataQueryResponse
-                    {
-                        Files = new List<FileMetadataDto>
-                        {
-                            new FileMetadataDto
-                            {
-                                FileId = fileId,
-                                QuestionId = questionId,
-                                FileName = "test.pdf"
-                            }
-                        }
-                    }
-                });
-
-            // --- 3: Page lookup (required for repopulation) ---
-            _mediatorMock
-                .Setup(m => m.Send(It.IsAny<GetApplicationPageByIdQuery>(), default))
-                .ReturnsAsync(new BaseMediatrResponse<GetApplicationPageByIdQueryResponse>
-                {
-                    Success = true,
-                    Value = _fixture.Create<GetApplicationPageByIdQueryResponse>()
-                });
-
-            // --- 4: Delete command ---
-            _mediatorMock
-                .Setup(m => m.Send(It.IsAny<DeleteFileMetataCommand>(), default))
+                .Setup(m => m.Send(It.IsAny<DeleteFileMetataCommand>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new BaseMediatrResponse<EmptyResponse>
                 {
                     Success = true,
@@ -996,20 +1141,174 @@ namespace SFA.DAS.AODP.Web.UnitTests.Areas.Apply.Controllers
                 });
 
             // Act
-            var result = await _controller.ApplicationPageAsync(
-                model,
-                applicationId,
-                organisationId,
-                formVersionId);
+            var result = await _controller.ApplicationPageAsync(model, applicationId, Guid.NewGuid(), Guid.NewGuid());
 
             // Assert
             var view = Assert.IsType<ViewResult>(result);
             Assert.IsType<ApplicationPageViewModel>(view.Model);
 
             _mediatorMock.Verify(
-                m => m.Send(It.Is<DeleteFileMetataCommand>(c => c.FileId == fileId), default),
+                m => m.Send(It.Is<DeleteFileMetataCommand>(c => c.FileId == fileId), It.IsAny<CancellationToken>()),
+                Times.Once);
+
+            // Removing a file must not validate or save the page
+            _validatorMock.Verify(v => v.ValidateApplicationPageAnswers(
+                It.IsAny<ModelStateDictionary>(),
+                It.IsAny<GetApplicationPageByIdQueryResponse>(),
+                It.IsAny<ApplicationPageViewModel>()), Times.Never);
+            VerifyNoUploads();
+        }
+
+        #endregion
+
+        #region ApplicationPage POST - answers and uploads
+
+        [Fact]
+        public async Task ApplicationPage_Post_ValidationFails_ReturnsView_AndDoesNotSave()
+        {
+            var applicationId = Guid.NewGuid();
+            var sectionId = Guid.NewGuid();
+            var file = CreateFormFile("evidence.pdf", "application/pdf", PdfBytes);
+            var model = BuildFileUploadModel(applicationId, sectionId, file);
+
+            SetupApplicationStatus(ApplicationStatus.Draft);
+            SetupFileMetadata(new List<FileMetadataDto>());
+            SetupPage(order: 1, totalSectionPages: 2);
+
+            _validatorMock
+                .Setup(v => v.ValidateApplicationPageAnswers(
+                    It.IsAny<ModelStateDictionary>(),
+                    It.IsAny<GetApplicationPageByIdQueryResponse>(),
+                    It.IsAny<ApplicationPageViewModel>()))
+                .Callback<ModelStateDictionary, GetApplicationPageByIdQueryResponse, ApplicationPageViewModel>(
+                    (modelState, _, _) => modelState.AddModelError("Answer", "Required"));
+
+            var result = await _controller.ApplicationPageAsync(model, applicationId, Guid.NewGuid(), Guid.NewGuid());
+
+            var view = Assert.IsType<ViewResult>(result);
+            Assert.IsType<ApplicationPageViewModel>(view.Model);
+            Assert.False(_controller.ModelState.IsValid);
+
+            _mediatorMock.Verify(m => m.Send(It.IsAny<UpdatePageAnswersCommand>(), It.IsAny<CancellationToken>()), Times.Never);
+            VerifyNoUploads();
+        }
+
+        [Fact]
+        public async Task ApplicationPage_Post_ValidFile_UploadsFile_AndRedirectsToSectionAtEnd()
+        {
+            var applicationId = Guid.NewGuid();
+            var organisationId = Guid.NewGuid();
+            var formVersionId = Guid.NewGuid();
+            var sectionId = Guid.NewGuid();
+
+            var file = CreateFormFile("evidence.pdf", "application/pdf", PdfBytes);
+            var model = BuildFileUploadModel(applicationId, sectionId, file);
+
+            SetupApplicationStatus(ApplicationStatus.Draft);
+            SetupFileMetadata(new List<FileMetadataDto>());
+            SetupPage(order: 3, totalSectionPages: 3); // last page => end of section
+            SetupSavePageAnswers();
+
+            var result = await _controller.ApplicationPageAsync(model, applicationId, organisationId, formVersionId);
+
+            var redirect = Assert.IsType<RedirectToActionResult>(result);
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(nameof(ApplicationsController.ViewApplicationSection), redirect.ActionName);
+                Assert.NotNull(redirect.RouteValues);
+                Assert.Equal(organisationId, redirect.RouteValues["organisationId"]);
+                Assert.Equal(applicationId, redirect.RouteValues["applicationId"]);
+                Assert.Equal(sectionId, redirect.RouteValues["sectionId"]);
+                Assert.Equal(formVersionId, redirect.RouteValues["formVersionId"]);
+            });
+
+            _fileServiceMock.Verify(s => s.UploadAsync(
+                    FileCategory.QuestionUpload,
+                    It.IsAny<FileContext>(),
+                    "evidence.pdf",
+                    "application/pdf",
+                    It.IsAny<Stream>(),
+                    UserDisplayName),
                 Times.Once);
         }
 
+        [Fact]
+        public async Task ApplicationPage_Post_NoDisplayName_UploadsWithEmptyUploader()
+        {
+            _userHelperMock.Setup(u => u.GetUserDisplayName()).Returns((string)null!);
+
+            var applicationId = Guid.NewGuid();
+            var file = CreateFormFile("evidence.pdf", "application/pdf", PdfBytes);
+            var model = BuildFileUploadModel(applicationId, Guid.NewGuid(), file);
+
+            SetupApplicationStatus(ApplicationStatus.Draft);
+            SetupFileMetadata(new List<FileMetadataDto>());
+            SetupPage(order: 1, totalSectionPages: 1);
+            SetupSavePageAnswers();
+
+            await _controller.ApplicationPageAsync(model, applicationId, Guid.NewGuid(), Guid.NewGuid());
+
+            _fileServiceMock.Verify(s => s.UploadAsync(
+                    FileCategory.QuestionUpload,
+                    It.IsAny<FileContext>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<Stream>(),
+                    string.Empty),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task ApplicationPage_Post_DisallowedFileType_DoesNotUpload_AndReturnsView()
+        {
+            var applicationId = Guid.NewGuid();
+            var file = CreateFormFile("malware.exe", "application/octet-stream", new byte[] { 0x4D, 0x5A, 0x00 });
+            var model = BuildFileUploadModel(applicationId, Guid.NewGuid(), file);
+
+            SetupApplicationStatus(ApplicationStatus.Draft);
+            SetupFileMetadata(new List<FileMetadataDto>());
+            SetupPage(order: 1, totalSectionPages: 2);
+            SetupSavePageAnswers();
+
+            var result = await _controller.ApplicationPageAsync(model, applicationId, Guid.NewGuid(), Guid.NewGuid());
+
+            // FileUploadValidator throws; the controller catches, logs and redisplays the page
+            var view = Assert.IsType<ViewResult>(result);
+            Assert.IsType<ApplicationPageViewModel>(view.Model);
+            VerifyNoUploads();
+
+            // NOTE: current behaviour - answers are saved before files are validated
+            _mediatorMock.Verify(m => m.Send(It.IsAny<UpdatePageAnswersCommand>(), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task ApplicationPage_Post_FileServiceThrows_ReturnsView()
+        {
+            var applicationId = Guid.NewGuid();
+            var file = CreateFormFile("evidence.pdf", "application/pdf", PdfBytes);
+            var model = BuildFileUploadModel(applicationId, Guid.NewGuid(), file);
+
+            SetupApplicationStatus(ApplicationStatus.Draft);
+            SetupFileMetadata(new List<FileMetadataDto>());
+            SetupPage(order: 1, totalSectionPages: 2);
+            SetupSavePageAnswers();
+
+            _fileServiceMock
+                .Setup(s => s.UploadAsync(
+                    It.IsAny<FileCategory>(),
+                    It.IsAny<FileContext>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<Stream>(),
+                    It.IsAny<string>()))
+                .ThrowsAsync(new IOException(ExceptionMessage));
+
+            var result = await _controller.ApplicationPageAsync(model, applicationId, Guid.NewGuid(), Guid.NewGuid());
+
+            var view = Assert.IsType<ViewResult>(result);
+            Assert.IsType<ApplicationPageViewModel>(view.Model);
+        }
+
+        #endregion
     }
 }
