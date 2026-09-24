@@ -56,13 +56,7 @@ namespace SFA.DAS.AODP.Web.Models.RelatedLinks
 
                 RelatedLinksPage.ReviewApplicationDetails => new List<RelatedLink>
                 {
-                    new RelatedLink(
-                        RelatedLinkConstants.Text.ViewMessages,
-                        url.RouteUrl(
-                            RouteNames.Review_ApplicationMessages,
-                            new { applicationReviewId = ctx.ApplicationReviewId })!,
-                        openInNewTab: false),
-
+                    
                     new RelatedLink(
                         RelatedLinkConstants.Text.ViewApplication,
                         url.RouteUrl(

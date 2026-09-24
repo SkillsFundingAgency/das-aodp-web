@@ -18,6 +18,14 @@ public class GetFundingOffersQueryHandler : IRequestHandler<GetFundingOffersQuer
         try
         {
             var result = await _apiClient.Get<GetFundingOffersQueryResponse>(new GetFundingOffersApiRequest());
+            if (result?.Offers != null)
+            {
+                result.Offers = result.Offers
+                    .OrderBy(offer => offer.Name, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(offer => offer.Id)
+                    .ToList();
+            }
+
             response.Value = result;
             response.Success = true;
         }

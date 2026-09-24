@@ -2,16 +2,16 @@
 @model EditSectionViewModel
 
 @{
-    ViewData["Title"] = "Edit Section";
+    ViewData["Title"] = "Edit section";
 }
 
 <a class="govuk-back-link" asp-action="Edit" asp-controller="Forms" asp-route-formVersionId="@Model.FormVersionId">
-    Back to Form
+    Back to form
 </a>
 
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 
-<h1 class="govuk-heading-l">Edit Section</h1>
+<h1 class="govuk-heading-l">Edit section</h1>
 
 <form asp-action="Edit" method="post">
     <div class="govuk-form-group">
@@ -35,7 +35,7 @@
     <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
     @if (Model.Editable)
     {
-        <a class="govuk-button" asp-action="Create" asp-controller="Pages" asp-route-sectionId="@Model.SectionId" asp-route-formVersionId="@Model.FormVersionId">Create New Page</a>
+        <a class="govuk-button" asp-action="Create" asp-controller="Pages" asp-route-sectionId="@Model.SectionId" asp-route-formVersionId="@Model.FormVersionId">Create new page</a>
     }
 
     <h2 class="govuk-heading-m">Pages</h2>
@@ -69,14 +69,14 @@
                         {
                             <button @(OrderButtonHelper.ShouldAutoFocus(TempData, OrderButtonHelper.OrderDirection.Up, item.Id, i, Model.Pages.Count) ? "autofocus" : "")
                                     class="govuk-button govuk-button--secondary" type="submit" value="@item.Id" name="AdditionalActions[MoveUp]">
-                                Move Up
+                                Move up
                             </button>
                         }
                         @if (i != Model.Pages.Count() - 1 && Model.Editable)
                         {
                             <button @(OrderButtonHelper.ShouldAutoFocus(TempData, OrderButtonHelper.OrderDirection.Down, item.Id, i, Model.Pages.Count) ? "autofocus" : "")
                                     class="govuk-button govuk-button--secondary" type="submit" value="@item.Id" name="AdditionalActions[MoveDown]">
-                                Move Down
+                                Move down
                             </button>
                         }
                         @if (Model.Editable)

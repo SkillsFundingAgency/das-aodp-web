@@ -10,9 +10,9 @@
     var summary = Model.ApplicationSummaryModel;
 }
 
-<h1 class="title">Application Export</h1>
+<h1 class="title">Application export</h1>
 
-    <h2 class="subheading">Application Summary</h2>
+    <h2 class="subheading">Application summary</h2>
 
     <table class="summary-table">
         <tr>
@@ -20,7 +20,7 @@
             <td>@summary.SubmissionId</td>
         </tr>
         <tr>
-            <td>Qualification Title</td>
+            <td>Qualification title</td>
             <td>@summary.QualificationTitle</td>
         </tr>
         <tr>
@@ -28,7 +28,7 @@
             <td>@summary.OrganisationName</td>
         </tr>
         <tr>
-            <td>Form Name</td>
+            <td>Form name</td>
             <td>@summary.FormName</td>
         </tr>
         <tr>
@@ -37,7 +37,7 @@
         </tr>
     </table>
 
-    <h2 class="subheading">Application Form</h2>
+    <h2 class="subheading">Application form</h2>
 
     @foreach (var section in form.Sections.OrderBy(s => s.Order))
     {
