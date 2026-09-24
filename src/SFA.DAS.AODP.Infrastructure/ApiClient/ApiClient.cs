@@ -102,11 +102,7 @@ namespace SFA.DAS.AODP.Infrastructure.ApiClient
             var response = await _httpClient.SendAsync(requestMessage).ConfigureAwait(false);
             var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new HttpRequestException(
-                    $"POST {request.PostUrl} failed with {(int)response.StatusCode} {response.StatusCode}: {responseContent}");
-            }
+            response.EnsureSuccessStatusCode();
 
             return JsonConvert.DeserializeObject<TResponse>(responseContent) ?? default;
         }
