@@ -1,9 +1,9 @@
 ﻿using GovUk.Frontend.AspNetCore;
-using SFA.DAS.AODP.Application.Queries.Import;
 using System.ComponentModel.DataAnnotations;
 
 namespace SFA.DAS.AODP.Web.Models.Import
 {
+    [ExcludeFromCodeCoverage]
     public class CompleteViewModel
     {
         public Guid JobRunId { get; set; } = Guid.Empty;

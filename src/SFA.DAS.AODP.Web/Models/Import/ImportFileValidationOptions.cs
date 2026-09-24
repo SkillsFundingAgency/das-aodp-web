@@ -1,5 +1,6 @@
 ﻿namespace SFA.DAS.AODP.Web.Models.Import;
 
+[ExcludeFromCodeCoverage]
 public class ImportFileValidationOptions
 {
     public string[] HeaderKeywords { get; set; } = Array.Empty<string>();

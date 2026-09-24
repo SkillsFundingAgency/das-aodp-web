@@ -26,10 +26,10 @@
 
 <h1 class="govuk-heading-xl">@((ViewBag.PageTitle as string) ?? "Import defunding list data")</h1>
 
-<form asp-area="Admin" asp-controller="Import" asp-action="@(formAction)" method="post" enctype="multipart/form-data">
+<form asp-area="Admin" asp-controller="Import" asp-action="@(formAction)" method="post" enctype="multipart/form-data" id="uploadForm">
     @Html.AntiForgeryToken()
 
-    <div class="govuk-form-group @(hasFileError ? "govuk-form-group--error" : "")">
+    <div id="fileSection" class="govuk-form-group @(hasFileError ? "govuk-form-group--error" : "")">
         <label class="govuk-label" for="File">
             Import file
         </label>
@@ -50,9 +50,44 @@
         <span asp-validation-for="File" class="govuk-error-message" />
     </div>
 
+    <div id="uploadingSection" style="display:none;">
+        <p class="govuk-body">File uploading</p>
+        <img src="/assets/images/spinner.svg"
+             alt="Loading"
+             class="upload-spinner govuk-!-display-inline-block govuk-!-margin-5" style="width:50px"
+             aria-hidden="true" />
+    </div>
+
     <div class="govuk-form-group">
-        <govuk-button type="submit">Continue</govuk-button>
+        <govuk-button type="submit" id="continueButton">Continue</govuk-button>
     </div>
 
     <input asp-for="Source" type="hidden" value="@(formAction)" />
 </form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('uploadForm');
+        if (!form) return;
+
+        const fileSection = document.getElementById('fileSection');
+        const uploadingSection = document.getElementById('uploadingSection');
+        const continueButton = document.getElementById('continueButton');
+        const fileInput = document.getElementById('File');
+
+        form.addEventListener('submit', () => {
+
+            if (!fileInput || fileInput.files.length === 0) {
+                return;
+            }
+
+            fileSection.hidden = true;
+            uploadingSection.style.display = 'block';
+
+            if (continueButton) {
+                continueButton.disabled = true;
+                continueButton.textContent = 'Uploading...';
+            }
+        }, { once: true });
+    });
+</script>

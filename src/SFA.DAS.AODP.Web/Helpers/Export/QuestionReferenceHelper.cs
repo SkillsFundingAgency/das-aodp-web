@@ -1,5 +1,6 @@
 ﻿namespace SFA.DAS.AODP.Web.Helpers.Export
 {
+    [ExcludeFromCodeCoverage]
     public static class QuestionReferenceHelper
     {
         public static string GetReference(

@@ -1,11 +1,12 @@
-﻿using SFA.DAS.AODP.Web.Models.GdsComponents;
-
-namespace SFA.DAS.AODP.Web.Models.OutputFile
+﻿namespace SFA.DAS.AODP.Web.Models.OutputFile
 {
+
     public enum PublicationDateMode
     {
         None = 0, Today = 1, Manual = 2
     }
+
+    [ExcludeFromCodeCoverage]
     public class OutputFileViewModel
     {
         public PublicationDateMode DateChoice { get; set; }
@@ -25,6 +26,8 @@ namespace SFA.DAS.AODP.Web.Models.OutputFile
             return false;
         }
     }
+
+    [ExcludeFromCodeCoverage]
     public class OutputFileLogModel
     {
         public string UserDisplayName { get; set; }
