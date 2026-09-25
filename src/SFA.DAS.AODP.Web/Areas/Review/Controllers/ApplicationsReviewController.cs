@@ -333,6 +333,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             catch (Exception ex)
             {
                 LogException(ex);
+                ViewBag.NotificationType = ViewNotificationMessageType.Error;
+                ViewBag.NotificationMessage = "The application could not be deleted.";
                 return View(model);
             }
         }

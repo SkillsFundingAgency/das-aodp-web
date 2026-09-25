@@ -18,6 +18,8 @@
 <form asp-action="Delete" asp-controller="ApplicationsReview" method="post">
     @Html.HiddenFor(m => m.ApplicationReviewId)
     @Html.HiddenFor(m => m.ApplicationId)
+    @Html.HiddenFor(m => m.ApplicationName)
+    @Html.HiddenFor(m => m.ApplicationReference)
 
     <govuk-warning-text icon-fallback-text="Warning">
         Are you sure you wish to delete this application? This action cannot be undone.
