@@ -42,6 +42,23 @@ namespace SFA.DAS.AODP.Application.Tests.Commands.Application.Application
         }
 
         [Fact]
+        public async Task Then_The_UserType_Is_Forwarded_To_The_ApiRequest()
+        {
+            // Arrange
+            const string userType = "Qfau";
+            var request = new DeleteApplicationCommand(Guid.NewGuid()) { UserType = userType };
+
+            // Act
+            var response = await _handler.Handle(request, default);
+
+            // Assert
+            _apiClient
+                .Verify(a => a.Delete(It.Is<DeleteApplicationApiRequest>(r => r.ApplicationId == request.ApplicationId && r.UserType == userType)));
+
+            Assert.True(response.Success);
+        }
+
+        [Fact]
         public async Task And_Api_Errors_Then_The_FailCommandResult_Is_Returned()
         {
             // Arrange
