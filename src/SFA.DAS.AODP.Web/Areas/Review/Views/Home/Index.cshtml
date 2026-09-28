@@ -32,27 +32,13 @@
              </h2>
              <p class="govuk-body">Review, assign and approve applications for funding from Awarding Organisations.</p>
          }
-        @if (Model.UserRoles.Contains(RoleConstants.QFAUReviewer) || Model.UserRoles.Contains(RoleConstants.QFAUApprover))
-        {
-            <h2 class="govuk-heading-s" style="margin-top:1.5rem;">
-                <a asp-area="Review" asp-controller="ApplicationsReview" asp-action="Index" class="govuk-link">Review applications for funding</a>
-            </h2>
-            <p class="govuk-body">Review, Approve, Assign Reviewers and Assign funding for applications for funding from AO's</p>
-        }
 
-         @if (Model.UserRoles.Contains(RoleConstants.QFAUReviewer) || Model.UserRoles.Contains(RoleConstants.QFAUApprover))
-         {
-             <h2 class="govuk-heading-s govuk-!-margin-top-6;">
-                 <a asp-area="Review" asp-controller="Changed" asp-action="Index" class="govuk-link">Review qualifications with changes</a>
-             </h2>
-             <p class="govuk-body">Review qualifications that have had changes made to them by Ofqual.</p>
-         }
         @if (Model.UserRoles.Contains(RoleConstants.QFAUReviewer) || Model.UserRoles.Contains(RoleConstants.QFAUApprover))
         {
-            <h2 class="govuk-heading-s" style="margin-top:1.5rem;">
+            <h2 class="govuk-heading-s govuk-!-margin-top-6;">
                 <a asp-area="Review" asp-controller="Changed" asp-action="Index" class="govuk-link">Review qualifications with changes</a>
             </h2>
-            <p class="govuk-body">Review qualifications that have had changes made to them within Ofqual.</p>
+            <p class="govuk-body">Review qualifications that have had changes made to them by Ofqual.</p>
         }
 
         @if (Model.UserRoles.Contains(RoleConstants.QFAUImport))
