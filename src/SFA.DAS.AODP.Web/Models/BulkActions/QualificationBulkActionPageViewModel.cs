@@ -3,14 +3,13 @@ using SFA.DAS.AODP.Web.Validators.Attributes;
 using SFA.DAS.AODP.Web.Validators.Messages;
 using SFA.DAS.AODP.Web.Validators.Patterns;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 
 namespace SFA.DAS.AODP.Web.Models.BulkActions
 {
-    [ExcludeFromCodeCoverage]
     /// <summary>
     /// Base view model for list pages that support selecting rows and applying a bulk action.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public abstract class QualificationsBulkActionPageViewModel
     {
 

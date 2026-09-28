@@ -12,7 +12,7 @@ public sealed class FileUploadValidator
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
     }
 
-    public void ValidateOrThrow(string? originalFileName, Stream? stream, int? importFileSize = null)
+    public void ValidateOrThrow(string? originalFileName, Stream? stream, int? importFileSize = null, bool? checkAllowedFileTypes = true)
     {
         if (stream is null)
             throw new FileUploadPolicyException(FileUploadRejectionReason.MissingFile);
@@ -41,19 +41,22 @@ public sealed class FileUploadValidator
 
         var ext = (Path.GetExtension(safeFileName) ?? string.Empty).Trim().ToLowerInvariant();
 
-        var allowed = (_settings.UploadFileTypesAllowed ?? new List<string>())
-            .Select(x => (x ?? string.Empty).Trim())
-            .Where(x => !string.IsNullOrWhiteSpace(x))
-            .Select(x => x.StartsWith('.') ? x.ToLowerInvariant() : "." + x.ToLowerInvariant())
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-        if (allowed.Count > 0)
+        if (checkAllowedFileTypes ?? true)
         {
-            if (string.IsNullOrWhiteSpace(ext))
-                throw new FileUploadPolicyException(FileUploadRejectionReason.MissingExtension);
+            var allowed = (_settings.UploadFileTypesAllowed ?? new List<string>())
+                .Select(x => (x ?? string.Empty).Trim())
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Select(x => x.StartsWith('.') ? x.ToLowerInvariant() : "." + x.ToLowerInvariant())
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-            if (!allowed.Contains(ext))
-                throw new FileUploadPolicyException(FileUploadRejectionReason.FileTypeNotAllowed);
+            if (allowed.Count > 0)
+            {
+                if (string.IsNullOrWhiteSpace(ext))
+                    throw new FileUploadPolicyException(FileUploadRejectionReason.MissingExtension);
+
+                if (!allowed.Contains(ext))
+                    throw new FileUploadPolicyException(FileUploadRejectionReason.FileTypeNotAllowed);
+            }
         }
 
         var configuredMb = importFileSize ??_settings.MaxUploadFileSize;

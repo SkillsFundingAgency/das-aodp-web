@@ -95,7 +95,7 @@ public class UploadImportFileViewModel : IValidatableObject
                         headerKeywords: headerKeywords,
                         importFileValidationOptions: new ImportFileValidationOptions
                         {
-                            TargetSheetName = "PLDNS V12F",
+                            TargetSheetName = "PLDNS V",
                             DefaultRowIndex = 1,
                             MinMatches = 1,
                             MapColumns = MapPldnsColumns

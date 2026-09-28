@@ -281,7 +281,7 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
         [Route("/admin/import/defunding-list")]
         public IActionResult DefundingList()
         {
-            ViewBag.PageTitle = "Import Defunding List";
+            ViewBag.PageTitle = "Import defunding list";
             ViewBag.FormAction = "DefundingList";
             return View(UploadImportListViewPath);
         }
@@ -292,7 +292,7 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
         [Authorize(Roles = RoleConstants.QFAUImport)]
         public async Task<IActionResult> DefundingList([FromForm] UploadImportFileViewModel model)
         {
-            ViewBag.PageTitle = "Import Defunding List";
+            ViewBag.PageTitle = "Import defunding list";
             ViewBag.FormAction = "DefundingList";
 
             if (!ModelState.IsValid)

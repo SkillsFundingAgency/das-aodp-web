@@ -22,9 +22,16 @@
                     <govuk-checkboxes name="SelectedOfferIds" for="@Model.SelectedOfferIds">
                         <govuk-checkboxes-fieldset>
                             <govuk-checkboxes-fieldset-legend is-page-heading="true" class="govuk-fieldset__legend--l">
-                                What form of funding will you offer for this qualification?
+                                What form of funding do you want to add or edit for this qualification?
                             </govuk-checkboxes-fieldset-legend>
-                            @Html.RenderPartialAsync("Validation/_CheckboxValidationPartial", nameof(Model.SelectedOfferIds))
+
+                            <govuk-checkboxes-hint>
+                                Selected values will be able to have the Funding Offer Start Date, End Date and Notes added or edited.
+                            </govuk-checkboxes-hint>
+
+                            @{
+                                await Html.RenderPartialAsync("Validation/_CheckboxValidationPartial", nameof(Model.SelectedOfferIds));
+                            }
 
                             @foreach (var offer in Model.FundingOffers)
                             {

@@ -64,7 +64,7 @@ public class NewControllerBulkActionTests
                 Success = true,
                 Value = new GetProcessStatusesQueryResponse
                 {
-                    ProcessStatuses = new List<GetProcessStatusesQueryResponse.ProcessStatus>
+                    ProcessStatuses = new List<ProcessStatus>
                     {
                         new() { Id = Guid.NewGuid(), Name = "Decision Required" }
                     }

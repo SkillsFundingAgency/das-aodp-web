@@ -1,9 +1,8 @@
 ﻿using MediatR;
 
-namespace SFA.DAS.AODP.Application.Queries.Qualifications
+namespace SFA.DAS.AODP.Application.Queries.Qualifications;
+
+public class GetQualificationDetailsQuery : IRequest<BaseMediatrResponse<GetQualificationDetailsQueryResponse>>
 {
-    public class GetQualificationDetailsQuery : IRequest<BaseMediatrResponse<GetQualificationDetailsQueryResponse>>
-    {
-        public string QualificationReference { get; set; }
-    }
+    public string QualificationReference { get; set; } = null!;
 }

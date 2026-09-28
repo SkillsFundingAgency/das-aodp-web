@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using SFA.DAS.AODP.Application.Queries.Qualifications;
+﻿using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Web.Models.Qualifications;
 using SFA.DAS.AODP.Web.Validators.Attributes;
 using SFA.DAS.AODP.Web.Validators.Patterns;
@@ -28,7 +27,7 @@ public class QualificationSearchViewModel : IValidatableObject
     public DateTime? RegulatedQualificationsLastImported { get; set; }
     public DateTime? FundedQualificationsLastImported { get; set; }
 
-    public static QualificationSearchViewModel Map(GetQualificationsQueryResponse response, List<GetProcessStatusesQueryResponse.ProcessStatus> processStatuses, string searchTerm = "")
+    public static QualificationSearchViewModel Map(GetQualificationsQueryResponse response, List<ProcessStatus> processStatuses, string searchTerm = "")
     {
         var vm = new QualificationSearchViewModel()
         {

@@ -14,7 +14,7 @@ public class QfauFundingDecisionViewModelTests
 
         var response = new GetQfauFeedbackForApplicationReviewConfirmationQueryResponse
         {
-            Status = ApplicationStatus.Approved.ToString(),
+            Status = nameof(ApplicationStatus.Approved),
             Comments = "Test comments",
             FundedOffers = []
         };
@@ -38,7 +38,7 @@ public class QfauFundingDecisionViewModelTests
 
         var response = new GetQfauFeedbackForApplicationReviewConfirmationQueryResponse
         {
-            Status = ApplicationStatus.Approved.ToString(),
+            Status = nameof(ApplicationStatus.Approved),
             FundedOffers =
             [
                 new GetQfauFeedbackForApplicationReviewConfirmationQueryResponse.Funding
@@ -66,6 +66,64 @@ public class QfauFundingDecisionViewModelTests
     }
 
     [Fact]
+    public void Map_OrdersDetailsByFundingOfferName_CaseInsensitive_AndPreservesDetails()
+    {
+        var zebraOfferId = Guid.NewGuid();
+        var alphaOfferId = Guid.NewGuid();
+        var middleOfferId = Guid.NewGuid();
+
+        var response = new GetQfauFeedbackForApplicationReviewConfirmationQueryResponse
+        {
+            Status = ApplicationStatus.Approved.ToString(),
+            FundedOffers =
+            [
+                new()
+                {
+                    FundingOfferId = zebraOfferId,
+                    StartDate = new DateOnly(2026, 3, 1),
+                    EndDate = new DateOnly(2026, 3, 31),
+                    Comments = "Zebra comments"
+                },
+                new()
+                {
+                    FundingOfferId = alphaOfferId,
+                    StartDate = new DateOnly(2026, 1, 1),
+                    EndDate = new DateOnly(2026, 1, 31),
+                    Comments = "Alpha comments"
+                },
+                new()
+                {
+                    FundingOfferId = middleOfferId,
+                    StartDate = new DateOnly(2026, 2, 1),
+                    EndDate = new DateOnly(2026, 2, 28),
+                    Comments = "Middle comments"
+                }
+            ],
+            RelatedQualification = new GetQfauFeedbackForApplicationReviewConfirmationQueryResponse.Qualification
+            {
+                Status = ProcessStatusLookup.DecisionRequired.Name
+            }
+        };
+
+        var offers = new GetFundingOffersQueryResponse
+        {
+            Offers =
+            [
+                new() { Id = zebraOfferId, Name = "Zebra offer" },
+                new() { Id = alphaOfferId, Name = "alpha offer" },
+                new() { Id = middleOfferId, Name = "Middle offer" }
+            ]
+        };
+
+        var result = QfauFundingDecisionViewModel.Map(Guid.NewGuid(), response, offers);
+
+        Assert.Equal([alphaOfferId, middleOfferId, zebraOfferId], result.OfferFundingDetails.Select(detail => detail.FundingOfferId));
+        Assert.Equal(["Alpha comments", "Middle comments", "Zebra comments"], result.OfferFundingDetails.Select(detail => detail.Comments));
+        Assert.Equal(new DateOnly?[] { new(2026, 1, 1), new(2026, 2, 1), new(2026, 3, 1) }, result.OfferFundingDetails.Select(detail => detail.StartDate));
+        Assert.Equal(new DateOnly?[] { new(2026, 1, 31), new(2026, 2, 28), new(2026, 3, 31) }, result.OfferFundingDetails.Select(detail => detail.EndDate));
+    }
+
+    [Fact]
     public void Map_MapsFundingOffers()
     {
         var offer1Id = Guid.NewGuid();
@@ -73,7 +131,7 @@ public class QfauFundingDecisionViewModelTests
 
         var response = new GetQfauFeedbackForApplicationReviewConfirmationQueryResponse
         {
-            Status = ApplicationStatus.Approved.ToString(),
+            Status = nameof(ApplicationStatus.Approved),
             FundedOffers = []
         };
 
@@ -106,13 +164,13 @@ public class QfauFundingDecisionViewModelTests
     {
         var response = new GetQfauFeedbackForApplicationReviewConfirmationQueryResponse
         {
-            Status = ApplicationStatus.Approved.ToString(),
+            Status = nameof(ApplicationStatus.Approved),
             FundedOffers = [],
             RelatedQualification = new GetQfauFeedbackForApplicationReviewConfirmationQueryResponse.Qualification
             {
                 Qan = "12345678",
                 Name = "Qualification name",
-                Status = ProcessStatus.DecisionRequired
+                Status = ProcessStatusLookup.DecisionRequired.Name
             }
         };
 
@@ -126,7 +184,7 @@ public class QfauFundingDecisionViewModelTests
         Assert.NotNull(result.RelatedQualification);
         Assert.Equal("12345678", result.RelatedQualification.Qan);
         Assert.Equal("Qualification name", result.RelatedQualification.Name);
-        Assert.Equal(ProcessStatus.DecisionRequired, result.RelatedQualification.Status);
+        Assert.Equal(ProcessStatusLookup.DecisionRequired.Name, result.RelatedQualification.Status);
     }
 
     [Fact]
@@ -134,7 +192,7 @@ public class QfauFundingDecisionViewModelTests
     {
         var response = new GetQfauFeedbackForApplicationReviewConfirmationQueryResponse
         {
-            Status = ApplicationStatus.NotApproved.ToString(),
+            Status = nameof(ApplicationStatus.NotApproved),
             FundedOffers =
             [
                 new GetQfauFeedbackForApplicationReviewConfirmationQueryResponse.Funding
@@ -182,7 +240,7 @@ public class QfauFundingDecisionViewModelTests
     {
         var response = new GetQfauFeedbackForApplicationReviewConfirmationQueryResponse
         {
-            Status = ApplicationStatus.Approved.ToString(),
+            Status = nameof(ApplicationStatus.Approved),
             FundedOffers = [],
             RelatedQualification = null
         };
@@ -200,13 +258,12 @@ public class QfauFundingDecisionViewModelTests
     }
 
     [Theory]
-    [InlineData(ProcessStatus.Rejected)]
-    [InlineData(ProcessStatus.NoActionRequired)]
+    [MemberData(nameof(QualificationStatusData))]
     public void Map_InvalidQualificationStatus_AddsMessage_AndDisablesSubmit(string qualificationStatus)
     {
         var response = new GetQfauFeedbackForApplicationReviewConfirmationQueryResponse
         {
-            Status = ApplicationStatus.Approved.ToString(),
+            Status = nameof(ApplicationStatus.Approved),
             FundedOffers = [],
             RelatedQualification = new GetQfauFeedbackForApplicationReviewConfirmationQueryResponse.Qualification
             {
@@ -233,13 +290,13 @@ public class QfauFundingDecisionViewModelTests
     {
         var response = new GetQfauFeedbackForApplicationReviewConfirmationQueryResponse
         {
-            Status = ApplicationStatus.Approved.ToString(),
+            Status = nameof(ApplicationStatus.Approved),
             FundedOffers = [],
             RelatedQualification = new GetQfauFeedbackForApplicationReviewConfirmationQueryResponse.Qualification
             {
                 Qan = "12345678",
                 Name = "Qualification name",
-                Status = ProcessStatus.DecisionRequired
+                Status = ProcessStatusLookup.DecisionRequired.Name
             }
         };
 
@@ -259,7 +316,7 @@ public class QfauFundingDecisionViewModelTests
     {
         var response = new GetQfauFeedbackForApplicationReviewConfirmationQueryResponse
         {
-            Status = ApplicationStatus.NotApproved.ToString(),
+            Status = nameof(ApplicationStatus.NotApproved),
             FundedOffers =
             [
                 new GetQfauFeedbackForApplicationReviewConfirmationQueryResponse.Funding
@@ -271,7 +328,7 @@ public class QfauFundingDecisionViewModelTests
             {
                 Qan = "12345678",
                 Name = "Qualification name",
-                Status = ProcessStatus.Rejected
+                Status = ProcessStatusLookup.Rejected.Name
             }
         };
 
@@ -285,4 +342,10 @@ public class QfauFundingDecisionViewModelTests
         Assert.Single(result.Messages);
         Assert.Equal(FundingDecisionMessages.NotApprovedWithOffers, result.Messages[0]);
     }
+
+    public static IEnumerable<string[]> QualificationStatusData =>
+    [
+        [ProcessStatusLookup.Rejected.Name],
+        [ProcessStatusLookup.NoActionRequired.Name]
+    ];
 }

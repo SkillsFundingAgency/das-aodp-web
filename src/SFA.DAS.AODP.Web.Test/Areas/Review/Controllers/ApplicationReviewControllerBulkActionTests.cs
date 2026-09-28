@@ -337,7 +337,7 @@ public class ApplicationsReviewControllerBulkActionTests
         Assert.Equal("AO", failed.AwardingOrganisation);
         Assert.Equal("Reviewer 1 and 2 must be different users.", failed.FailureReason);
 
-        Assert.Equal("Go back to Applications", errorModel.BackLinkText);
+        Assert.Equal("Go back to applications", errorModel.BackLinkText);
         Assert.Equal("/review/application-reviews?pageNumber=1&recordsPerPage=10", errorModel.BackLinkUrl);
     }
 
@@ -694,7 +694,7 @@ public class ApplicationsReviewControllerBulkActionTests
                     FailureReason = "Application not found."
                 }
             },
-            BackLinkText = "Go back to Applications",
+            BackLinkText = "Go back to applications",
             BackLinkUrl = "/review/application-reviews?pageNumber=1&recordsPerPage=10"
         };
 
@@ -712,7 +712,7 @@ public class ApplicationsReviewControllerBulkActionTests
         Assert.Equal("Test application", model.Failed.Single().Title);
         Assert.Equal("AO", model.Failed.Single().AwardingOrganisation);
         Assert.Equal("Application not found.", model.Failed.Single().FailureReason);
-        Assert.Equal("Go back to Applications", model.BackLinkText);
+        Assert.Equal("Go back to applications", model.BackLinkText);
         Assert.Equal("/review/application-reviews?pageNumber=1&recordsPerPage=10", model.BackLinkUrl);
     }
 

@@ -1,16 +1,16 @@
 using FluentValidation;
-using FluentValidation.Validators;
 using GovUk.Frontend.AspNetCore;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.FeatureManagement;
 using SFA.DAS.AODP.Authentication.Extensions;
+using SFA.DAS.AODP.Web.Areas.Review.Models.Rollover;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Extensions.Startup;
+using SFA.DAS.AODP.Web.Filters;
+using SFA.DAS.AODP.Web.Middleware;
 using SFA.DAS.AODP.Web.Models.OutputFile;
 using SFA.DAS.AODP.Web.Validators;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using FeatureManagementOptions = SFA.DAS.AODP.Web.FeatureManagement.FeatureManagementOptions;
@@ -56,6 +56,8 @@ internal class Program
             .AddHealthChecks();
 
         builder.Services.AddDfeSignIn(configuration, "SFA.DAS.AODP.Web", typeof(CustomServiceRole), "/signout", "signins");
+        //new
+        builder.Services.AddScoped<RequireDataConsentFilter>();
 
         builder.Services.AddSession(options =>
         {
@@ -70,9 +72,11 @@ internal class Program
              .AddMvc(options =>
              {
                  options.Filters.Add<AutoValidateAntiforgeryTokenAttribute>();
+                 options.Filters.AddService<RequireDataConsentFilter>();
              });
 
-        builder.Services.AddScoped<IValidator<OutputFileViewModel>, OutputFileViewModelValidator>();
+        builder.Services.AddScoped<IValidator<OutputFileViewModel>, OutputFileViewModelValidator>();        
+
 
         builder.Services.AddMediatR(config =>
         {
@@ -111,6 +115,8 @@ internal class Program
             app.UseExceptionHandler("/Home/Error");
             app.UseHsts(); // Use the configured HSTS options
         }
+
+        app.UseMiddleware<MediatrExceptionLoggingMiddleware>();
 
         app.UseGovUkFrontend();
 
@@ -171,8 +177,8 @@ internal class Program
     {
         endpoints.MapAreaControllerRoute(name: "Review",
                                        areaName: "Review",
-                                       pattern: "Review",
-                                       defaults: new { area = "Review", controller = "Home", action = "Index" });
+                                        pattern: "Review/{controller=Home}/{action=Index}/{id?}",
+                                       defaults: new { area = "Review" });
 
 
         endpoints.MapAreaControllerRoute(name: "Apply",

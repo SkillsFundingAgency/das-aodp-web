@@ -1,8 +1,7 @@
-﻿using Microsoft.AspNetCore.Razor.TagHelpers;
-using SFA.DAS.AODP.Application.Queries.Application.Application;
-using SFA.DAS.AODP.Application.Queries.Qualifications;
-using SFA.DAS.AODP.Models.Application;
+﻿using SFA.DAS.AODP.Application.Queries.Qualifications;
+using SFA.DAS.AODP.Models.Qualifications;
 using System.ComponentModel;
+using SFA.DAS.AODP.Models.Qualifications;
 
 namespace SFA.DAS.AODP.Web.Models.Qualifications;
 
@@ -65,6 +64,11 @@ public class NewQualificationDetailsViewModel
     public bool? EighteenPlus { get; set; }
     public bool? NineteenPlus { get; set; }
     public string? ImportStatus { get; set; }
+
+    public bool? EligibleForFunding { get; set; }
+    public EligibleForFundingStatus? EligibleForFundingStatus { get; set; }
+
+    public string? FundingEligibilityConflictType { get; set; }
     public virtual LifecycleStage Stage { get; set; } = null!;
     public virtual AwardingOrganisation Organisation { get; set; } = null!;
     public virtual Qualification Qual { get; set; } = null!;
@@ -106,18 +110,6 @@ public class NewQualificationDetailsViewModel
         public string? Name { get; set; }
     }
 
-    public partial class AwardingOrganisation
-    {
-        public Guid Id { get; set; }
-        public int? Ukprn { get; set; }
-        public string? RecognitionNumber { get; set; }
-        public string? NameLegal { get; set; }
-        public string? NameOfqual { get; set; }
-        public string? NameGovUk { get; set; }
-        public string? Name_Dsi { get; set; }
-        public string? Acronym { get; set; }
-    }
-
     public partial class Qualification
     {
         public Guid Id { get; set; }
@@ -129,23 +121,6 @@ public class NewQualificationDetailsViewModel
     {
         public Guid Id { get; set; }
         public string? Description { get; set; }
-    }
-
-    public partial class ProcessStatus
-    {
-        public Guid Id { get; set; }
-        public string? Name { get; set; }
-        public int? IsOutcomeDecision { get; set; }
-
-        public static implicit operator ProcessStatus(GetProcessStatusesQueryResponse.ProcessStatus model)
-        {
-            return new ProcessStatus
-            {
-                Id = model.Id,
-                Name = model.Name,
-                IsOutcomeDecision = model.IsOutcomeDecision,
-            };
-        }
     }
 
     public class AdditionalFormActions
@@ -216,6 +191,11 @@ public class NewQualificationDetailsViewModel
             EighteenPlus = entity.EighteenPlus,
             NineteenPlus = entity.NineteenPlus,
             ImportStatus = entity.ImportStatus,
+            EligibleForFunding = entity.EligibleForFunding,
+            EligibleForFundingStatus = new EligibleForFundingStatus(
+                entity.EligibleForFunding, 
+                entity.FundingEligibilityFailedFields),
+            FundingEligibilityConflictType = entity.FundingEligibilityConflictType,
             Stage = new LifecycleStage
             {
                 Id = entity.Stage.Id,
@@ -238,12 +218,7 @@ public class NewQualificationDetailsViewModel
                 Qan = entity.Qual.Qan,
                 QualificationName = entity.Qual.QualificationName
             },
-            ProcStatus = new ProcessStatus()
-            {
-                Id = entity.ProcStatus.Id,
-                Name = entity.ProcStatus.Name,
-                IsOutcomeDecision = entity.ProcStatus.IsOutcomeDecision,
-            }
+            ProcStatus = entity.ProcStatus
         };
     }
 }

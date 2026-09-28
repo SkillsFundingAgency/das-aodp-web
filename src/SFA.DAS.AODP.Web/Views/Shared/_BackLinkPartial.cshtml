@@ -4,7 +4,10 @@
 {
     @if (Model.Area is not null)
     {
-        <a class="govuk-back-link" asp-area="@Model.Area" asp-controller="@Model.Controller" asp-action="@Model.Action">
+    <a asp-area=@Model.Area 
+       asp-controller="@Model.Controller" 
+       asp-action="@Model.Action"
+       class="govuk-back-link">
             @Model.Text
         </a>
     }

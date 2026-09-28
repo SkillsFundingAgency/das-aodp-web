@@ -81,7 +81,9 @@
         "resourceGroupName": "[concat(variables('resourceNamePrefix'), '-rg')]",
         "appServiceName": "[concat(variables('resourceNamePrefix'), '-as')]",
         "configNames": "SFA.DAS.AODP.Web",
-        "privateLinkScopeName": "[toLower(concat('das-', parameters('resourceEnvironmentName'),'-shared-ampls'))]"
+        "privateLinkScopeName": "[toLower(concat('das-', parameters('resourceEnvironmentName'),'-shared-ampls'))]",
+        "storageAccountName": "[concat(replace(replace(variables('resourceNamePrefix'), 'ui', ''), '-', ''), 'str')]",
+        "storageAccount2Name": "[concat(replace(replace(variables('resourceNamePrefix'), 'ui', ''), '-', ''), 'str2')]"
     },
     "resources": [
         {
@@ -218,6 +220,54 @@
             "dependsOn": [
                 "[variables('resourceGroupName')]"
             ]
+        },
+        {
+            "apiVersion": "2021-04-01",
+            "name": "[concat('role-assignment-', variables('appServiceName'), '-', parameters('utcValue'))]",
+            "type": "Microsoft.Resources/deployments",
+            "resourceGroup": "[replace(variables('resourceGroupName'), 'ui', 'api')]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('deploymentUrlBase'),'role-assignments/role-assignment-storage-account.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "principalId": {
+                        "value": "[reference(concat(variables('appServiceName'), '-', parameters('utcValue'))).outputs.managedServiceIdentityId.value]"
+                    },
+                    "assignmentType": {
+                        "value": "StorageBlobDataContributor"
+                    },
+                    "resourceName": {
+                        "value": "[variables('storageAccount2Name')]"
+                    }
+                }
+            }
+        },
+        {
+            "apiVersion": "2021-04-01",
+            "name": "[concat('role-assignment-', variables('appServiceName'), '-', parameters('utcValue'), '1')]",
+            "type": "Microsoft.Resources/deployments",
+            "resourceGroup": "[replace(variables('resourceGroupName'), 'ui', 'api')]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[concat(variables('deploymentUrlBase'),'role-assignments/role-assignment-storage-account.json')]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "principalId": {
+                        "value": "[reference(concat(variables('appServiceName'), '-', parameters('utcValue'))).outputs.managedServiceIdentityId.value]"
+                    },
+                    "assignmentType": {
+                        "value": "StorageBlobDataContributor"
+                    },
+                    "resourceName": {
+                        "value": "[variables('storageAccountName')]"
+                    }
+                }
+            }
         },
         {
             "apiVersion": "2020-06-01",

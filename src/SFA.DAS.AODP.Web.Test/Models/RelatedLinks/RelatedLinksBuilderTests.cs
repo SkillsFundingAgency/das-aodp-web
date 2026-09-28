@@ -86,7 +86,7 @@ public class RelatedLinksBuilderTests
     }
 
     [Fact]
-    public void Build_ReviewApplicationDetails_ReturnsTwoContextualLinks()
+    public void Build_ReviewApplicationDetails_ReturnsViewApplicationAndReviewerLinks()
     {
         var url = CreateUrlHelper(out var calls);
 
@@ -102,14 +102,9 @@ public class RelatedLinksBuilderTests
             ctx);
 
         Assert.Contains(links, l =>
-            l.Text == RelatedLinkConstants.Text.ViewMessages &&
-            l.OpenInNewTab == false);
-
-        Assert.Contains(links, l =>
             l.Text == RelatedLinkConstants.Text.ViewApplication &&
             l.OpenInNewTab == true);
 
-        Assert.Contains(calls, r => r == RouteNames.Review_ApplicationMessages);
         Assert.Contains(calls, r => r == RouteNames.Review_ViewApplicationReadOnlyDetails);
     }
 

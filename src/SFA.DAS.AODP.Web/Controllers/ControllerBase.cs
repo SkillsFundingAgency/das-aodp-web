@@ -36,6 +36,6 @@ public class ControllerBase(IMediator mediator, ILogger logger) : Controller
     protected void LogException(Exception ex)
     {
         // prevent duplicate error logging
-        if (ex is not MediatorRequestHandlingException) _logger.LogError(ex.Message, ex);
+        if (ex is not MediatorRequestHandlingException) {_logger.LogError(ex.Message, ex);}
     }
 }

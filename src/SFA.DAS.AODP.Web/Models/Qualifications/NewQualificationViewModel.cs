@@ -8,5 +8,6 @@
         public string? AwardingOrganisation { get; set; }
         public string? Status { get; set; }
         public string? AgeGroup { get; set; }
+        public string EligibilityStatus { get; set; } = string.Empty;
     }
 }

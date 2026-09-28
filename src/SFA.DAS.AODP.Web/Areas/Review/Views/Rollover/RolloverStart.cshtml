@@ -1,0 +1,43 @@
+﻿@model SFA.DAS.AODP.Web.Areas.Review.Models.Rollover.RolloverStartViewModel
+@{
+    ViewData["Title"] = "Rollover funding";
+}
+
+<partial name="~/Views/Shared/_NotificationPartial.cshtml" />
+
+<a class="govuk-back-link" asp-area="Review" asp-action="Index" asp-controller="Home" asp-area="Review">Back</a>
+
+<h1 class="govuk-heading-xl govuk-!-margin-bottom-2">@ViewData["Title"]</h1>
+
+<div class="govuk-body">
+    <p>In the current year there are @Model.TotalCandidatesCount candidates for rollover. You have:</p>
+
+    <ul class="govuk-list govuk-list--bullet">
+        <li>reviewed @Model.CandidatesEligibleCount candidates and marked them as eligible for rollover</li>
+        <li>reviewed @Model.CandidatesIneligibleCount and marked them as being ineligible for rollover</li>
+    </ul>
+
+    <p>So, there are @Model.CandidatesRemainingCount possible candidates for rollover left to review.</p>
+</div>
+
+<form asp-area="Review" asp-controller="Rollover" asp-action="Index" method="post">
+    @Html.AntiForgeryToken()
+    <div class="govuk-form-group">
+        <govuk-radios for="@Model.SelectedProcess">
+            <govuk-radios-fieldset>
+                <govuk-radios-fieldset-legend is-page-heading="false" class="govuk-fieldset__legend--m">
+                    Which stage of the rollover process are you here to do?
+                </govuk-radios-fieldset-legend>
+
+                @{
+                    await Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.SelectedProcess));
+                }
+
+                <govuk-radios-item value="InitialSelection">Initial selection of funding streams to be checked for rollover</govuk-radios-item>
+                <govuk-radios-item value="FinalUpload">Final upload of a file with the QA'd decision for rollover</govuk-radios-item>
+            </govuk-radios-fieldset>
+        </govuk-radios>
+    </div>
+
+    <govuk-button type="submit">Continue</govuk-button>
+</form>

@@ -92,7 +92,7 @@
                                 var fundedOfferIds = Model.OfferFundingDetails.Select(o => o.FundingOfferId);
                                 foreach (var fundedOffer in Model.FundingOffers.Where(o => fundedOfferIds.Contains(o.Id)))
                                 {
-                                    <p class="govuk-body">@fundedOffer.Name - approved</p>
+                                    <p class="govuk-body">@fundedOffer.Name - changed</p>
                                 }
                                 @if (fundedOfferIds.Any())
                                 {
@@ -100,7 +100,7 @@
                                 }
                                 foreach (var fundedOffer in Model.FundingOffers.Where(o => !fundedOfferIds.Contains(o.Id)))
                                 {
-                                    <p class="govuk-body">@fundedOffer.Name - not approved</p>
+                                    <p class="govuk-body">@fundedOffer.Name - not changed</p>
                                 }
 
                             }

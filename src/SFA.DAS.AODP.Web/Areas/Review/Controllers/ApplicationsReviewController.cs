@@ -36,13 +36,16 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
     {
         enum UpdateKeys
         {
-            SharingStatusUpdated, QanUpdated, OwnerUpdated, ReviewerUpdated
+            SharingStatusUpdated, QanUpdated, OwnerUpdated, ReviewerUpdated, ApplicationDetailsUpdated, ApplicationDetailsUpdateFailed
         }
         private readonly IUserHelperService _userHelperService;
         private readonly UserType UserType;
         private readonly IFileService _fileService;
         private readonly IOptions<AodpConfiguration> _aodpConfiguration;
         private const string DefaultQANValidationMessage = "Invalid Qualification Number.";
+        private const string ApplicationDetailsUpdatedMessage = "Application details updated";
+        private const string ApplicationDetailsUpdateFailedMessage = "We could not save all the changes. Review the current values and try again.";
+        private const string DirectReviewerSwapValidationMessage = "One reviewer must first be set to Unassigned and saved before assigning the swapped values.";
         private readonly IApplicationExportService _exportService;
 
         public ApplicationsReviewController(ILogger<ApplicationsReviewController> logger, IMediator mediator, IUserHelperService userHelperService, IFileService fileService, IOptions<AodpConfiguration> aodpConfiguration, IApplicationExportService exportService) : base(mediator, logger)
@@ -224,7 +227,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             var errorModel = new ApplicationBulkActionErrorModel
             {
                 Failed = failed,
-                BackLinkText = "Go back to Applications",
+                BackLinkText = "Go back to applications",
                 BackLinkUrl = Url.Action(nameof(Index), query.ToRouteValues())!
             };
 
@@ -270,6 +273,8 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             ShowNotificationIfKeyExists(UpdateKeys.QanUpdated.ToString(), ViewNotificationMessageType.Success, "The application's QAN has been updated.");
             ShowNotificationIfKeyExists(UpdateKeys.OwnerUpdated.ToString(), ViewNotificationMessageType.Success, "The application's owner has been updated.");
             ShowNotificationIfKeyExists(UpdateKeys.ReviewerUpdated.ToString(), ViewNotificationMessageType.Success, "The application's reviewer has been updated.");
+            ShowNotificationIfKeyExists(UpdateKeys.ApplicationDetailsUpdated.ToString(), ViewNotificationMessageType.Success, ApplicationDetailsUpdatedMessage);
+            ShowNotificationIfKeyExists(UpdateKeys.ApplicationDetailsUpdateFailed.ToString(), ViewNotificationMessageType.Error, ApplicationDetailsUpdateFailedMessage);
 
             var applicationReviewViewModel = ApplicationReviewViewModel.Map(review, userType);
             applicationReviewViewModel.SetLinks(
@@ -523,6 +528,117 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
             TempData[UpdateKeys.QanUpdated.ToString()] = true;
             return RedirectToAction(nameof(ViewApplication), new { applicationReviewId = model.ApplicationReviewId });
+        }
+
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
+        [HttpPost]
+        [Route("review/application-reviews/{applicationReviewId}/save-application-details")]
+        public async Task<IActionResult> SaveApplicationDetails(SaveApplicationDetailsViewModel model)
+        {
+            var userType = _userHelperService.GetUserType();
+            if (userType != UserType.Qfau)
+            {
+                return Forbid();
+            }
+
+            AddValidationErrors(model);
+
+            var review = await Send(new GetApplicationForReviewByIdQuery(model.ApplicationReviewId));
+            if (review.ApplicationReviewId != model.ApplicationReviewId || review.Id != model.ApplicationId)
+            {
+                return BadRequest();
+            }
+
+            if (IsReadOnlyApplicationDetails(review))
+            {
+                return BadRequest();
+            }
+
+            var currentQan = NormaliseQan(review.Qan);
+            var submittedQan = NormaliseQan(model.Qan);
+
+            var currentReviewer1 = NormaliseReviewer(review.Reviewer1);
+            var currentReviewer2 = NormaliseReviewer(review.Reviewer2);
+            var submittedReviewer1 = NormaliseReviewer(model.Reviewer1);
+            var submittedReviewer2 = NormaliseReviewer(model.Reviewer2);
+
+            if (AreSameReviewer(submittedReviewer1, submittedReviewer2))
+            {
+                ModelState.AddModelError(nameof(model.Reviewer1), ValidationMessages.Reviewer1Reviewer2Conflict);
+            }
+
+            var reviewer1Changed = HasChanged(currentReviewer1, submittedReviewer1);
+            var reviewer2Changed = HasChanged(currentReviewer2, submittedReviewer2);
+
+            if (reviewer1Changed && reviewer2Changed &&
+                AreSameReviewer(submittedReviewer1, currentReviewer2) &&
+                AreSameReviewer(submittedReviewer2, currentReviewer1))
+            {
+                ModelState.AddModelError(nameof(model.Reviewer1), DirectReviewerSwapValidationMessage);
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return ReturnViewApplicationWithApplicationDetailsInput(review, model);
+            }
+
+            try
+            {
+                if (!string.Equals(currentQan, submittedQan, StringComparison.OrdinalIgnoreCase))
+                {
+                    var qanResponse = await Send(
+                        new SaveQanCommand()
+                        {
+                            ApplicationReviewId = model.ApplicationReviewId,
+                            SentByEmail = _userHelperService.GetUserEmail(),
+                            SentByName = _userHelperService.GetUserDisplayName(),
+                            Qan = submittedQan,
+                        });
+
+                    if (qanResponse?.IsQanValid == false)
+                    {
+                        ModelState.AddModelError(nameof(model.Qan),
+                            qanResponse.QanValidationMessage ?? DefaultQANValidationMessage);
+
+                        return ReturnViewApplicationWithApplicationDetailsInput(review, model);
+                    }
+                }
+
+                foreach (var reviewerUpdate in BuildReviewerUpdateOrder(
+                             currentReviewer1,
+                             currentReviewer2,
+                             submittedReviewer1,
+                             submittedReviewer2,
+                             reviewer1Changed,
+                             reviewer2Changed))
+                {
+                    var reviewerResponse = await Send(
+                        new SaveReviewerCommand()
+                        {
+                            ApplicationId = model.ApplicationId,
+                            SentByEmail = _userHelperService.GetUserEmail(),
+                            SentByName = _userHelperService.GetUserDisplayName(),
+                            ReviewerFieldName = reviewerUpdate.FieldName,
+                            ReviewerValue = reviewerUpdate.ReviewerValue,
+                            UserType = userType.ToString()
+                        });
+
+                    if (reviewerResponse.DuplicateReviewerError)
+                    {
+                        ModelState.AddModelError(reviewerUpdate.FieldName, ValidationMessages.Reviewer1Reviewer2Conflict);
+                        return ReturnViewApplicationWithApplicationDetailsInput(review, model);
+                    }
+                }
+
+                TempData[UpdateKeys.ApplicationDetailsUpdated.ToString()] = true;
+                return RedirectToAction(nameof(ViewApplication), new { applicationReviewId = model.ApplicationReviewId });
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+                TempData[UpdateKeys.ApplicationDetailsUpdateFailed.ToString()] = true;
+                return RedirectToAction(nameof(ViewApplication), new { applicationReviewId = model.ApplicationReviewId });
+            }
         }
 
         [HttpPost]
@@ -821,6 +937,140 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 new RelatedLinksContext { ApplicationReviewId = applicationReviewId });
 
             return View(nameof(ViewApplication), vm);
+        }
+
+        private IActionResult ReturnViewApplicationWithApplicationDetailsInput(
+            GetApplicationForReviewByIdQueryResponse review,
+            SaveApplicationDetailsViewModel attempted)
+        {
+            var vm = ApplicationReviewViewModel.Map(review, UserType.Qfau);
+            vm.Qan = attempted.Qan;
+            vm.Reviewer1 = ToReviewerViewValue(attempted.Reviewer1);
+            vm.Reviewer2 = ToReviewerViewValue(attempted.Reviewer2);
+
+            if (Url != null)
+            {
+                vm.SetLinks(
+                    Url,
+                    UserType.Qfau,
+                    new RelatedLinksContext { ApplicationReviewId = attempted.ApplicationReviewId });
+            }
+
+            vm.BackUrl = Url == null ? null : BuildBackUrl(null, review.Qan);
+
+            return View(nameof(ViewApplication), vm);
+        }
+
+        private void AddValidationErrors(SaveApplicationDetailsViewModel model)
+        {
+            foreach (var property in typeof(SaveApplicationDetailsViewModel).GetProperties())
+            {
+                var validationResults = new List<ValidationResult>();
+                var validationContext = new ValidationContext(model)
+                {
+                    MemberName = property.Name
+                };
+
+                Validator.TryValidateProperty(property.GetValue(model), validationContext, validationResults);
+
+                foreach (var validationResult in validationResults)
+                {
+                    var modelState = ModelState[property.Name];
+
+                    if (modelState?.Errors.Any() == true) continue;
+
+                    ModelState.AddModelError(property.Name, validationResult.ErrorMessage ?? "The value is not valid.");
+                }
+            }
+        }
+
+        private static bool IsReadOnlyApplicationDetails(GetApplicationForReviewByIdQueryResponse review)
+        {
+            Enum.TryParse(review.ApplicationStatus, out ApplicationStatus applicationStatus);
+
+            return applicationStatus is ApplicationStatus.Withdrawn ||
+                   ((applicationStatus == ApplicationStatus.Approved ||
+                     applicationStatus == ApplicationStatus.NotApproved) &&
+                    review.SharedWithOfqual);
+        }
+
+        private static string? NormaliseQan(string? qan)
+        {
+            return string.IsNullOrWhiteSpace(qan) ? null : qan.Trim();
+        }
+
+        private static string? NormaliseReviewer(string? reviewer)
+        {
+            if (string.IsNullOrWhiteSpace(reviewer)) return null;
+
+            var trimmedReviewer = reviewer.Trim();
+            return trimmedReviewer == ReviewerDropdown.UnassignedValue ? null : trimmedReviewer;
+        }
+
+        private static string ToReviewerViewValue(string? reviewer)
+        {
+            return NormaliseReviewer(reviewer) ?? ReviewerDropdown.UnassignedValue;
+        }
+
+        private static bool HasChanged(string? currentValue, string? submittedValue)
+        {
+            return !string.Equals(currentValue, submittedValue, StringComparison.Ordinal);
+        }
+
+        private static bool AreSameReviewer(string? firstReviewer, string? secondReviewer)
+        {
+            return !string.IsNullOrWhiteSpace(firstReviewer) &&
+                   !string.IsNullOrWhiteSpace(secondReviewer) &&
+                   string.Equals(firstReviewer, secondReviewer, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static List<(string FieldName, string? ReviewerValue)> BuildReviewerUpdateOrder(
+            string? currentReviewer1,
+            string? currentReviewer2,
+            string? submittedReviewer1,
+            string? submittedReviewer2,
+            bool reviewer1Changed,
+            bool reviewer2Changed)
+        {
+            if (!reviewer1Changed && !reviewer2Changed)
+            {
+                return new();
+            }
+
+            if (reviewer1Changed && reviewer2Changed)
+            {
+                if (AreSameReviewer(submittedReviewer1, currentReviewer2))
+                {
+                    return new()
+                    {
+                        (nameof(ApplicationReviewViewModel.Reviewer2), submittedReviewer2),
+                        (nameof(ApplicationReviewViewModel.Reviewer1), submittedReviewer1)
+                    };
+                }
+
+                if (AreSameReviewer(submittedReviewer2, currentReviewer1))
+                {
+                    return new()
+                    {
+                        (nameof(ApplicationReviewViewModel.Reviewer1), submittedReviewer1),
+                        (nameof(ApplicationReviewViewModel.Reviewer2), submittedReviewer2)
+                    };
+                }
+            }
+
+            var reviewerUpdates = new List<(string FieldName, string? ReviewerValue)>();
+
+            if (reviewer1Changed)
+            {
+                reviewerUpdates.Add((nameof(ApplicationReviewViewModel.Reviewer1), submittedReviewer1));
+            }
+
+            if (reviewer2Changed)
+            {
+                reviewerUpdates.Add((nameof(ApplicationReviewViewModel.Reviewer2), submittedReviewer2));
+            }
+
+            return reviewerUpdates;
         }
 
         private string? BuildBackUrl(string? returnUrl, string? qan)

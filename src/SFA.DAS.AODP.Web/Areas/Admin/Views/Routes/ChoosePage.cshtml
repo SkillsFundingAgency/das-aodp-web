@@ -24,7 +24,9 @@
                     Select one option.
                 </govuk-radios-hint>
 
-                @Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.ChosenPageId))
+                @{
+                    await Html.RenderPartialAsync("Validation/_RadioValidationPartial", nameof(Model.ChosenPageId));
+                }
 
                 @foreach (var pageInformation in Model.Pages.OrderBy(o => o.Order))
                 {
