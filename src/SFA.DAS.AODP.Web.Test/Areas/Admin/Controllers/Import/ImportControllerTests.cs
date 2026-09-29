@@ -359,7 +359,7 @@ public class ImportControllerTests
                             .With(m => m.File, mockFile.Object)
                             .Create();
 
-        _fileService.Setup(f => f.UploadXlsxFileAsync(JobNames.Pldns.ToString(), "Pldns.xlsx", It.IsAny<Stream>(), contentType, userName))
+        _fileService.Setup(f => f.UploadJobsImportFileAsync(JobNames.Pldns.ToString(), "Pldns.xlsx", It.IsAny<Stream>(), contentType, userName))
                     .Returns(Task.CompletedTask)
                     .Verifiable();
 
@@ -403,7 +403,7 @@ public class ImportControllerTests
                             .With(m => m.File, mockFile.Object)
                             .Create();
 
-        _fileService.Setup(f => f.UploadXlsxFileAsync(JobNames.DefundingList.ToString(), "DefundingList.xlsx", It.IsAny<Stream>(), contentType, userName))
+        _fileService.Setup(f => f.UploadJobsImportFileAsync(JobNames.DefundingList.ToString(), "DefundingList.xlsx", It.IsAny<Stream>(), contentType, userName))
                     .Returns(Task.CompletedTask)
                     .Verifiable();
 

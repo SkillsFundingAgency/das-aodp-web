@@ -2,7 +2,6 @@
 using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
-using Microsoft.Extensions.Options;
 using Moq;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Infrastructure.UnitTests.TestHelpers;
@@ -13,28 +12,20 @@ namespace SFA.DAS.AODP.Infrastructure.UnitTests.File
     public class BlobStorageFileServiceTests
     {
         private readonly Fixture _fixture = new();
-        private readonly BlobStorageSettings _blobStorageSettings;
         private readonly FormBuilderSettings _formBuilderSettings;
         private readonly Mock<BlobServiceClient> _blobServiceClient = new();
         private BlobStorageFileService _sut;
 
         public BlobStorageFileServiceTests()
         {
-            _blobStorageSettings = _fixture.Create<BlobStorageSettings>();
             _formBuilderSettings = new FormBuilderSettings
             {
                 MaxUploadFileSize = 10,
                 UploadFileTypesAllowed = new List<string> { ".docx" }
             };
-            var importBlobStorageSettings = _fixture.Create<ImportBlobStorageSettings>();
             var importFileUploadSettings = _fixture.Create<ImportFileUploadSettings>();
 
-            var clientFactoryMock = new Mock<Microsoft.Extensions.Azure.IAzureClientFactory<BlobServiceClient>>();
-            clientFactoryMock
-                .Setup(f => f.CreateClient(It.IsAny<string>()))
-                .Returns(_blobServiceClient.Object);
-
-            _sut = new(_blobServiceClient.Object, clientFactoryMock.Object, Options.Create(_blobStorageSettings), Options.Create(importBlobStorageSettings), _formBuilderSettings, importFileUploadSettings);
+            _sut = new(_blobServiceClient.Object, _formBuilderSettings, importFileUploadSettings);
         }
 
         [Fact]
@@ -51,7 +42,7 @@ namespace SFA.DAS.AODP.Infrastructure.UnitTests.File
             Mock<BlobClient> blobClient = new();
 
 
-            _blobServiceClient.Setup(b => b.GetBlobContainerClient(_blobStorageSettings.FileUploadContainerName)).Returns(blobContainerClient.Object);
+            _blobServiceClient.Setup(b => b.GetBlobContainerClient(BlobStorageFileService.FileUploadContainerName)).Returns(blobContainerClient.Object);
             blobContainerClient.Setup(b => b.GetBlobClient(It.IsAny<string>())).Returns(blobClient.Object);
 
             // Act
@@ -144,7 +135,7 @@ namespace SFA.DAS.AODP.Infrastructure.UnitTests.File
             Mock<BlobClient> blobClient = BlobTestFactory.CreateBlob();
 
             _blobServiceClient
-                .Setup(b => b.GetBlobContainerClient(_blobStorageSettings.FileUploadContainerName))
+                .Setup(b => b.GetBlobContainerClient(BlobStorageFileService.FileUploadContainerName))
                 .Returns(blobContainerClient.Object);
 
             blobContainerClient
@@ -186,7 +177,7 @@ namespace SFA.DAS.AODP.Infrastructure.UnitTests.File
                 { BlobStorageFileService.FilePrefixMetadataKey, fileNamePrefix }
             });
 
-            _blobServiceClient.Setup(b => b.GetBlobContainerClient(_blobStorageSettings.FileUploadContainerName)).Returns(blobContainerClient.Object);
+            _blobServiceClient.Setup(b => b.GetBlobContainerClient(BlobStorageFileService.FileUploadContainerName)).Returns(blobContainerClient.Object);
 
             blobContainerClient.Setup(b => b.GetBlobClient(fileName)).Returns(blobClient.Object);
 
@@ -212,7 +203,7 @@ namespace SFA.DAS.AODP.Infrastructure.UnitTests.File
             Mock<BlobContainerClient> blobContainerClient = new();
             Mock<BlobClient> blobClient = new();
 
-            _blobServiceClient.Setup(b => b.GetBlobContainerClient(_blobStorageSettings.FileUploadContainerName)).Returns(blobContainerClient.Object);
+            _blobServiceClient.Setup(b => b.GetBlobContainerClient(BlobStorageFileService.FileUploadContainerName)).Returns(blobContainerClient.Object);
             blobContainerClient.Setup(b => b.GetBlobClient(fileName)).Returns(blobClient.Object);
 
             blobClient.Setup(b => b.OpenReadAsync(0, default, default, default)).ReturnsAsync(stream);
@@ -233,7 +224,7 @@ namespace SFA.DAS.AODP.Infrastructure.UnitTests.File
             Mock<BlobContainerClient> blobContainerClient = new();
             Mock<BlobClient> blobClient = new();
 
-            _blobServiceClient.Setup(b => b.GetBlobContainerClient(_blobStorageSettings.FileUploadContainerName)).Returns(blobContainerClient.Object);
+            _blobServiceClient.Setup(b => b.GetBlobContainerClient(BlobStorageFileService.FileUploadContainerName)).Returns(blobContainerClient.Object);
             blobContainerClient.Setup(b => b.GetBlobClient(fileName)).Returns(blobClient.Object);
             // Act
             await _sut.DeleteFileAsync(fileName);

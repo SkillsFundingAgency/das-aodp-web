@@ -1,7 +1,5 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
-using Microsoft.Extensions.Azure;
-using Microsoft.Extensions.Options;
 using SFA.DAS.AODP.Infrastructure.Common.IO;
 using SFA.DAS.AODP.Models.Settings;
 
@@ -12,13 +10,12 @@ namespace SFA.DAS.AODP.Infrastructure.File
         public const string FileNameMetadataKey = "FileName";
         public const string FileExtensionsMetadataKey = "Extension";
         public const string FilePrefixMetadataKey = "FileNamePrefix";
-        private readonly BlobStorageSettings _blobStorageSettings;
+        public const string FileUploadContainerName = "files";
+        public const string ImportFilesContainerName = "importfilescontainer";
         private readonly FormBuilderSettings _fileUploadSettings;
         private readonly ImportFileUploadSettings _importFileUploadSettings;
-        private readonly ImportBlobStorageSettings _importBlobStorageSettings;
         private readonly BlobServiceClient _blobServiceClient;
         private BlobContainerClient? _blobContainerClient;
-        private readonly IAzureClientFactory<BlobServiceClient> _clientFactory;
         private string? _blobContainerName;
         private readonly FileUploadValidator _uploadValidator;
 
@@ -30,16 +27,10 @@ namespace SFA.DAS.AODP.Infrastructure.File
         public const string MalwareScanNotScannedValue = "Not scanned";
 
         public BlobStorageFileService(BlobServiceClient blobServiceClient,
-                    IAzureClientFactory<BlobServiceClient> clientFactory,
-                    IOptions<BlobStorageSettings> settings,
-                    IOptions<ImportBlobStorageSettings> importSettings,
                     FormBuilderSettings fileUploadSettings,
                     ImportFileUploadSettings importFileUploadSettings)
         {
             _blobServiceClient = blobServiceClient;
-            _blobStorageSettings = settings.Value ?? throw new ArgumentNullException(nameof(settings));
-            _importBlobStorageSettings = importSettings.Value ?? throw new ArgumentNullException(nameof(importSettings));
-            _clientFactory = clientFactory ?? throw new ArgumentNullException(nameof(clientFactory));
             _fileUploadSettings = fileUploadSettings ?? throw new ArgumentNullException(nameof(fileUploadSettings));
             _importFileUploadSettings = importFileUploadSettings ?? throw new ArgumentNullException(nameof(importFileUploadSettings));
             _uploadValidator = new FileUploadValidator(_fileUploadSettings);
@@ -54,7 +45,7 @@ namespace SFA.DAS.AODP.Infrastructure.File
 
             string filePath = $"{folderName}/{Guid.NewGuid()}";
 
-            var blobClient = GetBlobClient(filePath, _blobStorageSettings.FileUploadContainerName);
+            var blobClient = GetBlobClient(filePath, FileUploadContainerName);
 
             await blobClient.UploadAsync(stream,
                 metadata: new Dictionary<string, string>()
@@ -68,7 +59,7 @@ namespace SFA.DAS.AODP.Infrastructure.File
 
         public List<UploadedBlob> ListBlobs(string folderName)
         {
-            EnsureBlobContainerClient(_blobStorageSettings.FileUploadContainerName);
+            EnsureBlobContainerClient(FileUploadContainerName);
             var items = _blobContainerClient.GetBlobs(
                 BlobTraits.Metadata,
                 BlobStates.None,
@@ -100,7 +91,7 @@ namespace SFA.DAS.AODP.Infrastructure.File
             return result;
         }
 
-        public async Task UploadXlsxFileAsync(string folderName, string fileName, Stream stream, string? contentType, string fileNamePrefix)
+        public async Task UploadJobsImportFileAsync(string folderName, string fileName, Stream stream, string? contentType, string fileNamePrefix)
         {
             var isPldns = fileName.StartsWith("pldns", StringComparison.OrdinalIgnoreCase);
 
@@ -119,16 +110,7 @@ namespace SFA.DAS.AODP.Infrastructure.File
 
             var filePath = string.IsNullOrEmpty(trimmedFolder) ? safeFileName : $"{trimmedFolder}/{safeFileName}";
 
-            BlobServiceClient serviceClient;
-            try
-            {
-                serviceClient = _clientFactory.CreateClient("import");
-            }
-            catch (InvalidOperationException)
-            {
-                throw new Exception("Import BlobServiceClient is not configured.");
-            }
-            var importContainer = serviceClient.GetBlobContainerClient(_importBlobStorageSettings.ImportFilesContainerName);
+            var importContainer = _blobServiceClient.GetBlobContainerClient(ImportFilesContainerName);
             await importContainer.CreateIfNotExistsAsync();
 
             var blobClient = importContainer.GetBlobClient(filePath);
@@ -162,7 +144,7 @@ namespace SFA.DAS.AODP.Infrastructure.File
 
         public async Task<UploadedBlob> GetBlobDetails(string fileName)
         {
-            EnsureBlobContainerClient(_blobStorageSettings.FileUploadContainerName);
+            EnsureBlobContainerClient(FileUploadContainerName);
 
             var blobClient = _blobContainerClient!.GetBlobClient(fileName);
             var properties = await blobClient.GetPropertiesAsync();
@@ -185,14 +167,14 @@ namespace SFA.DAS.AODP.Infrastructure.File
 
         public async Task<Stream> OpenReadStreamAsync(string filePath)
         {
-            var blobClient = GetBlobClient(filePath, _blobStorageSettings.FileUploadContainerName);
+            var blobClient = GetBlobClient(filePath, FileUploadContainerName);
             var stream = await blobClient.OpenReadAsync();
             return stream;
         }
 
         public async Task DeleteFileAsync(string filePath)
         {
-            var blobClient = GetBlobClient(filePath, _blobStorageSettings.FileUploadContainerName);
+            var blobClient = GetBlobClient(filePath, FileUploadContainerName);
             await blobClient.DeleteAsync(DeleteSnapshotsOption.IncludeSnapshots);
         }
 

@@ -264,7 +264,7 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
                 var fileNamePrefix = _userHelperService.GetUserDisplayName() ?? string.Empty;
 
                 using var stream = model.File.OpenReadStream();
-                await _fileService.UploadXlsxFileAsync(folderName, "Pldns.xlsx", stream, contentType, fileNamePrefix);
+                await _fileService.UploadJobsImportFileAsync(folderName, "Pldns.xlsx", stream, contentType, fileNamePrefix);
             }
             catch (Exception ex)
             {
@@ -307,7 +307,7 @@ namespace SFA.DAS.AODP.Web.Areas.Admin.Controllers
                 var fileNamePrefix = _userHelperService.GetUserDisplayName() ?? string.Empty;
 
                 using var stream = model.File.OpenReadStream();
-                await _fileService.UploadXlsxFileAsync(folderName, "DefundingList.xlsx", stream, contentType, fileNamePrefix);
+                await _fileService.UploadJobsImportFileAsync(folderName, "DefundingList.xlsx", stream, contentType, fileNamePrefix);
             }
             catch (Exception ex)
             {
