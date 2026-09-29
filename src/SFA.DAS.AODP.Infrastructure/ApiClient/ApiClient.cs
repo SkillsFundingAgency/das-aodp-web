@@ -103,6 +103,7 @@ namespace SFA.DAS.AODP.Infrastructure.ApiClient
             var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
             response.EnsureSuccessStatusCode();
+
             return JsonConvert.DeserializeObject<TResponse>(responseContent) ?? default;
         }
 

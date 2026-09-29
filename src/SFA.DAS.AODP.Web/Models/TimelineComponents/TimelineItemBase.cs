@@ -1,5 +1,6 @@
 ﻿namespace SFA.DAS.AODP.Web.Models.TimelineComponents;
 
+[ExcludeFromCodeCoverage]
 public abstract class TimelineItemBase
 {
     public Guid Id { get; set; }
@@ -16,9 +17,8 @@ public abstract class TimelineItemBase
     public class File
     {
         public required string FileDisplayName { get; init; }
-        public required string FullPath { get; init; }
+        public Guid FileId { get; init; }
         public required string FormUrl { get; init; }
-        public bool CanDownload { get; set; }
-        public required string StatusText { get; set; } 
+        public bool IsDownloadable { get; set; } = false;
     }
 }

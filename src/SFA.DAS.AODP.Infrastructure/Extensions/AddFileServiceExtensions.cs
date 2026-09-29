@@ -2,9 +2,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Settings;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SFA.DAS.AODP.Infrastructure.Extensions
 {
+    [ExcludeFromCodeCoverage]
     public static class AddFileServiceExtensions
     {
         public static IServiceCollection AddFileService(this IServiceCollection services, StorageSettings storageSettings)
@@ -14,7 +16,8 @@ namespace SFA.DAS.AODP.Infrastructure.Extensions
                 builder.AddBlobServiceClient(new Uri(storageSettings.ServiceUri));
             });
 
-            services.AddScoped<IFileService, BlobStorageFileService>();
+            services.AddScoped<IBlobStorageService, BlobStorageService>();
+
             return services;
         }
     }
