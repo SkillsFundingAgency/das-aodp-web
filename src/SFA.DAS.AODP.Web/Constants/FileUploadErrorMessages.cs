@@ -12,5 +12,7 @@
         public const string FileTooLarge = "File size exceeds max allowed size of {0}mb.";
         public const string TooManyFiles = "Cannot upload more than {0} files";
         public const string Default = "The file could not be uploaded.";
+        public const string ScanNotConfirmed = "We could not confirm the {0} file is safe to upload. Try uploading it again in a few minutes. If this keeps happening, the file may not be safe to use.";
+        public const string ImportScanNotConfirmed = "We could not confirm the {0} file is safe to import. Try again in a few minutes. If this keeps happening, the file may not be safe to use.";
     }
 }
