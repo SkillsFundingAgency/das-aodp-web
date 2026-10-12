@@ -24,9 +24,11 @@ using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview;
 using SFA.DAS.AODP.Web.Constants;
+using SFA.DAS.AODP.Web.Extensions;
 using SFA.DAS.AODP.Web.Helpers.Export;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Applications;
+using SFA.DAS.AODP.Web.Models.Session;
 using SFA.DAS.AODP.Web.Validators.Messages;
 using System.IO.Compression;
 using System.Text;
@@ -63,7 +65,7 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
 
             _controller.ControllerContext = new ControllerContext
             {
-                HttpContext = new DefaultHttpContext()
+                HttpContext = new DefaultHttpContext { Session = new TestSession() }
             };
 
             var urlMock = new Mock<IUrlHelper>();
@@ -83,8 +85,6 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
         [Fact]
         public async Task Index_ReturnsView_WithApplications()
         {
-            var query = new ApplicationsReviewQuery();
-
             _mediatorMock
                 .Setup(m => m.Send(It.IsAny<GetApplicationsForReviewQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new BaseMediatrResponse<GetApplicationsForReviewQueryResponse>
@@ -97,7 +97,7 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
                     }
                 });
 
-            var result = await _controller.Index(query);
+            var result = await _controller.Index(null);
 
             Assert.IsType<ViewResult>(result);
         }
@@ -682,6 +682,195 @@ namespace SFA.DAS.AODP.Web.Test.Areas.Review.Controllers
                 Assert.Equal(nameof(ApplicationsReviewController.ViewApplication), redirect.ActionName);
                 Assert.True(_controller.TempData.ContainsKey("ApplicationDetailsUpdateFailed"));
                 Assert.False(_controller.TempData.ContainsKey("ApplicationDetailsUpdated"));
+            });
+        }
+
+        // -----------------------------
+        // AWARD-1246: session-based search filters
+        // -----------------------------
+
+        [Fact]
+        public async Task IndexMethod_PopulatesAndReturnsViewCorrectly()
+        {
+            var findRegulatedQualificationUrl = "https://find-a-qualification.services.ofqual.gov.uk/qualifications/";
+            var expectedUserType = UserType.Ofqual;
+            _userHelperServiceMock.Setup(x => x.GetUserType()).Returns(expectedUserType);
+
+            var sessionModel = new ApplicationsReviewFilterSessionModel
+            {
+                PageNumber = 2,
+                RecordsPerPage = 10,
+                ApplicationSearch = "Test Search",
+                AwardingOrganisationSearch = "Test AO",
+                Status = new List<ApplicationStatus> { ApplicationStatus.InReview, ApplicationStatus.Approved },
+                ReviewerSelection = "Bob Smith"
+            };
+
+            _controller.HttpContext.Session.SetObject("ApplicationsReviewFilters", sessionModel);
+
+            var expectedApplication = new GetApplicationsForReviewQueryResponse.Application
+            {
+                Id = Guid.NewGuid(),
+                ApplicationReviewId = Guid.NewGuid(),
+                Name = "TestApp",
+                LastUpdated = DateTime.UtcNow,
+                Reference = 123456,
+                Qan = "123456",
+                AwardingOrganisation = "Test Org",
+                Owner = "TestOwner",
+                Status = ApplicationStatus.InReview,
+                NewMessage = false,
+                FindRegulatedQualificationUrl = findRegulatedQualificationUrl,
+                Reviewer1 = "Bob Smith",
+                Reviewer2 = "Alice Jones"
+            };
+
+            var response = new GetApplicationsForReviewQueryResponse
+            {
+                TotalRecordsCount = 1,
+                Applications = new List<GetApplicationsForReviewQueryResponse.Application> { expectedApplication }
+            };
+
+            _mediatorMock.Setup(m => m.Send(It.IsAny<GetApplicationsForReviewQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationsForReviewQueryResponse>
+                {
+                    Success = true,
+                    Value = response
+                });
+
+            var result = await _controller.Index(sessionModel.PageNumber) as ViewResult;
+
+            var model = Assert.IsType<ApplicationsReviewListViewModel>(result!.Model);
+
+            Assert.Equal(expectedUserType.ToString(), model.UserType);
+            Assert.Equal(findRegulatedQualificationUrl, model.FindRegulatedQualificationUrl);
+            Assert.Equal(response.TotalRecordsCount, model.PaginationViewModel.TotalRecords);
+
+            var app = Assert.Single(model.Applications);
+            Assert.Equal(expectedApplication.Id, app.Id);
+            Assert.Equal(expectedApplication.Name, app.Name);
+            Assert.Equal(expectedApplication.Reference, app.Reference);
+            Assert.Equal(expectedApplication.Qan, app.Qan);
+            Assert.Contains("Bob Smith", app.ReviewersSummary);
+            Assert.Contains("Alice Jones", app.ReviewersSummary);
+
+            _mediatorMock.Verify(m => m.Send(
+                It.Is<GetApplicationsForReviewQuery>(q =>
+                    q.ReviewUser == expectedUserType.ToString() &&
+                    q.ApplicationSearch == sessionModel.ApplicationSearch &&
+                    q.AwardingOrganisationSearch == sessionModel.AwardingOrganisationSearch &&
+                    q.ApplicationStatuses.SequenceEqual(sessionModel.Status.Select(s => s.ToString())) &&
+                    q.ApplicationsWithNewMessages == sessionModel.Status.Contains(ApplicationStatus.NewMessage) &&
+                    q.Limit == sessionModel.RecordsPerPage &&
+                    q.Offset == sessionModel.RecordsPerPage * (sessionModel.PageNumber - 1) &&
+                    q.ReviewerSearch == "Bob Smith" &&
+                    q.UnassignedOnly == false),
+                It.IsAny<CancellationToken>()),
+                Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateReviewer_NoDuplicate_RedirectsToViewApplicationAndSetsTempData()
+        {
+            var applicationReviewId = Guid.NewGuid();
+            var applicationId = Guid.NewGuid();
+
+            SetupQfauUser();
+
+            var reviewerResponse = new BaseMediatrResponse<SaveReviewerCommandResponse>
+            {
+                Success = true,
+                Value = new SaveReviewerCommandResponse
+                {
+                    DuplicateReviewerError = false
+                }
+            };
+
+            _mediatorMock.Setup(m => m.Send(It.IsAny<SaveReviewerCommand>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(reviewerResponse);
+
+            var model = new UpdateReviewerViewModel
+            {
+                ApplicationReviewId = applicationReviewId,
+                ApplicationId = applicationId,
+                ReviewerFieldName = nameof(ApplicationReviewViewModel.Reviewer1),
+                ReviewerValue = "New Reviewer"
+            };
+
+            var result = await _controller.UpdateReviewer(model);
+
+            Assert.Multiple(() =>
+            {
+                var redirect = Assert.IsType<RedirectToActionResult>(result);
+                Assert.Equal(nameof(ApplicationsReviewController.ViewApplication), redirect.ActionName);
+                Assert.Equal(applicationReviewId, redirect.RouteValues!["applicationReviewId"]);
+
+                Assert.True(_controller.TempData.ContainsKey("ReviewerUpdated"));
+                Assert.Equal(true, _controller.TempData["ReviewerUpdated"]);
+
+                _mediatorMock.Verify(m => m.Send(It.IsAny<SaveReviewerCommand>(), It.IsAny<CancellationToken>()), Times.Once);
+                _mediatorMock.Verify(m => m.Send(It.IsAny<GetApplicationForReviewByIdQuery>(), It.IsAny<CancellationToken>()), Times.Never);
+                _mediatorMock.Verify(m => m.Send(It.IsAny<GetUsersQuery>(), It.IsAny<CancellationToken>()), Times.Never);
+            });
+        }
+
+        [Fact]
+        public async Task UpdateReviewer_DuplicateReviewer_ReturnsViewApplicationWithModelError()
+        {
+            var applicationReviewId = Guid.NewGuid();
+            var applicationId = Guid.NewGuid();
+            var reviewerValue = "Same Reviewer";
+            var reviewerFieldName = nameof(ApplicationReviewViewModel.Reviewer1);
+
+            SetupQfauUser();
+
+            _mediatorMock.Setup(m => m.Send(It.IsAny<SaveReviewerCommand>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<SaveReviewerCommandResponse>
+                {
+                    Success = true,
+                    Value = new SaveReviewerCommandResponse
+                    {
+                        DuplicateReviewerError = true
+                    }
+                });
+
+            _mediatorMock.Setup(m => m.Send(It.IsAny<GetApplicationForReviewByIdQuery>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new BaseMediatrResponse<GetApplicationForReviewByIdQueryResponse>
+                {
+                    Success = true,
+                    Value = _fixture.Create<GetApplicationForReviewByIdQueryResponse>()
+                });
+
+            var model = new UpdateReviewerViewModel
+            {
+                ApplicationReviewId = applicationReviewId,
+                ApplicationId = applicationId,
+                ReviewerFieldName = reviewerFieldName,
+                ReviewerValue = reviewerValue
+            };
+
+            var result = await _controller.UpdateReviewer(model);
+
+            Assert.Multiple(() =>
+            {
+                var viewResult = Assert.IsType<ViewResult>(result);
+                Assert.Equal(nameof(ApplicationsReviewController.ViewApplication), viewResult.ViewName);
+
+                Assert.False(_controller.ModelState.IsValid);
+                Assert.True(_controller.ModelState.ContainsKey(reviewerFieldName));
+
+                _mediatorMock.Verify(m => m.Send(It.Is<SaveReviewerCommand>(c =>
+                    c.ApplicationId == applicationId &&
+                    c.ReviewerFieldName == reviewerFieldName &&
+                    c.ReviewerValue == reviewerValue &&
+                    c.SentByEmail == "user@test.com" &&
+                    c.SentByName == "Test User" &&
+                    c.UserType == UserType.Qfau.ToString()
+                ), It.IsAny<CancellationToken>()), Times.Once);
+
+                _mediatorMock.Verify(m => m.Send(It.Is<GetApplicationForReviewByIdQuery>(q =>
+                    q.ApplicationReviewId == applicationReviewId
+                ), It.IsAny<CancellationToken>()), Times.Once);
             });
         }
 

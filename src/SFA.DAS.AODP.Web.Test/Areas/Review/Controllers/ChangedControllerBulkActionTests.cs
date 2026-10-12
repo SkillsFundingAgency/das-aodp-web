@@ -17,6 +17,8 @@ using SFA.DAS.AODP.Web.Areas.Review.Controllers;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.BulkActions;
 using SFA.DAS.AODP.Web.Models.Qualifications;
+using SFA.DAS.AODP.Web.Models.Session;
+using SFA.DAS.AODP.Web.Extensions;
 using System.Security.Claims;
 using System.Text.Json;
 
@@ -49,7 +51,7 @@ public class ChangedControllerBulkActionTests
 
         _controller.ControllerContext = new ControllerContext
         {
-            HttpContext = new DefaultHttpContext()
+            HttpContext = new DefaultHttpContext { Session = new TestSession() }
         };
 
         _controller.TempData = new TempDataDictionary(
@@ -97,12 +99,26 @@ public class ChangedControllerBulkActionTests
         _controller.Url = _urlHelperMock.Object;
     }
 
+    private void SetChangedSessionFilters(QualificationQuery query)
+    {
+        var sessionModel = new QualificationFilterSessionModel
+        {
+            PageNumber = query.PageNumber,
+            RecordsPerPage = query.RecordsPerPage,
+            Organisation = query.Organisation,
+            QualificationName = query.Name,
+            QAN = query.Qan
+        };
+
+        _controller.HttpContext.Session.SetObject("ChangedQualificationFilters", sessionModel);
+    }
+
     [Fact]
     public async Task ApplyBulkAction_ReturnsIndexView_WhenModelStateInvalid()
     {
         _controller.ModelState.AddModelError("BulkAction", "Invalid");
 
-        var model = new ChangedQualificationsViewModel
+        var model = new QualificationBulkActionPostModel
         {
             SelectedQualificationIds = new List<Guid> { Guid.NewGuid() },
             BulkAction = new QualificationsBulkActionPageViewModel.QualificationsBulkActionInputViewModel
@@ -118,7 +134,9 @@ public class ChangedControllerBulkActionTests
             RecordsPerPage = 10
         };
 
-        var result = await _controller.ApplyBulkAction(model, query);
+        SetChangedSessionFilters(query);
+
+        var result = await _controller.ApplyBulkAction(model);
 
         var viewResult = Assert.IsType<ViewResult>(result);
         Assert.Equal("Index", viewResult.ViewName);
@@ -140,7 +158,7 @@ public class ChangedControllerBulkActionTests
         var selectedIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
         var processStatusId = Guid.NewGuid();
 
-        var model = new ChangedQualificationsViewModel
+        var model = new QualificationBulkActionPostModel
         {
             SelectedQualificationIds = selectedIds,
             BulkAction = new QualificationsBulkActionPageViewModel.QualificationsBulkActionInputViewModel
@@ -170,7 +188,9 @@ public class ChangedControllerBulkActionTests
                 }
             });
 
-        var result = await _controller.ApplyBulkAction(model, query);
+        SetChangedSessionFilters(query);
+
+        var result = await _controller.ApplyBulkAction(model);
 
         var redirectResult = Assert.IsType<RedirectToActionResult>(result);
         Assert.Equal(nameof(ChangedController.Index), redirectResult.ActionName);
@@ -179,58 +199,12 @@ public class ChangedControllerBulkActionTests
     }
 
     [Fact]
-    public async Task ApplyBulkAction_RedirectsToIndex_WithRouteValues_WhenNoErrors()
-    {
-        var model = new ChangedQualificationsViewModel
-        {
-            SelectedQualificationIds = new List<Guid> { Guid.NewGuid() },
-            BulkAction = new QualificationsBulkActionPageViewModel.QualificationsBulkActionInputViewModel
-            {
-                ProcessStatusId = Guid.NewGuid(),
-                Comment = "bulk comment"
-            }
-        };
-
-        var query = new QualificationQuery
-        {
-            PageNumber = 2,
-            RecordsPerPage = 20,
-            Organisation = "Org",
-            Name = "Qual",
-            Qan = "123"
-        };
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<BulkUpdateQualificationStatusCommand>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<BulkUpdateQualificationStatusCommandResponse>
-            {
-                Success = true,
-                Value = new BulkUpdateQualificationStatusCommandResponse
-                {
-                    ErrorCount = 0
-                }
-            });
-
-        var result = await _controller.ApplyBulkAction(model, query);
-
-        var redirectResult = Assert.IsType<RedirectToActionResult>(result);
-
-        Assert.Equal(nameof(ChangedController.Index), redirectResult.ActionName);
-        Assert.NotNull(redirectResult.RouteValues);
-        Assert.Equal(query.PageNumber, redirectResult.RouteValues["pageNumber"]);
-        Assert.Equal(query.RecordsPerPage, redirectResult.RouteValues["recordsPerPage"]);
-        Assert.Equal(query.Organisation, redirectResult.RouteValues["organisation"]);
-        Assert.Equal(query.Name, redirectResult.RouteValues["name"]);
-        Assert.Equal(query.Qan, redirectResult.RouteValues["qan"]);
-    }
-
-    [Fact]
     public async Task ApplyBulkAction_SendsBulkUpdateCommand_WithExpectedValues()
     {
         var selectedIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
         var processStatusId = Guid.NewGuid();
 
-        var model = new ChangedQualificationsViewModel
+        var model = new QualificationBulkActionPostModel
         {
             SelectedQualificationIds = selectedIds,
             BulkAction = new QualificationsBulkActionPageViewModel.QualificationsBulkActionInputViewModel
@@ -260,7 +234,9 @@ public class ChangedControllerBulkActionTests
                 }
             });
 
-        await _controller.ApplyBulkAction(model, query);
+        SetChangedSessionFilters(query);
+
+        await _controller.ApplyBulkAction(model);
 
         _mediatorMock.Verify(m => m.Send(
             It.Is<BulkUpdateQualificationStatusCommand>(cmd =>
@@ -278,7 +254,7 @@ public class ChangedControllerBulkActionTests
         var selectedIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
         var processStatusId = Guid.NewGuid();
 
-        var model = new ChangedQualificationsViewModel
+        var model = new QualificationBulkActionPostModel
         {
             SelectedQualificationIds = selectedIds,
             BulkAction = new QualificationsBulkActionPageViewModel.QualificationsBulkActionInputViewModel
@@ -315,7 +291,9 @@ public class ChangedControllerBulkActionTests
                 }
             });
 
-        var result = await _controller.ApplyBulkAction(model, query);
+        SetChangedSessionFilters(query);
+
+        var result = await _controller.ApplyBulkAction(model);
 
         var redirectResult = Assert.IsType<RedirectToActionResult>(result);
         Assert.Equal(nameof(ChangedController.BulkQualificationError), redirectResult.ActionName);
@@ -327,59 +305,7 @@ public class ChangedControllerBulkActionTests
         var selectedIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
         var processStatusId = Guid.NewGuid();
 
-        var model = new ChangedQualificationsViewModel
-        {
-            SelectedQualificationIds = selectedIds,
-            BulkAction = new QualificationsBulkActionPageViewModel.QualificationsBulkActionInputViewModel
-            {
-                ProcessStatusId = processStatusId,
-                Comment = "bulk comment"
-    }
-        };
-
-        var query = new QualificationQuery
-        {
-            PageNumber = 1,
-            RecordsPerPage = 10
-        };
-
-        _mediatorMock
-            .Setup(m => m.Send(It.IsAny<BulkUpdateQualificationStatusCommand>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new BaseMediatrResponse<BulkUpdateQualificationStatusCommandResponse>
-            {
-                Success = true,
-                Value = new BulkUpdateQualificationStatusCommandResponse
-                {
-                    ErrorCount = 1,
-                    Errors = new List<BulkQualificationErrorDto>
-                    {
-                    new()
-                    {
-                        QualificationId = selectedIds[0],
-                        Qan = "12345678",
-                        Title = "Test qualification",
-                        ErrorType = BulkQualificationErrorType.Missing
-                    }
-                    }
-                }
-            });
-
-        await _controller.ApplyBulkAction(model, query);
-
-        Assert.True(_controller.TempData.ContainsKey(BulkActionQualifications.Errors));
-        Assert.NotNull(_controller.TempData[BulkActionQualifications.Errors]);
-    }
-
-    [Fact]
-    public async Task ApplyBulkAction_StoresSerializedErrorModelInTempData_WhenErrorsExist()
-    {
-        var selectedIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
-        var processStatusId = Guid.NewGuid();
-
-        _controller.Url = Mock.Of<IUrlHelper>(u =>
-            u.Action(It.IsAny<UrlActionContext>()) == "/Review/Changed/Index?pageNumber=1&recordsPerPage=10");
-
-        var model = new ChangedQualificationsViewModel
+        var model = new QualificationBulkActionPostModel
         {
             SelectedQualificationIds = selectedIds,
             BulkAction = new QualificationsBulkActionPageViewModel.QualificationsBulkActionInputViewModel
@@ -416,7 +342,63 @@ public class ChangedControllerBulkActionTests
                 }
             });
 
-        await _controller.ApplyBulkAction(model, query);
+        SetChangedSessionFilters(query);
+
+        await _controller.ApplyBulkAction(model);
+
+        Assert.True(_controller.TempData.ContainsKey(BulkActionQualifications.Errors));
+        Assert.NotNull(_controller.TempData[BulkActionQualifications.Errors]);
+    }
+
+    [Fact]
+    public async Task ApplyBulkAction_StoresSerializedErrorModelInTempData_WhenErrorsExist()
+    {
+        var selectedIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
+        var processStatusId = Guid.NewGuid();
+
+        _controller.Url = Mock.Of<IUrlHelper>(u =>
+            u.Action(It.IsAny<UrlActionContext>()) == "/Review/Changed/Index?pageNumber=1&recordsPerPage=10");
+
+        var model = new QualificationBulkActionPostModel
+        {
+            SelectedQualificationIds = selectedIds,
+            BulkAction = new QualificationsBulkActionPageViewModel.QualificationsBulkActionInputViewModel
+            {
+                ProcessStatusId = processStatusId,
+                Comment = "bulk comment"
+            }
+        };
+
+        var query = new QualificationQuery
+        {
+            PageNumber = 1,
+            RecordsPerPage = 10
+        };
+
+        _mediatorMock
+            .Setup(m => m.Send(It.IsAny<BulkUpdateQualificationStatusCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<BulkUpdateQualificationStatusCommandResponse>
+            {
+                Success = true,
+                Value = new BulkUpdateQualificationStatusCommandResponse
+                {
+                    ErrorCount = 1,
+                    Errors = new List<BulkQualificationErrorDto>
+                    {
+                    new()
+                    {
+                        QualificationId = selectedIds[0],
+                        Qan = "12345678",
+                        Title = "Test qualification",
+                        ErrorType = BulkQualificationErrorType.Missing
+                    }
+                    }
+                }
+            });
+
+        SetChangedSessionFilters(query);
+
+        await _controller.ApplyBulkAction(model);
 
         var json = Assert.IsType<string>(_controller.TempData[BulkActionQualifications.Errors]);
 
@@ -438,7 +420,7 @@ public class ChangedControllerBulkActionTests
     [Fact]
     public async Task ApplyBulkAction_RedirectsToHomeError_WhenExceptionThrown()
     {
-        var model = new ChangedQualificationsViewModel
+        var model = new QualificationBulkActionPostModel
         {
             SelectedQualificationIds = new List<Guid> { Guid.NewGuid() },
             BulkAction = new QualificationsBulkActionPageViewModel.QualificationsBulkActionInputViewModel
@@ -458,7 +440,9 @@ public class ChangedControllerBulkActionTests
             .Setup(m => m.Send(It.IsAny<BulkUpdateQualificationStatusCommand>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("boom"));
 
-        var result = await _controller.ApplyBulkAction(model, query);
+        SetChangedSessionFilters(query);
+
+        var result = await _controller.ApplyBulkAction(model);
 
         var redirectResult = Assert.IsType<RedirectResult>(result);
         Assert.Equal("/Home/Error", redirectResult.Url);
@@ -472,7 +456,7 @@ public class ChangedControllerBulkActionTests
         _controller.Url = Mock.Of<IUrlHelper>(u =>
             u.Action(It.IsAny<UrlActionContext>()) == "/Review/Changed/Index?pageNumber=1&recordsPerPage=10");
 
-        var model = new ChangedQualificationsViewModel
+        var model = new QualificationBulkActionPostModel
         {
             SelectedQualificationIds = new List<Guid> { qualificationId },
             BulkAction = new QualificationsBulkActionPageViewModel.QualificationsBulkActionInputViewModel
@@ -505,7 +489,9 @@ public class ChangedControllerBulkActionTests
                 }
             });
 
-        await _controller.ApplyBulkAction(model, query);
+        SetChangedSessionFilters(query);
+
+        await _controller.ApplyBulkAction(model);
 
         var json = Assert.IsType<string>(_controller.TempData[BulkActionQualifications.Errors]);
         var errorModel = JsonSerializer.Deserialize<QualificationBulkActionErrorModel>(json);
@@ -523,7 +509,7 @@ public class ChangedControllerBulkActionTests
         _controller.Url = Mock.Of<IUrlHelper>(u =>
             u.Action(It.IsAny<UrlActionContext>()) == "/Review/Changed/Index?pageNumber=1&recordsPerPage=10");
 
-        var model = new ChangedQualificationsViewModel
+        var model = new QualificationBulkActionPostModel
         {
             SelectedQualificationIds = new List<Guid> { qualificationId },
             BulkAction = new QualificationsBulkActionPageViewModel.QualificationsBulkActionInputViewModel
@@ -556,7 +542,9 @@ public class ChangedControllerBulkActionTests
                 }
             });
 
-        await _controller.ApplyBulkAction(model, query);
+        SetChangedSessionFilters(query);
+
+        await _controller.ApplyBulkAction(model);
 
         var json = Assert.IsType<string>(_controller.TempData[BulkActionQualifications.Errors]);
         var errorModel = JsonSerializer.Deserialize<QualificationBulkActionErrorModel>(json);
@@ -574,7 +562,7 @@ public class ChangedControllerBulkActionTests
         _controller.Url = Mock.Of<IUrlHelper>(u =>
             u.Action(It.IsAny<UrlActionContext>()) == "/Review/Changed/Index?pageNumber=1&recordsPerPage=10");
 
-        var model = new ChangedQualificationsViewModel
+        var model = new QualificationBulkActionPostModel
         {
             SelectedQualificationIds = new List<Guid> { qualificationId },
             BulkAction = new QualificationsBulkActionPageViewModel.QualificationsBulkActionInputViewModel
@@ -607,7 +595,9 @@ public class ChangedControllerBulkActionTests
                 }
             });
 
-        await _controller.ApplyBulkAction(model, query);
+        SetChangedSessionFilters(query);
+
+        await _controller.ApplyBulkAction(model);
 
         var json = Assert.IsType<string>(_controller.TempData[BulkActionQualifications.Errors]);
         var errorModel = JsonSerializer.Deserialize<QualificationBulkActionErrorModel>(json);
@@ -689,11 +679,11 @@ public class ChangedControllerBulkActionTests
         _controller.Url = Mock.Of<IUrlHelper>(u =>
             u.Action(It.IsAny<UrlActionContext>()) == "/Review/Changed/Index?pageNumber=1&recordsPerPage=10");
 
-        var model = new ChangedQualificationsViewModel
+        var model = new QualificationBulkActionPostModel
         {
             SelectedQualificationIds = new List<Guid> { qualificationId },
             BulkAction = new QualificationsBulkActionPageViewModel.QualificationsBulkActionInputViewModel
-        {
+            {
                 ProcessStatusId = Guid.NewGuid(),
                 Comment = "bulk comment"
             }
@@ -722,7 +712,9 @@ public class ChangedControllerBulkActionTests
                 }
             });
 
-        await _controller.ApplyBulkAction(model, query);
+        SetChangedSessionFilters(query);
+
+        await _controller.ApplyBulkAction(model);
 
         var json = Assert.IsType<string>(_controller.TempData[BulkActionQualifications.Errors]);
         var errorModel = JsonSerializer.Deserialize<QualificationBulkActionErrorModel>(json);

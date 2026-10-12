@@ -4,7 +4,10 @@ using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Extensions;
+using SFA.DAS.AODP.Web.Models.Applications;
 using SFA.DAS.AODP.Web.Models.BulkActions;
+using SFA.DAS.AODP.Web.Models.GdsComponents;
+using SFA.DAS.AODP.Web.Models.Qualifications;
 using SFA.DAS.AODP.Web.Validators.Attributes;
 using SFA.DAS.AODP.Web.Validators.Patterns;
 
@@ -13,10 +16,14 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
     public class ApplicationsReviewListViewModel :ApplicationsBulkActionPageViewModel
     {
         public List<Application> Applications { get; set; } = new();
-        public int TotalItems { get; set; }
 
-        public int PageNumber { get; set; } = 1;
-        public int RecordsPerPage { get; set; } = 10;
+        // Business‑logic pagination:
+        // Calculates current page, total pages, start/end record numbers.
+        public PaginationViewModel PaginationViewModel { get; set; }
+
+        // UI pagination model for the GOV.UK component:
+        // Builds pagination URLs for the GOV.UK component.
+        public PaginationModel GdsPagination { get; set; } = new PaginationModel();
 
         [AllowedCharacters(TextCharacterProfile.Title)]
         public string? ApplicationSearch { get; set; }
@@ -56,9 +63,38 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
 
         }
 
+        public static ApplicationsReviewListViewModel Map(
+            GetApplicationsForReviewQueryResponse response,
+            ApplicationsReviewQuery query)
+        {
+            var vm = new ApplicationsReviewListViewModel();
+
+            vm.MapApplications(response);
+
+            vm.ApplicationSearch = query.ApplicationSearch;
+            vm.AwardingOrganisationSearch = query.AwardingOrganisationSearch;
+            vm.ReviewerSelection = query.ReviewerSelection;
+            vm.Status = query.Status ?? new List<ApplicationStatus>();
+
+            vm.PaginationViewModel = new PaginationViewModel(
+                response.TotalRecordsCount,
+                (query.PageNumber - 1) * query.RecordsPerPage,
+                query.RecordsPerPage);
+
+            vm.GdsPagination = new PaginationModel()
+            {
+                CurrentPage = vm.PaginationViewModel.CurrentPage,
+                MaxPageNumber = vm.PaginationViewModel.TotalPages,
+                ActionName = "Index",
+                ControllerName = "ApplicationsReview",
+                Area = "Review"
+            };
+
+            return vm;
+        }
+
         public void MapApplications(GetApplicationsForReviewQueryResponse response)
         {
-            TotalItems = response.TotalRecordsCount;
             foreach (var application in response.Applications)
             {
                 var reviewers = new[] { application.Reviewer1, application.Reviewer2 }
@@ -111,20 +147,20 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
             };
 
             items.AddRange(
-            availableReviewers
-                .OrderBy(r => r.LastName)
-                .ThenBy(r => r.FirstName)
-                .Select(r =>
-                {
-                    var name = $"{r.FirstName} {r.LastName}".Trim();
-                    return new SelectListItem
+                availableReviewers
+                    .OrderBy(r => r.LastName)
+                    .ThenBy(r => r.FirstName)
+                    .Select(r =>
                     {
-                        Value = name,
-                        Text = name,
-                        Selected = selectedReviewer == name
-                    };
-                })
-            );
+                        var name = $"{r.FirstName} {r.LastName}".Trim();
+                        return new SelectListItem
+                        {
+                            Value = name,
+                            Text = name,
+                            Selected = selectedReviewer == name
+                        };
+                    })
+                );
 
             return items;
         }

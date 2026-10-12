@@ -8,9 +8,11 @@ public sealed class QualificationNumberAttribute : ValidationAttribute
         "Enter a qualification number in the format 12345678, 1234567X, 123/4567/8 or 123/4567/X";
 
     private static readonly Regex QanRegex =
-        new(ValidationPatterns.Format.QualificationNumber,
-            RegexOptions.Compiled,
-            TimeSpan.FromMilliseconds(100));
+       new Regex(
+        ValidationPatterns.Format.QualificationNumber,
+        RegexOptions.Compiled | RegexOptions.CultureInvariant,
+        matchTimeout: TimeSpan.FromMilliseconds(100));
+
 
     public QualificationNumberAttribute() : base(DefaultErrorMessage) { }
 

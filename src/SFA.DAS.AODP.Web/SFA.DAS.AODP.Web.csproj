@@ -63,6 +63,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Folder Include="Models\Filters\" />
 	  <Folder Include="Areas\Review\Domain\Rollover\" />
 	  <Folder Include="CsvHelper\" />
 	  <Folder Include="Providers\" />
