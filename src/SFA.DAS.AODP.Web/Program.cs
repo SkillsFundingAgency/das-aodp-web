@@ -68,6 +68,11 @@ internal class Program
             options.Cookie.Name = ".AODP.Session";
         });
 
+        builder.Services.AddAntiforgery(options =>
+        {
+            options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        });
+
         builder.Services
              .AddMvc(options =>
              {
@@ -198,6 +203,10 @@ internal class Program
         endpoints.MapControllerRoute(name: "AdminDefaultForOutput",
                     pattern: "Admin/OutputFile/{action=Index}/{id?}",
                     defaults: new { area = "Admin", controller = "OutputFile" }).RequireAuthorization(PolicyConstants.IsAdminImportUser);
+
+        endpoints.MapControllerRoute(name: "AdminDefaultForQaa",
+                    pattern: "Admin/Qaa/{action=Index}/{id?}",
+                    defaults: new { area = "Admin", controller = "Qaa" }).RequireAuthorization(PolicyConstants.IsAdminImportUser);
 
         endpoints.MapControllerRoute(name: "AdminDefaultForForms",
                     pattern: "Admin/Forms/{action=index}/{id?}",

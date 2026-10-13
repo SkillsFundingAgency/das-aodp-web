@@ -31,22 +31,6 @@
     </div>
 }
 
-@if (currentUserReview.NewMessage)
-{
-    <div class="govuk-notification-banner" role="banner" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
-        <div class="govuk-notification-banner__header">
-            <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
-                Important
-            </h2>
-        </div>
-        <div class="govuk-notification-banner__content">
-            <p class="govuk-notification-banner__heading">
-                The are new messages for this application.
-            </p>
-        </div>
-    </div>
-}
-
 <partial name="~/Views/Shared/_NotificationPartial.cshtml" />
 <partial name="~/Views/Shared/_ValidationSummaryPartial.cshtml" />
 
@@ -296,6 +280,15 @@
 
                     <a class="govuk-button govuk-button--secondary" asp-action="DownloadApplicationFormAndFiles" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId">
                         Download application
+                    </a>
+                </div>
+
+                <div class="govuk-grid-row">
+                    <h2 class="govuk-heading-m">Delete application</h2>
+                    <p class="govuk-body">Permanently delete this application. This cannot be undone.</p>
+
+                    <a class="govuk-button govuk-button--warning" asp-action="Delete" asp-controller="ApplicationsReview" asp-route-applicationReviewId="@Model.ApplicationReviewId">
+                        Delete application
                     </a>
                 </div>
             }

@@ -8,25 +8,29 @@
     var fileErrorMessage = fileHasError ? fileState?.Errors.First().ErrorMessage : null;
 }
 
-<div class="govuk-warning-text">
-    <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
-    <strong class="govuk-warning-text__text">
-        <span class="govuk-visually-hidden">Warning</span>
-        This should be a list of candidates that have been checked by a colleague and confirmed as being eligible for rollover
-    </strong>
+<div id="uploadText">
+
+    <div class="govuk-warning-text">
+        <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+        <strong class="govuk-warning-text__text">
+            <span class="govuk-visually-hidden">Warning</span>
+            This should be a list of candidates that have been checked by a colleague and confirmed as being eligible for rollover
+        </strong>
+    </div>
+
+    <h2 class="govuk-body govuk-!-margin-bottom-1">Import file</h2>
+
+    <p class="govuk-hint">
+        This must be a correctly formatted CSV file. Data within the table cannot include any commas or special characters.
+    </p>
+
+    <p class="govuk-hint">
+        Do not close this window, navigate away or refresh the page until it’s done.
+    </p>
+
 </div>
 
-<h2 class="govuk-body govuk-!-margin-bottom-1">Import file</h2>
-
-<p class="govuk-hint">
-    This must be a correctly formatted CSV file. Data within the table cannot include any commas or special characters.
-</p>
-
-<p class="govuk-hint">
-    Do not close this window, navigate away or refresh the page until it’s done.
-</p>
-
-<form asp-area="Review" asp-controller="Rollover" asp-action="UploadQualificationsToRollover" method="post" enctype="multipart/form-data">
+<form asp-area="Review" asp-controller="Rollover" asp-action="UploadQualificationsToRollover" method="post" enctype="multipart/form-data" id="uploadForm">
 
     @Html.AntiForgeryToken()
 
@@ -37,7 +41,7 @@
         </span>
     }
 
-    <div class="govuk-form-group">
+    <div id="fileSection" class="govuk-form-group">
         <input asp-for="File" id="fileUpload"
                type="file"
                class="govuk-file-upload"
@@ -63,8 +67,44 @@
         </div>
     </details>
 
+    <div id="uploadingSection" style="display:none;">
+        <p class="govuk-body">File uploading</p>
+        <img src="/assets/images/spinner.svg"
+             alt="Loading"
+             class="upload-spinner govuk-!-display-inline-block govuk-!-margin-5" style="width:50px"
+             aria-hidden="true" />
+    </div>
+
     <button type="submit" id="continueButton" class="govuk-button" data-module="govuk-button">
         Continue
     </button>
 
 </form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('uploadForm');
+        if (!form) return;
+
+        const fileSection = document.getElementById('fileSection');
+        const uploadText = document.getElementById('uploadText');
+        const uploadingSection = document.getElementById('uploadingSection');
+        const continueButton = document.getElementById('continueButton');
+        const fileInput = document.getElementById('fileUpload');
+
+        form.addEventListener('submit', () => {
+
+            if (!fileInput || fileInput.files.length === 0) {
+                return;
+            }
+
+            fileSection.hidden = true;
+            uploadText.hidden = true;
+
+            uploadingSection.style.display = 'block';
+
+            continueButton.disabled = true;
+            continueButton.textContent = 'Uploading...';
+        }, { once: true });
+    });
+</script>

@@ -6,7 +6,7 @@
         public static class Format
         {
             public const string QualificationNumber =
-                @"^(?:\s*|\d{8}|\d{7}[A-Za-z]|\d{3}\/\d{4}\/(?:\d|[A-Za-z]))$";
+                @"^(?:\d{8}|\d{7}[A-Za-z]|[0-9]{3}/[0-9]{4}/[0-9A-Za-z])$";
         }
 
         // Text - allowed characters

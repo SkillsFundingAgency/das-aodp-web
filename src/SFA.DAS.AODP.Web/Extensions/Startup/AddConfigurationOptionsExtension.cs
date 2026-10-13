@@ -1,7 +1,4 @@
-﻿using Microsoft.Extensions.Options;
-using SFA.DAS.AODP.Models.Settings;
-
-namespace SFA.DAS.AODP.Web.Extensions.Startup;
+﻿namespace SFA.DAS.AODP.Web.Extensions.Startup;
 
 public static class AddConfigurationOptionsExtension
 {
@@ -14,12 +11,6 @@ public static class AddConfigurationOptionsExtension
 
         services.Configure<FormBuilderSettings>(configuration.GetSection("FormBuilderSettings"));
         services.AddSingleton(cfg => cfg.GetRequiredService<IOptions<FormBuilderSettings>>().Value);
-
-        services.Configure<BlobStorageSettings>(configuration.GetSection("BlobStorageSettings"));
-        services.AddSingleton(cfg => cfg.GetRequiredService<IOptions<BlobStorageSettings>>().Value);
-
-        services.Configure<ImportBlobStorageSettings>(configuration.GetSection("ImportBlobStorageSettings"));
-        services.AddSingleton(cfg => cfg.GetRequiredService<IOptions<ImportBlobStorageSettings>>().Value);
 
         services.Configure<ImportFileUploadSettings>(configuration.GetSection("ImportFileUploadSettings"));
         services.AddSingleton(cfg => cfg.GetRequiredService<IOptions<ImportFileUploadSettings>>().Value);

@@ -1,5 +1,6 @@
 ﻿namespace SFA.DAS.AODP.Web.Models.Import;
 
+[ExcludeFromCodeCoverage]
 public sealed record DefundingListColumnNames(
         string? Qan,
         string? Title,

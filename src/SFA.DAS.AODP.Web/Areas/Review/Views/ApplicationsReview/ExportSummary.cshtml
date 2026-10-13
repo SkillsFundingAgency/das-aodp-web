@@ -124,9 +124,16 @@
                                             @foreach (var f in answer.Files)
                                             {
                                                 <li>
-                                                    <a href="@($"./{qId}/{f.FileDisplayName}")">
-                                                        @f.FileDisplayName
-                                                    </a>
+                                                    @if (f.IsDownloadable)
+                                                    {
+                                                        <a href="@($"./{qId}/{f.FileDisplayName}")">
+                                                            @f.FileDisplayName
+                                                        </a>
+                                                    }
+                                                    else
+                                                    {
+                                                        @($"{f.FileDisplayName} (file not available)")
+                                                    }
                                                 </li>
                                             }
                                         </ul>

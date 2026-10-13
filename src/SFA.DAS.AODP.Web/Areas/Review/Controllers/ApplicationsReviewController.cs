@@ -1,13 +1,16 @@
-﻿using MediatR;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.Wordprocessing;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using SFA.DAS.Aodp.Domain.Files;
 using SFA.DAS.AODP.Application.Commands.Application.Review;
 using SFA.DAS.AODP.Application.Commands.Review;
 using SFA.DAS.AODP.Application.Queries.Application.Form;
+using SFA.DAS.AODP.Application.Queries.Files.Get;
 using SFA.DAS.AODP.Application.Queries.Application.Review;
 using SFA.DAS.AODP.Application.Queries.Review;
-using SFA.DAS.AODP.Infrastructure.File;
+using SFA.DAS.AODP.Application.Services.Files;
 using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Models.Users;
 using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview;
@@ -15,18 +18,19 @@ using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview.FundingApproval;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Enums;
-using SFA.DAS.AODP.Web.Extensions;
 using SFA.DAS.AODP.Web.Helpers.Export;
 using SFA.DAS.AODP.Web.Helpers.User;
 using SFA.DAS.AODP.Web.Models.Applications;
 using SFA.DAS.AODP.Web.Models.BulkActions;
 using SFA.DAS.AODP.Web.Models.BulkActions.Options;
 using SFA.DAS.AODP.Web.Models.RelatedLinks;
+using SFA.DAS.AODP.Web.Models.Session;
 using SFA.DAS.AODP.Web.Validators.Messages;
 using System.ComponentModel.DataAnnotations;
 using System.IO.Compression;
 using ControllerBase = SFA.DAS.AODP.Web.Controllers.ControllerBase;
 using JsonSerializer = System.Text.Json.JsonSerializer;
+using SFA.DAS.AODP.Web.Extensions;
 
 namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 {
@@ -36,7 +40,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
     {
         enum UpdateKeys
         {
-            SharingStatusUpdated, QanUpdated, OwnerUpdated, ReviewerUpdated, ApplicationDetailsUpdated, ApplicationDetailsUpdateFailed
+            SharingStatusUpdated, QanUpdated, OwnerUpdated, ReviewerUpdated, ApplicationDetailsUpdated, ApplicationDetailsUpdateFailed, ApplicationDeleted
         }
         private readonly IUserHelperService _userHelperService;
         private readonly UserType UserType;
@@ -59,10 +63,25 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
         [Route("review/application-reviews")]
         public async Task<IActionResult> Index(
-            ApplicationsReviewQuery query, 
+            int? pageNumber, 
             bool selectAll = false)
         {
-            var viewModel = await BuildIndexViewModelAsync(query, selectAll);
+            var sessionModel =
+                HttpContext.Session.GetObject<ApplicationsReviewFilterSessionModel>("ApplicationsReviewFilters")
+                ?? new ApplicationsReviewFilterSessionModel();
+
+            if (pageNumber.HasValue)
+            {
+                sessionModel.PageNumber = pageNumber.Value;
+            }
+
+            HttpContext.Session.SetObject("ApplicationsReviewFilters", sessionModel);
+
+            var query = BuildApplicationsReviewQuery(sessionModel);
+
+            var viewModel = await BuildIndexViewModelAsync(
+                query,
+                selectAll);
 
             ShowNotificationIfKeyExists(
                 BulkActionApplications.BulkActionSuccessKey,
@@ -74,15 +93,26 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 ViewNotificationMessageType.Success,
                 BulkActionApplications.SaveReviewersSuccessMessage);
 
+            ShowNotificationIfKeyExists(
+                UpdateKeys.ApplicationDeleted.ToString(),
+                ViewNotificationMessageType.Success,
+                "The application has been deleted.");
+
             return View(viewModel);
         }
 
         [HttpPost]
         [Route("/review/application-reviews/bulk-action")]
         public async Task<IActionResult> ApplyBulkAction(
-            ApplicationsBulkActionPostModel model,
-            ApplicationsReviewQuery applicationQuery)
+            ApplicationsBulkActionPostModel model)
         {
+            var sessionModel =
+                HttpContext.Session.GetObject<ApplicationsReviewFilterSessionModel>("ApplicationsReviewFilters")
+                ?? new ApplicationsReviewFilterSessionModel();
+
+            var applicationQuery = BuildApplicationsReviewQuery(sessionModel);
+
+
             if (model.SelectedApplicationReviewIds.Count == 0)
             {
                 var message = model.BulkActionInputViewModel?.SubmitAction switch
@@ -149,7 +179,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                             if (result.ErrorCount == 0)
                             {
                                 TempData[BulkActionApplications.SaveReviewersSuccessKey] = true;
-                                return RedirectToAction(nameof(Index), applicationQuery.ToRouteValues());
+                                return RedirectToAction(nameof(Index));
                             }
 
                             var failed = result.Errors.Select(e => new ApplicationBulkActionErrorItemViewModel
@@ -189,7 +219,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                             if(result.ErrorCount == 0)
                             {
                                 TempData[BulkActionApplications.BulkActionSuccessKey] = true;
-                                return RedirectToAction(nameof(Index), applicationQuery.ToRouteValues());
+                                return RedirectToAction(nameof(Index));
                             }
 
                             var failed = result.Errors.Select(e => new ApplicationBulkActionErrorItemViewModel
@@ -228,7 +258,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             {
                 Failed = failed,
                 BackLinkText = "Go back to applications",
-                BackLinkUrl = Url.Action(nameof(Index), query.ToRouteValues())!
+                BackLinkUrl = Url.Action(nameof(Index))!
             };
 
             TempData[BulkActionApplications.Errors] = JsonSerializer.Serialize(errorModel);
@@ -252,13 +282,32 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         }
 
         [HttpPost]
-        [Route("review/application-reviews")]
-        public async Task<IActionResult> Search(ApplicationsReviewQuery query)
+        [Route("review/application-reviews/search")]
+        public IActionResult Search(ApplicationsReviewQuery query)
         {
-            query.PageNumber = 1;
-            return RedirectToAction(nameof(Index), query);
+            var sessionModel = new ApplicationsReviewFilterSessionModel
+            {
+                ApplicationSearch = query.ApplicationSearch,
+                AwardingOrganisationSearch = query.AwardingOrganisationSearch,
+                ReviewerSelection = query.ReviewerSelection,
+                Status = query.Status,
+
+                RecordsPerPage = query.RecordsPerPage,
+                PageNumber = 1 // reset page number on new search
+            };
+
+            HttpContext.Session.SetObject("ApplicationsReviewFilters", sessionModel);
+
+            return RedirectToAction(nameof(Index));
         }
 
+        [HttpGet]
+        [Route("review/application-reviews/clear")]
+        public IActionResult Clear()
+        {
+            HttpContext.Session.Remove("ApplicationsReviewFilters");
+            return RedirectToAction(nameof(Index));
+        }
 
         [Route("review/application-reviews/{applicationReviewId}", Name = RouteNames.Review_ViewApplication)]
         public async Task<IActionResult> ViewApplication(Guid applicationReviewId, [FromQuery] string? returnUrl = null)
@@ -289,6 +338,48 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
             return View(applicationReviewViewModel);
 
+        }
+
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
+        [HttpGet]
+        [Route("review/application-reviews/{applicationReviewId}/delete")]
+        public async Task<IActionResult> Delete(Guid applicationReviewId)
+        {
+            var review = await Send(new GetApplicationForReviewByIdQuery(applicationReviewId));
+
+            return View(new DeleteApplicationReviewViewModel
+            {
+                ApplicationReviewId = applicationReviewId,
+                ApplicationId = review.Id,
+                ApplicationName = review.Name,
+                ApplicationReference = review.Reference
+            });
+        }
+
+        [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
+        [HttpPost]
+        [Route("review/application-reviews/{applicationReviewId}/delete")]
+        public async Task<IActionResult> Delete(DeleteApplicationReviewViewModel model)
+        {
+            try
+            {
+                var command = new DeleteApplicationCommand(model.ApplicationId)
+                {
+                    UserType = _userHelperService.GetUserType().ToString()
+                };
+
+                await Send(command);
+                TempData[UpdateKeys.ApplicationDeleted.ToString()] = true;
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
+                ViewBag.NotificationType = ViewNotificationMessageType.Error;
+                ViewBag.NotificationMessage = "The application could not be deleted.";
+                return View(model);
+            }
         }
 
         [Authorize(Policy = PolicyConstants.IsInternalReviewUser)]
@@ -832,30 +923,58 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
         [Authorize(Policy = PolicyConstants.IsReviewUser)]
         [HttpPost]
         [Route("review/application-reviews/{applicationReviewId}/details")]
-        public async Task<IActionResult> ApplicationFileDownload(ApplicationFileDownloadViewModel model)
+        public async Task<IActionResult> ApplicationFileDownload( ApplicationFileDownloadViewModel model)
         {
-            var applicationId = await GetApplicationIdWithAccessValidation(model.ApplicationReviewId);
-            if (!model.FilePath.StartsWith(applicationId.ToString()))
-            {
+            if (!ModelState.IsValid || model.FileId is null)
                 return BadRequest();
-            }
 
-            var file = await _fileService.GetBlobDetails(model.FilePath.ToString());
-            var fileStream = await _fileService.OpenReadStreamAsync(model.FilePath);
-            return File(fileStream, "application/octet-stream", file.FileNameWithPrefix);
+            var applicationId =
+                await GetApplicationIdWithAccessValidation(model.ApplicationReviewId);
+
+            var fileResponse = await Send(new GetFileMetadataQuery
+            {
+                FileId = model.FileId
+            });
+
+            var file = fileResponse?.Files?.SingleOrDefault();
+
+            if (file == null)
+                return NotFound();
+
+            if (file.ApplicationId != applicationId)
+                return Forbid();
+
+            var stream = await _fileService.DownloadAsync(file);
+
+            if (stream is null)
+                return Forbid();
+
+            var contentType = string.IsNullOrWhiteSpace(file.ContentType)
+                ? "application/octet-stream"
+                : file.ContentType;
+
+            return File(stream, contentType, file.FileName);
         }
+
         [Authorize(Policy = PolicyConstants.IsReviewUser)]
         [HttpPost]
         [Route("review/application-reviews/{applicationReviewId}/files")]
         public async Task<IActionResult> DownloadAllApplicationFiles(Guid applicationReviewId)
         {
             var applicationId = await GetApplicationIdWithAccessValidation(applicationReviewId);
-            var files = _fileService.ListBlobs(applicationId.ToString());
 
-            if (files == null || !files.Any())
+            var fileMetadataResponse = await Send(new GetFileMetadataQuery
             {
-                throw new InvalidOperationException($"No files found for applicationId {applicationId}");
+                FileCategories = [FileCategory.QuestionUpload],
+                ApplicationId = applicationId
+            });
+
+            if (fileMetadataResponse.Files.Count == 0)
+            {
+                throw new InvalidOperationException(
+                    $"No files found for applicationId {applicationId}");
             }
+            var files = fileMetadataResponse.Files;
 
             using (var memoryStream = new MemoryStream())
             {
@@ -863,30 +982,29 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
                 {
                     foreach (var file in files)
                     {
-                        var fileStream = await _fileService.OpenReadStreamAsync(file.FullPath);
+                        var fileStream = await _fileService.DownloadAsync(file);
 
-                        if (fileStream != null)
+                        if (fileStream == null)
                         {
-                            var entry = archive.CreateEntry(file.FileNameWithPrefix);
-
-                            using (var entryStream = entry.Open())
-                            {
-                                await fileStream.CopyToAsync(entryStream);
-                            }
+                            continue;
                         }
-                        else
+
+                        var entry = archive.CreateEntry(file.FileName);
+
+                        using (var entryStream = entry.Open())
                         {
-                            throw new IOException($"Could not open stream for {file.FullPath}");
+                            await fileStream.CopyToAsync(entryStream);
                         }
                     }
                 }
 
                 memoryStream.Seek(0, SeekOrigin.Begin);
 
-                var applicationMetadata = await Send(new GetApplicationMetadataByIdQuery(applicationId));
+                var applicationMetadata =
+                    await Send(new GetApplicationMetadataByIdQuery(applicationId));
 
-                string formattedDateTime = DateTime.Now.ToString("ddMMyyyy-HHmmss");
-                string zipFileName = $"{applicationMetadata.Reference}-{formattedDateTime}-allfiles.zip";
+                string zipFileName =
+                    $"{applicationMetadata.Reference}-{DateTime.Now:ddMMyyyy-HHmmss}-allfiles.zip";
 
                 return File(memoryStream.ToArray(), "application/zip", zipFileName);
             }
@@ -901,14 +1019,16 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
             var exportData = await Send(new GetApplicationExportDataQuery(applicationReviewId));
 
-            var questionFiles = _fileService.ListBlobs(applicationId.ToString());
-            var messageFiles = _fileService.ListBlobs($"{ApplicationExportConstants.MessageFolderName}/{applicationId}");
+            var fileResponse = await Send(new GetFileMetadataQuery
+            {
+                FileCategories = [FileCategory.QuestionUpload, FileCategory.MessageAttachment],
+                ApplicationId = applicationId
+            });
 
-            var files = questionFiles.Concat(messageFiles).ToList();
-
-            var zipBytes = await _exportService.GenerateExportZipAsync(exportData, files);
+            var zipBytes = await _exportService.GenerateExportZipAsync(exportData, fileResponse.Files.ToList());
 
             return File(zipBytes, "application/zip", ApplicationExportPathBuilder.GetZipFileName(exportData.ApplicationMetadata));
+
         }
 
         private async Task<Guid> GetApplicationIdWithAccessValidation(Guid applicationReviewId)
@@ -1113,54 +1233,23 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
             
             var response = await Send(applicationQuery.ToGetApplicationsForReviewQuery(userType));
 
-            var viewModel = new ApplicationsReviewListViewModel
+            var viewModel = ApplicationsReviewListViewModel.Map(response, applicationQuery);
+
+            if (selectAll)
             {
-                PageNumber = applicationQuery.PageNumber,
-                RecordsPerPage = applicationQuery.RecordsPerPage,
-                ApplicationSearch = applicationQuery.ApplicationSearch,
-                AwardingOrganisationSearch = applicationQuery.AwardingOrganisationSearch,
-                ReviewerSelection = applicationQuery.ReviewerSelection,
-                Status = applicationQuery.Status ?? new List<ApplicationStatus>(),
-                UserType = userType,
-                FindRegulatedQualificationUrl = _aodpConfiguration.Value.FindRegulatedQualificationUrl
-            };
-
-            var validationResults = new List<ValidationResult>();
-            Validator.TryValidateObject(viewModel, new ValidationContext(viewModel), validationResults,
-                validateAllProperties: true);
-
-            if (validationResults.Any())
-            {
-                response = new GetApplicationsForReviewQueryResponse();
-
-                response.AvailableReviewers =
-                    string.IsNullOrWhiteSpace(viewModel.AvailableReviewersJson)
-                        ? new List<UserOption>()
-                        : JsonConvert.DeserializeObject<List<UserOption>>(viewModel.AvailableReviewersJson)
-                          ?? new List<UserOption>();
-
-                foreach (var validationResult in validationResults)
-                {
-                    ModelState.AddModelError(validationResult.ErrorMessage!.Split(' ').First(), validationResult.ErrorMessage!);
-                }
+                viewModel.SelectedApplicationReviewIds = viewModel.Applications.Select(a => a.ApplicationReviewId).Distinct().ToList();
             }
-            else
+
+            viewModel.BulkActionOptions = BulkMessageActionOptions.Build();
+
+            if (postedModel is not null)
             {
-                viewModel.MapApplications(response);
-
-                if (selectAll)
-                {
-                    viewModel.SelectedApplicationReviewIds = viewModel.Applications.Select(a => a.ApplicationReviewId).Distinct().ToList();
-                }
-
-                viewModel.BulkActionOptions = BulkMessageActionOptions.Build();
-
-                if (postedModel is not null)
-                {
-                    viewModel.SelectedApplicationReviewIds = postedModel.SelectedApplicationReviewIds ?? new();
-                    viewModel.BulkActionInputViewModel = postedModel.BulkActionInputViewModel ?? new();
-                }
+                viewModel.SelectedApplicationReviewIds = postedModel.SelectedApplicationReviewIds ?? new();
+                viewModel.BulkActionInputViewModel = postedModel.BulkActionInputViewModel ?? new();
             }
+
+            viewModel.UserType = userType;
+            viewModel.FindRegulatedQualificationUrl = _aodpConfiguration.Value.FindRegulatedQualificationUrl;
 
             return viewModel;
         }
@@ -1171,13 +1260,32 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
             var form = await Send(new GetFormPreviewByIdQuery(applicationId));
             var applicationFormDetails = await Send(new GetApplicationFormByReviewIdQuery(applicationReviewId));
-            
-            var files = _fileService.ListBlobs(applicationId.ToString());
 
-            var vm = ApplicationReadOnlyDetailsViewModel.Map(form, applicationFormDetails, files);
+            var applicationFiles = await Send(new GetFileMetadataQuery
+            {
+                FileCategories = [FileCategory.QuestionUpload],
+                ApplicationId = applicationId
+            });
+
+            var vm = ApplicationReadOnlyDetailsViewModel.Map(form, applicationFormDetails, applicationFiles.Files);
             vm.ApplicationReviewId = applicationReviewId;
 
             return vm;
         }
+
+        private ApplicationsReviewQuery BuildApplicationsReviewQuery(ApplicationsReviewFilterSessionModel session)
+        {
+            return new ApplicationsReviewQuery
+            {
+                PageNumber = session.PageNumber,
+                RecordsPerPage = session.RecordsPerPage,
+
+                ApplicationSearch = session.ApplicationSearch,
+                AwardingOrganisationSearch = session.AwardingOrganisationSearch,
+                ReviewerSelection = session.ReviewerSelection,
+                Status = session.Status
+            };
+        }
+
     }
 }

@@ -9,9 +9,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using SFA.DAS.AODP.Application;
-using SFA.DAS.AODP.Application.Commands.Application.Application;
 using SFA.DAS.AODP.Application.Commands.Application.Review;
 using SFA.DAS.AODP.Application.Commands.Review;
+using SFA.DAS.AODP.Application.Services.Files;
 using SFA.DAS.AODP.Infrastructure.File;
 using SFA.DAS.AODP.Models.Application;
 using SFA.DAS.AODP.Models.Settings;
@@ -21,12 +21,12 @@ using SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview;
 using SFA.DAS.AODP.Web.Constants;
 using SFA.DAS.AODP.Web.Helpers.Export;
 using SFA.DAS.AODP.Web.Helpers.User;
-using SFA.DAS.AODP.Web.Models.Application;
-using SFA.DAS.AODP.Web.Models.Applications;
 using SFA.DAS.AODP.Web.Models.BulkActions;
 using SFA.DAS.AODP.Web.Models.BulkActions.Options;
+using SFA.DAS.AODP.Web.Models.Session;
 using SFA.DAS.AODP.Web.Validators.Messages;
 using System.Text.Json;
+using SFA.DAS.AODP.Web.Extensions;
 
 namespace SFA.DAS.AODP.Web.UnitTests.Areas.Review.Controllers;
 
@@ -65,34 +65,34 @@ public class ApplicationsReviewControllerBulkActionTests
             _aodpOptions,
             _applicationExportService.Object);
 
+        var httpContext = new DefaultHttpContext();
+        httpContext.Session = new TestSession(); 
+
         _controller.ControllerContext = new ControllerContext
         {
-            HttpContext = new DefaultHttpContext()
+            HttpContext = httpContext
         };
 
         _controller.TempData = new TempDataDictionary(
-            _controller.HttpContext,
+            httpContext,
             Mock.Of<ITempDataProvider>());
 
-        _userHelperMock
-            .Setup(x => x.GetUserType())
-            .Returns(UserType.Qfau);
 
-        _userHelperMock
-            .Setup(x => x.GetUserEmail())
-            .Returns("user@test.com");
-
-        _userHelperMock
-            .Setup(x => x.GetUserDisplayName())
-            .Returns("Test User");
+        _userHelperMock.Setup(x => x.GetUserType()).Returns(UserType.Qfau);
+        _userHelperMock.Setup(x => x.GetUserEmail()).Returns("user@test.com");
+        _userHelperMock.Setup(x => x.GetUserDisplayName()).Returns("Test User");
 
         _urlHelperMock = new Mock<IUrlHelper>();
-
         _urlHelperMock
             .Setup(x => x.Action(It.IsAny<UrlActionContext>()))
             .Returns("/review/application-reviews?pageNumber=1&recordsPerPage=10");
 
         _controller.Url = _urlHelperMock.Object;
+    }
+
+    private void SetSession(ApplicationsReviewFilterSessionModel session)
+    {
+        _controller.HttpContext.Session.SetObject("ApplicationsReviewFilters", session);
     }
 
     [Fact]
@@ -111,26 +111,23 @@ public class ApplicationsReviewControllerBulkActionTests
             }
         };
 
-        var query = new ApplicationsReviewQuery
+        SetSession(new ApplicationsReviewFilterSessionModel
         {
             PageNumber = 2,
             RecordsPerPage = 20,
             ApplicationSearch = "app",
             AwardingOrganisationSearch = "org"
-        };
+        });
 
         _mediatorMock
             .Setup(x => x.Send(It.IsAny<BulkSaveReviewerCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new BaseMediatrResponse<BulkSaveReviewerCommandResponse>
             {
                 Success = true,
-                Value = new BulkSaveReviewerCommandResponse
-                {
-                    ErrorCount = 0
-                }
+                Value = new BulkSaveReviewerCommandResponse { ErrorCount = 0 }
             });
 
-        var result = await _controller.ApplyBulkAction(model, query);
+        var result = await _controller.ApplyBulkAction(model);
 
         var redirect = Assert.IsType<RedirectToActionResult>(result);
         Assert.Equal(nameof(ApplicationsReviewController.Index), redirect.ActionName);
@@ -153,24 +150,21 @@ public class ApplicationsReviewControllerBulkActionTests
             }
         };
 
-        var query = new ApplicationsReviewQuery
+        SetSession(new ApplicationsReviewFilterSessionModel
         {
             PageNumber = 1,
             RecordsPerPage = 10
-        };
+        });
 
         _mediatorMock
             .Setup(x => x.Send(It.IsAny<BulkSaveReviewerCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new BaseMediatrResponse<BulkSaveReviewerCommandResponse>
             {
                 Success = true,
-                Value = new BulkSaveReviewerCommandResponse
-                {
-                    ErrorCount = 0
-                }
+                Value = new BulkSaveReviewerCommandResponse { ErrorCount = 0 }
             });
 
-        await _controller.ApplyBulkAction(model, query);
+        await _controller.ApplyBulkAction(model);
 
         _mediatorMock.Verify(x => x.Send(
             It.Is<BulkSaveReviewerCommand>(cmd =>
@@ -202,24 +196,21 @@ public class ApplicationsReviewControllerBulkActionTests
             }
         };
 
-        var query = new ApplicationsReviewQuery
+        SetSession(new ApplicationsReviewFilterSessionModel
         {
             PageNumber = 1,
             RecordsPerPage = 10
-        };
+        });
 
         _mediatorMock
             .Setup(x => x.Send(It.IsAny<BulkSaveReviewerCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new BaseMediatrResponse<BulkSaveReviewerCommandResponse>
             {
                 Success = true,
-                Value = new BulkSaveReviewerCommandResponse
-                {
-                    ErrorCount = 0
-                }
+                Value = new BulkSaveReviewerCommandResponse { ErrorCount = 0 }
             });
 
-        await _controller.ApplyBulkAction(model, query);
+        await _controller.ApplyBulkAction(model);
 
         _mediatorMock.Verify(x => x.Send(
             It.Is<BulkSaveReviewerCommand>(cmd =>
@@ -247,11 +238,11 @@ public class ApplicationsReviewControllerBulkActionTests
             }
         };
 
-        var query = new ApplicationsReviewQuery
+        SetSession(new ApplicationsReviewFilterSessionModel
         {
             PageNumber = 1,
             RecordsPerPage = 10
-        };
+        });
 
         _mediatorMock
             .Setup(x => x.Send(It.IsAny<BulkSaveReviewerCommand>(), It.IsAny<CancellationToken>()))
@@ -275,7 +266,7 @@ public class ApplicationsReviewControllerBulkActionTests
                 }
             });
 
-        var result = await _controller.ApplyBulkAction(model, query);
+        var result = await _controller.ApplyBulkAction(model);
 
         var redirect = Assert.IsType<RedirectToActionResult>(result);
         Assert.Equal(nameof(ApplicationsReviewController.BulkApplicationError), redirect.ActionName);
@@ -294,11 +285,11 @@ public class ApplicationsReviewControllerBulkActionTests
             }
         };
 
-        var query = new ApplicationsReviewQuery
+        SetSession(new ApplicationsReviewFilterSessionModel
         {
             PageNumber = 1,
             RecordsPerPage = 10
-        };
+        });
 
         _mediatorMock
             .Setup(x => x.Send(It.IsAny<BulkSaveReviewerCommand>(), It.IsAny<CancellationToken>()))
@@ -322,7 +313,7 @@ public class ApplicationsReviewControllerBulkActionTests
                 }
             });
 
-        await _controller.ApplyBulkAction(model, query);
+        await _controller.ApplyBulkAction(model);
 
         var json = Assert.IsType<string>(_controller.TempData[BulkActionApplications.Errors]);
         var errorModel = JsonSerializer.Deserialize<ApplicationBulkActionErrorModel>(json);
@@ -356,24 +347,21 @@ public class ApplicationsReviewControllerBulkActionTests
             }
         };
 
-        var query = new ApplicationsReviewQuery
+        SetSession(new ApplicationsReviewFilterSessionModel
         {
             PageNumber = 2,
             RecordsPerPage = 20
-        };
+        });
 
         _mediatorMock
             .Setup(x => x.Send(It.IsAny<BulkApplicationActionCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new BaseMediatrResponse<BulkApplicationActionCommandResponse>
             {
                 Success = true,
-                Value = new BulkApplicationActionCommandResponse
-                {
-                    ErrorCount = 0
-                }
+                Value = new BulkApplicationActionCommandResponse { ErrorCount = 0 }
             });
 
-        var result = await _controller.ApplyBulkAction(model, query);
+        var result = await _controller.ApplyBulkAction(model);
 
         var redirect = Assert.IsType<RedirectToActionResult>(result);
         Assert.Equal(nameof(ApplicationsReviewController.Index), redirect.ActionName);
@@ -395,24 +383,21 @@ public class ApplicationsReviewControllerBulkActionTests
             }
         };
 
-        var query = new ApplicationsReviewQuery
+        SetSession(new ApplicationsReviewFilterSessionModel
         {
             PageNumber = 1,
             RecordsPerPage = 10
-        };
+        });
 
         _mediatorMock
             .Setup(x => x.Send(It.IsAny<BulkApplicationActionCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new BaseMediatrResponse<BulkApplicationActionCommandResponse>
             {
                 Success = true,
-                Value = new BulkApplicationActionCommandResponse
-                {
-                    ErrorCount = 0
-                }
+                Value = new BulkApplicationActionCommandResponse { ErrorCount = 0 }
             });
 
-        await _controller.ApplyBulkAction(model, query);
+        await _controller.ApplyBulkAction(model);
 
         _mediatorMock.Verify(x => x.Send(
             It.Is<BulkApplicationActionCommand>(cmd =>
@@ -438,11 +423,11 @@ public class ApplicationsReviewControllerBulkActionTests
             }
         };
 
-        var query = new ApplicationsReviewQuery
+        SetSession(new ApplicationsReviewFilterSessionModel
         {
             PageNumber = 1,
             RecordsPerPage = 10
-        };
+        });
 
         _mediatorMock
             .Setup(x => x.Send(It.IsAny<BulkApplicationActionCommand>(), It.IsAny<CancellationToken>()))
@@ -466,7 +451,7 @@ public class ApplicationsReviewControllerBulkActionTests
                 }
             });
 
-        var result = await _controller.ApplyBulkAction(model, query);
+        var result = await _controller.ApplyBulkAction(model);
 
         var redirect = Assert.IsType<RedirectToActionResult>(result);
         Assert.Equal(nameof(ApplicationsReviewController.BulkApplicationError), redirect.ActionName);
@@ -485,11 +470,11 @@ public class ApplicationsReviewControllerBulkActionTests
             }
         };
 
-        var query = new ApplicationsReviewQuery
+        SetSession(new ApplicationsReviewFilterSessionModel
         {
             PageNumber = 1,
             RecordsPerPage = 10
-        };
+        });
 
         _mediatorMock
             .Setup(x => x.Send(It.IsAny<BulkApplicationActionCommand>(), It.IsAny<CancellationToken>()))
@@ -513,7 +498,7 @@ public class ApplicationsReviewControllerBulkActionTests
                 }
             });
 
-        await _controller.ApplyBulkAction(model, query);
+        await _controller.ApplyBulkAction(model);
 
         var json = Assert.IsType<string>(_controller.TempData[BulkActionApplications.Errors]);
         var errorModel = JsonSerializer.Deserialize<ApplicationBulkActionErrorModel>(json);
@@ -536,11 +521,11 @@ public class ApplicationsReviewControllerBulkActionTests
             }
         };
 
-        var query = new ApplicationsReviewQuery
+        SetSession(new ApplicationsReviewFilterSessionModel
         {
             PageNumber = 1,
             RecordsPerPage = 10
-        };
+        });
 
         _mediatorMock
             .Setup(x => x.Send(It.IsAny<BulkApplicationActionCommand>(), It.IsAny<CancellationToken>()))
@@ -564,7 +549,7 @@ public class ApplicationsReviewControllerBulkActionTests
                 }
             });
 
-        await _controller.ApplyBulkAction(model, query);
+        await _controller.ApplyBulkAction(model);
 
         var json = Assert.IsType<string>(_controller.TempData[BulkActionApplications.Errors]);
         var errorModel = JsonSerializer.Deserialize<ApplicationBulkActionErrorModel>(json);
@@ -587,11 +572,11 @@ public class ApplicationsReviewControllerBulkActionTests
             }
         };
 
-        var query = new ApplicationsReviewQuery
+        SetSession(new ApplicationsReviewFilterSessionModel
         {
             PageNumber = 1,
             RecordsPerPage = 10
-        };
+        });
 
         _mediatorMock
             .Setup(x => x.Send(It.IsAny<BulkApplicationActionCommand>(), It.IsAny<CancellationToken>()))
@@ -615,7 +600,7 @@ public class ApplicationsReviewControllerBulkActionTests
                 }
             });
 
-        await _controller.ApplyBulkAction(model, query);
+        await _controller.ApplyBulkAction(model);
 
         var json = Assert.IsType<string>(_controller.TempData[BulkActionApplications.Errors]);
         var errorModel = JsonSerializer.Deserialize<ApplicationBulkActionErrorModel>(json);
@@ -637,13 +622,13 @@ public class ApplicationsReviewControllerBulkActionTests
             }
         };
 
-        var query = new ApplicationsReviewQuery
+        SetSession(new ApplicationsReviewFilterSessionModel
         {
             PageNumber = 1,
             RecordsPerPage = 10
-        };
+        });
 
-        var result = await _controller.ApplyBulkAction(model, query);
+        var result = await _controller.ApplyBulkAction(model);
 
         var redirect = Assert.IsType<RedirectResult>(result);
         Assert.Equal("/Home/Error", redirect.Url);
@@ -662,17 +647,17 @@ public class ApplicationsReviewControllerBulkActionTests
             }
         };
 
-        var query = new ApplicationsReviewQuery
+        SetSession(new ApplicationsReviewFilterSessionModel
         {
             PageNumber = 1,
             RecordsPerPage = 10
-        };
+        });
 
         _mediatorMock
             .Setup(x => x.Send(It.IsAny<BulkSaveReviewerCommand>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("boom"));
 
-        var result = await _controller.ApplyBulkAction(model, query);
+        var result = await _controller.ApplyBulkAction(model);
 
         var redirect = Assert.IsType<RedirectResult>(result);
         Assert.Equal("/Home/Error", redirect.Url);

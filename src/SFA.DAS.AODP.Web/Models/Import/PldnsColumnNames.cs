@@ -1,5 +1,6 @@
 ﻿namespace SFA.DAS.AODP.Web.Models.Import;
 
+[ExcludeFromCodeCoverage]
 public sealed record PldnsColumnNames(
         string? Qan,
         string? ListUpdated,
