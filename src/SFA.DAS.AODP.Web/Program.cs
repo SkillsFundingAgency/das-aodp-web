@@ -73,6 +73,11 @@ internal class Program
             options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
         });
 
+        builder.Services.Configure<CookieTempDataProviderOptions>(options =>
+        {
+            options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        });
+
         builder.Services
              .AddMvc(options =>
              {
