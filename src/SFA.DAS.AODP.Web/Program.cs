@@ -133,6 +133,12 @@ internal class Program
         // Add security headers middleware
         app.Use(async (context, next) =>
         {
+            // Enforce HTTPS for this host and all subdomains (not in local dev)
+            if (!app.Environment.IsDevelopment())
+            {
+                context.Response.Headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload";
+            }
+
             // Prevent MIME type sniffing
             context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
 
