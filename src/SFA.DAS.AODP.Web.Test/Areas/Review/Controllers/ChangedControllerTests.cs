@@ -598,6 +598,31 @@ public class ChangedControllerTests
     }
 
     [Fact]
+    public async Task ExportData_EscapesFormulaValues()
+    {
+        var controller = CreateController();
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetChangedQualificationsCsvExportQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetQualificationsExportResponse>
+            {
+                Success = true,
+                Value = new GetQualificationsExportResponse
+                {
+                    QualificationExports = new List<QualificationExport>
+                    {
+                    new QualificationExport { OrganisationName = "=cmd|'/C calc'!A1" }
+                    }
+                }
+            });
+
+        var result = await controller.ExportData();
+
+        var file = Assert.IsType<FileContentResult>(result);
+        var csv = System.Text.Encoding.UTF8.GetString(file.FileContents);
+        Assert.Contains("'=cmd", csv);
+    }
+
+    [Fact]
     public async Task QualificationDetailsTimeline_ReturnsRedirect_WhenQualificationReferenceMissing()
     {
         var controller = CreateController();

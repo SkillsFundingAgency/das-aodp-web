@@ -1,14 +1,11 @@
 ﻿using CsvHelper.Configuration;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using SFA.DAS.AODP.Application.Commands.Qualification;
 using SFA.DAS.AODP.Application.Commands.Qualifications;
 using SFA.DAS.AODP.Application.Queries.Application.Application;
 using SFA.DAS.AODP.Application.Queries.Qualifications;
 using SFA.DAS.AODP.Models.Qualifications;
-using SFA.DAS.AODP.Domain.Models;
-using SFA.DAS.AODP.Models.Settings;
 using SFA.DAS.AODP.Web.Authentication;
 using SFA.DAS.AODP.Web.Enums;
 using SFA.DAS.AODP.Web.Extensions;
@@ -407,8 +404,13 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
         private static string GenerateCsv(IEnumerable<QualificationExport> qualifications)
         {
+            var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+            {
+                InjectionOptions = InjectionOptions.Escape
+            };
+
             using (var writer = new StringWriter())
-            using (var csv = new CsvHelper.CsvWriter(writer, new CsvConfiguration(CultureInfo.InvariantCulture)))
+            using (var csv = new CsvHelper.CsvWriter(writer, config))
             {
                 csv.WriteRecords(qualifications);
                 return writer.ToString();
