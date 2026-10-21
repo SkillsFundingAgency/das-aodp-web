@@ -443,8 +443,13 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Controllers
 
         private static string GenerateCsv(IEnumerable<QualificationExport> qualifications)
         {
+            var config = new CsvConfiguration(CultureInfo.InvariantCulture)
+            {
+                InjectionOptions = InjectionOptions.Escape
+            };
+
             using (var writer = new StringWriter())
-            using (var csv = new CsvWriter(writer, new CsvConfiguration(CultureInfo.InvariantCulture)))
+            using (var csv = new CsvWriter(writer, config))
             {
                 csv.WriteRecords(qualifications);
                 return writer.ToString();
