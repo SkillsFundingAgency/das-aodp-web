@@ -108,4 +108,36 @@ public class AllowedCharactersAttributeTests
 
         Assert.Equal(ValidationResult.Success, result);
     }
+
+    [Theory]
+    [InlineData("Level 3 Diploma - Health/Social Care")]
+    [InlineData("Level 3 Diploma \u2013 Health and Social Care")]
+    [InlineData("Level 3 Diploma \u2014 Health and Social Care")]
+    [InlineData("Level 2 Learner\u2019s Certificate")]
+    [InlineData("Level 2 \u2018Award\u2019 in Maths")]
+    [InlineData("Level 1 Award in Maths+")]
+    [InlineData("GQA Level 2 NVQ Diploma in Rainscreen Fa\u00E7ade Systems")]
+    [InlineData("ST0096_V02/AP01 Plasterer")]
+    [InlineData("Johnston Farina Method\u00AE")]
+    [InlineData("Do it!\u00A0Level\u200B2")]
+    public void QualificationTitle_AllowsSpecialCharacters(string title)
+    {
+        var attribute = new AllowedCharactersAttribute(TextCharacterProfile.Title);
+
+        var result = attribute.GetValidationResult(title, CreateContext());
+
+        Assert.Equal(ValidationResult.Success, result);
+    }
+
+    [Theory]
+    [InlineData("Level 3 <script>")]
+    [InlineData("Level 3 Diploma [Engineering]")]
+    public void QualificationTitle_ReturnsError_WhenInvalidCharacters(string title)
+    {
+        var attribute = new AllowedCharactersAttribute(TextCharacterProfile.Title);
+
+        var result = attribute.GetValidationResult(title, CreateContext(NameField));
+
+        Assert.NotEqual(ValidationResult.Success, result);
+    }
 }
