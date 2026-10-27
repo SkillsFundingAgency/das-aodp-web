@@ -13,6 +13,9 @@
         public static class Text
         {
             public const string Title =
+                @"^[A-Za-z0-9 \-'\.&/(),:;]+$";
+
+            public const string QualificationTitle =
                 @"^[\p{L}0-9 \t\u00A0\u202F\u200B\uFEFF\-\u2010\u2013\u2014_'\u2018\u2019\.&/(),:;+!\u00AE{}]+$";
 
             public const string PersonName =

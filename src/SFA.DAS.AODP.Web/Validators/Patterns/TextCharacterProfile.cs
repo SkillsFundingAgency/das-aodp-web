@@ -4,6 +4,7 @@
     {
         PersonName,
         Title,
-        FreeText
+        FreeText,
+        QualificationTitle
     }
 }

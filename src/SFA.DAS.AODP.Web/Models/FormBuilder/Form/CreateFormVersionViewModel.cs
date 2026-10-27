@@ -1,5 +1,4 @@
-﻿using SFA.DAS.AODP.Web.Validators.Attributes;
-using SFA.DAS.AODP.Web.Validators.Patterns;
+﻿using SFA.DAS.AODP.Web.Validators.Patterns;
 
 namespace SFA.DAS.AODP.Web.Models.FormBuilder.Form;
 

@@ -122,7 +122,7 @@ public class AllowedCharactersAttributeTests
     [InlineData("Do it!\u00A0Level\u200B2")]
     public void QualificationTitle_AllowsSpecialCharacters(string title)
     {
-        var attribute = new AllowedCharactersAttribute(TextCharacterProfile.Title);
+        var attribute = new AllowedCharactersAttribute(TextCharacterProfile.QualificationTitle);
 
         var result = attribute.GetValidationResult(title, CreateContext());
 
@@ -134,7 +134,7 @@ public class AllowedCharactersAttributeTests
     [InlineData("Level 3 Diploma [Engineering]")]
     public void QualificationTitle_ReturnsError_WhenInvalidCharacters(string title)
     {
-        var attribute = new AllowedCharactersAttribute(TextCharacterProfile.Title);
+        var attribute = new AllowedCharactersAttribute(TextCharacterProfile.QualificationTitle);
 
         var result = attribute.GetValidationResult(title, CreateContext(NameField));
 
