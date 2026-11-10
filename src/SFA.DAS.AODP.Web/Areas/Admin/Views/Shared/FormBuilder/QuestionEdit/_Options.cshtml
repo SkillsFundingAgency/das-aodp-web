@@ -6,9 +6,9 @@
     <ul class="govuk-list">
         @for (int i = 0; i < Model.Options.Count; i++)
         {
-            <li id="Options.Options[@i]" style="display: flex; align-items: flex-end;">
+            <li id="Options.Options[@i]" class="app-flex-end">
 
-                <div class="govuk-form-group" style="width:80%">
+                <div class="govuk-form-group app-width-80">
                     <label for="Options.Options[@i].Value" class="govuk-label">
                         Option @(i + 1)
                     </label>
