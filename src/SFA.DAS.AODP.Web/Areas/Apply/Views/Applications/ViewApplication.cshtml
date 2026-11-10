@@ -65,7 +65,7 @@
 
         @if (!Model.IsSubmitted)
         {
-            <a class="govuk-button govuk-button--secondary" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init=""
+            <a class="govuk-button govuk-button--secondary" data-module="govuk-button" data-prevent-double-click="true"
                asp-action="Edit"
                asp-controller="Applications"
                asp-route-applicationId="@Model.ApplicationId"
@@ -73,7 +73,7 @@
                 Edit application details
             </a>
 
-            <a class="govuk-button govuk-button--secondary" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init=""
+            <a class="govuk-button govuk-button--secondary" data-module="govuk-button" data-prevent-double-click="true"
                asp-action="ApplicationFormPreview"
                asp-controller="Applications"
                asp-route-formVersionId="@Model.FormVersionId"
@@ -120,7 +120,7 @@
         {
             if (Model.Sections.All(s => s.PagesRemaining == 0))
             {
-                <a class="govuk-button" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init=""
+                <a class="govuk-button" data-module="govuk-button" data-prevent-double-click="true"
                    asp-action="Submit"
                    asp-controller="Applications"
                    asp-route-applicationId="@Model.ApplicationId"
@@ -131,7 +131,7 @@
 
             if (!Model.VisibleToReviewers)
             {
-                <a class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init=""
+                <a class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true"
                    asp-action="Delete"
                    asp-controller="Applications"
                    asp-route-applicationId="@Model.ApplicationId"

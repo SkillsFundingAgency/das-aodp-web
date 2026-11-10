@@ -54,7 +54,7 @@
     @if (ViewBag.IsEditable)
     {
         <button type="submit" class="govuk-button govuk-button--secondary" data-module="govuk-button"
-                data-prevent-double-click="true" name="Options[AdditionalFormActions][AddOption]" value="true" data-govuk-button-init=""
+                data-prevent-double-click="true" name="Options[AdditionalFormActions][AddOption]" value="true"
                 @(ViewBag.AutoFocusOnAddOptionButton != null ? "autofocus" : "")>
             @if (Model.Options.Any())
             {
