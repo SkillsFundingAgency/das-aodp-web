@@ -236,3 +236,40 @@
     white-space: pre-wrap;
     overflow-wrap: break-word;
 }
+
+/* CSP: replacements for inline style attributes */
+.app-pre-line {
+    white-space: pre-line;
+}
+
+.app-hidden {
+    display: none;
+}
+
+.app-spinner {
+    width: 50px;
+}
+
+.app-spinner--centred {
+    display: block;
+    margin: 0 auto;
+    width: 50px;
+}
+
+.app-width-80 {
+    width: 80%;
+}
+
+.app-fit-left {
+    width: fit-content;
+    text-align: left;
+}
+
+.app-flex-end {
+    display: flex;
+    align-items: flex-end;
+}
+
+.app-padding-0 {
+    padding: 0 !important;
+}

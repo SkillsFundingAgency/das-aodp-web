@@ -11,7 +11,7 @@
 @if (!string.IsNullOrWhiteSpace(rolloverWorkflowRunId))
 {
     <iframe src="@Url.Action("GetRolloverCandidatesForExport", "Rollover", new { area = "Review", rolloverWorkflowRunId })"
-            title="Download frame" style="display:none" aria-hidden="true"></iframe>
+            title="Download frame" class="app-hidden" aria-hidden="true"></iframe>
 }
 
 <h1 class="govuk-heading-l">@ViewData["Title"]</h1>

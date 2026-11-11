@@ -64,7 +64,7 @@
                 <govuk-radios-item value="true" checked="@Model.Required">Mandatory</govuk-radios-item>
                 <govuk-radios-item value="false" checked="@Model.Required == false">
                     Optional
-                    <govuk-radios-hint class="govuk-hint govuk-radios__hint" style="padding: 0 !important;">
+                    <govuk-radios-hint class="govuk-hint govuk-radios__hint app-padding-0" >
                         We’ll add ‘(optional)’ to the end of the question text.
                     </govuk-radios-hint>
                 </govuk-radios-item>
@@ -146,16 +146,16 @@
     @if (Model.Editable)
     {
         <div class="govuk-button-group">
-            <button type="submit" class="govuk-button govuk-!-margin-bottom-3" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init="">Save question</button>
+            <button type="submit" class="govuk-button govuk-!-margin-bottom-3" data-module="govuk-button" data-prevent-double-click="true">Save question</button>
             <button type="submit"
                     class="govuk-button govuk-!-margin-bottom-3 govuk-button--secondary"
-                    data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init=""
+                    data-module="govuk-button" data-prevent-double-click="true"
                     name="AdditionalActions[SaveAndAddAnother]" value="true">
                 Save and add new question
             </button>
             <button type="submit"
                     class="govuk-button govuk-!-margin-bottom-3 govuk-button--secondary"
-                    data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init=""
+                    data-module="govuk-button" data-prevent-double-click="true"
                     name="AdditionalActions[SaveAndExit]" value="true">
                 Save question and exit
             </button>
@@ -163,7 +163,7 @@
 
         <ul class="govuk-list govuk-list--spaced">
             <li>
-                <a class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true" data-govuk-button-init=""
+                <a class="govuk-button govuk-button--warning" data-module="govuk-button" data-prevent-double-click="true" 
                    asp-action="Delete"
                    asp-controller="Questions"
                    asp-route-formVersionId="@Model.FormVersionId"
