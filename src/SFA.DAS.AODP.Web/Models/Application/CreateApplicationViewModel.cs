@@ -1,9 +1,6 @@
-﻿using Microsoft.AspNetCore.Components.Forms;
-using SFA.DAS.AODP.Web.Validators.Attributes;
-using SFA.DAS.AODP.Web.Validators.Messages;
+﻿using SFA.DAS.AODP.Web.Validators.Messages;
 using SFA.DAS.AODP.Web.Validators.Patterns;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 
 namespace SFA.DAS.AODP.Web.Models.Application
 {
@@ -17,7 +14,7 @@ namespace SFA.DAS.AODP.Web.Models.Application
         [Display(Name="Qualification title")]
         [Required(ErrorMessage = ValidationMessages.QualificationTitleRequired)]
         [StringLength(200, ErrorMessage = ValidationMessages.QualificationTitleTooLong)]
-        [AllowedCharacters(TextCharacterProfile.Title)]
+        [AllowedCharacters(TextCharacterProfile.QualificationTitle)]
         public string Name { get; set; }
 
         [Display(Name = "Application owner")]

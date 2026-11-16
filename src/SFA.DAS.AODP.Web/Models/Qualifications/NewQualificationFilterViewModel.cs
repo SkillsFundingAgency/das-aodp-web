@@ -1,5 +1,4 @@
 ﻿using SFA.DAS.AODP.Domain.Qualifications.Requests;
-using SFA.DAS.AODP.Web.Validators.Attributes;
 using SFA.DAS.AODP.Web.Validators.Patterns;
 
 namespace SFA.DAS.AODP.Web.Models.Qualifications
@@ -16,7 +15,7 @@ namespace SFA.DAS.AODP.Web.Models.Qualifications
         [AllowedCharacters(TextCharacterProfile.Title)]
         public string Organisation {  get; set; }
 
-        [AllowedCharacters(TextCharacterProfile.Title)]
+        [AllowedCharacters(TextCharacterProfile.QualificationTitle)]
         public string QualificationName { get; set; }
 
         [AllowedCharacters(TextCharacterProfile.Title)]

@@ -35,6 +35,9 @@ public sealed class AllowedCharactersAttribute : ValidationAttribute
             TextCharacterProfile.Title =>
                 RegexCache.TitleRegex.IsMatch(s),
 
+            TextCharacterProfile.QualificationTitle =>
+                RegexCache.QualificationTitleRegex.IsMatch(s),
+
             TextCharacterProfile.FreeText =>
                 IsFreeTextValid(s),
 
@@ -70,5 +73,8 @@ public sealed class AllowedCharactersAttribute : ValidationAttribute
 
         public static readonly Regex TitleRegex =
             new(ValidationPatterns.Text.Title, RegexOptions.Compiled | RegexOptions.CultureInvariant, TimeSpan.FromMilliseconds(100));
+
+        public static readonly Regex QualificationTitleRegex =
+            new(ValidationPatterns.Text.QualificationTitle, RegexOptions.Compiled | RegexOptions.CultureInvariant, TimeSpan.FromMilliseconds(100));
     }
 }

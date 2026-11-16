@@ -25,7 +25,7 @@ namespace SFA.DAS.AODP.Web.Areas.Review.Models.ApplicationsReview
         // Builds pagination URLs for the GOV.UK component.
         public PaginationModel GdsPagination { get; set; } = new PaginationModel();
 
-        [AllowedCharacters(TextCharacterProfile.Title)]
+        [AllowedCharacters(TextCharacterProfile.QualificationTitle)]
         public string? ApplicationSearch { get; set; }
 
         [AllowedCharacters(TextCharacterProfile.Title)]
