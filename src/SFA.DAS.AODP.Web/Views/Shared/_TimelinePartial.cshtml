@@ -1,6 +1,4 @@
-﻿@using SFA.DAS.AODP.Web.Models.Application;
-@using SFA.DAS.AODP.Web.Models.TimelineComponents;
-@using System.Globalization;
+﻿@using SFA.DAS.AODP.Web.Models.TimelineComponents;
 @model TimelineViewModel
 
 @if (Model.Items != null && Model.Items.Any())
@@ -21,7 +19,7 @@
                 @if (item.ShowText)
                 {
                     <div class="app-timeline__description">
-                        <p style="white-space: pre-line">@item.Text</p>
+                        <p class="app-pre-line">@item.Text</p>
                     </div>
                 }
                 @if (item.Files != null && item.Files.Any())

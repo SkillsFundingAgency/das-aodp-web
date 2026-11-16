@@ -175,7 +175,7 @@
 
 @section Head {
     <!-- Google Tag Manager -->
-    <script>
+    <script nonce="@(Context.Items["CspNonce"] as string)">
         (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
         new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
         j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
@@ -186,12 +186,12 @@
     @Html.GovUkFrontendStyleImports()
 
     <environment include="Development">
-        <link rel="stylesheet" href="~/lib/dfe-frontend/dist/dfefrontend.css?v=2025-02-27">
-        <link rel="stylesheet" href="/stylesheets/application.css?v=2025-02-27" >
+        <link rel="stylesheet" href="~/lib/dfe-frontend/dist/dfefrontend.css">
+        <link rel="stylesheet" href="~/stylesheets/application.css" asp-append-version="true">
     </environment>
     <environment exclude="Development">
-        <link rel="stylesheet" href="~/lib/dfe-frontend/dist/dfefrontend-2.0.0.min.css?v=2025-02-27">
-        <link rel="stylesheet" href="/stylesheets/application.min.css?v=2025-02-27">
+        <link rel="stylesheet" href="~/lib/dfe-frontend/dist/dfefrontend-2.0.0.min.css">
+        <link rel="stylesheet" href="~/stylesheets/application.min.css" asp-append-version="true">
     </environment>
 
 }
@@ -206,7 +206,7 @@
 <!-- Google Tag Manager (noscript) -->
 <noscript>
     <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MHLR3QZ9"
-            height="0" width="0" style="display:none;visibility:hidden"></iframe>
+            height="0" width="0" class="app-hidden"></iframe>
 </noscript>
 <!-- End Google Tag Manager (noscript) -->
 
@@ -258,14 +258,14 @@
 }
 
 @section BodyEnd {
-    @Html.GovUkFrontendScriptImports()
+    @Html.GovUkFrontendScriptImports(Context.Items["CspNonce"] as string)
 
     <environment include="Development">
         <script src="~/lib/jquery/dist/jquery.min.js?v=2025-02-27"></script>
-        <script src="~/js/site.js?v=2025-02-27"></script>
+        <script src="~/js/site.js" asp-append-version="true"></script>
     </environment>
     <environment exclude="Development">
-        <script src="~/js/site.min.js?v=2025-02-27"></script>
+        <script src="~/js/site.min.js" asp-append-version="true"></script>
     </environment>
 
 }

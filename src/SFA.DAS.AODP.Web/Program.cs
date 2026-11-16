@@ -48,7 +48,10 @@ internal class Program
                     RoleConstants.QFAUImport));
             }
             )
-            .AddGovUkFrontend()
+            .AddGovUkFrontend(options =>
+            {
+                options.GetCspNonceForRequest = context => context.Items["CspNonce"] as string;
+            })
             .AddLogging()
             .AddDistributedCache(configuration, builder.Environment.IsDevelopment())
             .AddDataProtectionKeys("das-aodp-web", configuration, builder.Environment.IsDevelopment())
@@ -133,6 +136,10 @@ internal class Program
         // Add security headers middleware
         app.Use(async (context, next) =>
         {
+            // Per-request nonce for inline scripts/styles
+            var nonce = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(16));
+            context.Items["CspNonce"] = nonce;
+
             // Enforce HTTPS for this host and all subdomains (not in local dev)
             if (!app.Environment.IsDevelopment())
             {
@@ -151,11 +158,11 @@ internal class Program
             // Define a strict Content Security Policy
             context.Response.Headers.Append("Content-Security-Policy",
                 "default-src 'self'; " +
-                "script-src 'self' 'unsafe-inline' https://*.googletagmanager.com; " +
-                "style-src 'self' 'unsafe-inline'; " +
-                "connect-src 'self' http://localhost:* https://localhost:* ws://localhost:* wss://localhost:* https://*.google-analytics.com; " +
+                $"script-src 'self' 'nonce-{nonce}' https://*.googletagmanager.com; " +
+                $"style-src 'self' 'nonce-{nonce}'; " +
+                "connect-src 'self' http://localhost:* https://localhost:* ws://localhost:* wss://localhost:* https://*.google-analytics.com https://*.googletagmanager.com; " +
                 "font-src 'self' data:; " +
-                "img-src 'self';");
+                "img-src 'self' https://*.google-analytics.com https://*.googletagmanager.com;");
 
             // Restrict browser features
             context.Response.Headers.Append("Permissions-Policy", "geolocation=(), microphone=(), camera=()");

@@ -83,11 +83,11 @@
                required />
     </div>
 
-    <div id="uploadingSection" style="display:none;">
+    <div id="uploadingSection" class="app-hidden">
         <p class="govuk-body">File uploading</p>
         <img src="/assets/images/spinner.svg"
              alt="Loading"
-             class="upload-spinner govuk-!-display-inline-block govuk-!-margin-5" style="width:50px"
+             class="upload-spinner govuk-!-display-inline-block govuk-!-margin-5 app-spinner" 
              aria-hidden="true" />
     </div>
 
@@ -97,40 +97,4 @@
 
 </form>
 
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const form = document.getElementById('uploadForm');
-        if (!form) return;
-
-        const fileSection = document.getElementById('fileSection');
-        const uploadText = document.getElementById('uploadText');
-        const uploadingSection = document.getElementById('uploadingSection');
-        const continueButton = document.getElementById('continueButton');
-        const fileInput = document.getElementById('fileUpload');
-
-        fileInput.addEventListener('change', () => {
-            const errorSummary = document.querySelector('.govuk-error-summary');
-            if (errorSummary) errorSummary.remove();
-
-            const fileError = document.getElementById('File-error');
-            if (fileError) fileError.remove();
-
-            fileSection.classList.remove('govuk-form-group--error');
-        });
-
-        form.addEventListener('submit', () => {
-
-            if (!fileInput || fileInput.files.length === 0) {
-                return;
-            }
-
-            fileSection.hidden = true;
-            uploadText.hidden = true;
-
-            uploadingSection.style.display = 'block';
-
-            continueButton.disabled = true;
-            continueButton.textContent = 'Uploading...';
-        }, { once: true });
-    });
-</script>
+<script src="~/js/pages/upload-qualification-candidates.js" asp-append-version="true"></script>

@@ -45,3 +45,16 @@ function hideRejectBanner() {
     document.getElementById("cookieReject").setAttribute("hidden", "");
 }
 
+// Wire up cookie buttons
+document.querySelectorAll('[data-cookie-action]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+        switch (btn.dataset.cookieAction) {
+            case 'accept': acceptCookies(true); break;
+            case 'reject': acceptCookies(false); break;
+            case 'hide-accept': hideAcceptBanner(); break;
+            case 'hide-reject': hideRejectBanner(); break;
+            case 'save': saveCookieSettings(); break;
+        }
+    });
+});
+

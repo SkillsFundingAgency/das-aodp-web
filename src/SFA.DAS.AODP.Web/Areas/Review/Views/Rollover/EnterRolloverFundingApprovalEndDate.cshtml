@@ -96,46 +96,15 @@
 
 </div>
 
-<div id="loadingContainer" style="display:none;">
-    <div style="width: fit-content; text-align: left;">
+<div id="loadingContainer" class="app-hidden">
+    <div class="app-fit-left">
         <h1 class="govuk-heading-l">
             Checking data
         </h1>
         <img src="/assets/images/spinner.svg"
              alt="Loading"
-             style="display: block; margin: 0 auto; width: 50px;">
+             class="app-spinner--centred">
     </div>
 </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const form = document.getElementById('rolloverForm');
-        const allSection = document.getElementById('allSection');
-        const loadingContainer = document.getElementById('loadingContainer');
-        
-        const day = document.getElementById('maxApprovalEndDateDay');
-        const month = document.getElementById('maxApprovalEndDateMonth');
-        const year = document.getElementById('maxApprovalEndDateYear');
-
-        loadingContainer.style.display = 'none';
-
-        form.addEventListener('submit', () => {
-
-            if (!day.value.trim() || !month.value.trim() || !year.value.trim()) {
-                return;
-            }
-            
-            const d = Number(day.value);
-            const m = Number(month.value);
-            const y = Number(year.value);
-
-            if (!Number.isInteger(d) || !Number.isInteger(m) || !Number.isInteger(y)) {
-                return;
-            }
-
-            allSection.style.display = 'none';
-            loadingContainer.style.display = 'block';
-
-        }, { once: true });
-    });
-</script>
+<script src="~/js/pages/rollover-approval-end-date.js" asp-append-version="true"></script>

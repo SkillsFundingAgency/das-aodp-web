@@ -18,10 +18,10 @@
                 </div>
             </div>
             <div class="govuk-button-group">
-                <button type="button" class="govuk-button" onclick="acceptCookies(true);" data-module="govuk-button">
+                <button type="button" class="govuk-button" data-cookie-action="accept" data-module="govuk-button">
                     Accept additional cookies
                 </button>
-                <button type="button" class="govuk-button" onclick="acceptCookies(false);" data-module="govuk-button">
+                <button type="button" class="govuk-button" data-cookie-action="reject" data-module="govuk-button">
                     Reject additional cookies
                 </button>
                 <a class="govuk-link" asp-area="Help" asp-action="CookiesPolicy" asp-controller="Help">View cookies</a>
@@ -34,13 +34,13 @@
                 <div class="govuk-grid-column-two-thirds">
                     <div class="govuk-cookie-banner__content">
                         <p class="govuk-body">
-                            You've accepted additional cookies. You can <a class="govuk-link" asp-route="https://www.aboutcookies.org/">change your cookie settings</a> at any time.
+                            You've accepted additional cookies. You can <a class="govuk-link" href="https://www.aboutcookies.org/">change your cookie settings</a> at any time.
                         </p>
                     </div>
                 </div>
             </div>
             <div class="govuk-button-group">
-                <button type="button" class="govuk-button" onclick="hideAcceptBanner();" data-module="govuk-button">
+                <button type="button" class="govuk-button" data-cookie-action="hide-accept" data-module="govuk-button">
                     Hide cookie message
                 </button>
             </div>
@@ -51,12 +51,12 @@
             <div class="govuk-grid-row">
                 <div class="govuk-grid-column-two-thirds">
                     <div class="govuk-cookie-banner__content">
-                        <p class="govuk-body">You’ve rejected analytics cookies. You can <a class="govuk-link" asp-route="https://www.aboutcookies.org/">change your cookie settings</a> at any time.</p>
+                        <p class="govuk-body">You’ve rejected analytics cookies. You can <a class="govuk-link" href="https://www.aboutcookies.org/">change your cookie settings</a> at any time.</p>
                     </div>
                 </div>
             </div>
             <div class="govuk-button-group">
-                <button type="button" class="govuk-button" onclick="hideRejectBanner();" data-module="govuk-button">
+                <button type="button" class="govuk-button" data-cookie-action="hide-reject" data-module="govuk-button">
                     Hide cookie message
                 </button>
             </div>
