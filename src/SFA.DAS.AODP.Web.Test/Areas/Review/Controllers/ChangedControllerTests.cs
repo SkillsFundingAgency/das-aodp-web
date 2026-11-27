@@ -623,6 +623,40 @@ public class ChangedControllerTests
     }
 
     [Fact]
+    public async Task ExportData_WritesIntentionToSeekFundingInEngland_InColumnAA()
+    {
+        var controller = CreateController();
+
+        _mediator.Setup(m => m.Send(It.IsAny<GetChangedQualificationsCsvExportQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new BaseMediatrResponse<GetQualificationsExportResponse>
+            {
+                Success = true,
+                Value = new GetQualificationsExportResponse
+                {
+                    QualificationExports = new List<QualificationExport>
+                    {
+                        new QualificationExport
+                        {
+                            QualificationNumber = "6015259X",
+                            IntentionToSeekFundingInEngland = true
+                        }
+                    }
+                }
+            });
+
+        var result = await controller.ExportData();
+
+        var file = Assert.IsType<FileContentResult>(result);
+        var rows = System.Text.Encoding.UTF8.GetString(file.FileContents)
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+            .Select(r => r.TrimEnd('\r').Split(','))
+            .ToList();
+
+        Assert.Equal("IntentionToSeekFundingInEngland", rows[0][26]);
+        Assert.Equal("True", rows[1][26]);
+    }
+
+    [Fact]
     public async Task QualificationDetailsTimeline_ReturnsRedirect_WhenQualificationReferenceMissing()
     {
         var controller = CreateController();
